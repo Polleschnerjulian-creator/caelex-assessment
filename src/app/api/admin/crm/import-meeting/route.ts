@@ -21,6 +21,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { requireRole } from "@/lib/dal";
+import { isSuperAdmin } from "@/lib/super-admin";
 import { getSafeErrorMessage } from "@/lib/validations";
 import { logger } from "@/lib/logger";
 import { importMeetingBodySchema } from "@/lib/crm/meeting-import-types";
@@ -34,8 +35,14 @@ export async function POST(request: NextRequest) {
     if (!session?.user?.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
-    // Throws ForbiddenError for a non-admin → mapped to 403 below.
-    await requireRole(["admin"]);
+    // Super-admins (platform owners) are always authorized — same principle as
+    // the /admin analytics center. Everyone else must hold the DB "admin" role
+    // (requireRole throws ForbiddenError → mapped to 403 below). This is the one
+    // place the CRM importer is intentionally MORE permissive than the sibling
+    // /api/admin/crm/* routes: an owner must never be locked out of their own CRM.
+    if (!isSuperAdmin(session.user.email)) {
+      await requireRole(["admin"]);
+    }
 
     const body = await request.json();
     const parsed = importMeetingBodySchema.safeParse(body);

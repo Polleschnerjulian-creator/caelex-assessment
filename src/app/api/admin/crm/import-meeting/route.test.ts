@@ -59,6 +59,27 @@ describe("POST /api/admin/crm/import-meeting", () => {
     expect(mBuildPreview).not.toHaveBeenCalled();
   });
 
+  it("allows a super-admin even when requireRole would reject (owner bypass)", async () => {
+    // julian@caelex.eu is in the hardcoded super-admin base, so isSuperAdmin
+    // (the REAL module, unmocked) returns true and requireRole is never called.
+    mAuth.mockResolvedValue({ user: { id: "u1", email: "julian@caelex.eu" } });
+    const err = new Error("nope");
+    err.name = "ForbiddenError";
+    mRequireRole.mockRejectedValue(err);
+    mBuildPreview.mockResolvedValue({
+      contacts: [],
+      summary: "s",
+      noteBody: "s",
+      actionItems: [],
+      meetingTitle: null,
+      meetingDate: null,
+    });
+    const res = await POST(req({ mode: "preview", transcript: "hi" }) as never);
+    expect(res.status).toBe(200);
+    expect(mRequireRole).not.toHaveBeenCalled();
+    expect(mBuildPreview).toHaveBeenCalled();
+  });
+
   it("400 on an invalid body", async () => {
     mAuth.mockResolvedValue({ user: { id: "u1" } });
     const res = await POST(req({ mode: "nonsense" }) as never);
