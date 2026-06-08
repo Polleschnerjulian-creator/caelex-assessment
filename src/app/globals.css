@@ -795,6 +795,22 @@ body:has(.caelex-admin) {
     0 1px 3px rgba(16, 24, 40, 0.05) !important;
 }
 
+/* `.glass-surface` hard-sets `position: relative` (for its ::before glow),
+   which DEFEATS the sidebar's Tailwind `fixed` and the topbar's `sticky` — so
+   the in-flow sidebar block-stacks the content column BELOW it (off-screen).
+   Restore the intended positioning for the admin chrome, and drop the glow
+   pseudo-elements (pointless on the flat white panels). */
+.caelex-admin aside.glass-surface {
+  position: fixed !important;
+}
+.caelex-admin header.glass-surface {
+  position: sticky !important;
+}
+.caelex-admin .glass-surface::before,
+.caelex-admin .glass-elevated::before {
+  display: none !important;
+}
+
 /* Override the global dark heading/text rules inside .landing-light */
 .dark .landing-light h1,
 .dark .landing-light h2,
