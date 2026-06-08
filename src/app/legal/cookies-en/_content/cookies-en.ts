@@ -40,7 +40,7 @@ export const COOKIES_EN: LegalDocument = {
         },
         {
           type: "p",
-          text: "(3) Analytics and product improvement (Art. 6(1)(a) GDPR, Section 25(1) TTDSG, consent): where used, only privacy-friendly tools with IP anonymisation. We do not use Google Analytics or Facebook tracking cookies.",
+          text: "(3) Analytics and product improvement. We run our own self-hosted first-party product analytics (no third-party analytics services such as Google Analytics or Facebook). It involves two processing operations with two legal bases: (a) setting and reading a session/device identifier in browser storage (sessionStorage), and stitching your usage across products into one identity profile (a new purpose under Art. 5(1)(b) GDPR), both require your consent under Section 25(1) TTDSG; (b) the pseudonymous usage telemetry itself (event counts, per-product feature usage, dwell time, approximate country derived from IP) is processed on the basis of our legitimate interest in product improvement (Art. 6(1)(f) GDPR), to which you may object at any time under Art. 21 GDPR. A typed event schema ensures the telemetry cannot capture free-text input, client or party names. See the privacy policy (Section 3(3)) for details.",
         },
         {
           type: "p",
@@ -79,7 +79,16 @@ export const COOKIES_EN: LegalDocument = {
         },
         {
           type: "p",
-          text: "C. Analytics (consent only, where enabled): Vercel Web Analytics with IP anonymisation; no cookie set, server-side aggregation only. No transfer to third parties beyond Vercel Inc.",
+          text: "C. Analytics (consent only, where enabled):",
+        },
+        {
+          type: "ul",
+          items: [
+            "caelex_session_id (SessionStorage) — session/device identifier of our own self-hosted first-party product analytics. Set once you consent to analytics; therefore NOT cookieless in the sense of 'no device access' (Section 25(1) TTDSG). Retention: until end of the browser session.",
+            "caelex-cookie-consent-session (LocalStorage) — pseudonymous correlation id for the server-side consent proof (stored hashed). Retention: until the user clears it.",
+            "Self-hosted telemetry (no browser-storage entry, server-side): for each captured event we store, on our own EU infrastructure (database at Neon, Frankfurt region), the event type, the path visited (without query parameters), referrer, user agent (anonymised after 30 days), the country derived from the IP and — for signed-in users — your user id and organisation id. This analytics is therefore neither anonymous nor solely Vercel-based. Event retention: 90 days. Feature dimensions captured are categorical (e.g. Atlas topics, Comply modules, Trade classify→licence, Scholar simulations) and contain no free-text input or personal content.",
+            "Vercel Web Analytics (optional, additional): cookieless page-view statistics for the public site with a per-session rolled hash and IP anonymisation. This is a SEPARATE service and NOT the product telemetry described above.",
+          ],
         },
         {
           type: "p",

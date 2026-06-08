@@ -17,8 +17,18 @@ const SESSION_KEY = "caelex-cookie-consent-session";
    jetzt i18n (DE default + EN auto-detect), (b) visual button-parität
    (Audit H-1, OLG Köln 6 U 187/21), (c) 12-monats-expiry (Audit H-5,
    DSK-empfehlung). Bestehende einwilligungen werden re-prompted weil
-   der neue text ein opt-in-relevantes update darstellt. */
-export const CONSENT_VERSION = "2026-05-19";
+   der neue text ein opt-in-relevantes update darstellt.
+
+   Wave 10 (2026-06-08) — bumped to 2026-06-08 weil die Analyse-
+   Beschreibung KORRIGIERT wurde: die bisherige Aussage „anonyme,
+   cookielose Nutzungsstatistik" war SACHLICH FALSCH für die real
+   eingesetzte erstanbieter-, selbst-gehostete Produkt-Telemetrie
+   (/api/analytics/track → AnalyticsEvent), die eine Sitzungs-/Geräte-ID
+   im Browser setzt (§ 25 Abs. 1 TTDSG) und bei eingeloggten Nutzern
+   die User-ID verknüpft. Die neue Beschreibung ist einwilligungs-
+   relevant → alle Nutzer werden erneut abgefragt (Art. 7 Abs. 1,
+   Art. 12 DSGVO). */
+export const CONSENT_VERSION = "2026-06-08";
 
 /* Wave 9 (Audit H-5) — DSK + LfDI Baden-Württemberg empfehlen max.
    12-monats-gültigkeit für cookie-consent. Nach ablauf wird der
@@ -226,7 +236,8 @@ const STRINGS = {
     necessary: "Notwendig",
     necessaryDesc: "Authentifizierung, CSRF-Schutz, Session-Management.",
     analytics: "Analyse",
-    analyticsDesc: "Anonyme, cookielose Nutzungsstatistik.",
+    analyticsDesc:
+      "Erstanbieter-Produktanalyse auf unserer eigenen EU-Infrastruktur. Setzt eine Sitzungs-/Geräte-ID und verknüpft bei Anmeldung Ihre Nutzung. Details: Cookie-Richtlinie.",
     performance: "Performance",
     performanceDesc: "Ladezeit- und Performance-Monitoring.",
     errorTracking: "Fehler-Tracking",
@@ -245,7 +256,8 @@ const STRINGS = {
     necessary: "Necessary",
     necessaryDesc: "Authentication, CSRF protection, session management.",
     analytics: "Analytics",
-    analyticsDesc: "Anonymous, cookieless usage statistics.",
+    analyticsDesc:
+      "First-party product analytics on our own EU infrastructure. Sets a session/device ID and links your usage once signed in. See the Cookie Policy.",
     performance: "Performance",
     performanceDesc: "Page load and performance monitoring.",
     errorTracking: "Error Tracking",

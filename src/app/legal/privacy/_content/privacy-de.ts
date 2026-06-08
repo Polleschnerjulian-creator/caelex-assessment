@@ -84,7 +84,9 @@ export const PRIVACY_DE: LegalDocument = {
           items: [
             "Compliance-Inhalte (Assessments, Dokumente, Workflows, Bookmarks): bis 30 Tage nach Vertragsende (Export-Fenster), danach Löschung; bei aktiver gesetzlicher Aufbewahrungspflicht erfolgt eine Sperrung statt Löschung (Art. 17 Abs. 3 DSGVO).",
             "Astra-Konversationen und -Nachrichten: rollierendes 6-Monats-Fenster, automatische Löschung beim täglichen Aufbewahrungsjob.",
-            "Analytics-Events (Nutzungs-Telemetrie): 90 Tage; User-Agent wird nach 30 Tagen anonymisiert.",
+            "Produkt-Telemetrie (AnalyticsEvent): selbst-gehostete Erstanbieter-Nutzungsanalyse auf eigener EU-Infrastruktur (nicht anonym, nicht ausschließlich Vercel-basiert). Erfasst werden Ereignistyp, aufgerufener Pfad (ohne Query), Referrer, User-Agent, aus der IP abgeleitetes Land sowie — bei angemeldeten Nutzern — Ihre User-ID und Organisations-ID; zum Setzen der Sitzungs-/Geräte-Kennung siehe § 4. Speicherdauer: 90 Tage; der User-Agent wird bereits nach 30 Tagen anonymisiert.",
+            "Akquise-/Marketing-Ereignisse (AcquisitionEvent, UTM-Herkunft): die nach Anmeldung mit Ihrer User-ID verknüpften Datensätze werden nach 90 Tagen pseudonymisiert (User-ID entfernt) und spätestens nach 180 Tagen gelöscht.",
+            "Aggregierte Produkt-Kennzahlen ohne Personenbezug (FeatureUsageDaily, CustomerHealthScore): tages- bzw. organisations-bezogene Zähl-/Rollup-Werte ohne User-ID, aufbewahrt für bis zu 24 Monate für Jahres-Trend- und Retentionsanalysen, danach Löschung.",
             "Sessions und Verifizierungs-Token: bei Ablauf gelöscht.",
             "Audit-Trail (manipulationssicher hash-verkettet, Pflicht-Compliance-Nachweis): bei Account-Löschung pseudonymisiert (`userId` entfernt, Hash-Kette bleibt intakt); aufbewahrt bis zu 7 Jahre als Beleg gegenüber Aufsichts- und Steuerbehörden, danach Löschung. Rechtsgrundlage: Art. 6 Abs. 1 lit. f DSGVO (Compliance-Nachweise) i.V.m. Art. 5 Abs. 1 lit. e DSGVO. Über mandanten-übergreifende administrative Zugriffe protokollierte Einträge fallen unter dieselbe Frist; siehe § 5 (2).",
             "Sentinel-Telemetrie (CrossVerification 6 Monate, SentinelPacket 12 Monate).",
@@ -92,7 +94,7 @@ export const PRIVACY_DE: LegalDocument = {
         },
         {
           type: "p",
-          text: "Rechtsgrundlage für (3): Art. 6 Abs. 1 lit. b DSGVO, ergänzt um Art. 6 Abs. 1 lit. f DSGVO für den Audit-Trail.",
+          text: "Rechtsgrundlage für (3): grundsätzlich Art. 6 Abs. 1 lit. b DSGVO (Vertragserfüllung), ergänzt um Art. 6 Abs. 1 lit. f DSGVO für den Audit-Trail. Für die Produkt-Telemetrie gilt eine zweigeteilte Grundlage: die pseudonyme Nutzungs-Telemetrie selbst (Ereignis-Zähler, Funktionsnutzung je Produkt, Verweildauer, Herkunftsland) verarbeiten wir auf Grundlage unseres berechtigten Interesses an Produktverbesserung und -sicherheit (Art. 6 Abs. 1 lit. f DSGVO); ihr können Sie jederzeit nach Art. 21 DSGVO widersprechen (§ 9). Das Setzen bzw. Auslesen der Sitzungs-/Geräte-Kennung im Browser (§ 25 Abs. 1 TTDSG) sowie die produktübergreifende Zusammenführung Ihrer Nutzung zu einem Identitätsprofil über unsere Produkte hinweg (Atlas, Comply, Trade/Passage, Scholar, Pharos) als neuer Zweck nach Art. 5 Abs. 1 lit. b DSGVO erfolgen ausschließlich mit Ihrer Einwilligung. Eine getypte Ereignis-Struktur stellt sicher, dass die Telemetrie keine Klartext-Eingaben, Mandats- oder Personennamen aufnehmen kann; sie dient nicht der automatisierten Entscheidungsfindung i.S.d. Art. 22 DSGVO (§ 8).",
         },
         {
           type: "p",
@@ -137,7 +139,7 @@ export const PRIVACY_DE: LegalDocument = {
         },
         {
           type: "p",
-          text: "Optionale Cookies (Analyse, Komfort) werden nur mit Einwilligung gesetzt (§ 25 Abs. 1 TTDSG, Art. 6 Abs. 1 lit. a DSGVO). Details zu Zweck, Anbieter und Laufzeit: siehe Cookie-Richtlinie (/legal/cookies). Einwilligung kann jederzeit über die Cookie-Einstellungen widerrufen werden.",
+          text: "Optionale Speicherzugriffe (Analyse, Komfort) erfolgen nur mit Einwilligung (§ 25 Abs. 1 TTDSG, Art. 6 Abs. 1 lit. a DSGVO). Dazu zählt insbesondere die Sitzungs-/Geräte-Kennung (caelex_session_id, sessionStorage) unserer selbst-gehosteten Produktanalyse: ohne Ihre Einwilligung wird sie nicht gesetzt. Die anschließende pseudonyme Auswertung der Telemetrie stützt sich auf Art. 6 Abs. 1 lit. f DSGVO mit Widerspruchsrecht nach Art. 21 DSGVO (siehe § 3 (3)). Details zu Zweck, Anbieter und Laufzeit: siehe Cookie-Richtlinie (/legal/cookies). Einwilligung kann jederzeit über die Cookie-Einstellungen widerrufen werden.",
         },
       ],
     },

@@ -17,6 +17,7 @@ import {
   CSRF_HEADER_NAME,
   validateCsrfToken,
 } from "@/lib/csrf";
+import { eraseAnalyticsForUser } from "@/lib/analytics-personal-data.server";
 import { z } from "zod";
 
 export const dynamic = "force-dynamic";
@@ -158,11 +159,13 @@ export async function DELETE(req: Request) {
         data: { userId: null },
       });
 
-      // Anonymize analytics events (nullable userId)
-      await tx.analyticsEvent.updateMany({
-        where: { userId },
-        data: { userId: null },
-      });
+      // Pseudonymise ALL analytics personal data (Art. 17). Routed through
+      // the shared analytics-by-userId module so this can never again miss a
+      // userId-bearing analytics table — it nulls userId on BOTH AnalyticsEvent
+      // AND AcquisitionEvent (the latter was previously un-erased: a deleted
+      // user's id survived in the acquisition funnel). The same module backs
+      // the DSAR export, so access and erasure stay in lock-step.
+      await eraseAnalyticsForUser(userId, tx);
 
       // Erase Caelex Scholar data (Art. 17 GDPR — right to erasure).
       // The Scholar tables are intentionally decoupled from the User model

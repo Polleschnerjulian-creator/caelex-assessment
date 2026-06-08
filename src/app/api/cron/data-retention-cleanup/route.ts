@@ -30,6 +30,10 @@ function isValidCronSecret(header: string, secret: string): boolean {
  *   - Expired sessions / verification tokens     → deleted on expiry
  *   - AnalyticsEvent.userAgent                   → anonymised after  30 days
  *   - AnalyticsEvent                             → deleted after     90 days
+ *   - AcquisitionEvent.userId                    → anonymised after  90 days
+ *   - AcquisitionEvent (anonymous rows)          → deleted after    180 days
+ *   - FeatureUsageDaily (aggregate, no userId)   → deleted after    730 days
+ *   - CustomerHealthScore (org rollup, stale)    → deleted after    730 days
  *   - LoginAttempt (brute-force buffer)          → deleted after     90 days
  *   - LoginEvent (security telemetry)            → deleted after    365 days
  *   - SecurityEvent (resolved, low/medium)       → deleted after    365 days
@@ -87,11 +91,16 @@ export async function GET(req: Request) {
   const sixMonthsAgo = new Date(now.getTime() - 180 * 24 * 60 * 60 * 1000);
 
   const oneYearAgo = new Date(now.getTime() - 365 * 24 * 60 * 60 * 1000);
+  const twoYearsAgo = new Date(now.getTime() - 730 * 24 * 60 * 60 * 1000);
 
   const results = {
     expiredSessions: 0,
     expiredVerificationTokens: 0,
     oldAnalyticsEvents: 0,
+    anonymizedAcquisitionEvents: 0,
+    oldAcquisitionEvents: 0,
+    oldFeatureUsageDaily: 0,
+    oldCustomerHealthScores: 0,
     oldLoginAttempts: 0,
     oldLoginEvents: 0,
     oldSecurityEvents: 0,
@@ -142,6 +151,57 @@ export async function GET(req: Request) {
     logger.info("Analytics cleanup (transaction)", {
       anonymized: anonymizedIps.count,
       deleted: oldAnalytics.count,
+    });
+
+    // Batch 2b: Analytics rollup + acquisition retention (privacy § 3(3)).
+    //
+    // These tables previously had ZERO retention and grew unbounded — a
+    // promise-vs-reality gap for a § 3(3) policy that is "only true if this
+    // job runs". Windows:
+    //  ─ AcquisitionEvent: mirrors the AnalyticsEvent posture. After signup
+    //    its `userId` links a real person, so we null userId at 90 days
+    //    (matching the AnalyticsEvent 90-day delete horizon as the point past
+    //    which event-level attribution is no longer kept), then delete the
+    //    now-pseudonymous rows at 180 days. (Account deletion still erases a
+    //    user's rows immediately via eraseAnalyticsForUser — this is the
+    //    time-based complement for live accounts.)
+    //  ─ FeatureUsageDaily + CustomerHealthScore: aggregate/org-keyed rollups
+    //    with NO userId — effectively anonymous counts. Kept 24 months for
+    //    year-over-year trend/retention analysis, then deleted. CustomerHealth
+    //    is swept by staleness (calculatedAt) so only abandoned rows age out;
+    //    live orgs are re-scored daily by the aggregation cron.
+    const [
+      anonymizedAcquisition,
+      oldAcquisition,
+      oldFeatureUsage,
+      oldHealthScores,
+    ] = await prisma.$transaction([
+      prisma.acquisitionEvent.updateMany({
+        where: {
+          timestamp: { lt: ninetyDaysAgo },
+          userId: { not: null },
+        },
+        data: { userId: null },
+      }),
+      prisma.acquisitionEvent.deleteMany({
+        where: { timestamp: { lt: sixMonthsAgo } },
+      }),
+      prisma.featureUsageDaily.deleteMany({
+        where: { date: { lt: twoYearsAgo } },
+      }),
+      prisma.customerHealthScore.deleteMany({
+        where: { calculatedAt: { lt: twoYearsAgo } },
+      }),
+    ]);
+    results.anonymizedAcquisitionEvents = anonymizedAcquisition.count;
+    results.oldAcquisitionEvents = oldAcquisition.count;
+    results.oldFeatureUsageDaily = oldFeatureUsage.count;
+    results.oldCustomerHealthScores = oldHealthScores.count;
+    logger.info("Analytics rollup + acquisition retention cleanup", {
+      anonymizedAcquisition: anonymizedAcquisition.count,
+      deletedAcquisition: oldAcquisition.count,
+      deletedFeatureUsage: oldFeatureUsage.count,
+      deletedHealthScores: oldHealthScores.count,
     });
 
     // 4. Delete old ASTRA conversations older than 6 months
@@ -292,6 +352,9 @@ export async function GET(req: Request) {
       results.expiredSessions +
       results.expiredVerificationTokens +
       results.oldAnalyticsEvents +
+      results.oldAcquisitionEvents +
+      results.oldFeatureUsageDaily +
+      results.oldCustomerHealthScores +
       results.oldLoginAttempts +
       results.oldLoginEvents +
       results.oldSecurityEvents +

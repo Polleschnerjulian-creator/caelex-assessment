@@ -6,6 +6,7 @@ import { checkRateLimit, createRateLimitResponse } from "@/lib/ratelimit";
 import { NextResponse } from "next/server";
 import { logger } from "@/lib/logger";
 import { logSecurityEvent } from "@/lib/audit";
+import { exportAnalyticsForUser } from "@/lib/analytics-personal-data.server";
 
 // GET /api/user/export - GDPR Art. 20 data portability export
 export async function GET() {
@@ -288,6 +289,12 @@ export async function GET() {
       }),
     ]);
 
+    // Analytics personal data (Art. 15/20) — behavioural events + acquisition
+    // trail keyed to this user. Sourced from the SAME shared module that backs
+    // account-deletion erasure, so what we disclose here always matches what we
+    // erase on deletion (no DSAR drift).
+    const analyticsPersonalData = await exportAnalyticsForUser(userId);
+
     const exportData = {
       exportMetadata: {
         exportDate: new Date().toISOString(),
@@ -325,6 +332,10 @@ export async function GET() {
       scheduledReports,
       ncaSubmissions,
       comments,
+      analytics: {
+        events: analyticsPersonalData.analyticsEvents,
+        acquisition: analyticsPersonalData.acquisitionEvents,
+      },
     };
 
     // Audit the DSAR/portability export (Art. 20/30) — persisted record.

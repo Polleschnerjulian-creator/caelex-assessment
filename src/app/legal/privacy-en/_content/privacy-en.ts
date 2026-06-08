@@ -81,7 +81,9 @@ export const PRIVACY_EN: LegalDocument = {
           items: [
             "Compliance content (assessments, documents, workflows, bookmarks): up to 30 days after termination (export window), then deletion; where a statutory retention obligation applies, the data is restricted instead of deleted (Art. 17(3) GDPR).",
             "Astra conversations and messages: rolling 6-month window, deleted automatically by the daily retention job.",
-            "Analytics events (usage telemetry): 90 days; user-agent strings are anonymised after 30 days.",
+            "Product telemetry (AnalyticsEvent): self-hosted first-party usage analytics on our own EU infrastructure (not anonymous, not solely Vercel-based). We record the event type, the path visited (without query), referrer, user agent, country derived from the IP and — for signed-in users — your user id and organisation id; for the session/device identifier see Section 4. Retention: 90 days; the user agent is anonymised after just 30 days.",
+            "Acquisition/marketing events (AcquisitionEvent, UTM source): the records linked to your user id after signup are pseudonymised (user id removed) after 90 days and deleted after at most 180 days.",
+            "Aggregate product metrics with no personal reference (FeatureUsageDaily, CustomerHealthScore): per-day or per-organisation count/rollup values with no user id, retained for up to 24 months for year-over-year trend and retention analysis, then deleted.",
             "Sessions and verification tokens: deleted on expiry.",
             "Audit trail (tamper-evident, hash-chained — mandatory compliance evidence): pseudonymised on account deletion (`userId` removed, hash chain remains intact); retained for up to 7 years as evidence vis-à-vis supervisory and tax authorities, then deleted. Legal basis: Art. 6(1)(f) GDPR (compliance evidence) in conjunction with Art. 5(1)(e) GDPR. Cross-tenant administrative-access entries fall under the same retention; see Section 5(2).",
             "Sentinel telemetry: cross-verifications 6 months, sentinel packets 12 months.",
@@ -89,7 +91,7 @@ export const PRIVACY_EN: LegalDocument = {
         },
         {
           type: "p",
-          text: "Legal basis for (3): Art. 6(1)(b) GDPR, supplemented by Art. 6(1)(f) GDPR for the audit trail.",
+          text: "Legal basis for (3): generally Art. 6(1)(b) GDPR (performance of the contract), supplemented by Art. 6(1)(f) GDPR for the audit trail. Product telemetry rests on a two-part basis: the pseudonymous usage telemetry itself (event counts, per-product feature usage, dwell time, country) is processed on the basis of our legitimate interest in product improvement and security (Art. 6(1)(f) GDPR), to which you may object at any time under Art. 21 GDPR (Section 9). Setting and reading the session/device identifier in the browser (Section 25(1) TTDSG) and stitching your usage across our products (Atlas, Comply, Trade/Passage, Scholar, Pharos) into one identity profile as a new purpose under Art. 5(1)(b) GDPR occur only with your consent. A typed event schema ensures the telemetry cannot capture free-text input, client or party names; it is not used for automated decision-making within the meaning of Art. 22 GDPR (Section 8).",
         },
         {
           type: "p",
@@ -134,7 +136,7 @@ export const PRIVACY_EN: LegalDocument = {
         },
         {
           type: "p",
-          text: "Optional cookies (analytics, convenience) are set only with consent (Section 25(1) TTDSG, Art. 6(1)(a) GDPR). Details on purpose, provider and retention are in the Cookie Policy (/legal/cookies-en). Consent can be withdrawn at any time via the cookie settings.",
+          text: "Optional storage access (analytics, convenience) occurs only with consent (Section 25(1) TTDSG, Art. 6(1)(a) GDPR). This includes in particular the session/device identifier (caelex_session_id, sessionStorage) of our self-hosted product analytics: without your consent it is not set. The subsequent pseudonymous evaluation of the telemetry rests on Art. 6(1)(f) GDPR with a right to object under Art. 21 GDPR (see Section 3(3)). Details on purpose, provider and retention are in the Cookie Policy (/legal/cookies-en). Consent can be withdrawn at any time via the cookie settings.",
         },
       ],
     },

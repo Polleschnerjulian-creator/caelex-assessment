@@ -24,6 +24,7 @@ const {
   // tx.* delete spies
   txAuditUpdateMany,
   txAnalyticsUpdateMany,
+  txAcquisitionUpdateMany,
   txReadingListItemDeleteMany,
   txReadingListDeleteMany,
   txBookmarkDeleteMany,
@@ -41,6 +42,7 @@ const {
   mockTransaction: vi.fn(),
   txAuditUpdateMany: vi.fn(),
   txAnalyticsUpdateMany: vi.fn(),
+  txAcquisitionUpdateMany: vi.fn(),
   txReadingListItemDeleteMany: vi.fn(),
   txReadingListDeleteMany: vi.fn(),
   txBookmarkDeleteMany: vi.fn(),
@@ -84,6 +86,7 @@ vi.mock("bcryptjs", () => ({ default: { compare: vi.fn() } }));
 const tx = {
   auditLog: { updateMany: txAuditUpdateMany },
   analyticsEvent: { updateMany: txAnalyticsUpdateMany },
+  acquisitionEvent: { updateMany: txAcquisitionUpdateMany },
   scholarReadingListItem: { deleteMany: txReadingListItemDeleteMany },
   scholarReadingList: { deleteMany: txReadingListDeleteMany },
   scholarBookmark: { deleteMany: txBookmarkDeleteMany },
@@ -124,6 +127,9 @@ beforeEach(() => {
     accounts: [{ provider: "google" }],
     organizationMemberships: [],
   });
+  // eraseAnalyticsForUser reads `.count` off these updateMany results.
+  txAnalyticsUpdateMany.mockResolvedValue({ count: 0 });
+  txAcquisitionUpdateMany.mockResolvedValue({ count: 0 });
   // Run the transaction callback against our mock tx.
   mockTransaction.mockImplementation(async (cb: (t: typeof tx) => unknown) => {
     txOrgMemberFindMany.mockResolvedValue([]);
@@ -154,6 +160,17 @@ describe("DELETE /api/user/delete — Scholar erasure cascade (G7)", () => {
     // LoginAttempt is keyed by email (no User FK) — erased explicitly (Art. 17).
     expect(txLoginAttemptDeleteMany).toHaveBeenCalledWith({
       where: { email: "ada@example.com" },
+    });
+    // Analytics personal data is pseudonymised via the shared module — BOTH
+    // AnalyticsEvent AND AcquisitionEvent (the latter was the closed Art. 17
+    // erasure gap; before the fix only AnalyticsEvent was nulled).
+    expect(txAnalyticsUpdateMany).toHaveBeenCalledWith({
+      where: { userId: "user-1" },
+      data: { userId: null },
+    });
+    expect(txAcquisitionUpdateMany).toHaveBeenCalledWith({
+      where: { userId: "user-1" },
+      data: { userId: null },
     });
     // The user row is still deleted (cascade for FK-linked tables).
     expect(txUserDelete).toHaveBeenCalledWith({ where: { id: "user-1" } });

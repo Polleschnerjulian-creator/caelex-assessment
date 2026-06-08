@@ -19,6 +19,9 @@ vi.mock("@/lib/prisma", () => ({
       deleteMany: vi.fn(),
       count: vi.fn(),
     },
+    acquisitionEvent: { updateMany: vi.fn(), deleteMany: vi.fn() },
+    featureUsageDaily: { deleteMany: vi.fn() },
+    customerHealthScore: { deleteMany: vi.fn() },
     loginAttempt: { deleteMany: vi.fn() },
     loginEvent: { deleteMany: vi.fn() },
     securityEvent: { deleteMany: vi.fn() },
@@ -27,6 +30,7 @@ vi.mock("@/lib/prisma", () => ({
     astraConversation: { deleteMany: vi.fn() },
     crossVerification: { deleteMany: vi.fn() },
     sentinelPacket: { deleteMany: vi.fn() },
+    scholarSearchHistory: { deleteMany: vi.fn() },
     complianceEvidence: { updateMany: vi.fn() },
     $transaction: vi.fn(),
   },
@@ -55,6 +59,12 @@ const mockPrisma = prisma as unknown as {
     deleteMany: ReturnType<typeof vi.fn>;
     count: ReturnType<typeof vi.fn>;
   };
+  acquisitionEvent: {
+    updateMany: ReturnType<typeof vi.fn>;
+    deleteMany: ReturnType<typeof vi.fn>;
+  };
+  featureUsageDaily: { deleteMany: ReturnType<typeof vi.fn> };
+  customerHealthScore: { deleteMany: ReturnType<typeof vi.fn> };
   loginAttempt: { deleteMany: ReturnType<typeof vi.fn> };
   loginEvent: { deleteMany: ReturnType<typeof vi.fn> };
   securityEvent: { deleteMany: ReturnType<typeof vi.fn> };
@@ -63,6 +73,7 @@ const mockPrisma = prisma as unknown as {
   astraConversation: { deleteMany: ReturnType<typeof vi.fn> };
   crossVerification: { deleteMany: ReturnType<typeof vi.fn> };
   sentinelPacket: { deleteMany: ReturnType<typeof vi.fn> };
+  scholarSearchHistory: { deleteMany: ReturnType<typeof vi.fn> };
   complianceEvidence: { updateMany: ReturnType<typeof vi.fn> };
   $transaction: ReturnType<typeof vi.fn>;
 };
@@ -116,6 +127,13 @@ describe("GET /api/cron/data-retention-cleanup", () => {
           { count: 10 }, // anonymized userAgent rows
           { count: 50 }, // deleted old analytics
         ])
+        // Transaction 2b: acquisition + rollup retention (NEW)
+        .mockResolvedValueOnce([
+          { count: 6 }, // pseudonymised acquisition rows (userId nulled)
+          { count: 9 }, // deleted old acquisition rows
+          { count: 8 }, // deleted old featureUsageDaily rows
+          { count: 2 }, // deleted stale customerHealthScore rows
+        ])
         // Transaction 3: security telemetry retention
         .mockResolvedValueOnce([
           { count: 7 }, // old loginAttempts
@@ -133,6 +151,11 @@ describe("GET /api/cron/data-retention-cleanup", () => {
       mockPrisma.astraMessage.count.mockResolvedValue(20);
       mockPrisma.astraConversation.deleteMany.mockResolvedValue({ count: 4 });
 
+      // Scholar search-history retention (Batch 5b)
+      mockPrisma.scholarSearchHistory.deleteMany.mockResolvedValue({
+        count: 0,
+      });
+
       // Evidence expiry
       mockPrisma.complianceEvidence.updateMany.mockResolvedValue({ count: 0 });
 
@@ -143,14 +166,20 @@ describe("GET /api/cron/data-retention-cleanup", () => {
       expect(body.deleted.expiredSessions).toBe(5);
       expect(body.deleted.expiredVerificationTokens).toBe(3);
       expect(body.deleted.oldAnalyticsEvents).toBe(50);
+      // New analytics-rollup + acquisition retention batch (privacy § 3(3)).
+      expect(body.deleted.anonymizedAcquisitionEvents).toBe(6);
+      expect(body.deleted.oldAcquisitionEvents).toBe(9);
+      expect(body.deleted.oldFeatureUsageDaily).toBe(8);
+      expect(body.deleted.oldCustomerHealthScores).toBe(2);
       expect(body.deleted.oldLoginAttempts).toBe(7);
       expect(body.deleted.oldLoginEvents).toBe(12);
       expect(body.deleted.oldSecurityEvents).toBe(3);
       expect(body.deleted.oldSecurityAuditLogs).toBe(4);
       expect(body.deleted.oldAstraConversations).toBe(4);
       expect(body.deleted.oldAstraMessages).toBe(20);
-      // totalDeleted = 5+3+50+7+12+3+4+4+20+1+2+0 = 111
-      expect(body.totalDeleted).toBe(111);
+      // totalDeleted = 5+3+50+(9+8+2)+7+12+3+4+4+20+1+2+0 = 130
+      // (anonymised-only counts — userAgent 10, acquisition 6 — are excluded)
+      expect(body.totalDeleted).toBe(130);
     });
   });
 

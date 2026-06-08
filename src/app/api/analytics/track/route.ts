@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
 import { z } from "zod";
 import { logger } from "@/lib/logger";
+import { isAnalyticsConsentString } from "@/lib/analytics-consent.server";
 
 // Schema for incoming tracking events
 const trackEventSchema = z.object({
@@ -62,17 +63,17 @@ export async function POST(request: Request) {
       }
     }
 
-    // GDPR: Check cookie consent (header from fetch, or embedded from sendBeacon)
-    // Analytics events should only be stored if the user has consented
+    // GDPR: Check cookie consent (header from fetch, or embedded from sendBeacon).
+    // Analytics events are only stored with analytics consent. The consent
+    // string is interpreted by the single shared resolver helper
+    // (isAnalyticsConsentString) so every server consumer reads consent the
+    // same way instead of re-deriving the "none"/"necessary" comparison
+    // independently. Behaviour is unchanged: same allowlist, same outcome.
     const rawBody = body as Record<string, unknown>;
     const cookieConsent =
       request.headers.get("x-cookie-consent") ||
       (typeof rawBody._consent === "string" ? rawBody._consent : undefined);
-    if (
-      !cookieConsent ||
-      cookieConsent === "none" ||
-      cookieConsent === "necessary"
-    ) {
+    if (!isAnalyticsConsentString(cookieConsent)) {
       // No analytics consent — only allow essential event types
       const essentialEvents = ["signup", "login"];
       if (!essentialEvents.includes(data.eventType)) {
