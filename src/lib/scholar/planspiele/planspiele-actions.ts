@@ -3,7 +3,12 @@ import { z } from "zod";
 import { revalidatePath } from "next/cache";
 import { getScholarAuth } from "@/lib/scholar/scholar-auth";
 import { checkRateLimit } from "@/lib/ratelimit";
-import { createSoloRun, submitArtifact, advancePhase } from "./runs.server";
+import {
+  createSoloRun,
+  submitArtifact,
+  advancePhase,
+  saveReflection,
+} from "./runs.server";
 
 /**
  * Server-action wrappers for Planspiele mutations. Mirrors saved-items-actions.ts:
@@ -94,6 +99,21 @@ export async function advancePhaseAction(
     expectedVersion,
     completed,
   );
+  if (ok) revalidatePath("/scholar/planspiele");
+  return { ok };
+}
+
+export async function saveReflectionAction(
+  runId: string,
+  text: string,
+): Promise<{ ok: boolean }> {
+  const userId = await gate();
+  if (!userId) return { ok: false };
+
+  const v = z.object({ runId: RunId, text: z.string().trim().max(5000) });
+  if (!v.safeParse({ runId, text }).success) return { ok: false };
+
+  const ok = await saveReflection(userId, runId, text);
   if (ok) revalidatePath("/scholar/planspiele");
   return { ok };
 }

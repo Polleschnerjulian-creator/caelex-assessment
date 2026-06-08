@@ -162,3 +162,26 @@ export async function advancePhase(
   });
   return true;
 }
+
+/** Ownership-gated reflective write-up (debrief). Appends a REFLECTION event. */
+export async function saveReflection(
+  userId: string,
+  runId: string,
+  text: string,
+): Promise<boolean> {
+  const owned = await prisma.scholarPlanspielRun.findFirst({
+    where: { id: runId, ownerUserId: userId },
+    select: { id: true },
+  });
+  if (!owned) return false;
+
+  await prisma.scholarPlanspielEvent.create({
+    data: {
+      runId,
+      actorUserId: userId,
+      kind: "REFLECTION",
+      payload: { text: String(text).slice(0, 5000) },
+    },
+  });
+  return true;
+}
