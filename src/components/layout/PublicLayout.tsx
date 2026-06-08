@@ -13,6 +13,10 @@ const EXCLUDED_ROUTES = [
   "/assure",
   "/atlas",
   "/pharos",
+  // Admin/Analytics Center: the (admin) AdminShell renders its own full-screen
+  // chrome, so suppress the public Navigation/Footer (which otherwise collide
+  // with the admin sidebar + topbar).
+  "/admin",
   "/login",
   "/signup",
   "/assessment",

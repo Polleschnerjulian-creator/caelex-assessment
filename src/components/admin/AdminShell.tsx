@@ -30,9 +30,9 @@ export interface AdminShellProps {
 export default function AdminShell({ userEmail, children }: AdminShellProps) {
   return (
     <div
-      className="caelex-v2 min-h-screen"
+      className="caelex-admin min-h-screen"
       style={{
-        background: "var(--bg-base, #07070c)",
+        background: "var(--bg-base, #f6f7f9)",
         color: "var(--text-primary)",
       }}
     >

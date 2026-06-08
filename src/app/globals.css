@@ -746,6 +746,55 @@ body:has(.scholar-surface) {
   }
 }
 
+/* ───────────────────────────────────────────────────────────────────────────
+   Caelex Admin / Analytics Center — LIGHT-first theme scope.
+   The (admin) shell wraps everything in `.caelex-admin`. Rather than the dark
+   `caelex-v2` glass, we override the design tokens to a clean light palette HERE,
+   so every var(--*)-styled admin component + page resolves light automatically,
+   and we re-skin the (dark-only) glass utilities as flat white panels within the
+   scope. One scope re-themes the whole surface — no per-component edits. A dark
+   toggle for /admin can be layered on later.
+   ─────────────────────────────────────────────────────────────────────────── */
+.caelex-admin {
+  --bg-base: #f6f7f9;
+  --surface: #ffffff;
+  --surface-raised: #ffffff;
+  --text-primary: #0f172a;
+  --text-secondary: #5b6573;
+  --text-tertiary: #94a3b8;
+  --border-default: #e6e8ec;
+  --separator-strong: #eceef1;
+  --accent-primary: #4a62e8;
+  --accent-primary-soft: #eef1fd;
+  --accent-danger: #ef4444;
+  color-scheme: light;
+}
+
+/* Force the document background light while an /admin page is mounted, so the
+   dark theme's navy <body> (dark:bg-[#0a0f1e]) can't bleed through on overscroll
+   or a paint gap (same technique as the Scholar shell above). */
+html:has(.caelex-admin),
+body:has(.caelex-admin) {
+  background-color: #f6f7f9 !important;
+}
+
+/* Re-skin the dark-only glass utilities as light panels inside /admin: flat
+   white surface, no backdrop blur, hairline border. `glass-elevated` adds a
+   soft shadow so chart/table cards lift above the flat KPI/control surfaces. */
+.caelex-admin .glass-surface,
+.caelex-admin .glass-elevated,
+.caelex-admin .glass-floating {
+  background: var(--surface) !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  border-color: var(--border-default) !important;
+}
+.caelex-admin .glass-elevated {
+  box-shadow:
+    0 1px 2px rgba(16, 24, 40, 0.04),
+    0 1px 3px rgba(16, 24, 40, 0.05) !important;
+}
+
 /* Override the global dark heading/text rules inside .landing-light */
 .dark .landing-light h1,
 .dark .landing-light h2,
