@@ -1,6 +1,8 @@
 "use client";
 
 import { useRef } from "react";
+import Link from "next/link";
+import { ArrowRight } from "lucide-react";
 import { motion, useInView } from "framer-motion";
 import type {
   ChangelogEntry,
@@ -71,10 +73,11 @@ export function ChangelogTimeline({ entries }: ChangelogTimelineProps) {
           return (
             <motion.article
               key={entry.week}
+              id={entry.week}
               initial={false}
               animate={isInView ? { opacity: 1, y: 0 } : {}}
               transition={{ duration: 0.4, delay: 0.05 + index * 0.06 }}
-              className="relative pl-10"
+              className="relative pl-10 scroll-mt-28"
             >
               {/* Timeline dot */}
               {isLead ? (
@@ -145,6 +148,17 @@ export function ChangelogTimeline({ entries }: ChangelogTimelineProps) {
                     </li>
                   ))}
                 </ul>
+
+                {/* Action link — public routes only */}
+                {entry.link ? (
+                  <Link
+                    href={entry.link.href}
+                    className="mt-5 inline-flex items-center gap-1.5 text-body font-medium text-[#111827] hover:underline underline-offset-4"
+                  >
+                    {entry.link.label}
+                    <ArrowRight className="w-3.5 h-3.5" aria-hidden="true" />
+                  </Link>
+                ) : null}
               </div>
             </motion.article>
           );

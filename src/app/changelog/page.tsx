@@ -7,7 +7,7 @@ import { ChangelogTimeline } from "./_components/ChangelogTimeline";
 export const metadata: Metadata = generateMetadata({
   title: "Changelog",
   description:
-    "What's new across Atlas, Comply, Passage, Scholar, Academy, and the Caelex platform — new capabilities shipped regularly.",
+    "New capabilities across Atlas, Comply, Passage, and Scholar — shipped regularly.",
   path: "/changelog",
   keywords: [
     "Caelex changelog",
@@ -38,8 +38,8 @@ export default function ChangelogPage() {
               Changelog
             </h1>
             <p className="text-title text-[#4B5563] leading-relaxed">
-              New capabilities, refinements, and infrastructure across the
-              Caelex platform — shipped regularly.
+              New capabilities across Atlas, Comply, Passage, and Scholar —
+              shipped regularly.
             </p>
           </div>
 
