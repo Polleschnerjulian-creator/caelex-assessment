@@ -9,63 +9,28 @@ interface FooterProps {
   theme?: "light" | "dark";
 }
 
+// Curated to the strongest, real compliance solutions — granular sub-features
+// and the Atlas/Trade product links (already surfaced in "Our Software") were
+// trimmed for a cleaner, premium footer.
 const solutionLinks = [
-  { label: "Legal Network", href: "/legal-network" },
   { label: "Regulatory Compliance", href: "/solutions/regulatory-compliance" },
   {
     label: "Authorization & Licensing",
     href: "/solutions/authorization-licensing",
   },
-  { label: "Risk Assessment", href: "/assessment" },
   { label: "Cybersecurity & NIS2", href: "/solutions/cybersecurity-nis2" },
-  { label: "CRA Product Classification", href: "/cra/classify" },
-  { label: "CRA Compliance", href: "/dashboard/modules/cra" },
+  { label: "Export Control (ITAR/EAR)", href: "/solutions/export-control" },
   { label: "Debris Mitigation", href: "/solutions/debris-mitigation" },
-  { label: "Environmental Impact", href: "/solutions/environmental-impact" },
   {
     label: "Insurance Requirements",
     href: "/solutions/insurance-requirements",
   },
   { label: "Spectrum & ITU Filing", href: "/solutions/spectrum-itu-filing" },
-  { label: "Export Control (ITAR/EAR)", href: "/solutions/export-control" },
   { label: "Document Generation", href: "/solutions/document-generation" },
-  { label: "Compliance Monitoring", href: "/solutions/compliance-monitoring" },
   { label: "NCA Submissions", href: "/solutions/nca-submissions" },
   { label: "Audit & Evidence", href: "/solutions/audit-evidence" },
-  { label: "Stakeholder Network", href: "/solutions/stakeholder-network" },
-  { label: "Mission Timeline Planning", href: "/solutions/mission-timeline" },
-  { label: "Incident Management", href: "/solutions/incident-management" },
-  {
-    label: "Authorization Workflow",
-    href: "/solutions/authorization-workflow",
-  },
-  {
-    label: "Registration Management",
-    href: "/solutions/registration-management",
-  },
-  {
-    label: "Compliance Forecasting",
-    href: "/solutions/compliance-forecasting",
-  },
-  { label: "Supply Chain Security", href: "/solutions/supply-chain-security" },
-  { label: "Satellite Tracking", href: "/solutions/satellite-tracking" },
-  { label: "Regulatory Arbitrage", href: "/solutions/regulatory-arbitrage" },
-  // Atlas — regulatory intelligence layer
-  { label: "Regulatory Atlas", href: "/atlas" },
-  { label: "Jurisdiction Comparator", href: "/atlas/comparator" },
-  { label: "Regulatory Updates Feed", href: "/atlas/updates" },
-  { label: "Landing Rights Database", href: "/atlas/landing-rights" },
-  // Was "/atlas/map" which 404s — that route doesn't exist. The
-  // jurisdictions page is the de-facto regulatory map (country tiles,
-  // regime status, comparator entry-point), which is what users
-  // expected to find at /atlas/map.
-  { label: "Jurisdiction Map", href: "/atlas/jurisdictions" },
-  { label: "Case Law Database", href: "/atlas/cases" },
-  // Trade — export-compliance engine
-  { label: "Caelex Trade", href: "/trade-access" },
-  { label: "Item Classification", href: "/trade-access#features" },
-  { label: "Counterparty Screening", href: "/trade-access#features" },
-  { label: "License Determination", href: "/trade-access#features" },
+  { label: "Risk Assessment", href: "/assessment" },
+  { label: "Legal Network", href: "/legal-network" },
 ];
 
 const industryLinks = [
@@ -77,31 +42,24 @@ const industryLinks = [
     href: "/industries/in-space-service-operators",
   },
   {
-    label: "Collision Avoidance Providers",
-    href: "/industries/collision-avoidance-providers",
-  },
-  {
-    label: "Positional Data Providers",
-    href: "/industries/positional-data-providers",
-  },
-  {
-    label: "Third Country Operators",
-    href: "/industries/third-country-operators",
-  },
-  {
     label: "Space Agencies & Government",
     href: "/industries/space-agencies-government",
   },
-  { label: "Space Hardware Manufacturers", href: "/cra/classify" },
   { label: "Defense & Security", href: "/industries/defense-security" },
   { label: "Legal & Consulting", href: "/industries/legal-consulting" },
   { label: "Space Startups", href: "/assessment" },
 ];
 
+// The 10 most impressive, genuinely-shipped capabilities (Astra AI, Sentinel
+// agents, Ephemeris orbital engine, Verity zero-knowledge, hash-chain audit).
 const capabilityLinks = [
   { label: "AI-Powered Analysis", href: "/capabilities/ai-powered-analysis" },
+  { label: "Autonomous Agents", href: "/blog/agentic-system" },
+  {
+    label: "Predictive Compliance",
+    href: "/capabilities/predictive-compliance",
+  },
   { label: "Real-Time Monitoring", href: "/capabilities/real-time-monitoring" },
-  { label: "Document Automation", href: "/capabilities/document-automation" },
   {
     label: "Cryptographic Attestation",
     href: "/capabilities/cryptographic-attestation",
@@ -110,47 +68,19 @@ const capabilityLinks = [
     label: "Zero-Knowledge Proofs",
     href: "/capabilities/zero-knowledge-proofs",
   },
-  { label: "Autonomous Agents", href: "/blog/agentic-system" },
   {
     label: "Orbital Mechanics Engine",
     href: "/capabilities/orbital-mechanics-engine",
   },
   {
-    label: "Predictive Compliance",
-    href: "/capabilities/predictive-compliance",
-  },
-  { label: "Multi-Jurisdiction Mapping", href: "/jurisdictions" },
-  {
     label: "Hash-Chain Audit Trail",
     href: "/capabilities/hash-chain-audit-trail",
   },
   { label: "Anomaly Detection", href: "/capabilities/anomaly-detection" },
-  { label: "Risk Classification", href: "/capabilities/risk-classification" },
-  {
-    label: "Natural Language Processing",
-    href: "/capabilities/natural-language-processing",
-  },
   {
     label: "Regulatory Graph Engine",
     href: "/capabilities/regulatory-graph-engine",
   },
-  { label: "Compliance Scoring", href: "/capabilities/compliance-scoring" },
-  {
-    label: "Automated Gap Analysis",
-    href: "/capabilities/automated-gap-analysis",
-  },
-  { label: "Space Product Taxonomy", href: "/cra/classify" },
-  {
-    label: "Cross-Regulation Mapping",
-    href: "/capabilities/cross-regulation-mapping",
-  },
-  { label: "Evidence Collection", href: "/capabilities/evidence-collection" },
-  {
-    label: "Deadline Cascade Modeling",
-    href: "/capabilities/deadline-cascade-modeling",
-  },
-  { label: "Scenario Simulation", href: "/capabilities/scenario-simulation" },
-  { label: "Multi-Tenant Encryption", href: "/security" },
 ];
 
 const documentLinks = [
@@ -260,8 +190,8 @@ export default function Footer({ theme = "dark" }: FooterProps) {
       : "text-white/60 hover:text-white hover:translate-x-1"
   } inline-block`;
 
-  const headingStyle = `text-micro uppercase tracking-[0.2em] mb-8 ${
-    isLight ? "text-[#86868b]" : "text-white/50"
+  const headingStyle = `text-[15px] font-medium tracking-[-0.01em] mb-6 ${
+    isLight ? "text-[#6e6e73]" : "text-white/70"
   }`;
 
   const separatorStyle = `w-full h-px ${isLight ? "bg-[#d2d2d7]" : "bg-white/[0.08]"}`;
