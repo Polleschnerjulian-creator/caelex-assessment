@@ -397,85 +397,106 @@ export default function Navigation({
     <>
       <nav
         className={`fixed top-0 left-0 right-0 z-50 ${showDarkText ? "" : "dark-section"}`}
-        style={{
-          // Palantir's exact glass bar: a 10% grey tint + a 10px blur frosts the
-          // content behind it (NOT an opaque white wash). Edge-to-edge, no border.
-          backgroundColor: "rgba(171, 171, 171, 0.1)",
-          backdropFilter: "blur(10px)",
-          WebkitBackdropFilter: "blur(10px)",
-        }}
         aria-label="Main navigation"
       >
-        {/* Edge-to-edge bar (Palantir geometry): full width, 30px side padding,
-            64px tall, transparent over the hero, faint white on scroll. */}
-        <div className="w-full px-6 md:px-[30px]">
-          {/* 70px glass bar (Palantir). Logo + button colours flip on scroll. */}
-          <div className="flex h-[70px] items-center justify-between">
-            {/* Logo — hard left */}
-            <Link
-              href="/"
-              className="transition-opacity duration-300 hover:opacity-70"
-              aria-label="Caelex — Go to homepage"
+        <div
+          className={
+            fullWidth
+              ? "w-full px-3 sm:px-4"
+              : "max-w-[1400px] mx-auto px-6 md:px-12"
+          }
+        >
+          <div className="flex items-center justify-between h-20">
+            {/* Glass Bar */}
+            <div
+              className={`flex items-center justify-between w-full ${fullWidth ? "rounded-2xl px-6 md:px-8" : "rounded-xl px-5"} py-2.5 transition-all duration-700 ${
+                ghost
+                  ? "bg-white/[0.08] backdrop-blur-xl backdrop-saturate-150"
+                  : isLight
+                    ? scrolled
+                      ? // Palantir-style near-invisible glass: the bar itself
+                        // almost disappears, so the logo + buttons read as
+                        // floating over the content instead of living inside
+                        // a framed container. No visible border, no shadow,
+                        // minimal blur, very low opacity — just enough to
+                        // tint the pixels behind the floating elements.
+                        //   bg-white/20 (~80% bleed-through, nearly see-through)
+                        //   backdrop-blur-sm = 4px (softens but doesn't smear)
+                        //   no border, no shadow, no inset highlight
+                        "bg-white/20 backdrop-blur-sm backdrop-saturate-150"
+                      : "bg-transparent"
+                    : scrolled
+                      ? "bg-white/[0.08] backdrop-blur-2xl backdrop-saturate-150 border border-white/[0.12] shadow-[0_8px_32px_rgba(0,0,0,0.4),inset_0_1px_0_rgba(255,255,255,0.08)]"
+                      : "bg-white/[0.04] backdrop-blur-xl border border-white/[0.06] shadow-[0_4px_24px_rgba(0,0,0,0.2),inset_0_1px_0_rgba(255,255,255,0.05)]"
+              }`}
             >
-              <Logo
-                size={28}
-                className={`transition-colors duration-300 ${showDarkText ? "text-[#1E1F2B]" : "text-white"}`}
-              />
-            </Link>
-
-            {/* Right cluster — wide filled CTA + outlined icon box (hard right) */}
-            <div className="flex items-center gap-3">
-              {/* Get Started — 210px wide, sharp, white-filled, dark border */}
+              {/* Logo */}
               <Link
-                href="/get-started"
-                style={{
-                  fontFamily: "var(--font-geist), system-ui, sans-serif",
-                }}
-                className="hidden h-10 w-[210px] items-center justify-center rounded-none border border-[#1E1F2B] bg-white text-[16px] font-normal text-[#1E1F2B] transition-colors duration-200 hover:bg-[#1E1F2B] hover:text-white sm:inline-flex"
+                href="/"
+                className="transition-opacity duration-300 hover:opacity-70"
+                aria-label="Caelex — Go to homepage"
               >
-                Get Started
+                <Logo
+                  size={34}
+                  className={`transition-colors duration-700 ${showDarkText ? "text-[#111827]" : "text-white"}`}
+                />
               </Link>
 
-              {/* Search + Hamburger — outlined cluster, adapts to hero vs light */}
-              <div
-                className={`flex h-10 items-center overflow-hidden rounded-none border transition-colors duration-300 ${
-                  showDarkText
-                    ? "border-[#1E1F2B] bg-white"
-                    : "border-white/60 bg-transparent"
-                }`}
-              >
-                <button
-                  ref={searchTriggerRef}
-                  onClick={() => {
-                    setSearchOpen(true);
-                    setMenuOpen(false);
-                  }}
-                  className={`flex h-full w-11 items-center justify-center transition-colors duration-200 ${
-                    showDarkText
-                      ? "text-[#1E1F2B] hover:bg-[#F3F4F6]"
-                      : "text-white hover:bg-white/10"
+              {/* Right Side: Get Started + Search/Hamburger */}
+              <div className="flex items-center gap-3">
+                {/* Get Started CTA — white bg, subtle border, soft radius */}
+                <Link
+                  href="/get-started"
+                  className={`hidden sm:inline-flex items-center justify-center h-10 px-5 text-[13px] font-medium tracking-wide rounded-lg transition-all duration-300 ${
+                    ghost
+                      ? "border border-white/30 bg-transparent text-white backdrop-blur-sm hover:bg-white/10"
+                      : "bg-white text-[#111827] border border-[#E5E7EB] hover:bg-[#F9FAFB]"
                   }`}
-                  aria-label="Search"
                 >
-                  <Search size={18} strokeWidth={1.75} aria-hidden="true" />
-                </button>
+                  Get Started
+                </Link>
+
+                {/* Search + Hamburger — white bg, subtle border, soft radius */}
                 <div
-                  className={`h-5 w-px ${showDarkText ? "bg-[#1E1F2B]/25" : "bg-white/40"}`}
-                />
-                <button
-                  ref={menuTriggerRef}
-                  onClick={() => setMenuOpen(!menuOpen)}
-                  className={`flex h-full w-11 items-center justify-center transition-colors duration-200 ${
-                    showDarkText
-                      ? "text-[#1E1F2B] hover:bg-[#F3F4F6]"
-                      : "text-white hover:bg-white/10"
+                  className={`flex items-center overflow-hidden rounded-lg ${
+                    ghost
+                      ? "border border-white/30 bg-transparent backdrop-blur-sm"
+                      : "bg-white border border-[#E5E7EB]"
                   }`}
-                  aria-label={menuOpen ? "Close menu" : "Open menu"}
-                  aria-expanded={menuOpen}
-                  aria-controls="nav-menu"
                 >
-                  <Menu size={18} strokeWidth={1.75} aria-hidden="true" />
-                </button>
+                  <button
+                    ref={searchTriggerRef}
+                    onClick={() => {
+                      setSearchOpen(true);
+                      setMenuOpen(false);
+                    }}
+                    className={`flex items-center justify-center w-10 h-10 transition-colors duration-200 ${
+                      ghost
+                        ? "text-white/80 hover:text-white hover:bg-white/10"
+                        : "text-[#6B7280] hover:text-[#111827] hover:bg-[#F3F4F6]"
+                    }`}
+                    aria-label="Search"
+                  >
+                    <Search size={16} strokeWidth={2} aria-hidden="true" />
+                  </button>
+                  <div
+                    className={`w-px h-5 ${ghost ? "bg-white/25" : "bg-[#E5E7EB]"}`}
+                  />
+                  <button
+                    ref={menuTriggerRef}
+                    onClick={() => setMenuOpen(!menuOpen)}
+                    className={`flex items-center justify-center w-10 h-10 transition-colors duration-200 ${
+                      ghost
+                        ? "text-white/80 hover:text-white hover:bg-white/10"
+                        : "text-[#6B7280] hover:text-[#111827] hover:bg-[#F3F4F6]"
+                    }`}
+                    aria-label={menuOpen ? "Close menu" : "Open menu"}
+                    aria-expanded={menuOpen}
+                    aria-controls="nav-menu"
+                  >
+                    <Menu size={16} strokeWidth={2} aria-hidden="true" />
+                  </button>
+                </div>
               </div>
             </div>
           </div>
