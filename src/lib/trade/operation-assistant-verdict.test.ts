@@ -1,9 +1,11 @@
 import { describe, it, expect } from "vitest";
 import {
   deriveVerdict,
+  deriveDeMinimisExplained,
   type LineAssessment,
   type ScreeningAssessment,
 } from "./operation-assistant-verdict";
+import { isFullyExplained } from "@/lib/comply-v2/trade/explained-result";
 import type { ClassificationResult } from "@/lib/trade/classification/classify-item";
 
 function classification(over: {
@@ -51,6 +53,7 @@ function classification(over: {
       nextSteps: [],
       disclaimer: "",
     },
+    corpusMatches: [],
   };
 }
 
@@ -223,6 +226,126 @@ describe("deriveVerdict - review for any gap (never a false green)", () => {
     expect(r.verdict).toBe("REVIEW");
     expect(r.steps.find((s) => s.step === "jurisdiction")!.status).toBe("gap");
   });
+});
+
+describe("deriveDeMinimisExplained - G9 de-minimis honesty", () => {
+  /** Build a ClassificationResult carrying only a de-minimis outcome. */
+  function dm(over: {
+    outcome: string;
+    pct?: number;
+    threshold?: number | null;
+  }): ClassificationResult {
+    return {
+      triggerEval: {} as never,
+      deMinimis: {
+        outcome: over.outcome,
+        appliedThresholdPercent:
+          over.threshold === undefined ? 25 : over.threshold,
+        usControlledContentPercent: over.pct ?? 5,
+        fdprFlag: false,
+        riskLevel: "LOW",
+        reasons: [],
+        recommendations: [],
+        disclaimer: "",
+      } as never,
+      licenseDetermination: {} as never,
+      corpusMatches: [],
+    } as ClassificationResult;
+  }
+
+  it("emits a fully-explained envelope in every case (renderable)", () => {
+    const outcomes = [
+      "DE_MINIMIS_ELIGIBLE",
+      "DE_MINIMIS_EXCEEDED",
+      "FDPR_TRIGGERED",
+      "ITAR_CONTROLLED",
+      "EMBARGOED_DESTINATION",
+      "REQUIRES_LEGAL_REVIEW",
+    ];
+    for (const o of outcomes) {
+      const r = deriveDeMinimisExplained([dm({ outcome: o })]);
+      expect(isFullyExplained(r)).toBe(true);
+    }
+    // No US-content declared at all (no deMinimis on any line).
+    const none = deriveDeMinimisExplained([
+      { ...lineNoDm() } as unknown as ClassificationResult,
+    ]);
+    expect(isFullyExplained(none)).toBe(true);
+  });
+
+  it("a BELOW-THRESHOLD result on a SELF-DECLARED number is UNVERIFIED — never a confident green", () => {
+    const r = deriveDeMinimisExplained(
+      [dm({ outcome: "DE_MINIMIS_ELIGIBLE", pct: 5, threshold: 25 })],
+      "SELF_DECLARED",
+    );
+    expect(r.confidence).toBe("UNVERIFIED");
+    expect(r.value.outcome).toBe("WITHIN_THRESHOLD");
+    expect(r.why).toMatch(/selbst-deklariert/i);
+    expect(r.why).toMatch(/Stückliste/);
+  });
+
+  it("a self-declared below-threshold result carries the applied threshold + declared pct in its value", () => {
+    const r = deriveDeMinimisExplained(
+      [dm({ outcome: "DE_MINIMIS_ELIGIBLE", pct: 8, threshold: 25 })],
+      "SELF_DECLARED",
+    );
+    expect(r.value.appliedThresholdPercent).toBe(25);
+    expect(r.value.usControlledContentPercent).toBe(8);
+    expect(r.value.provenance).toBe("SELF_DECLARED");
+  });
+
+  it("a BOM-rollup below-threshold result may carry a determined (LOW) band — still never UNVERIFIED-by-provenance", () => {
+    const r = deriveDeMinimisExplained(
+      [dm({ outcome: "DE_MINIMIS_ELIGIBLE", pct: 5, threshold: 25 })],
+      "BOM_ROLLUP",
+    );
+    expect(r.confidence).toBe("LOW");
+    expect(r.value.provenance).toBe("BOM_ROLLUP");
+    expect(r.sources.length).toBeGreaterThan(0);
+  });
+
+  it("ITAR_CONTROLLED is a determined block (0% rule), independent of provenance", () => {
+    const r = deriveDeMinimisExplained(
+      [dm({ outcome: "ITAR_CONTROLLED" })],
+      "SELF_DECLARED",
+    );
+    expect(r.confidence).toBe("HIGH");
+    expect(r.value.outcome).toBe("ITAR_CONTROLLED");
+    expect(r.value.appliedThresholdPercent).toBe(0);
+  });
+
+  it("the most-blocking outcome governs across lines (ITAR beats eligible)", () => {
+    const r = deriveDeMinimisExplained([
+      dm({ outcome: "DE_MINIMIS_ELIGIBLE", pct: 5 }),
+      dm({ outcome: "ITAR_CONTROLLED" }),
+    ]);
+    expect(r.value.outcome).toBe("ITAR_CONTROLLED");
+  });
+
+  it("no US-content declared on any line → UNVERIFIED (absence is not a clearance)", () => {
+    const r = deriveDeMinimisExplained([
+      lineNoDm() as unknown as ClassificationResult,
+    ]);
+    expect(r.confidence).toBe("UNVERIFIED");
+    expect(r.value.outcome).toBe("NO_US_CONTENT_DECLARED");
+    expect(r.why).toMatch(/keine Freigabe/i);
+  });
+
+  it("deriveVerdict always attaches a renderable de-minimis envelope (default self-declared)", () => {
+    const r = deriveVerdict([line()], clearScreen);
+    expect(r.deMinimisExplained).toBeDefined();
+    expect(isFullyExplained(r.deMinimisExplained)).toBe(true);
+  });
+
+  /** A ClassificationResult with NO de-minimis result (no US-content declared). */
+  function lineNoDm(): ClassificationResult {
+    return {
+      triggerEval: {} as never,
+      deMinimis: null,
+      licenseDetermination: {} as never,
+      corpusMatches: [],
+    } as ClassificationResult;
+  }
 });
 
 describe("deriveVerdict - shape", () => {

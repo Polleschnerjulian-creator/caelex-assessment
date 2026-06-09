@@ -28,6 +28,7 @@ import {
   FileSignature,
   AlertOctagon,
   Sparkles,
+  KeyRound,
 } from "lucide-react";
 import { TradeTable, type TradeColumn } from "../../_components/TradeTable";
 import { OperationLinesPanel } from "../_components/OperationLinesPanel";
@@ -49,6 +50,10 @@ import { VerdictPanel } from "../new/_components/VerdictPanel";
 //   CustomsStagePanel    (Lane 3) props { operationId: string; status: string }
 import { WhyThisDossierButton } from "@/components/trade/WhyThisDossierButton";
 import { CustomsStagePanel } from "@/components/trade/CustomsStagePanel";
+// Lane C (P2) — recordkeeping hand-off + post-hoc VSD prompt. Self-contained;
+// fetches its own data from { operationId } and returns null unless the
+// operation is EXECUTED or a post-shipment VSD obligation exists.
+import { VsdRecordkeepingPanel } from "@/components/trade/VsdRecordkeepingPanel";
 
 interface RiskFactorView {
   key: string;
@@ -307,6 +312,14 @@ export default function OperationDetailPage({
             {/* Lane 2 — "Warum dieses Ergebnis? — Dossier". Self-contained;
                 fetches its own data from { operationId }. */}
             <WhyThisDossierButton operationId={op.id} />
+            {/* Lane C (P2) — the tamper-evident hash-chain audit-trail viewer. */}
+            <Link
+              href={`/trade/operations/${op.id}/audit-trail`}
+              className="inline-flex items-center gap-1.5 rounded-lg border border-trade-border bg-trade-bg-panel px-3 py-2 text-[13px] text-trade-text-primary transition hover:bg-trade-hover"
+              title="Manipulationsgeschützter Audit-Trail (SHA-256-Hash-Kette)"
+            >
+              <KeyRound className="h-4 w-4 text-trade-accent" /> Audit-Trail
+            </Link>
           </div>
         </div>
         <div className="shrink-0 text-right">
@@ -377,6 +390,17 @@ export default function OperationDetailPage({
           </ul>
         </div>
       )}
+
+      {/* Lane C (P2) — post-shipment recordkeeping hand-off + post-hoc VSD
+          prompt. Mounted HIGH so a counterparty that flipped to a sanctions
+          hit AFTER execution surfaces a LOUD red VSD alert at eye level. The
+          panel is self-contained: it fetches its own VSD obligations and
+          renders nothing unless the operation is EXECUTED or an open
+          post-shipment VSD exists. Caelex PREPARES + INFORMS — never files,
+          never auto-clears a post-hoc hit. */}
+      <div className="mb-6">
+        <VsdRecordkeepingPanel operationId={op.id} status={op.status} />
+      </div>
 
       {/* Z16 — OFAC 2026 Sham-Transaction Doctrine detector chip. Pure
           read-only surface; clicking "Details" expands red-flags +

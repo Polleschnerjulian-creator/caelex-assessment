@@ -140,6 +140,21 @@ export function listLabel(list: TradeSanctionsList | string): string {
   return LIST_LABEL[list] ?? String(list).replace(/_/g, " ");
 }
 
+/**
+ * Derive a parseable ISO `YYYY-MM-DD` "Stand:" date from a snapshot's
+ * `fetchedAt` so the operator can SEE how current the screened sanctions data
+ * is (rendered as the `currentAsOf` on the source). Purely additive: returns
+ * `undefined` for a missing or unparseable timestamp, in which case the source's
+ * `currentAsOf` is left unset and the renderer simply omits the "Stand:" line.
+ * It never affects the verdict, confidence band, or completeness guard.
+ */
+function asOfDate(fetchedAt: string | undefined): string | undefined {
+  if (!fetchedAt) return undefined;
+  const ms = Date.parse(fetchedAt);
+  if (Number.isNaN(ms)) return undefined;
+  return new Date(ms).toISOString().slice(0, 10);
+}
+
 // ─── The builder: ScreeningVerdict → ExplainedResult<ScreeningVerdict> ─────
 
 /**
@@ -191,6 +206,8 @@ export function buildScreeningExplained(
         label: listLabel(s.list),
         citation: LIST_AUTHORITY_CITATION[s.list] ?? listLabel(s.list),
         listVersion: `STALE — ${s.upstreamVersion ?? s.snapshotHash.slice(0, 12)} · ${s.ageHours}h old (TTL ${maxAgeHours}h)`,
+        // "Stand:" = when this (stale) snapshot was actually fetched.
+        currentAsOf: asOfDate(s.fetchedAt),
       })),
     ];
 
@@ -235,6 +252,8 @@ export function buildScreeningExplained(
         label: listLabel(c.list),
         citation: LIST_AUTHORITY_CITATION[c.list] ?? listLabel(c.list),
         listVersion: c.upstreamVersion ?? c.snapshotHash.slice(0, 12),
+        // "Stand:" = when this consulted snapshot was fetched.
+        currentAsOf: asOfDate(c.fetchedAt),
       })),
     ];
     // Dedupe by label, keep first (a hit-list cite wins over the corpus cite).
@@ -276,6 +295,8 @@ export function buildScreeningExplained(
     label: listLabel(c.list),
     citation: LIST_AUTHORITY_CITATION[c.list] ?? listLabel(c.list),
     listVersion: c.upstreamVersion ?? c.snapshotHash.slice(0, 12),
+    // "Stand:" = when this consulted snapshot was fetched.
+    currentAsOf: asOfDate(c.fetchedAt),
   }));
 
   return explainedResult({

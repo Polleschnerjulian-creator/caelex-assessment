@@ -379,6 +379,15 @@ export function ExplainedPanel<T>({
                             List version / as-of: {s.listVersion}
                           </div>
                         ) : null}
+                        {s.currentAsOf ? (
+                          <div
+                            data-testid="explained-source-asof"
+                            className="mt-0.5 text-[10px] uppercase tracking-[0.10em]"
+                            style={{ color: "rgba(255, 255, 255, 0.4)" }}
+                          >
+                            Stand: {s.currentAsOf}
+                          </div>
+                        ) : null}
                         {s.url ? (
                           <a
                             href={s.url}

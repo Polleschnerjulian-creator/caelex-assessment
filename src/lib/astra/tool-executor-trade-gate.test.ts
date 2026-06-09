@@ -31,6 +31,15 @@ const { mockLogAuditEvent, mockPrisma, mockExecuteAstraAction } = vi.hoisted(
         findFirst: vi.fn().mockResolvedValue(null),
         findMany: vi.fn().mockResolvedValue([]),
       },
+      // P2 (Lane A): the propose branch now PERSISTS a PENDING AstraProposal
+      // before returning the envelope. The proposal service calls
+      // prisma.astraProposal.create — mock it so the deflection persists and
+      // the envelope still reaches the model.
+      astraProposal: {
+        create: vi
+          .fn()
+          .mockResolvedValue({ id: "prop-1", expiresAt: new Date() }),
+      },
     },
     // If the gate ever leaks a mutating tool through to the bridge,
     // this spy lets us assert it was NOT called.
@@ -100,7 +109,18 @@ describe("executeTool — mutating trade tool routes to a proposal", () => {
     expect(data.committed).toBe(false);
     expect(data.tool).toBe("run_trade_screening");
 
-    // No write path was reached.
+    // P2: the deflection PERSISTED a PENDING AstraProposal — the envelope is
+    // now backed by a durable row a human applies (not an evaporating object).
+    expect(mockPrisma.astraProposal.create).toHaveBeenCalledTimes(1);
+    const createArg = mockPrisma.astraProposal.create.mock.calls[0][0] as {
+      data: Record<string, unknown>;
+    };
+    expect(createArg.data.status ?? "PENDING").toBe("PENDING");
+    expect(createArg.data.actionName).toBe("run_trade_screening");
+    expect(createArg.data.userId).toBe("user-1");
+    expect(createArg.data.itemId).toBeNull();
+
+    // No write path was reached (the underlying effect never ran).
     expect(mockExecuteAstraAction).not.toHaveBeenCalled();
   });
 
@@ -134,6 +154,9 @@ describe("executeTool — auditor is read-only at the tool layer", () => {
     expect(result.success).toBe(false);
     expect(result.error).toMatch(/auditor/i);
     expect(mockExecuteAstraAction).not.toHaveBeenCalled();
+    // P2: an auditor can do NEITHER — denied BEFORE the proposal path, so no
+    // AstraProposal is ever persisted for a read-only persona.
+    expect(mockPrisma.astraProposal.create).not.toHaveBeenCalled();
   });
 
   it("denies ALL explicitly-mutating trade tools for an auditor", async () => {

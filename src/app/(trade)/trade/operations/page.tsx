@@ -30,6 +30,7 @@ import { Term } from "../_components/Term";
 import { buildCsv, downloadCsv } from "@/lib/trade/csv-export";
 import { useToast } from "@/components/ui/Toast";
 import { TradeTable, type TradeColumn } from "../_components/TradeTable";
+import { OperationTeachingSpine } from "./_components/OperationTeachingSpine";
 import {
   Plus,
   Sparkles,
@@ -430,6 +431,13 @@ export default function OperationsListPage() {
           }}
         />
       )}
+
+      {/* Persistent six-stage teaching spine — shows where the org's operations
+          sit across the lifecycle and, for the selected stage, WHAT THE LAW
+          REQUIRES / WHO DECIDES / WHAT'S NEXT through the explanation envelope.
+          Pure presentation: reads the already-loaded rows, no new fetch, no
+          mutation. Rendered once rows have loaded so the counts are real. */}
+      {!loading && <OperationTeachingSpine operations={operations} />}
 
       {/* TradeTable — owns toolbar (search + filter pills), sticky sortable
           headers, selection checkboxes, and BulkActionsBar. */}

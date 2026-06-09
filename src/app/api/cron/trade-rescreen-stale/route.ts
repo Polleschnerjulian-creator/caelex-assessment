@@ -33,6 +33,7 @@ import { timingSafeEqual } from "node:crypto";
 import { logger } from "@/lib/logger";
 import { prisma } from "@/lib/prisma";
 import { screenParty } from "@/lib/comply-v2/trade/screening/screen-party.server";
+import { raiseVsdForPostHocFlip } from "@/lib/trade/vsd-posthoc-flip.server";
 
 export const runtime = "nodejs";
 // Vercel cron functions can run up to 300s on Hobby, 900s on Pro.
@@ -62,6 +63,12 @@ interface RescreenItemResult {
   decision?: string;
   cascadeHit?: boolean;
   hitCount?: number;
+  /**
+   * Lane C (P2) — number of post-hoc VSDs raised because this party flipped
+   * from a non-hit to a hit AFTER one or more of its operations had already
+   * shipped (EXECUTED). 0 for the common case.
+   */
+  postHocVsdsRaised?: number;
   elapsedMs: number;
   error?: string;
 }
@@ -97,7 +104,15 @@ export async function GET(request: Request) {
           { screeningStatus: "STALE" },
         ],
       },
-      select: { id: true, legalName: true, organizationId: true },
+      // Lane C (P2): capture screeningStatus BEFORE the re-screen so we can
+      // detect a CLEAR/STALE/NOT_SCREENED → hit FLIP and raise a post-hoc VSD
+      // for any already-shipped operation on this party.
+      select: {
+        id: true,
+        legalName: true,
+        organizationId: true,
+        screeningStatus: true,
+      },
       // Order by oldest first — gives the longest-stale parties priority
       // if we hit maxDuration.
       orderBy: [{ lastScreenedAt: { sort: "asc", nulls: "first" } }],
@@ -107,25 +122,53 @@ export async function GET(request: Request) {
       take: 5000,
     });
 
-    logger.info(
-      {
-        cutoff: cutoff.toISOString(),
-        candidateCount: stale.length,
-        staleAfterDays: STALE_AFTER_DAYS,
-      },
-      "trade-rescreen-stale: starting batch",
-    );
+    logger.info("trade-rescreen-stale: starting batch", {
+      cutoff: cutoff.toISOString(),
+      candidateCount: stale.length,
+      staleAfterDays: STALE_AFTER_DAYS,
+    });
 
     const results: RescreenItemResult[] = [];
     let okCount = 0;
     let failCount = 0;
     let cascadeHitCount = 0;
     let confirmedCount = 0;
+    // Lane C (P2): post-hoc VSD tally across the batch.
+    let postHocFlipCount = 0;
+    let postHocVsdCount = 0;
 
     for (const party of stale) {
       const itemStart = Date.now();
       try {
+        // Prior screening status captured BEFORE the re-screen — the LHS of a
+        // potential CLEAR→hit flip.
+        const priorStatus = party.screeningStatus;
         const result = await screenParty(party.id);
+
+        // ── Post-hoc flip detection (Lane C) ──────────────────────────────
+        // If this re-screen flipped a previously-non-hit party to a hit, and
+        // any of its operations already EXECUTED, raise a VSD + notification.
+        // Best-effort: a VSD failure must never abort the screening batch — the
+        // re-screen itself (and its audit row) already persisted above.
+        let postHocVsdsRaised = 0;
+        try {
+          const flip = await raiseVsdForPostHocFlip({
+            partyId: party.id,
+            priorStatus,
+            newDecision: result.summary.decision,
+            organizationId: party.organizationId,
+          });
+          if (flip.flipped) postHocFlipCount++;
+          postHocVsdsRaised = flip.vsdsCreated.length;
+          postHocVsdCount += postHocVsdsRaised;
+        } catch (flipErr) {
+          logger.error(
+            "trade-rescreen-stale: post-hoc VSD flip detection failed (screening persisted)",
+            flipErr,
+            { partyId: party.id },
+          );
+        }
+
         const item: RescreenItemResult = {
           partyId: party.id,
           partyName: party.legalName,
@@ -133,6 +176,7 @@ export async function GET(request: Request) {
           decision: result.summary.decision,
           cascadeHit: result.summary.cascadeHit,
           hitCount: result.summary.hitCount,
+          postHocVsdsRaised,
           elapsedMs: Date.now() - itemStart,
         };
         results.push(item);
@@ -149,10 +193,9 @@ export async function GET(request: Request) {
           elapsedMs: Date.now() - itemStart,
         });
         failCount++;
-        logger.error(
-          { partyId: party.id, err: message },
-          "trade-rescreen-stale: screening failed",
-        );
+        logger.error("trade-rescreen-stale: screening failed", err, {
+          partyId: party.id,
+        });
       }
     }
 
@@ -164,9 +207,13 @@ export async function GET(request: Request) {
       failCount,
       newCascadeHits: cascadeHitCount,
       newPotentialMatches: confirmedCount,
+      // Lane C (P2): parties that flipped non-hit → hit this run, and the
+      // post-hoc VSDs raised for their already-shipped operations.
+      postHocFlips: postHocFlipCount,
+      postHocVsdsRaised: postHocVsdCount,
     };
 
-    logger.info(summary, "trade-rescreen-stale: completed");
+    logger.info("trade-rescreen-stale: completed", summary);
 
     return NextResponse.json({
       ...summary,
@@ -175,7 +222,7 @@ export async function GET(request: Request) {
     });
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
-    logger.error({ err: message }, "trade-rescreen-stale: cron failed");
+    logger.error("trade-rescreen-stale: cron failed", err);
     return NextResponse.json(
       { error: "Internal error", message },
       { status: 500 },

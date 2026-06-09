@@ -131,6 +131,13 @@ export type AuditAction =
   | "comply_v2_item_evidence_attached"
   | "comply_v2_proposal_approved"
   | "comply_v2_proposal_rejected"
+  // Caelex Passage (Trade) P2 — Astra write-gated proposal queue.
+  // A mutating Trade tool deflected by the engine gate is persisted as a
+  // PENDING AstraProposal; a NAMED HUMAN applies or rejects it (the AI
+  // never auto-commits an export-control decision). `_applied` records the
+  // human as decision-of-record; `_rejected` records the no-effect decline.
+  | "trade_astra_proposal_applied"
+  | "trade_astra_proposal_rejected"
   | "comply_v2_triage_acknowledged"
   | "comply_v2_triage_dismissed"
   | "comply_v2_action_executed"

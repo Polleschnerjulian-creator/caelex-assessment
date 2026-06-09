@@ -80,6 +80,21 @@ export interface ExplainSource {
    * because some citations are version-stable statute references.
    */
   listVersion?: string;
+  /**
+   * Machine-readable "current as of" date (ISO date) for the reference data
+   * this source was drawn from — e.g. the latest incorporated regulation date
+   * for a control list, or the real snapshot fetch date for a sanctions list.
+   *
+   * Purely ADDITIVE + informational: it tells the operator HOW CURRENT the
+   * underlying reference data is, so a stale list is visible rather than
+   * silently trusted. It NEVER affects the determination, the confidence band,
+   * or the completeness guard — `isExplained()` does not read it. All other
+   * lanes/files leave it unset; the renderer shows it only when present.
+   *
+   * Distinct from `listVersion` (a free-form version label / snapshot hash):
+   * `currentAsOf` is specifically a parseable ISO date for "Stand:" display.
+   */
+  currentAsOf?: string;
   /** Optional deep link to the source text or authority portal. */
   url?: string;
 }

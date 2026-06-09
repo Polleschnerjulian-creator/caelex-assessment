@@ -98,6 +98,25 @@ export async function upsertSnapshot(
 }
 
 /**
+ * Surface a snapshot's "current as of" date as an ISO date string (YYYY-MM-DD).
+ *
+ * G12 — the screening engine sets `ExplainSource.currentAsOf` from this so the
+ * operator sees HOW CURRENT the sanctions reference data is. The as-of is the
+ * real snapshot fetch time (`fetchedAt`); a missing/undefined snapshot returns
+ * undefined (fail-visible — no false "current" claim). Purely informational —
+ * it never affects a screening determination or the fail-closed logic.
+ *
+ * Pure: derives from the row already in hand; issues no query.
+ */
+export function snapshotAsOf(
+  snapshot: Pick<TradeSanctionsSnapshot, "fetchedAt"> | null | undefined,
+): string | undefined {
+  if (!snapshot?.fetchedAt) return undefined;
+  // ISO date portion only (the snapshot granularity operators care about).
+  return new Date(snapshot.fetchedAt).toISOString().slice(0, 10);
+}
+
+/**
  * Read the most recent snapshot for a given list. Returns null if no
  * snapshot has ever been ingested (cron hasn't run yet for this list).
  */

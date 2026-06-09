@@ -43,6 +43,10 @@ import {
   explainedResult,
   unverifiedResult,
 } from "./explained-result";
+// Pure, dependency-free data module (no server-only code, no imports) — safe to
+// pull into this client-consumed wrapper. Provides the "Stand:" date for the
+// classification reference corpus.
+import { CONTROL_LIST_AS_OF } from "./classification/control-list-cross-walk";
 
 /**
  * The machine-readable `value` carried by an explained classification. A
@@ -232,6 +236,9 @@ function sourceFromEntry(entry: {
     label: `${entry.regime} — ${entry.canonicalId} (${entry.title})`,
     citation: entry.citation,
     listVersion: version,
+    // "Stand:" — how current the control-list corpus this entry was drawn from
+    // is. Purely informational; never affects the determination or confidence.
+    currentAsOf: CONTROL_LIST_AS_OF,
   };
 }
 

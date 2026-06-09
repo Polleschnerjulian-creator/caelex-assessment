@@ -13,6 +13,8 @@ import {
   Info,
 } from "lucide-react";
 import { ClassificationPanel } from "@/components/trade/ClassificationPanel";
+import { ExplainedPanel } from "@/components/trade/ExplainedPanel";
+import type { ExplainedResult } from "@/lib/comply-v2/trade/explained-result";
 import {
   LIABILITY_COPY,
   type EngineDetermination,
@@ -48,6 +50,14 @@ interface Assessment {
   steps: StepResult[];
   pendenzen: Pendenz[];
   lines: LineView[];
+  /**
+   * G9 — de-minimis result in the explanation envelope. Carries the applied
+   * § 734.4 threshold + the PROVENANCE of the US-content input. Rendered
+   * through <ExplainedPanel>, which withholds an incomplete envelope. Optional
+   * defensively (older cached responses may predate the field); when present
+   * it is shown beneath the jurisdiction step.
+   */
+  deMinimisExplained?: ExplainedResult<unknown>;
 }
 
 const STEP_LABEL: Record<string, string> = {
@@ -303,6 +313,21 @@ export function VerdictPanel({ operationId }: { operationId: string }) {
           </li>
         ))}
       </ol>
+
+      {/* G9 — de-minimis honesty. The jurisdiction step above gives a one-line
+          summary; this panel surfaces the FULL explanation envelope: the applied
+          § 734.4 threshold (25% std / 10% E:1-E:2 / 0% ITAR) AND the provenance
+          of the US-content input. When that input is operator self-declared
+          (the operation default, no audited BOM), a "below threshold" outcome
+          is shown as UNVERIFIED — never a confident green — with the plain
+          "US-Anteil selbst-deklariert" caveat. <ExplainedPanel> withholds an
+          incomplete envelope, so this can never render a black-box de-minimis. */}
+      {assessment.deMinimisExplained && (
+        <ExplainedPanel
+          result={assessment.deMinimisExplained}
+          kind="De-minimis · US-Anteil (15 CFR § 734.4)"
+        />
+      )}
 
       {/* "Was jetzt?" — surface the discarded licenseDetermination: WHY +
           likely licence + docs + Antrag-vorbereiten (REVIEW) / stop (BLOCKED).

@@ -343,6 +343,51 @@ export async function executeTool(
       };
     }
     if (gate.kind === "propose") {
+      // P2 (Lane A): PERSIST the deflection as a PENDING AstraProposal so the
+      // human has a durable queue to review + apply, and the model run is
+      // recorded for the EU-AI-Act audit trail. The in-memory
+      // TradeToolGateProposal envelope used to evaporate at request end;
+      // now it is backed by a row a named human applies.
+      //
+      // FAIL CLOSED: if persistence fails, we DO NOT tell the model the
+      // proposal was queued — that would be a silent loss masquerading as
+      // success. We return success:false with an honest error so the model
+      // surfaces "I could not queue that proposal" instead of "done".
+      const { createTradeProposal } =
+        await import("@/lib/trade/astra-proposal-service.server");
+      const persisted = await createTradeProposal({
+        userId: userContext.userId,
+        toolName: toolCall.name,
+        input: toolCall.input,
+        reason: gate.reason,
+        modelName: process.env.ASTRA_MODEL || "claude-sonnet-4-6",
+      });
+
+      if (!persisted) {
+        await logAuditEvent({
+          action: "ASTRA_TOOL_ERROR",
+          entityType: "astra",
+          entityId: toolCall.id,
+          userId: userContext.userId,
+          metadata: {
+            organizationId: userContext.organizationId,
+            toolName: toolCall.name,
+            gate: "propose",
+            error: "proposal-persistence-failed",
+            executionTimeMs: Date.now() - startTime,
+          },
+        });
+        return {
+          toolCallId: toolCall.id,
+          success: false,
+          error:
+            `The "${toolCall.name}" action could not be queued as a proposal ` +
+            `right now (a persistence error occurred). Nothing was changed. ` +
+            `Please ask the operator to retry, or perform the action manually ` +
+            `from the relevant Trade page.`,
+        };
+      }
+
       const proposal = buildTradeProposal(
         toolCall.name,
         toolCall.input,
@@ -357,17 +402,19 @@ export async function executeTool(
           organizationId: userContext.organizationId,
           toolName: toolCall.name,
           gate: "propose",
+          proposalId: persisted.proposalId,
           executionTimeMs: Date.now() - startTime,
           success: true,
         },
       });
       // success:true so the proposal envelope reaches the model intact;
       // `committed: false` inside the envelope tells the model (and user)
-      // that nothing was written.
+      // that nothing was written. The `proposalId` lets the model reference
+      // the queued item ("I queued proposal … for your review").
       return {
         toolCallId: toolCall.id,
         success: true,
-        data: proposal,
+        data: { ...proposal, proposalId: persisted.proposalId },
       };
     }
 

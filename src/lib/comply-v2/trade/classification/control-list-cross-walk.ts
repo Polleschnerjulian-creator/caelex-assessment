@@ -266,6 +266,24 @@ export interface ControlListEntry {
 //   - 9A004 propulsion sub-paragraph
 //   - DE AL 9xx national (lawful-intercept) for cross-walk demonstration
 
+/**
+ * Machine-readable "current as of" date (ISO) for the entire cross-walk.
+ *
+ * G12 — reflects the LATEST regulation incorporated into the seed corpus:
+ * Delegated Reg. (EU) 2025/2003 (the 2025 EU Annex I revision, in force
+ * 2025-11-15), alongside the BIS IFR of 23 Oct 2024 (AL/CCL/USML revisions)
+ * already reflected in the entries below. 2025-11-15 is the most recent dated
+ * source cited in this file (`validFrom` of the 2025/2003-amended entries).
+ *
+ * Surface this on classification ExplainSource entries via `currentAsOf` so the
+ * operator can see HOW CURRENT the reference data is. Purely informational — it
+ * does NOT alter any determination, confidence band, or order-of-review logic.
+ *
+ * When a newer regulation is incorporated into the seed, bump this date to that
+ * regulation's effective date.
+ */
+export const CONTROL_LIST_AS_OF = "2025-11-15";
+
 export const CONTROL_LIST_CROSS_WALK: ControlListEntry[] = [
   // ═══════════════════════════════════════════════════════════════
   // Remote-sensing spacecraft (the canonical USML/CCL boundary)
