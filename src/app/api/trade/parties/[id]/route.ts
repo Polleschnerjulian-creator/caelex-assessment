@@ -93,7 +93,7 @@ export async function GET(
 
     return NextResponse.json({ party });
   } catch (err) {
-    logger.error({ err }, "GET /api/trade/parties/[id] failed");
+    logger.error("GET /api/trade/parties/[id] failed", err);
     return NextResponse.json({ error: "Internal error" }, { status: 500 });
   }
 }
@@ -147,14 +147,15 @@ export async function PATCH(
       data: updates,
     });
 
-    logger.info(
-      { partyId: id, userId: tradeAuth.userId, fields: Object.keys(data) },
-      "trade party updated",
-    );
+    logger.info("trade party updated", {
+      partyId: id,
+      userId: tradeAuth.userId,
+      fields: Object.keys(data),
+    });
 
     return NextResponse.json({ party });
   } catch (err) {
-    logger.error({ err }, "PATCH /api/trade/parties/[id] failed");
+    logger.error("PATCH /api/trade/parties/[id] failed", err);
     return NextResponse.json({ error: "Internal error" }, { status: 500 });
   }
 }

@@ -73,21 +73,18 @@ export async function DELETE(
       }),
     ]);
 
-    logger.info(
-      {
-        operationId,
-        operationRef: operation.reference,
-        licenseId,
-        userId,
-      },
-      "trade license detached from operation",
-    );
+    logger.info("trade license detached from operation", {
+      operationId,
+      operationRef: operation.reference,
+      licenseId,
+      userId,
+    });
 
     return NextResponse.json({ detached: true });
   } catch (err) {
     logger.error(
-      { err },
       "DELETE /api/trade/operations/[id]/licenses/[licenseId] failed",
+      err,
     );
     return NextResponse.json({ error: "Internal error" }, { status: 500 });
   }

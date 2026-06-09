@@ -150,16 +150,13 @@ export async function runCrossScreening(
 
   const cascade = analyzeCascade(cascadeInput);
 
-  logger.info(
-    {
-      partyId: target.id,
-      cascadeHit: cascade.cascadeHit,
-      uboResolved: merged.uboSummary.resolved,
-      uboDepth: merged.uboSummary.depth,
-      uboSanctioned: merged.uboSummary.sanctionedAncestorCount,
-    },
-    "runCrossScreening: completed",
-  );
+  logger.info("runCrossScreening: completed", {
+    partyId: target.id,
+    cascadeHit: cascade.cascadeHit,
+    uboResolved: merged.uboSummary.resolved,
+    uboDepth: merged.uboSummary.depth,
+    uboSanctioned: merged.uboSummary.sanctionedAncestorCount,
+  });
 
   return {
     cascade,
@@ -202,14 +199,14 @@ async function tryFetchUboTree(lookupKey: string): Promise<UboTree | null> {
       // only — ownership beyond declared edges is NOT checked. Logged
       // distinctly so this never silently reads as "UBO checked, clean".
       logger.warn(
-        { lookupKey },
         "tryFetchUboTree: UBO source not configured — cascade uses declared ownership only (indirect/UBO ownership NOT checked)",
+        { lookupKey },
       );
       return null;
     }
     logger.warn(
-      { err: err instanceof Error ? err.message : String(err), lookupKey },
       "tryFetchUboTree: UBO lookup failed — falling back to non-augmented cascade",
+      { err: err instanceof Error ? err.message : String(err), lookupKey },
     );
     return null;
   }

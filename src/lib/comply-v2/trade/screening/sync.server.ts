@@ -127,15 +127,15 @@ export async function syncOneList(
           : await fetchWithTimeout(OFAC_ALT_URL, FETCH_TIMEOUT_MS);
         const aliasMap = parseOfacAltAliases(altRaw);
         entries = mergeAliasesIntoEntries(entries, aliasMap);
-        logger.info(
-          { list: parser.list, aliasUids: aliasMap.size },
-          "sanctions sync: merged OFAC alt.csv aliases",
-        );
+        logger.info("sanctions sync: merged OFAC alt.csv aliases", {
+          list: parser.list,
+          aliasUids: aliasMap.size,
+        });
       } catch (altErr) {
         const msg = altErr instanceof Error ? altErr.message : String(altErr);
         logger.warn(
-          { list: parser.list, err: msg, altUrl: OFAC_ALT_URL },
           "sanctions sync: alt.csv fetch failed — proceeding without aliases (fail-soft)",
+          { list: parser.list, err: msg, altUrl: OFAC_ALT_URL },
         );
         // Primary entries are already in `entries` — continue with them unchanged.
       }
@@ -144,7 +144,7 @@ export async function syncOneList(
     if (entries.length === 0) {
       // Stub parser or genuinely empty upstream. No-op rather than
       // poison the store with an empty snapshot.
-      logger.info({ list: parser.list, url }, "sanctions sync: no entries");
+      logger.info("sanctions sync: no entries", { list: parser.list, url });
       return {
         list: parser.list,
         ok: true,
@@ -162,15 +162,12 @@ export async function syncOneList(
       upstreamVersion,
     });
 
-    logger.info(
-      {
-        list: parser.list,
-        changed: result.changed,
-        entryCount: result.entryCount,
-        hash: result.hash.slice(0, 12),
-      },
-      "sanctions sync: ok",
-    );
+    logger.info("sanctions sync: ok", {
+      list: parser.list,
+      changed: result.changed,
+      entryCount: result.entryCount,
+      hash: result.hash.slice(0, 12),
+    });
 
     return {
       list: parser.list,
@@ -182,10 +179,10 @@ export async function syncOneList(
     };
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
-    logger.error(
-      { list: parser.list, url, err: message },
-      "sanctions sync: failed",
-    );
+    logger.error("sanctions sync: failed", message, {
+      list: parser.list,
+      url,
+    });
     return {
       list: parser.list,
       ok: false,

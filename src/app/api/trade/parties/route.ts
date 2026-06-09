@@ -130,7 +130,7 @@ export async function GET(req: Request) {
       pagination: { page, limit, total, pages: Math.ceil(total / limit) },
     });
   } catch (err) {
-    logger.error({ err }, "GET /api/trade/parties failed");
+    logger.error("GET /api/trade/parties failed", err);
     return NextResponse.json({ error: "Internal error" }, { status: 500 });
   }
 }
@@ -194,18 +194,15 @@ export async function POST(req: Request) {
       },
     });
 
-    logger.info(
-      {
-        partyId: party.id,
-        orgId: tradeAuth.organizationId,
-        userId: tradeAuth.userId,
-      },
-      "trade party created",
-    );
+    logger.info("trade party created", {
+      partyId: party.id,
+      orgId: tradeAuth.organizationId,
+      userId: tradeAuth.userId,
+    });
 
     return NextResponse.json({ party }, { status: 201 });
   } catch (err) {
-    logger.error({ err }, "POST /api/trade/parties failed");
+    logger.error("POST /api/trade/parties failed", err);
     return NextResponse.json({ error: "Internal error" }, { status: 500 });
   }
 }

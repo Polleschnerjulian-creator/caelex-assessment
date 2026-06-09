@@ -46,7 +46,7 @@ export async function GET(
       throw e;
     }
   } catch (err) {
-    logger.error({ err }, "GET /api/trade/operations/[id]/assess failed");
+    logger.error("GET /api/trade/operations/[id]/assess failed", err);
     return NextResponse.json({ error: "Internal error" }, { status: 500 });
   }
 }

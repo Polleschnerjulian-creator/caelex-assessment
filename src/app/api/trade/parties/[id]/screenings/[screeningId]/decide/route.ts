@@ -151,16 +151,13 @@ export async function POST(
     }
     const updatedParty = txResult.party;
 
-    logger.info(
-      {
-        partyId,
-        screeningId,
-        decision,
-        userId: tradeAuth.userId,
-        partyStatusAfter: updatedParty.status,
-      },
-      "screening decision recorded",
-    );
+    logger.info("screening decision recorded", {
+      partyId,
+      screeningId,
+      decision,
+      userId: tradeAuth.userId,
+      partyStatusAfter: updatedParty.status,
+    });
 
     await emitTradeEvent("trade.screening.decided", {
       organizationId: tradeAuth.organizationId,
@@ -192,7 +189,7 @@ export async function POST(
       party: updatedParty,
     });
   } catch (err) {
-    logger.error({ err }, "POST /screenings/[screeningId]/decide failed");
+    logger.error("POST /screenings/[screeningId]/decide failed", err);
     return NextResponse.json({ error: "Internal error" }, { status: 500 });
   }
 }

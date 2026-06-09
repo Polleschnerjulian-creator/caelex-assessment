@@ -88,7 +88,7 @@ export async function GET(
 
     return NextResponse.json({ owners: edges });
   } catch (err) {
-    logger.error({ err }, "GET /api/trade/parties/[id]/owners failed");
+    logger.error("GET /api/trade/parties/[id]/owners failed", err);
     return NextResponse.json({ error: "Internal error" }, { status: 500 });
   }
 }
@@ -177,16 +177,13 @@ export async function POST(
         },
       });
 
-      logger.info(
-        {
-          ownedId: id,
-          ownerId,
-          percent,
-          controlType,
-          userId: tradeAuth.userId,
-        },
-        "trade ownership edge created",
-      );
+      logger.info("trade ownership edge created", {
+        ownedId: id,
+        ownerId,
+        percent,
+        controlType,
+        userId: tradeAuth.userId,
+      });
 
       return NextResponse.json({ edge }, { status: 201 });
     } catch (e) {
@@ -204,7 +201,7 @@ export async function POST(
       throw e;
     }
   } catch (err) {
-    logger.error({ err }, "POST /api/trade/parties/[id]/owners failed");
+    logger.error("POST /api/trade/parties/[id]/owners failed", err);
     return NextResponse.json({ error: "Internal error" }, { status: 500 });
   }
 }

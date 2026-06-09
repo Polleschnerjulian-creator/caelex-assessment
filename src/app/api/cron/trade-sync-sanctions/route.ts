@@ -70,7 +70,7 @@ export async function GET(request: Request) {
       })),
     };
 
-    logger.info(summary, "trade-sync-sanctions completed");
+    logger.info("trade-sync-sanctions completed", summary);
 
     const changedLists = result.results.filter((r) => r.changed);
     let flaggedForRescreen = 0;
@@ -93,13 +93,13 @@ export async function GET(request: Request) {
         });
         flaggedForRescreen = flagged.count;
         logger.info(
-          { flaggedForRescreen, changedLists: changedLists.length },
           "[trade-sync-sanctions] flagged active parties STALE on list delta",
+          { flaggedForRescreen, changedLists: changedLists.length },
         );
       } catch (e) {
         logger.warn(
-          { err: e instanceof Error ? e.message : String(e) },
           "[trade-sync-sanctions] flag-for-rescreen failed (non-fatal)",
+          { err: e instanceof Error ? e.message : String(e) },
         );
       }
 
@@ -118,17 +118,16 @@ export async function GET(request: Request) {
           emittedAt: new Date().toISOString(),
         });
       } catch (e) {
-        logger.warn(
-          { err: e instanceof Error ? e.message : String(e) },
-          "[trade-sync-sanctions] notify failed (non-fatal)",
-        );
+        logger.warn("[trade-sync-sanctions] notify failed (non-fatal)", {
+          err: e instanceof Error ? e.message : String(e),
+        });
       }
     }
 
     return NextResponse.json({ ...summary, flaggedForRescreen });
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
-    logger.error({ err: message }, "trade-sync-sanctions failed");
+    logger.error("trade-sync-sanctions failed", message);
     return NextResponse.json(
       { error: "Internal error", message },
       { status: 500 },

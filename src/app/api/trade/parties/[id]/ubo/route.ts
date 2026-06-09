@@ -52,7 +52,7 @@ export async function GET(
       uboSummary: result.uboSummary,
     });
   } catch (err) {
-    logger.error({ err }, "GET /api/trade/parties/[id]/ubo failed");
+    logger.error("GET /api/trade/parties/[id]/ubo failed", err);
     return NextResponse.json({ error: "Internal error" }, { status: 500 });
   }
 }

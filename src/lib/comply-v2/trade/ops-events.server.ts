@@ -51,11 +51,11 @@ export async function emitTradeEvent(
     });
   } catch (err) {
     logger.warn(
+      "[trade-ops-event] emit failed (non-fatal — audit-log is canonical)",
       {
         channel,
         err: err instanceof Error ? err.message : String(err),
       },
-      "[trade-ops-event] emit failed (non-fatal — audit-log is canonical)",
     );
   }
 }

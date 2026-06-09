@@ -54,20 +54,17 @@ export async function DELETE(
 
     await prisma.tradePartyOwnership.delete({ where: { id: ownershipId } });
 
-    logger.info(
-      {
-        ownershipId,
-        ownedId: id,
-        ownerId: edge.ownerId,
-        percent: edge.percent,
-        userId: tradeAuth.userId,
-      },
-      "trade ownership edge deleted",
-    );
+    logger.info("trade ownership edge deleted", {
+      ownershipId,
+      ownedId: id,
+      ownerId: edge.ownerId,
+      percent: edge.percent,
+      userId: tradeAuth.userId,
+    });
 
     return NextResponse.json({ deleted: true });
   } catch (err) {
-    logger.error({ err }, "DELETE /api/trade/parties/[id]/owners failed");
+    logger.error("DELETE /api/trade/parties/[id]/owners failed", err);
     return NextResponse.json({ error: "Internal error" }, { status: 500 });
   }
 }

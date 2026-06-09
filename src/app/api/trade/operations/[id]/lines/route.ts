@@ -150,19 +150,16 @@ export async function POST(
       },
     });
 
-    logger.info(
-      {
-        operationId,
-        operationRef: operation.reference,
-        lineId: line.id,
-        itemId: data.itemId,
-        itemName: item.name,
-        quantity: data.quantity,
-        unitValue: data.unitValue,
-        userId,
-      },
-      "trade operation line added",
-    );
+    logger.info("trade operation line added", {
+      operationId,
+      operationRef: operation.reference,
+      lineId: line.id,
+      itemId: data.itemId,
+      itemName: item.name,
+      quantity: data.quantity,
+      unitValue: data.unitValue,
+      userId,
+    });
 
     const reqCtx = getRequestContext(req);
     await logAuditEvent({
@@ -220,15 +217,15 @@ export async function POST(
       await recomputeOperation(operationId, organizationId);
     } catch (e) {
       logger.warn(
-        { operationId, err: e instanceof Error ? e.message : String(e) },
         "[lines POST] auto-refresh (screen/recompute) failed — non-fatal",
+        { operationId, err: e instanceof Error ? e.message : String(e) },
       );
     }
 
     const serializedLine = { ...line, unitValue: fromCents(line.unitValue) };
     return NextResponse.json({ line: serializedLine }, { status: 201 });
   } catch (err) {
-    logger.error({ err }, "POST /api/trade/operations/[id]/lines failed");
+    logger.error("POST /api/trade/operations/[id]/lines failed", err);
     return NextResponse.json({ error: "Internal error" }, { status: 500 });
   }
 }

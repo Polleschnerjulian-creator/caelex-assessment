@@ -85,22 +85,19 @@ export async function DELETE(
 
     await prisma.tradeOperationLine.delete({ where: { id: lineId } });
 
-    logger.info(
-      {
-        operationId,
-        operationRef: line.operation.reference,
-        lineId,
-        itemId: line.itemId,
-        userId,
-      },
-      "trade operation line removed",
-    );
+    logger.info("trade operation line removed", {
+      operationId,
+      operationRef: line.operation.reference,
+      lineId,
+      itemId: line.itemId,
+      userId,
+    });
 
     return NextResponse.json({ deleted: true });
   } catch (err) {
     logger.error(
-      { err },
       "DELETE /api/trade/operations/[id]/lines/[lineId] failed",
+      err,
     );
     return NextResponse.json({ error: "Internal error" }, { status: 500 });
   }
@@ -212,15 +209,12 @@ export async function PATCH(
       },
     });
 
-    logger.info(
-      {
-        operationId,
-        lineId,
-        appliedLicenseId,
-        userId,
-      },
-      "trade operation line license assignment updated",
-    );
+    logger.info("trade operation line license assignment updated", {
+      operationId,
+      lineId,
+      appliedLicenseId,
+      userId,
+    });
 
     const serializedLine = {
       ...updated,
@@ -228,10 +222,7 @@ export async function PATCH(
     };
     return NextResponse.json({ line: serializedLine });
   } catch (err) {
-    logger.error(
-      { err },
-      "PATCH /api/trade/operations/[id]/lines/[lineId] failed",
-    );
+    logger.error("PATCH /api/trade/operations/[id]/lines/[lineId] failed", err);
     return NextResponse.json({ error: "Internal error" }, { status: 500 });
   }
 }

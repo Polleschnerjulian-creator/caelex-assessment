@@ -108,16 +108,13 @@ export async function POST(
       data: { licenses: { connect: { id: licenseId } } },
     });
 
-    logger.info(
-      {
-        operationId,
-        operationRef: operation.reference,
-        licenseId,
-        licenseType: license.licenseType,
-        userId,
-      },
-      "trade license attached to operation",
-    );
+    logger.info("trade license attached to operation", {
+      operationId,
+      operationRef: operation.reference,
+      licenseId,
+      licenseType: license.licenseType,
+      userId,
+    });
 
     const reqCtx = getRequestContext(req);
     await logAuditEvent({
@@ -145,7 +142,7 @@ export async function POST(
 
     return NextResponse.json({ attached: true });
   } catch (err) {
-    logger.error({ err }, "POST /api/trade/operations/[id]/licenses failed");
+    logger.error("POST /api/trade/operations/[id]/licenses failed", err);
     return NextResponse.json({ error: "Internal error" }, { status: 500 });
   }
 }

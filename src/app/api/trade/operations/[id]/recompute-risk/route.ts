@@ -51,22 +51,19 @@ export async function POST(
       return NextResponse.json({ error: "Not found" }, { status: 404 });
     }
 
-    logger.info(
-      {
-        operationId: id,
-        score: result.risk.score,
-        band: result.risk.band,
-        factorCount: result.risk.factors.length,
-        catchAllArt4: result.catchAll.art4,
-        catchAllArt5: result.catchAll.art5,
-        catchAllArt9: result.catchAll.art9,
-        catchAllArt10: result.catchAll.art10,
-        notificationDuty: result.catchAll.notificationDuty,
-        triggerCount: result.catchAll.triggers.length,
-        userId,
-      },
-      "trade operation risk + catch-all recomputed",
-    );
+    logger.info("trade operation risk + catch-all recomputed", {
+      operationId: id,
+      score: result.risk.score,
+      band: result.risk.band,
+      factorCount: result.risk.factors.length,
+      catchAllArt4: result.catchAll.art4,
+      catchAllArt5: result.catchAll.art5,
+      catchAllArt9: result.catchAll.art9,
+      catchAllArt10: result.catchAll.art10,
+      notificationDuty: result.catchAll.notificationDuty,
+      triggerCount: result.catchAll.triggers.length,
+      userId,
+    });
 
     const reqCtx = getRequestContext(req);
     await logAuditEvent({
@@ -115,10 +112,7 @@ export async function POST(
       catchAll: result.catchAll,
     });
   } catch (err) {
-    logger.error(
-      { err },
-      "POST /api/trade/operations/[id]/recompute-risk failed",
-    );
+    logger.error("POST /api/trade/operations/[id]/recompute-risk failed", err);
     return NextResponse.json({ error: "Internal error" }, { status: 500 });
   }
 }

@@ -112,7 +112,7 @@ export async function GET(req: Request) {
     }));
     return NextResponse.json({ licenses: serialized });
   } catch (err) {
-    logger.error({ err }, "GET /api/trade/licenses failed");
+    logger.error("GET /api/trade/licenses failed", err);
     return NextResponse.json({ error: "Internal error" }, { status: 500 });
   }
 }
@@ -157,15 +157,12 @@ export async function POST(req: Request) {
       },
     });
 
-    logger.info(
-      {
-        licenseId: license.id,
-        licenseType: data.licenseType,
-        licenseNumber: data.licenseNumber,
-        userId: tradeAuth.userId,
-      },
-      "trade license created",
-    );
+    logger.info("trade license created", {
+      licenseId: license.id,
+      licenseType: data.licenseType,
+      licenseNumber: data.licenseNumber,
+      userId: tradeAuth.userId,
+    });
 
     const serializedLicense = {
       ...license,
@@ -174,7 +171,7 @@ export async function POST(req: Request) {
     };
     return NextResponse.json({ license: serializedLicense }, { status: 201 });
   } catch (err) {
-    logger.error({ err }, "POST /api/trade/licenses failed");
+    logger.error("POST /api/trade/licenses failed", err);
     return NextResponse.json({ error: "Internal error" }, { status: 500 });
   }
 }

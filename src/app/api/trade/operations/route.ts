@@ -149,7 +149,7 @@ export async function GET(req: Request) {
       pagination: { page, limit, total, pages: Math.ceil(total / limit) },
     });
   } catch (err) {
-    logger.error({ err }, "GET /api/trade/operations failed");
+    logger.error("GET /api/trade/operations failed", err);
     return NextResponse.json({ error: "Internal error" }, { status: 500 });
   }
 }
@@ -222,16 +222,13 @@ export async function POST(req: Request) {
         },
       });
 
-      logger.info(
-        {
-          operationId: operation.id,
-          reference: operation.reference,
-          counterpartyId: operation.counterpartyId,
-          orgId: organizationId,
-          userId,
-        },
-        "trade operation created",
-      );
+      logger.info("trade operation created", {
+        operationId: operation.id,
+        reference: operation.reference,
+        counterpartyId: operation.counterpartyId,
+        orgId: organizationId,
+        userId,
+      });
 
       // AuditLog: hash-chained 5+yr-retention trail per §22 AWV / 15 CFR 762
       const reqCtx = getRequestContext(req);
@@ -283,7 +280,7 @@ export async function POST(req: Request) {
       throw e;
     }
   } catch (err) {
-    logger.error({ err }, "POST /api/trade/operations failed");
+    logger.error("POST /api/trade/operations failed", err);
     return NextResponse.json({ error: "Internal error" }, { status: 500 });
   }
 }
