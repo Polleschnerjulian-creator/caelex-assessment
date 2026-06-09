@@ -208,7 +208,7 @@ export default function Footer({ theme = "dark" }: FooterProps) {
       <div
         className={`border-b ${isLight ? "border-[#d2d2d7]" : "border-white/[0.06]"}`}
       >
-        <div className="max-w-[1400px] mx-auto px-6 md:px-12 py-14">
+        <div className="max-w-[1500px] mx-auto px-6 md:px-12 py-14">
           <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-8">
             <div className="max-w-md">
               <h2
@@ -329,7 +329,7 @@ export default function Footer({ theme = "dark" }: FooterProps) {
       </div>
 
       {/* Main Footer */}
-      <div className="max-w-[1400px] mx-auto px-6 md:px-12 py-20">
+      <div className="max-w-[1500px] mx-auto px-6 md:px-12 py-20">
         <div className="grid grid-cols-2 md:grid-cols-6 gap-12 md:gap-8">
           {/* Brand Column */}
           <div className="col-span-2">
@@ -529,7 +529,7 @@ export default function Footer({ theme = "dark" }: FooterProps) {
       <div
         className={`border-t ${isLight ? "border-[#d2d2d7]" : "border-white/[0.06]"}`}
       >
-        <div className="max-w-[1400px] mx-auto px-6 md:px-12 py-8">
+        <div className="max-w-[1500px] mx-auto px-6 md:px-12 py-8">
           <p
             className={`text-small leading-relaxed max-w-[1000px] ${
               isLight ? "text-[#86868b]" : "text-white/40"

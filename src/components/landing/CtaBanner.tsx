@@ -11,7 +11,7 @@ export default function CtaBanner() {
 
   return (
     <section className="bg-white py-16 md:py-24">
-      <div className="max-w-[1400px] mx-auto px-6 md:px-12">
+      <div className="max-w-[1500px] mx-auto px-6 md:px-12">
         <motion.div
           ref={ref}
           initial={{ opacity: 0, y: 20 }}
