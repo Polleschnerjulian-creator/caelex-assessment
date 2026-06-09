@@ -402,3 +402,59 @@ export function isPathProduct(v: unknown): v is PathProduct {
     typeof v === "string" && (PATH_PRODUCTS as readonly string[]).includes(v)
   );
 }
+
+// ─────────────────────────────────────────────────────────────────────────────
+// CSV EXPORT — flatten the source-grouped flow to one row per source→target edge.
+// ─────────────────────────────────────────────────────────────────────────────
+
+/** One flat CSV cell value (mirrors export-utils' CsvValue without importing it,
+ * so this transform module stays free of the component graph). */
+type ExportCell = string | number;
+
+/** A flat export row: the column key → value map the ExportButton consumes. */
+export type PathExportRow = Record<string, ExportCell>;
+
+/**
+ * The fixed CSV column spec for the path export (order + headers). One row per
+ * source→destination transition: the source page, that source's total outflow,
+ * the destination page, the transition count, and the destination's share of the
+ * source's outflow ("of everyone who left <source>, this % went to <dest>").
+ * Exported so the page passes the identical spec to ExportButton.
+ */
+export const PATH_EXPORT_COLUMNS: ReadonlyArray<{
+  key: string;
+  header: string;
+}> = [
+  { key: "fromPath", header: "From page" },
+  { key: "sourceOutflow", header: "Source outflow" },
+  { key: "toPath", header: "To page" },
+  { key: "transitions", header: "Transitions" },
+  { key: "shareOfSource", header: "Share of source %" },
+];
+
+/**
+ * Flatten the source-grouped flow into a single row-per-edge CSV table. Reuses
+ * the tested {@link groupOutflows} transform so the exported structure + ordering
+ * (sources busiest-first, destinations busiest-first within a source) and the
+ * share-of-source numbers match the on-screen flow exactly. The "(entry)" /
+ * "(exit)" sentinels are emitted as their literal tokens — honest session
+ * boundaries, visibly distinct from real routes. `shareOfSource` is a whole-
+ * number percent of that source's outflow.
+ *
+ * Pure + total: never mutates the input; an empty edge list yields [].
+ */
+export function buildPathExport(edges: PathEdgeView[]): PathExportRow[] {
+  const out: PathExportRow[] = [];
+  for (const group of groupOutflows(edges)) {
+    for (const edge of group.outEdges) {
+      out.push({
+        fromPath: group.fromPath,
+        sourceOutflow: group.totalOut,
+        toPath: edge.toPath,
+        transitions: edge.transitions,
+        shareOfSource: Math.round(edge.shareOfSource * 100),
+      });
+    }
+  }
+  return out;
+}

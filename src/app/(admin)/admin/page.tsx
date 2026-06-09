@@ -45,14 +45,22 @@ import {
   CartesianGrid,
   Tooltip,
 } from "recharts";
-import { BarChart3 } from "lucide-react";
+import { AlertTriangle, BarChart3 } from "lucide-react";
 import type { AdminRange } from "@/lib/admin/analytics-types";
 import AdminPageHeader from "@/components/admin/AdminPageHeader";
 import AdminCard from "@/components/admin/AdminCard";
 import KpiTile from "@/components/admin/KpiTile";
 import RangeTabs from "@/components/admin/RangeTabs";
+import ExportButton from "@/components/admin/ExportButton";
+import type { CsvRow } from "@/components/admin/export-utils";
 import { useAdminData } from "@/components/admin/useAdminData";
 import { compactNumber, eur, pctLabel } from "@/components/admin/format";
+import {
+  detectAnomalies,
+  describeAnomaly,
+  type AnomalyFlag,
+  type AnomalySeverity,
+} from "@/lib/admin/anomalies";
 import {
   funnelWithConversion,
   isCockpitEmpty,
@@ -61,6 +69,44 @@ import {
   type CockpitResponseV2,
   type ProductDepthVM,
 } from "./cockpit-data";
+
+/**
+ * Flatten the per-product depth view-models into export rows — product, every
+ * value-event count, the screening hit-rate as a plain percent ("" when there
+ * was no screening sample, mirroring the table's em-dash), the raw screening
+ * volume, the AI cost, and the rolled-up outcomes total. Fed straight from the
+ * page's already-fetched `perProductDepth` (no new fetch). Pure.
+ */
+function depthExportRows(rows: readonly ProductDepthVM[]): CsvRow[] {
+  return rows.map((r) => ({
+    product: r.product,
+    assessments: r.assessmentsCompleted,
+    classifications: r.classifications,
+    // Honest blank (not "0%") when there were no screenings to rate.
+    screening_hit_rate_pct:
+      r.screeningHitRate === null ? "" : Math.round(r.screeningHitRate * 100),
+    screenings_total: r.screeningsTotal,
+    licenses_issued: r.licensesIssued,
+    ai_messages: r.aiMessages,
+    documents_generated: r.documentsGenerated,
+    ai_cost_usd: r.aiCostUsd,
+    outcomes: r.outcomes,
+  }));
+}
+
+/** Stable column order + friendly headers for the depth export. */
+const DEPTH_EXPORT_COLUMNS = [
+  { key: "product", header: "Product" },
+  { key: "assessments", header: "Assessments" },
+  { key: "classifications", header: "Classifications" },
+  { key: "screening_hit_rate_pct", header: "Screening hit-rate %" },
+  { key: "screenings_total", header: "Screenings total" },
+  { key: "licenses_issued", header: "Licenses issued" },
+  { key: "ai_messages", header: "AI messages" },
+  { key: "documents_generated", header: "Documents generated" },
+  { key: "ai_cost_usd", header: "AI cost (USD)" },
+  { key: "outcomes", header: "Outcomes" },
+] as const;
 
 export default function CockpitPage() {
   // The page owns the selected range; RangeTabs only reports changes and the
@@ -74,6 +120,11 @@ export default function CockpitPage() {
   // (computed hydration-safe in the helper). Only shown once data is in hand.
   const asOf = data ? formatAsOf(data.generatedAt) : null;
 
+  // Offer a depth export only once there are real value-event rows in hand
+  // (an empty dataset would just be a header line).
+  const canExportDepth =
+    !!data && !loading && !error && !isDepthEmpty(data.perProductDepth);
+
   return (
     <div>
       <AdminPageHeader
@@ -83,7 +134,19 @@ export default function CockpitPage() {
             ? `Cross-product platform overview · as of ${asOf}`
             : "Cross-product platform overview"
         }
-        right={<RangeTabs value={range} onChange={setRange} />}
+        right={
+          <div className="flex items-center gap-3">
+            {canExportDepth && data && (
+              <ExportButton
+                rows={depthExportRows(data.perProductDepth)}
+                columns={DEPTH_EXPORT_COLUMNS}
+                filename={`cockpit-depth-${range}${asOf ? `-${asOf}` : ""}`}
+                label="Export depth"
+              />
+            )}
+            <RangeTabs value={range} onChange={setRange} />
+          </div>
+        }
       />
 
       {loading && <CockpitSkeleton />}
@@ -122,8 +185,18 @@ function CockpitBody({ data }: { data: CockpitResponseV2 }) {
     data;
   const funnel = funnelWithConversion(growthFunnel);
 
+  // In-app anomaly detection over the daily series the page ALREADY has. Today
+  // that is `dauTrend`; the multi-series signature scales to any TrendPoint[] we
+  // later add to the payload without a new fetch. Honest thresholds (see
+  // anomalies.ts) mean this fires ONLY on a genuine deviation of the latest day
+  // from its trailing baseline — otherwise the strip renders nothing.
+  const anomalies = detectAnomalies([{ metric: "DAU", series: dauTrend }]);
+
   return (
     <div className="flex flex-col gap-5">
+      {/* Anomaly strip — only present when something is genuinely off. */}
+      {anomalies.length > 0 && <AnomalyStrip flags={anomalies} />}
+
       {/* Revenue headline — MRR + NRR, or an honest empty state. */}
       <RevenueHeadline revenue={revenue} />
 
@@ -198,6 +271,99 @@ function CockpitBody({ data }: { data: CockpitResponseV2 }) {
         )}
       </AdminCard>
     </div>
+  );
+}
+
+/* ─────────────────────────────────────────────────────────────────────────────
+ * Anomaly strip — a compact, HONEST callout at the top of the cockpit that
+ * surfaces a genuine deviation of the latest day from its trailing baseline
+ * ("⚠ DAU down 38% vs the trailing 7-day average"). Computed entirely from data
+ * the page already fetched (anomalies.ts, pure + unit-tested); rendered only
+ * when `detectAnomalies` returns ≥1 flag, so a normal day shows nothing.
+ * Severity tints the accent (info → primary, warning → amber, critical → red).
+ * ────────────────────────────────────────────────────────────────────────── */
+
+/** Map a flag's severity to a token-driven accent + soft background pair. */
+function severityTokens(severity: AnomalySeverity): {
+  accent: string;
+  soft: string;
+} {
+  switch (severity) {
+    case "critical":
+      return {
+        accent: "var(--accent-danger)",
+        soft: "var(--accent-danger-soft)",
+      };
+    case "warning":
+      return {
+        accent: "var(--accent-warning)",
+        soft: "var(--accent-warning-soft)",
+      };
+    default:
+      return {
+        accent: "var(--accent-primary)",
+        soft: "var(--accent-primary-soft)",
+      };
+  }
+}
+
+function AnomalyStrip({ flags }: { flags: AnomalyFlag[] }) {
+  // The most-severe flag drives the strip's border accent (list is pre-sorted
+  // most-notable-first by detectAnomalies).
+  const lead = severityTokens(flags[0].severity);
+
+  return (
+    <section
+      className="glass-elevated rounded-2xl p-4"
+      style={{ border: `1px solid ${lead.accent}`, background: lead.soft }}
+      // A live region so a screen reader announces a newly-surfaced anomaly.
+      role="status"
+      aria-live="polite"
+      aria-label={`${flags.length} metric ${flags.length === 1 ? "anomaly" : "anomalies"} detected`}
+    >
+      <div className="mb-2 flex items-center gap-2">
+        <AlertTriangle
+          size={15}
+          aria-hidden="true"
+          style={{ color: lead.accent }}
+        />
+        <h2
+          className="text-[12px] font-semibold uppercase tracking-[0.06em]"
+          style={{ color: "var(--text-primary)" }}
+        >
+          {flags.length === 1
+            ? "Anomaly detected"
+            : `${flags.length} anomalies detected`}
+        </h2>
+      </div>
+      <ul className="flex flex-col gap-1.5">
+        {flags.map((flag) => {
+          const t = severityTokens(flag.severity);
+          return (
+            <li
+              key={`${flag.metric}-${flag.date}`}
+              className="flex items-center gap-2 text-[13px] leading-snug"
+              style={{ color: "var(--text-secondary)" }}
+            >
+              <span
+                className="inline-block h-1.5 w-1.5 flex-shrink-0 rounded-full"
+                style={{ background: t.accent }}
+                aria-hidden="true"
+              />
+              {/* compactNumber for the flat-baseline fallback figure so a big
+                  latest value reads as "1.2k", consistent with the KPI tiles. */}
+              <span>{describeAnomaly(flag, 7, compactNumber)}</span>
+              <span
+                className="tabular-nums text-[11px]"
+                style={{ color: "var(--text-tertiary)" }}
+              >
+                · {flag.date}
+              </span>
+            </li>
+          );
+        })}
+      </ul>
+    </section>
   );
 }
 

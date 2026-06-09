@@ -27,7 +27,7 @@
  * SPDX-License-Identifier: LicenseRef-Caelex-Proprietary
  */
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { Gauge } from "lucide-react";
 import type { AdminRange } from "@/lib/admin/analytics-types";
 import type { Virality, InviteFunnel } from "@/lib/admin/virality";
@@ -36,6 +36,8 @@ import AdminPageHeader from "@/components/admin/AdminPageHeader";
 import AdminCard from "@/components/admin/AdminCard";
 import KpiTile from "@/components/admin/KpiTile";
 import RangeTabs from "@/components/admin/RangeTabs";
+import ExportButton from "@/components/admin/ExportButton";
+import type { CsvRow } from "@/components/admin/export-utils";
 import { useAdminData } from "@/components/admin/useAdminData";
 import { compactNumber, eur, pctLabel } from "@/components/admin/format";
 
@@ -62,6 +64,51 @@ export default function EfficiencyPage() {
     `/api/admin/v2/efficiency?range=${range}`,
   );
 
+  // Export rows from the ALREADY-FETCHED view-model — no extra fetch. One CSV
+  // carries BOTH halves of the page under a "section" column: the per-product
+  // AI-cost lines (real Atlas USD + estimated Astra), then the SENT→ACCEPTED
+  // invite-funnel legs. Each section's rows are only emitted when that half has
+  // real data, so a page with just one populated half still exports cleanly.
+  const exportRows = useMemo<CsvRow[]>(() => {
+    if (!data || isEfficiencyEmpty(data)) return [];
+    const rows: CsvRow[] = [];
+
+    if (!data.aiCost.isEmpty) {
+      for (const line of data.aiCost.perProduct) {
+        rows.push({
+          section: "AI cost",
+          item: line.label,
+          messages: line.messages,
+          tokens: line.tokens === null ? "" : line.tokens,
+          cost_usd: line.costUsd === null ? "" : line.costUsd,
+          is_estimate: line.isEstimate,
+        });
+      }
+    }
+
+    if (!data.virality.isEmpty) {
+      const f = data.virality.funnel;
+      const legs: Array<[string, number]> = [
+        ["Sent", f.sent],
+        ["Accepted", f.accepted],
+        ["Pending", f.pending],
+        ["Expired", f.expired],
+      ];
+      for (const [item, value] of legs) {
+        rows.push({
+          section: "Invite funnel",
+          item,
+          messages: value,
+          tokens: "",
+          cost_usd: "",
+          is_estimate: "",
+        });
+      }
+    }
+
+    return rows;
+  }, [data]);
+
   return (
     <div>
       <AdminPageHeader
@@ -76,6 +123,21 @@ export default function EfficiencyPage() {
               >
                 as of {data.generatedAt.slice(0, 10)}
               </span>
+            )}
+            {data && !loading && !error && !isEfficiencyEmpty(data) && (
+              <ExportButton
+                rows={exportRows}
+                filename={`caelex-efficiency-${range}`}
+                columns={[
+                  { key: "section", header: "Section" },
+                  { key: "item", header: "Item" },
+                  { key: "messages", header: "Messages / Count" },
+                  { key: "tokens", header: "Tokens" },
+                  { key: "cost_usd", header: "Cost (USD)" },
+                  { key: "is_estimate", header: "Estimate?" },
+                ]}
+                label="Export"
+              />
             )}
             <RangeTabs value={range} onChange={setRange} />
           </div>

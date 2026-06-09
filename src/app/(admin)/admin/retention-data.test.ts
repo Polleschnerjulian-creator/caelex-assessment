@@ -21,6 +21,7 @@
 import { describe, it, expect } from "vitest";
 import {
   buildRetentionGrid,
+  buildRetentionExport,
   retentionTone,
   RETENTION_ACCENT_RGB,
 } from "./retention-data";
@@ -195,5 +196,64 @@ describe("retentionTone", () => {
   it("caps alpha at 1 for the week-0 anchor (and any pct >= 1)", () => {
     expect(retentionTone(1)).toBe(`rgba(${RETENTION_ACCENT_RGB}, 1.000)`);
     expect(retentionTone(1.5)).toBe(`rgba(${RETENTION_ACCENT_RGB}, 1.000)`);
+  });
+});
+
+describe("buildRetentionExport (CSV flatten)", () => {
+  it("emits a fixed cohort+signups pair then one week_<n> column per grid column", () => {
+    const grid = buildRetentionGrid(sampleResponse());
+    const { columns } = buildRetentionExport(grid);
+    expect(columns.map((c) => c.key)).toEqual([
+      "cohort",
+      "signups",
+      "week_0",
+      "week_1",
+      "week_2",
+    ]);
+    // Headers are human-readable.
+    expect(columns[0].header).toBe("Cohort (week of)");
+    expect(columns[2].header).toBe("Week 0 %");
+  });
+
+  it("flattens one row per cohort, preserving newest-first order", () => {
+    const grid = buildRetentionGrid(sampleResponse());
+    const { rows } = buildRetentionExport(grid);
+    expect(rows).toHaveLength(2);
+    // sampleResponse() lists the newest (week-0-only) cohort first.
+    expect(rows[0].cohort).toBe("2026-06-01");
+    expect(rows[0].signups).toBe(50);
+  });
+
+  it("renders retention as a whole-number percent and leaves unreached weeks blank", () => {
+    const grid = buildRetentionGrid(sampleResponse());
+    const { rows } = buildRetentionExport(grid);
+    // Newest cohort only reached week 0 (100%); weeks 1 & 2 are absent → "".
+    expect(rows[0].week_0).toBe(100);
+    expect(rows[0].week_1).toBe("");
+    expect(rows[0].week_2).toBe("");
+    // The older full cohort carries a value in every week (no blanks).
+    expect(rows[1].week_0).toBe(100);
+    expect(typeof rows[1].week_1).toBe("number");
+    expect(typeof rows[1].week_2).toBe("number");
+  });
+
+  it("returns no rows (but keeps the fixed columns) for an empty grid", () => {
+    const empty: RetentionResponse = {
+      scope: "all",
+      availableScopes: [],
+      maxWeeksSince: 0,
+      cohorts: [],
+    };
+    const out = buildRetentionExport(buildRetentionGrid(empty));
+    expect(out.rows).toHaveLength(0);
+    // No week columns (grid had none) but the cohort/signups pair survives.
+    expect(out.columns.map((c) => c.key)).toEqual(["cohort", "signups"]);
+  });
+
+  it("does not mutate the source grid", () => {
+    const grid = buildRetentionGrid(sampleResponse());
+    const before = JSON.stringify(grid);
+    buildRetentionExport(grid);
+    expect(JSON.stringify(grid)).toBe(before);
   });
 });

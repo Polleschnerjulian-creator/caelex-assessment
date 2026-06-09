@@ -14,9 +14,11 @@ import {
   conversionRatio,
   humaniseMs,
   buildFunnelRows,
+  buildFunnelExport,
   funnelTitle,
+  FUNNEL_EXPORT_COLUMNS,
 } from "./funnel-data";
-import type { FunnelStepView } from "@/lib/admin/analytics-types";
+import type { FunnelStepView, FunnelView } from "@/lib/admin/analytics-types";
 
 describe("conversionRatio", () => {
   it("computes completed / entered as a 0..1 ratio", () => {
@@ -205,5 +207,99 @@ describe("funnelTitle", () => {
     expect(funnelTitle({ funnelId: "checkout", product: "trade" })).toBe(
       "trade · checkout",
     );
+  });
+});
+
+describe("buildFunnelExport (CSV flatten)", () => {
+  const funnels: FunnelView[] = [
+    {
+      funnelId: "growth",
+      product: null,
+      steps: [
+        {
+          step: 0,
+          stepKey: "land",
+          usersEntered: 1000,
+          usersCompleted: 600,
+          medianMsToNext: 2_300,
+        },
+        {
+          step: 1,
+          stepKey: "signup",
+          usersEntered: 600,
+          usersCompleted: 0, // 0% conversion — distinct from "nobody entered"
+          medianMsToNext: null, // terminal
+        },
+      ],
+    },
+    {
+      funnelId: "checkout",
+      product: "trade",
+      steps: [
+        {
+          step: 0,
+          stepKey: "cart",
+          usersEntered: 0, // nobody entered → undefined ratio → blank
+          usersCompleted: 0,
+          medianMsToNext: null,
+        },
+      ],
+    },
+  ];
+
+  it("emits one row per step across every funnel", () => {
+    const rows = buildFunnelExport(funnels);
+    // 2 steps in the first funnel + 1 in the second.
+    expect(rows).toHaveLength(3);
+    expect(rows[0].funnel).toBe("Growth (cross-product)");
+    expect(rows[2].funnel).toBe("trade · checkout");
+  });
+
+  it("uses 1-based step ordinals matching the visible labels", () => {
+    const rows = buildFunnelExport(funnels);
+    expect(rows[0].step).toBe(1);
+    expect(rows[1].step).toBe(2);
+    expect(rows[2].step).toBe(1);
+  });
+
+  it("carries entered/completed counts and a whole-number conversion %", () => {
+    const rows = buildFunnelExport(funnels);
+    expect(rows[0].usersEntered).toBe(1000);
+    expect(rows[0].usersCompleted).toBe(600);
+    expect(rows[0].stepKey).toBe("land");
+    expect(rows[0].conversionPct).toBe(60); // 600/1000
+  });
+
+  it("exports a genuine 0% conversion as 0 but an undefined ratio as blank", () => {
+    const rows = buildFunnelExport(funnels);
+    // signup step: entered 600, completed 0 → 0%.
+    expect(rows[1].conversionPct).toBe(0);
+    // checkout cart: nobody entered → undefined ratio → "" (mirrors the UI "—").
+    expect(rows[2].conversionPct).toBe("");
+  });
+
+  it("humanises the median-to-next time (terminal step → em-dash)", () => {
+    const rows = buildFunnelExport(funnels);
+    expect(rows[0].medianToNext).toBe("2.3s");
+    expect(rows[1].medianToNext).toBe("—");
+  });
+
+  it("exposes a fixed column spec the page reuses", () => {
+    expect(FUNNEL_EXPORT_COLUMNS.map((c) => c.key)).toEqual([
+      "funnel",
+      "step",
+      "stepKey",
+      "usersEntered",
+      "usersCompleted",
+      "conversionPct",
+      "medianToNext",
+    ]);
+  });
+
+  it("returns [] for an empty funnel list and never mutates the input", () => {
+    expect(buildFunnelExport([])).toEqual([]);
+    const before = JSON.stringify(funnels);
+    buildFunnelExport(funnels);
+    expect(JSON.stringify(funnels)).toBe(before);
   });
 });

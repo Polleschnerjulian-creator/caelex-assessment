@@ -165,3 +165,66 @@ export function buildRetentionGrid(res: RetentionResponse): RetentionGrid {
 
   return { scope: res.scope, columns, rows, isEmpty };
 }
+
+// ─────────────────────────────────────────────────────────────────────────────
+// CSV EXPORT — flatten the (triangular) cohort grid to a rectangular table.
+// ─────────────────────────────────────────────────────────────────────────────
+
+/** One flat CSV cell value (mirrors export-utils' CsvValue without importing it,
+ * so this transform module stays free of the component graph). */
+type ExportCell = string | number;
+
+/** A flat export row: the column key → value map the ExportButton consumes. */
+export type RetentionExportRow = Record<string, ExportCell>;
+
+/** The CSV column spec shape ExportButton accepts ({ key, header } pairs). */
+export interface RetentionExportColumn {
+  key: string;
+  header: string;
+}
+
+/** A page-ready export bundle: the flattened rows plus a matching column spec. */
+export interface RetentionExport {
+  rows: RetentionExportRow[];
+  columns: RetentionExportColumn[];
+}
+
+/**
+ * Flatten a pivoted {@link RetentionGrid} into a rectangular CSV table: one row
+ * per cohort, with a fixed `cohort` + `signups` pair followed by one `week_<n>`
+ * column per grid column (0..maxWeeksSince). Each week cell carries the cohort's
+ * retention as a whole-number percent (e.g. `42` for 42%); a column the cohort
+ * has not yet reached (an absent slot) is left EMPTY ("") rather than 0, so a
+ * young cohort's unreached weeks read as blank in the spreadsheet exactly as
+ * they render blank in the heatmap — never a misleading 0%.
+ *
+ * Returns empty `rows` (with the fixed columns still present so the header line
+ * is meaningful) when the grid is empty. Pure + total: never mutates the grid.
+ */
+export function buildRetentionExport(grid: RetentionGrid): RetentionExport {
+  const columns: RetentionExportColumn[] = [
+    { key: "cohort", header: "Cohort (week of)" },
+    { key: "signups", header: "Signups" },
+    ...grid.columns.map((w) => ({
+      key: `week_${w}`,
+      header: `Week ${w} %`,
+    })),
+  ];
+
+  const rows: RetentionExportRow[] = grid.rows.map((row) => {
+    const out: RetentionExportRow = {
+      cohort: row.cohortWeek,
+      signups: row.cohortSize,
+    };
+    for (const cell of row.cells) {
+      // Whole-number percent for an occupied cell; blank for an absent slot so
+      // the export distinguishes "not reached yet" from a real 0% retention.
+      out[`week_${cell.weeksSince}`] = cell.present
+        ? Math.round(cell.pct * 100)
+        : "";
+    }
+    return out;
+  });
+
+  return { rows, columns };
+}

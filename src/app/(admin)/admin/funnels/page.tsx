@@ -21,13 +21,15 @@
  * SPDX-License-Identifier: LicenseRef-Caelex-Proprietary
  */
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { Filter, ArrowDownRight } from "lucide-react";
 import AdminPageHeader from "@/components/admin/AdminPageHeader";
 import AdminCard from "@/components/admin/AdminCard";
 import RangeTabs from "@/components/admin/RangeTabs";
+import ExportButton from "@/components/admin/ExportButton";
 import { useAdminData } from "@/components/admin/useAdminData";
 import { compactNumber, pctLabel } from "@/components/admin/format";
+import type { CsvRow } from "@/components/admin/export-utils";
 import type {
   AdminRange,
   FunnelsResponse,
@@ -35,7 +37,9 @@ import type {
 } from "@/lib/admin/analytics-types";
 import {
   buildFunnelRows,
+  buildFunnelExport,
   funnelTitle,
+  FUNNEL_EXPORT_COLUMNS,
   type FunnelStepRow,
 } from "./funnel-data";
 
@@ -47,12 +51,33 @@ export default function FunnelsPage() {
     `/api/admin/v2/funnels?range=${range}`,
   );
 
+  // Flatten every funnel's steps into one row-per-step CSV table from the
+  // ALREADY-FETCHED response — no extra fetch (pure + tested helper).
+  const exportRows = useMemo<CsvRow[]>(
+    () => (data ? buildFunnelExport(data.funnels) : []),
+    [data],
+  );
+
+  const hasFunnels = !loading && !error && !!data && data.funnels.length > 0;
+
   return (
     <>
       <AdminPageHeader
         title="Funnels"
         subtitle="Step-by-step conversion across each product flow, summed over the selected window."
-        right={<RangeTabs value={range} onChange={setRange} />}
+        right={
+          <div className="flex items-center gap-3">
+            {hasFunnels && (
+              <ExportButton
+                rows={exportRows}
+                columns={FUNNEL_EXPORT_COLUMNS}
+                filename={`caelex-funnels-${range}`}
+                label="Export"
+              />
+            )}
+            <RangeTabs value={range} onChange={setRange} />
+          </div>
+        }
       />
 
       {loading && <FunnelsSkeleton />}

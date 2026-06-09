@@ -29,10 +29,16 @@ import { useMemo, useState } from "react";
 import { RefreshCw, Users } from "lucide-react";
 import AdminPageHeader from "@/components/admin/AdminPageHeader";
 import AdminCard from "@/components/admin/AdminCard";
+import ExportButton from "@/components/admin/ExportButton";
 import { useAdminData } from "@/components/admin/useAdminData";
 import { compactNumber } from "@/components/admin/format";
+import type { CsvRow } from "@/components/admin/export-utils";
 import type { RetentionResponse } from "@/lib/admin/analytics-types";
-import { buildRetentionGrid, type RetentionGridCell } from "../retention-data";
+import {
+  buildRetentionGrid,
+  buildRetentionExport,
+  type RetentionGridCell,
+} from "../retention-data";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Scope switcher — a RangeTabs-style segmented control over the scopes that
@@ -165,6 +171,17 @@ export default function RetentionPage() {
   // Pivot the response into a dense, column-aligned matrix (pure + tested).
   const grid = useMemo(() => (data ? buildRetentionGrid(data) : null), [data]);
 
+  // Flatten the (triangular) cohort grid into a rectangular CSV table from the
+  // ALREADY-FETCHED grid — no extra fetch. One row per cohort, week_0..week_N
+  // retention percents; absent weeks stay blank (pure + tested helper).
+  const csv = useMemo(
+    () =>
+      grid && !grid.isEmpty
+        ? buildRetentionExport(grid)
+        : { rows: [] as CsvRow[], columns: [] },
+    [grid],
+  );
+
   // Option set for the switcher: the scopes that have data, but always keep the
   // currently-selected scope (so a freshly-picked empty scope still shows its
   // pill) and fall back to ["all"] before the first response lands.
@@ -187,6 +204,14 @@ export default function RetentionPage() {
         subtitle="Weekly signup cohorts — share of each cohort returning in the weeks after signup. Counts only; no personal data."
         right={
           <div className="flex items-center gap-3">
+            {grid && !grid.isEmpty && (
+              <ExportButton
+                rows={csv.rows}
+                columns={csv.columns}
+                filename={`caelex-retention-${scope}`}
+                label="Export"
+              />
+            )}
             <ScopeTabs
               scopes={scopeOptions}
               value={scope}

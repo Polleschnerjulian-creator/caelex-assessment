@@ -46,6 +46,8 @@ import AdminPageHeader from "@/components/admin/AdminPageHeader";
 import AdminCard from "@/components/admin/AdminCard";
 import KpiTile from "@/components/admin/KpiTile";
 import RangeTabs from "@/components/admin/RangeTabs";
+import ExportButton from "@/components/admin/ExportButton";
+import type { CsvRow } from "@/components/admin/export-utils";
 import { useAdminData } from "@/components/admin/useAdminData";
 import { eur, pctLabel } from "@/components/admin/format";
 
@@ -101,6 +103,49 @@ export default function RevenuePage() {
     `/api/admin/v2/revenue?range=${range}`,
   );
 
+  // Export rows derived from the ALREADY-FETCHED view-model — no extra fetch.
+  // The plan-mix table is the most useful tabular cut (one row per plan, with a
+  // share-of-MRR column); the four MRR-movement legs are appended as their own
+  // rows under a synthetic "Movement (…)" plan label so the single download
+  // carries both the active base and the net change since the prior snapshot.
+  const exportRows = useMemo<CsvRow[]>(() => {
+    if (!data || data.isEmpty) return [];
+    const planRows: CsvRow[] = data.planMix.map((row) => ({
+      plan: planLabel(row.plan),
+      accounts: row.count,
+      mrr_eur: row.mrr,
+      share_of_mrr: data.mrr > 0 ? pctLabel(row.mrr / data.mrr) : "—",
+    }));
+    const m = data.movement;
+    const movementRows: CsvRow[] = [
+      {
+        plan: "Movement · New",
+        accounts: "",
+        mrr_eur: m.newMrr,
+        share_of_mrr: "",
+      },
+      {
+        plan: "Movement · Expansion",
+        accounts: "",
+        mrr_eur: m.expansionMrr,
+        share_of_mrr: "",
+      },
+      {
+        plan: "Movement · Contraction",
+        accounts: "",
+        mrr_eur: -m.contractionMrr,
+        share_of_mrr: "",
+      },
+      {
+        plan: "Movement · Churned",
+        accounts: "",
+        mrr_eur: -m.churnedMrr,
+        share_of_mrr: "",
+      },
+    ];
+    return [...planRows, ...movementRows];
+  }, [data]);
+
   return (
     <div>
       <AdminPageHeader
@@ -115,6 +160,19 @@ export default function RevenuePage() {
               >
                 as of {data.asOf.slice(0, 10)}
               </span>
+            )}
+            {data && !loading && !error && !data.isEmpty && (
+              <ExportButton
+                rows={exportRows}
+                filename={`caelex-revenue-${range}`}
+                columns={[
+                  { key: "plan", header: "Plan / Movement" },
+                  { key: "accounts", header: "Accounts" },
+                  { key: "mrr_eur", header: "MRR (EUR/mo)" },
+                  { key: "share_of_mrr", header: "Share of MRR" },
+                ]}
+                label="Export"
+              />
             )}
             <RangeTabs value={range} onChange={setRange} />
           </div>

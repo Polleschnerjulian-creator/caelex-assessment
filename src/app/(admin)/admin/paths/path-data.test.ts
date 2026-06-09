@@ -18,9 +18,11 @@ import {
   groupOutflows,
   worstExits,
   topEntries,
+  buildPathExport,
   isPathProduct,
   ENTRY_SENTINEL,
   EXIT_SENTINEL,
+  PATH_EXPORT_COLUMNS,
   PATH_PRODUCTS,
 } from "./path-data";
 import type { PathEdgeView } from "@/lib/admin/analytics-types";
@@ -350,5 +352,73 @@ describe("isPathProduct", () => {
     expect(isPathProduct("")).toBe(false);
     expect(isPathProduct(null)).toBe(false);
     expect(isPathProduct(42)).toBe(false);
+  });
+});
+
+describe("buildPathExport (CSV flatten)", () => {
+  // One real source with three out-edges (60/30/10 = 100 out), plus an (entry)
+  // source and a smaller /a source — mirrors the groupOutflows fixture.
+  const edges: PathEdgeView[] = [
+    { fromPath: "(entry)", toPath: "/dashboard", transitions: 100 },
+    { fromPath: "/dashboard", toPath: "/dashboard/timeline", transitions: 60 },
+    { fromPath: "/dashboard", toPath: "/dashboard/incidents", transitions: 30 },
+    { fromPath: "/dashboard", toPath: "(exit)", transitions: 10 },
+    { fromPath: "/a", toPath: "/b", transitions: 20 },
+  ];
+
+  it("emits one row per source→destination edge", () => {
+    const rows = buildPathExport(edges);
+    expect(rows).toHaveLength(edges.length);
+  });
+
+  it("orders by source outflow desc, then destination volume desc (reuses groupOutflows)", () => {
+    const rows = buildPathExport(edges);
+    // (entry) source has the biggest outflow (100), so it leads.
+    expect(rows[0].fromPath).toBe("(entry)");
+    expect(rows[0].toPath).toBe("/dashboard");
+    // Next the /dashboard group (100 out), destinations busiest-first.
+    expect(rows[1].fromPath).toBe("/dashboard");
+    expect(rows[1].toPath).toBe("/dashboard/timeline");
+    expect(rows[2].toPath).toBe("/dashboard/incidents");
+    expect(rows[3].toPath).toBe("(exit)");
+    // The smaller /a source comes last.
+    expect(rows[4].fromPath).toBe("/a");
+  });
+
+  it("carries each source's total outflow and the share-of-source as whole %", () => {
+    const rows = buildPathExport(edges);
+    const dashTimeline = rows.find(
+      (r) => r.fromPath === "/dashboard" && r.toPath === "/dashboard/timeline",
+    )!;
+    expect(dashTimeline.sourceOutflow).toBe(100);
+    expect(dashTimeline.transitions).toBe(60);
+    expect(dashTimeline.shareOfSource).toBe(60); // 60 / 100
+    const dashExit = rows.find(
+      (r) => r.fromPath === "/dashboard" && r.toPath === "(exit)",
+    )!;
+    expect(dashExit.shareOfSource).toBe(10);
+  });
+
+  it("emits the (entry)/(exit) sentinels as their literal tokens", () => {
+    const rows = buildPathExport(edges);
+    expect(rows.some((r) => r.fromPath === "(entry)")).toBe(true);
+    expect(rows.some((r) => r.toPath === "(exit)")).toBe(true);
+  });
+
+  it("exposes a fixed column spec the page reuses", () => {
+    expect(PATH_EXPORT_COLUMNS.map((c) => c.key)).toEqual([
+      "fromPath",
+      "sourceOutflow",
+      "toPath",
+      "transitions",
+      "shareOfSource",
+    ]);
+  });
+
+  it("returns [] for an empty edge list and never mutates the input", () => {
+    expect(buildPathExport([])).toEqual([]);
+    const before = JSON.stringify(edges);
+    buildPathExport(edges);
+    expect(JSON.stringify(edges)).toBe(before);
   });
 });

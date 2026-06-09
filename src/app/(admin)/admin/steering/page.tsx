@@ -36,6 +36,8 @@ import type {
 import { isSteeringEmpty } from "@/lib/admin/steering-data";
 import AdminPageHeader from "@/components/admin/AdminPageHeader";
 import AdminCard from "@/components/admin/AdminCard";
+import ExportButton from "@/components/admin/ExportButton";
+import type { CsvRow } from "@/components/admin/export-utils";
 import { useAdminData } from "@/components/admin/useAdminData";
 import { compactNumber, pctLabel } from "@/components/admin/format";
 
@@ -46,10 +48,45 @@ const ACCENT_RGB = "74, 98, 232" as const;
 /** Floor a non-zero heat cell's alpha so a faint-but-real cell stays visible. */
 const MIN_CELL_ALPHA = 0.08;
 
+/**
+ * Flatten the PMF product × jurisdiction cells into export rows. The matrix cell
+ * list is the richest dataset on this page; one CSV row per occupied cell, with
+ * the product display label (so "trade" reads as "Passage"), the jurisdiction
+ * bucket, and the weighted/raw/tenant/growth figures the heatmap encodes. Pure;
+ * fed straight from the page's already-fetched `data.pmf.cells` (no new fetch).
+ */
+function pmfExportRows(data: SteeringResponse): CsvRow[] {
+  return data.pmf.cells.map((cell) => ({
+    product: productLabel(cell.product),
+    jurisdiction: cell.jurisdiction,
+    weighted_outcomes: cell.weighted,
+    raw_outcomes: cell.rawOutcomes,
+    tenants: cell.tenants,
+    // A 0..1 ratio rendered as a plain percent integer; "" when there's no
+    // prior-week baseline (null) so the cell reads as blank, not "0%".
+    wow_growth_pct:
+      cell.wowGrowth === null ? "" : Math.round(cell.wowGrowth * 100),
+  }));
+}
+
+/** Stable column order + friendly headers for the PMF export. */
+const PMF_EXPORT_COLUMNS = [
+  { key: "product", header: "Product" },
+  { key: "jurisdiction", header: "Jurisdiction" },
+  { key: "weighted_outcomes", header: "Weighted outcomes" },
+  { key: "raw_outcomes", header: "Raw outcomes" },
+  { key: "tenants", header: "Tenants" },
+  { key: "wow_growth_pct", header: "WoW growth %" },
+] as const;
+
 export default function SteeringPage() {
   const { data, loading, error } = useAdminData<SteeringResponse>(
     "/api/admin/v2/steering",
   );
+
+  // Only offer the export once real PMF cells are in hand (the button no-ops on
+  // an empty dataset anyway, but gating keeps the header clean pre-go-live).
+  const canExport = !!data && !loading && !error && data.pmf.cells.length > 0;
 
   return (
     <div>
@@ -58,12 +95,22 @@ export default function SteeringPage() {
         subtitle="North-Star outcomes, product-market fit, and where users drop off"
         right={
           data && !loading && !error ? (
-            <span
-              className="text-[11px] tabular-nums"
-              style={{ color: "var(--text-tertiary)" }}
-            >
-              as of {data.asOf} · trailing 7 days
-            </span>
+            <div className="flex items-center gap-3">
+              <span
+                className="text-[11px] tabular-nums"
+                style={{ color: "var(--text-tertiary)" }}
+              >
+                as of {data.asOf} · trailing 7 days
+              </span>
+              {canExport && (
+                <ExportButton
+                  rows={pmfExportRows(data)}
+                  columns={PMF_EXPORT_COLUMNS}
+                  filename={`steering-pmf-${data.asOf}`}
+                  label="Export PMF"
+                />
+              )}
+            </div>
           ) : undefined
         }
       />

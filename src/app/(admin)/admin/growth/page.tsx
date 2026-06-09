@@ -49,8 +49,50 @@ import AdminPageHeader from "@/components/admin/AdminPageHeader";
 import AdminCard from "@/components/admin/AdminCard";
 import KpiTile from "@/components/admin/KpiTile";
 import RangeTabs from "@/components/admin/RangeTabs";
+import ExportButton from "@/components/admin/ExportButton";
+import type { CsvRow } from "@/components/admin/export-utils";
 import { useAdminData } from "@/components/admin/useAdminData";
 import { compactNumber, eur, pctLabel } from "@/components/admin/format";
+
+/* ─────────────────────────────────────────────────────────────────────────────
+ * CSV row projections — flatten the already-fetched, PII-free view-model arrays
+ * into spreadsheet-shaped rows for ExportButton. No new fetch, no recompute: the
+ * page hands its `data` (from useAdminData) straight through. Share/conversion
+ * are emitted as their 0..1 fraction (rounded to 4dp) so the CSV stays a faithful
+ * machine copy of what the table shows.
+ * ────────────────────────────────────────────────────────────────────────── */
+
+/** Channel-mix rows → one CSV line per (source × medium) bucket. */
+function channelMixCsvRows(data: GrowthResponse): CsvRow[] {
+  return data.channelMix.rows.map((row) => ({
+    source: row.source,
+    medium: row.medium,
+    touches: row.touches,
+    share: Number(row.share.toFixed(4)),
+  }));
+}
+
+const CHANNEL_MIX_COLUMNS = [
+  { key: "source", header: "Source" },
+  { key: "medium", header: "Medium" },
+  { key: "touches", header: "Touches" },
+  { key: "share", header: "Share" },
+];
+
+/** CRM pipeline rows → one CSV line per deal stage (canonical order). */
+function pipelineCsvRows(data: GrowthResponse): CsvRow[] {
+  return data.pipeline.stages.map((stage) => ({
+    stage: stageLabel(stage.stage),
+    deals: stage.count,
+    valueEur: stage.valueEur,
+  }));
+}
+
+const PIPELINE_COLUMNS = [
+  { key: "stage", header: "Stage" },
+  { key: "deals", header: "Deals" },
+  { key: "valueEur", header: "Value (EUR)" },
+];
 
 export default function GrowthPage() {
   // The page owns the selected range; RangeTabs reports changes and the URL is
@@ -74,6 +116,25 @@ export default function GrowthPage() {
               >
                 as of {data.asOf}
               </span>
+            )}
+            {data &&
+              !loading &&
+              !error &&
+              !isChannelMixEmpty(data.channelMix) && (
+                <ExportButton
+                  rows={channelMixCsvRows(data)}
+                  columns={CHANNEL_MIX_COLUMNS}
+                  filename={`caelex-growth-channel-mix-${range}`}
+                  label="Channel mix"
+                />
+              )}
+            {data && !loading && !error && !isPipelineEmpty(data.pipeline) && (
+              <ExportButton
+                rows={pipelineCsvRows(data)}
+                columns={PIPELINE_COLUMNS}
+                filename={`caelex-growth-pipeline-${range}`}
+                label="Pipeline"
+              />
             )}
             <RangeTabs value={range} onChange={setRange} />
           </div>

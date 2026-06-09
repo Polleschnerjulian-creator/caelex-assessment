@@ -30,7 +30,7 @@
  * SPDX-License-Identifier: LicenseRef-Caelex-Proprietary
  */
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import {
   ArrowRight,
   LogIn,
@@ -40,14 +40,18 @@ import {
 } from "lucide-react";
 import AdminPageHeader from "@/components/admin/AdminPageHeader";
 import AdminCard from "@/components/admin/AdminCard";
+import ExportButton from "@/components/admin/ExportButton";
 import { useAdminData } from "@/components/admin/useAdminData";
 import { compactNumber, pctLabel } from "@/components/admin/format";
+import type { CsvRow } from "@/components/admin/export-utils";
 import type { PathsResponse } from "@/lib/admin/analytics-types";
 import {
   groupOutflows,
   worstExits,
   topEntries,
   shortPathLabel,
+  buildPathExport,
+  PATH_EXPORT_COLUMNS,
   PATH_PRODUCTS,
   type PathProduct,
   type SourceGroup,
@@ -64,12 +68,35 @@ export default function PathsPage() {
     `/api/admin/v2/paths?product=${product}`,
   );
 
+  // Flatten the source-grouped flow into one row per source→destination edge
+  // from the ALREADY-FETCHED edges — no extra fetch (pure + tested helper).
+  const exportRows = useMemo<CsvRow[]>(
+    () => (data ? buildPathExport(data.edges) : []),
+    [data],
+  );
+
+  const hasEdges = !loading && !error && !!data && data.edges.length > 0;
+
   return (
     <>
       <AdminPageHeader
         title="Paths"
         subtitle="How users move through a product — entry pages, where they go next, and where they drop off — on its most recent active day."
-        right={<ProductSwitcher value={product} onChange={setProduct} />}
+        right={
+          <div className="flex items-center gap-3">
+            {hasEdges && (
+              <ExportButton
+                rows={exportRows}
+                columns={PATH_EXPORT_COLUMNS}
+                filename={`caelex-paths-${product}${
+                  data?.date ? `-${data.date}` : ""
+                }`}
+                label="Export"
+              />
+            )}
+            <ProductSwitcher value={product} onChange={setProduct} />
+          </div>
+        }
       />
 
       {loading && <PathsSkeleton />}

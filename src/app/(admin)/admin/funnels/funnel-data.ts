@@ -155,3 +155,67 @@ export function funnelTitle(
   }
   return `${view.product} · ${view.funnelId}`;
 }
+
+// ─────────────────────────────────────────────────────────────────────────────
+// CSV EXPORT — flatten every funnel's steps into one row-per-step table.
+// ─────────────────────────────────────────────────────────────────────────────
+
+/** One flat CSV cell value (mirrors export-utils' CsvValue without importing it,
+ * so this transform module stays free of the component graph). */
+type ExportCell = string | number;
+
+/** A flat export row: the column key → value map the ExportButton consumes. */
+export type FunnelExportRow = Record<string, ExportCell>;
+
+/**
+ * The fixed CSV column spec for the funnel export (order + headers). One row per
+ * step across all funnels: which funnel, the step ordinal + key, the entered /
+ * completed counts, the step→step conversion %, and the median time to the next
+ * step. Exported so the page passes the identical spec to ExportButton.
+ */
+export const FUNNEL_EXPORT_COLUMNS: ReadonlyArray<{
+  key: string;
+  header: string;
+}> = [
+  { key: "funnel", header: "Funnel" },
+  { key: "step", header: "Step" },
+  { key: "stepKey", header: "Step name" },
+  { key: "usersEntered", header: "Users entered" },
+  { key: "usersCompleted", header: "Users completed" },
+  { key: "conversionPct", header: "Conversion %" },
+  { key: "medianToNext", header: "Median to next" },
+];
+
+/**
+ * Flatten a list of funnels into a single row-per-step CSV table. Each funnel's
+ * steps are decorated by the same tested {@link buildFunnelRows} helper the page
+ * renders, so the exported numbers match the on-screen bars exactly (conversion
+ * clamped to 0..1, median-time humanised). The step ordinal is 1-based (matching
+ * the visible "1. / 2. …" labels). Conversion is emitted as a whole-number
+ * percent; a step nobody entered (undefined ratio) exports as EMPTY ("") rather
+ * than 0, mirroring the "—" the UI shows so an empty step is distinct from a
+ * genuine 0% one.
+ *
+ * Pure + total: never mutates the input; an empty funnel list yields [].
+ */
+export function buildFunnelExport(funnels: FunnelView[]): FunnelExportRow[] {
+  const out: FunnelExportRow[] = [];
+  for (const funnel of funnels) {
+    const title = funnelTitle(funnel);
+    const rows = buildFunnelRows(funnel.steps);
+    rows.forEach((row, i) => {
+      out.push({
+        funnel: title,
+        step: i + 1, // 1-based, matching the visible step labels
+        stepKey: row.stepKey,
+        usersEntered: row.usersEntered,
+        usersCompleted: row.usersCompleted,
+        // Whole-number percent for a real ratio; blank for the undefined case.
+        conversionPct:
+          row.conversionPct === null ? "" : Math.round(row.conversionPct * 100),
+        medianToNext: row.msToNextLabel,
+      });
+    });
+  }
+  return out;
+}

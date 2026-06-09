@@ -41,6 +41,8 @@ import {
 } from "@/lib/admin/health";
 import AdminPageHeader from "@/components/admin/AdminPageHeader";
 import AdminCard from "@/components/admin/AdminCard";
+import ExportButton from "@/components/admin/ExportButton";
+import type { CsvRow } from "@/components/admin/export-utils";
 import { useAdminData } from "@/components/admin/useAdminData";
 import { compactNumber, pctLabel } from "@/components/admin/format";
 
@@ -70,6 +72,71 @@ const EXPANSION_REASON_LABEL: Record<ExpansionReasonCode, string> = {
   RISING_USAGE: "Rising usage",
 };
 
+/* ─────────────────────────────────────────────────────────────────────────────
+ * CSV row projections — flatten the already-fetched watchlist / expansion arrays
+ * into spreadsheet-shaped rows for ExportButton. No new fetch, no recompute: the
+ * page hands its `data` (from useAdminData) straight through, reusing the SAME
+ * reason-code label maps the table renders so the CSV reads identically. An
+ * unknown health score is exported as an empty cell (never a fabricated 0). A
+ * null/unlimited cap is exported as an empty cap cell.
+ * ────────────────────────────────────────────────────────────────────────── */
+
+/** At-risk watchlist → one CSV line per tenant, worst-first (array order). */
+function watchlistCsvRows(rows: WatchlistEntry[]): CsvRow[] {
+  return rows.map((row) => ({
+    tenant: row.name,
+    plan: row.plan,
+    health: row.scoreUnknown ? "" : row.score,
+    trend: row.trend,
+    risk: row.risk,
+    riskScore: row.riskScore,
+    reasons: row.reasons.map((c) => RISK_REASON_META[c].label).join("; "),
+    recentActivity: row.recentActivity,
+    priorActivity: row.priorActivity,
+    lastActivity: row.lastActivityDate ?? "",
+  }));
+}
+
+const WATCHLIST_COLUMNS = [
+  { key: "tenant", header: "Tenant" },
+  { key: "plan", header: "Plan" },
+  { key: "health", header: "Health" },
+  { key: "trend", header: "Trend" },
+  { key: "risk", header: "Risk" },
+  { key: "riskScore", header: "Risk score" },
+  { key: "reasons", header: "Reasons" },
+  { key: "recentActivity", header: "Recent activity" },
+  { key: "priorActivity", header: "Prior activity" },
+  { key: "lastActivity", header: "Last activity" },
+];
+
+/** Expansion candidates → one CSV line per tenant, highest pressure first. */
+function expansionCsvRows(rows: ExpansionEntry[]): CsvRow[] {
+  return rows.map((row) => ({
+    tenant: row.name,
+    plan: row.plan,
+    health: row.scoreUnknown ? "" : row.score,
+    seatsUsed: row.seatsUsed,
+    seatCap: row.seatCap ?? "",
+    spacecraftUsed: row.spacecraftUsed,
+    spacecraftCap: row.spacecraftCap ?? "",
+    topUtilisation: Number(row.topUtilisation.toFixed(4)),
+    signals: row.reasons.map((c) => EXPANSION_REASON_LABEL[c]).join("; "),
+  }));
+}
+
+const EXPANSION_COLUMNS = [
+  { key: "tenant", header: "Tenant" },
+  { key: "plan", header: "Plan" },
+  { key: "health", header: "Health" },
+  { key: "seatsUsed", header: "Seats used" },
+  { key: "seatCap", header: "Seat cap" },
+  { key: "spacecraftUsed", header: "Spacecraft used" },
+  { key: "spacecraftCap", header: "Spacecraft cap" },
+  { key: "topUtilisation", header: "Top utilisation" },
+  { key: "signals", header: "Signals" },
+];
+
 export default function CustomersPage() {
   const { data, loading, error } = useAdminData<CustomersResponse>(
     "/api/admin/v2/customers",
@@ -82,13 +149,31 @@ export default function CustomersPage() {
         subtitle="Health watchlist, expansion candidates, and portfolio status"
         right={
           data && !loading && !error ? (
-            <span
-              className="text-[11px] tabular-nums"
-              style={{ color: "var(--text-tertiary)" }}
-            >
-              {compactNumber(data.totalTenants)} tenant
-              {data.totalTenants === 1 ? "" : "s"}
-            </span>
+            <div className="flex items-center gap-3">
+              <span
+                className="hidden text-[11px] tabular-nums sm:inline"
+                style={{ color: "var(--text-tertiary)" }}
+              >
+                {compactNumber(data.totalTenants)} tenant
+                {data.totalTenants === 1 ? "" : "s"}
+              </span>
+              {data.atRisk.length > 0 && (
+                <ExportButton
+                  rows={watchlistCsvRows(data.atRisk)}
+                  columns={WATCHLIST_COLUMNS}
+                  filename="caelex-customers-at-risk-watchlist"
+                  label="At-risk CSV"
+                />
+              )}
+              {data.expansion.length > 0 && (
+                <ExportButton
+                  rows={expansionCsvRows(data.expansion)}
+                  columns={EXPANSION_COLUMNS}
+                  filename="caelex-customers-expansion"
+                  label="Expansion"
+                />
+              )}
+            </div>
           ) : undefined
         }
       />
