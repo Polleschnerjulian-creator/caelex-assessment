@@ -184,7 +184,8 @@ describe("serverAnalytics", () => {
         eventType: "report_generated",
         eventCategory: "general",
         sessionId: "server",
-        eventData: { reportType: "compliance" },
+        // Event-specific data is nested under `payload` (canonical shape).
+        eventData: { payload: { reportType: "compliance" } },
       }),
     });
   });
@@ -207,6 +208,80 @@ describe("serverAnalytics", () => {
         organizationId: "org-1",
       }),
     });
+  });
+
+  // ─── Canonical envelope + payload shape (P1 prerequisite) ──────────────────
+
+  it("nests the event-specific data under `payload` in eventData", async () => {
+    vi.resetModules();
+    const { serverAnalytics } = await import("./analytics");
+
+    await serverAnalytics.track("document_uploaded", {
+      category: "evidence",
+      fileSize: 1024,
+    });
+
+    const data = mockCreate.mock.calls[0][0].data;
+    // The raw 2nd-arg lands UNDER `payload`, not flat on eventData.
+    expect(data.eventData.payload).toEqual({
+      category: "evidence",
+      fileSize: 1024,
+    });
+  });
+
+  it("does NOT stamp the product column when no product is supplied", async () => {
+    vi.resetModules();
+    const { serverAnalytics } = await import("./analytics");
+
+    await serverAnalytics.track("report_generated", { reportType: "x" });
+
+    const data = mockCreate.mock.calls[0][0].data;
+    // Backfill-safe default: column absent (→ NULL) and no envelope `product`.
+    expect("product" in data).toBe(false);
+    expect("product" in data.eventData).toBe(false);
+  });
+
+  it("stamps the product COLUMN and the envelope when product is supplied", async () => {
+    vi.resetModules();
+    const { serverAnalytics } = await import("./analytics");
+
+    await serverAnalytics.track(
+      "comply_assessment_completed",
+      { regulation: "eu_space_act", durationMs: 5000 },
+      {
+        product: "comply",
+        surface: "assessment",
+        feature: "eu-space-act",
+        category: "conversion",
+        userId: "user-1",
+      },
+    );
+
+    const data = mockCreate.mock.calls[0][0].data;
+    // 1. Top-level product column (drives index-based per-product rollups).
+    expect(data.product).toBe("comply");
+    // 2. Envelope flattened on top of eventData + payload nested beneath.
+    expect(data.eventData).toEqual({
+      product: "comply",
+      surface: "assessment",
+      feature: "eu-space-act",
+      payload: { regulation: "eu_space_act", durationMs: 5000 },
+    });
+  });
+
+  it("includes an optional topic + path when supplied", async () => {
+    vi.resetModules();
+    const { serverAnalytics } = await import("./analytics");
+
+    await serverAnalytics.track(
+      "atlas_source_read",
+      { sourceId: "src_123" },
+      { product: "atlas", surface: "browse", feature: "source", topic: "de" },
+    );
+
+    const data = mockCreate.mock.calls[0][0].data;
+    expect(data.eventData.topic).toBe("de");
+    expect(data.eventData.payload).toEqual({ sourceId: "src_123" });
   });
 
   it("silently handles prisma errors on server track", async () => {

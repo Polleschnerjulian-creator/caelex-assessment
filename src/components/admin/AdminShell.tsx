@@ -11,14 +11,17 @@
  * The SERVER (admin)/layout enforces the super-admin gate and passes the
  * resolved `userEmail` down — this component renders no auth logic, only layout.
  *
- * The topbar's left slot carries a constant surface label ("Analytics Center");
- * each page owns its own <AdminPageHeader> inside the scroll body, so the heading
- * scrolls with the content while the email/badge stays pinned.
+ * The topbar's left slot carries a PAGE-DRIVEN surface label derived from the
+ * active route (e.g. "CRM", "Steering") — not a constant "Analytics Center",
+ * which mislabelled CRM/Steering. Each page still owns its own
+ * <AdminPageHeader> inside the scroll body, so the big heading scrolls with the
+ * content while this terse breadcrumb + email/badge stay pinned.
  *
  * SPDX-License-Identifier: LicenseRef-Caelex-Proprietary
  */
 
 import type { ReactNode } from "react";
+import { usePathname } from "next/navigation";
 import AdminSidebar from "./AdminSidebar";
 import AdminTopBar from "./AdminTopBar";
 
@@ -27,7 +30,35 @@ export interface AdminShellProps {
   children: ReactNode;
 }
 
+/**
+ * Resolve the pinned topbar label from the current route. Longest-prefix wins
+ * so "/admin/crm" beats "/admin"; the Cockpit root ("/admin") is matched
+ * exactly. Falls back to "Admin" for any future sub-route not listed here
+ * (never a stale "Analytics Center").
+ */
+function topBarTitle(pathname: string): string {
+  const exact: Record<string, string> = {
+    "/admin": "Cockpit",
+  };
+  if (exact[pathname]) return exact[pathname];
+
+  const prefixes: { prefix: string; label: string }[] = [
+    { prefix: "/admin/steering", label: "Steering" },
+    { prefix: "/admin/crm", label: "CRM" },
+    { prefix: "/admin/retention", label: "Retention" },
+    { prefix: "/admin/funnels", label: "Funnels" },
+    { prefix: "/admin/paths", label: "Paths" },
+  ];
+  const match = prefixes.find(
+    (p) => pathname === p.prefix || pathname.startsWith(p.prefix + "/"),
+  );
+  return match?.label ?? "Admin";
+}
+
 export default function AdminShell({ userEmail, children }: AdminShellProps) {
+  const pathname = usePathname();
+  const title = topBarTitle(pathname);
+
   return (
     <div
       className="caelex-admin min-h-screen"
@@ -40,7 +71,7 @@ export default function AdminShell({ userEmail, children }: AdminShellProps) {
 
       {/* Content column — offset by the 240px fixed rail. */}
       <div className="ml-[240px] flex min-h-screen flex-col">
-        <AdminTopBar userEmail={userEmail}>Analytics Center</AdminTopBar>
+        <AdminTopBar userEmail={userEmail}>{title}</AdminTopBar>
 
         <main className="flex-1 px-6 py-6">
           {/* Centered, width-capped column so wide monitors don't stretch

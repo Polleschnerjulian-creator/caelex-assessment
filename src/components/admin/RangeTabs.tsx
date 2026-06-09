@@ -12,6 +12,10 @@
  * change. Driving it off ADMIN_RANGE_DAYS keeps the option set in lockstep with
  * the contract: add a range there and it appears here automatically.
  *
+ * The VALUES stay the raw union ("7d"/"30d"/"90d", what the API accepts); the
+ * LABELS are humanised ("7 days"/…) and derived from the same ADMIN_RANGE_DAYS
+ * day-count, so a new range still gets a readable label with no extra wiring.
+ *
  * SPDX-License-Identifier: LicenseRef-Caelex-Proprietary
  */
 
@@ -26,6 +30,12 @@ export interface RangeTabsProps {
 // API actually accepts. `Object.keys` is typed back to AdminRange[] because the
 // const record's keys ARE the AdminRange union.
 const RANGES = Object.keys(ADMIN_RANGE_DAYS) as AdminRange[];
+
+/** Humanised label for a range, derived from its day count ("7d" → "7 days"). */
+function rangeLabel(r: AdminRange): string {
+  const days = ADMIN_RANGE_DAYS[r];
+  return `${days} ${days === 1 ? "day" : "days"}`;
+}
 
 export default function RangeTabs({ value, onChange }: RangeTabsProps) {
   return (
@@ -60,7 +70,7 @@ export default function RangeTabs({ value, onChange }: RangeTabsProps) {
                 e.currentTarget.style.color = "var(--text-secondary)";
             }}
           >
-            {r}
+            {rangeLabel(r)}
           </button>
         );
       })}

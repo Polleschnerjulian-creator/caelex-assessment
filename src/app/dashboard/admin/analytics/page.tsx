@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
+import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   LayoutDashboard,
@@ -504,6 +505,47 @@ function ErrorState({ message }: { message: string }) {
         Failed to load data
       </p>
       <p className="text-small text-[var(--text-secondary)]">{message}</p>
+    </div>
+  );
+}
+
+// A KPI-sized card that explicitly says a metric isn't wired yet — used in
+// place of MetricCard wherever we'd otherwise print a fabricated number.
+function ComingSoonTile({
+  title,
+  icon,
+}: {
+  title: string;
+  icon: React.ReactNode;
+}) {
+  return (
+    <div className="bg-[var(--surface-sunken)] border border-[var(--border-subtle)] rounded-xl p-5">
+      <div className="flex items-start justify-between mb-4">
+        <div className="w-10 h-10 rounded-lg bg-[var(--surface-sunken)] text-[var(--text-tertiary)] flex items-center justify-center">
+          {icon}
+        </div>
+      </div>
+      <p className="text-small text-[var(--text-secondary)] uppercase tracking-wider mb-1">
+        {title}
+      </p>
+      <span className="inline-block text-caption px-2 py-1 rounded-full bg-[var(--surface-sunken)] text-[var(--text-tertiary)] font-medium">
+        Coming soon
+      </span>
+    </div>
+  );
+}
+
+// A full-width honesty notice explaining why infra tiles are blank.
+function ComingSoonNotice({ title, body }: { title: string; body: string }) {
+  return (
+    <div className="bg-[var(--surface-sunken)] border border-[var(--border-subtle)] rounded-xl p-4 flex items-start gap-3">
+      <Clock size={18} className="text-[var(--text-tertiary)] mt-0.5" />
+      <div>
+        <p className="text-body font-medium text-[var(--text-primary)]">
+          {title}
+        </p>
+        <p className="text-small text-[var(--text-secondary)] mt-0.5">{body}</p>
+      </div>
     </div>
   );
 }
@@ -1616,39 +1658,28 @@ function InfrastructureTab({ timeRange }: { timeRange: TimeRange }) {
   if (loading) return <LoadingState />;
   if (error) return <ErrorState message={error} />;
 
-  const metrics = data?.metrics;
-  const health = data?.health;
+  // metrics/health are intentionally NOT read — the infra telemetry source
+  // isn't wired yet, so we render honest "coming soon" tiles instead of the
+  // fabricated 99.99% uptime / 0% utilisation those fields would carry.
   const endpoints = data?.endpoints || [];
   const errors = data?.errors;
   const trends = data?.trends;
 
   return (
     <div className="space-y-6">
+      {/* Honesty notice — server/infra telemetry is not yet wired (no real
+          SLO/uptime/CPU source). We badge these "Coming soon" rather than show
+          fabricated 99.99% uptime / 0% utilisation to a founder. */}
+      <ComingSoonNotice
+        title="Infrastructure telemetry coming soon"
+        body="Live uptime, SLO/error-budget, and system-health metrics need real telemetry wired (currently no data source). We don't show placeholder numbers here."
+      />
+
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <MetricCard
-          title="Uptime"
-          value={`${metrics?.uptime || 0}%`}
-          icon={<Server size={20} />}
-          color="emerald"
-        />
-        <MetricCard
-          title="Avg Response Time"
-          value={`${metrics?.avgResponseMs || 0}ms`}
-          icon={<Zap size={20} />}
-          color="blue"
-        />
-        <MetricCard
-          title="Error Rate"
-          value={`${metrics?.errorRate || 0}%`}
-          icon={<AlertTriangle size={20} />}
-          color={metrics?.errorRate && metrics.errorRate > 1 ? "red" : "amber"}
-        />
-        <MetricCard
-          title="API Calls"
-          value={metrics?.totalApiCalls || 0}
-          icon={<Activity size={20} />}
-          color="purple"
-        />
+        <ComingSoonTile title="Uptime" icon={<Server size={20} />} />
+        <ComingSoonTile title="Avg Response Time" icon={<Zap size={20} />} />
+        <ComingSoonTile title="Error Rate" icon={<AlertTriangle size={20} />} />
+        <ComingSoonTile title="API Calls" icon={<Activity size={20} />} />
       </div>
 
       {/* API Performance Trend */}
@@ -1722,49 +1753,29 @@ function InfrastructureTab({ timeRange }: { timeRange: TimeRange }) {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* System Health */}
+        {/* System Health — NOT rendered with live values. SystemHealthMetric
+            has no writer yet, so CPU/Memory/Disk/DB would be a constant 0%.
+            We show an honest "coming soon" panel instead of fake gauges. */}
         <div className="bg-[var(--surface-sunken)] border border-[var(--border-subtle)] rounded-xl p-6">
           <h3 className="text-subtitle font-medium text-[var(--text-primary)] mb-4">
             System Health
           </h3>
           <div className="grid grid-cols-2 gap-4">
-            {[
-              { name: "CPU Usage", value: health?.cpu || 0, unit: "%" },
-              { name: "Memory Usage", value: health?.memory || 0, unit: "%" },
-              { name: "Disk Usage", value: health?.disk || 0, unit: "%" },
-              {
-                name: "DB Connections",
-                value: health?.dbConnections || 0,
-                unit: "",
-              },
-            ].map((metric) => (
-              <div
-                key={metric.name}
-                className="bg-[var(--surface-sunken)] rounded-lg p-4"
-              >
-                <p className="text-caption text-[var(--text-secondary)] uppercase tracking-wider">
-                  {metric.name}
-                </p>
-                <p className="text-display-sm font-light text-[var(--text-primary)] mt-1">
-                  {metric.value}
-                  {metric.unit}
-                </p>
-                {metric.unit === "%" && (
-                  <div className="mt-2 h-1 bg-[var(--surface-sunken)] rounded-full overflow-hidden">
-                    <div
-                      className={`h-full rounded-full ${
-                        metric.value > 80
-                          ? "bg-[var(--accent-danger)]"
-                          : metric.value > 60
-                            ? "bg-[var(--accent-warning)]"
-                            : "bg-[var(--accent-success-soft)]0"
-                      }`}
-                      style={{ width: `${metric.value}%` }}
-                    />
-                  </div>
-                )}
-              </div>
-            ))}
+            {["CPU Usage", "Memory Usage", "Disk Usage", "DB Connections"].map(
+              (name) => (
+                <div
+                  key={name}
+                  className="bg-[var(--surface-sunken)] rounded-lg p-4"
+                >
+                  <p className="text-caption text-[var(--text-secondary)] uppercase tracking-wider">
+                    {name}
+                  </p>
+                  <span className="inline-block mt-2 text-caption px-2 py-1 rounded-full bg-[var(--surface-sunken)] text-[var(--text-tertiary)] font-medium">
+                    Coming soon
+                  </span>
+                </div>
+              ),
+            )}
           </div>
         </div>
 
@@ -1835,6 +1846,41 @@ function InfrastructureTab({ timeRange }: { timeRange: TimeRange }) {
 }
 
 // ============================================================================
+// MOVED BANNER — this surface is superseded by the v2 Admin command center
+// ============================================================================
+
+function MovedBanner() {
+  return (
+    <div className="border-b border-[var(--accent-primary)]/20 bg-[var(--accent-primary-soft)]">
+      <div className="max-w-[1600px] mx-auto px-6 py-3 flex flex-wrap items-center justify-between gap-3">
+        <div className="flex items-center gap-3 min-w-0">
+          <Sparkles
+            size={18}
+            className="text-[var(--accent-primary)] flex-shrink-0"
+          />
+          <div className="min-w-0">
+            <p className="text-body font-medium text-[var(--text-primary)]">
+              This dashboard has moved to the new Admin command center
+            </p>
+            <p className="text-small text-[var(--text-secondary)] mt-0.5">
+              This legacy CEO Analytics view is frozen. New work lands in the
+              cross-product Cockpit.
+            </p>
+          </div>
+        </div>
+        <Link
+          href="/admin"
+          className="flex-shrink-0 inline-flex items-center gap-2 px-4 py-2 bg-[var(--accent-primary)] hover:bg-[var(--accent-primary-hover)] text-white text-body font-medium rounded-lg transition-colors"
+        >
+          Open Admin command center
+          <ArrowUpRight size={14} />
+        </Link>
+      </div>
+    </div>
+  );
+}
+
+// ============================================================================
 // MAIN COMPONENT
 // ============================================================================
 
@@ -1872,6 +1918,9 @@ export default function AnalyticsPage() {
 
   return (
     <div className="min-h-screen text-[var(--text-primary)]">
+      {/* Moved-to-v2 banner — this legacy surface is superseded by /admin. */}
+      <MovedBanner />
+
       {/* Header */}
       <div className="border-b border-[var(--border-subtle)] bg-light-bg/80 backdrop-blur-xl sticky top-0 z-20">
         <div className="max-w-[1600px] mx-auto px-6 py-4">

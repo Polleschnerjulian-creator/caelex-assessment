@@ -4,9 +4,15 @@
  * Unit tests for the Cockpit pure data-shaping helpers (Phase 4).
  * ════════════════════════════════════════════════════════════════════════════
  *
- * The cockpit page is a thin wrapper around `funnelWithConversion` +
- * `isCockpitEmpty`, so the arithmetic and the empty/data routing are what we
- * assert here. No React/DOM — these are pure functions.
+ * The cockpit page is a thin wrapper around the pure helpers in `cockpit-data`,
+ * so the arithmetic and the empty/data routing are what we assert here. No
+ * React/DOM — these are pure functions:
+ *   • funnelWithConversion / isCockpitEmpty — the original growth-funnel + empty
+ *     predicate.
+ *   • shapeProductDepth / isDepthEmpty — the P0 per-product DEPTH math (hit-rate
+ *     honesty, outcomes total, deterministic sort).
+ *   • revenueHeadline — the MRR/NRR fold with its honest-empty rule.
+ *   • formatAsOf — the hydration-safe freshness stamp.
  *
  * SPDX-License-Identifier: LicenseRef-Caelex-Proprietary
  */
@@ -18,7 +24,15 @@ import type {
   CockpitProductUsage,
   TrendPoint,
 } from "@/lib/admin/analytics-types";
-import { funnelWithConversion, isCockpitEmpty } from "./cockpit-data";
+import {
+  funnelWithConversion,
+  isCockpitEmpty,
+  shapeProductDepth,
+  isDepthEmpty,
+  revenueHeadline,
+  formatAsOf,
+  type ProductDepthRaw,
+} from "./cockpit-data";
 
 const ZERO_KPIS: CockpitKpis = {
   dau: 0,
@@ -167,5 +181,218 @@ describe("isCockpitEmpty", () => {
         growthFunnel: someFunnel,
       }),
     ).toBe(false);
+  });
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+// shapeProductDepth — the P0 per-product DEPTH math.
+// ─────────────────────────────────────────────────────────────────────────────
+
+/** Build a ProductDepthRaw with zeros, overriding only the fields a test cares about. */
+function rawDepth(
+  over: Partial<ProductDepthRaw> & { product: string },
+): ProductDepthRaw {
+  return {
+    assessmentsCompleted: 0,
+    classifications: 0,
+    screeningsTotal: 0,
+    screeningHits: 0,
+    licensesIssued: 0,
+    atlasMessages: 0,
+    astraMessages: 0,
+    documentsGenerated: 0,
+    aiCostUsd: 0,
+    ...over,
+  };
+}
+
+describe("shapeProductDepth", () => {
+  it("returns an empty array for empty input", () => {
+    expect(shapeProductDepth([])).toEqual([]);
+  });
+
+  it("computes screeningHitRate = hits / total", () => {
+    const [row] = shapeProductDepth([
+      rawDepth({ product: "trade", screeningsTotal: 8, screeningHits: 2 }),
+    ]);
+    expect(row.screeningHitRate).toBeCloseTo(0.25, 10);
+    expect(row.screeningsTotal).toBe(8);
+  });
+
+  it("surfaces screeningHitRate as NULL (not 0%) when there were no screenings", () => {
+    const [row] = shapeProductDepth([
+      rawDepth({ product: "trade", screeningsTotal: 0, screeningHits: 0 }),
+    ]);
+    // A product with no screenings has NO hit-rate — distinct from a 0% rate.
+    expect(row.screeningHitRate).toBeNull();
+  });
+
+  it("clamps screeningHits to never exceed screeningsTotal", () => {
+    const [row] = shapeProductDepth([
+      // Dirty input: more hits than total — must not produce a rate > 1.
+      rawDepth({ product: "trade", screeningsTotal: 3, screeningHits: 9 }),
+    ]);
+    expect(row.screeningHitRate).toBe(1);
+  });
+
+  it("rolls produced artefacts into `outcomes` and EXCLUDES screening volume", () => {
+    const [row] = shapeProductDepth([
+      rawDepth({
+        product: "trade",
+        assessmentsCompleted: 1,
+        classifications: 2,
+        licensesIssued: 3,
+        atlasMessages: 4,
+        astraMessages: 5,
+        documentsGenerated: 6,
+        // 100 screenings must NOT inflate the outcomes total.
+        screeningsTotal: 100,
+        screeningHits: 10,
+      }),
+    ]);
+    // 1 + 2 + 3 + (4+5) + 6 = 21
+    expect(row.outcomes).toBe(21);
+    expect(row.aiMessages).toBe(9);
+  });
+
+  it("rounds aiCostUsd to whole cents (no float-dust)", () => {
+    const [row] = shapeProductDepth([
+      rawDepth({ product: "atlas", aiCostUsd: 0.1 + 0.2 }),
+    ]);
+    expect(row.aiCostUsd).toBe(0.3);
+  });
+
+  it("sorts by outcomes DESC, then product name ASC for ties", () => {
+    const out = shapeProductDepth([
+      rawDepth({ product: "scholar", classifications: 1 }), // outcomes 1
+      rawDepth({ product: "atlas", classifications: 1 }), // outcomes 1 (tie)
+      rawDepth({ product: "trade", classifications: 5 }), // outcomes 5
+    ]);
+    expect(out.map((r) => r.product)).toEqual(["trade", "atlas", "scholar"]);
+  });
+
+  it("floors negative / non-finite junk counts to 0", () => {
+    const [row] = shapeProductDepth([
+      rawDepth({
+        product: "comply",
+        assessmentsCompleted: -3,
+        classifications: Number.NaN,
+        documentsGenerated: Number.POSITIVE_INFINITY,
+        aiCostUsd: Number.NaN,
+      }),
+    ]);
+    expect(row.assessmentsCompleted).toBe(0);
+    expect(row.classifications).toBe(0);
+    expect(row.documentsGenerated).toBe(0);
+    expect(row.aiCostUsd).toBe(0);
+    expect(row.outcomes).toBe(0);
+  });
+
+  it("does not mutate the input rows", () => {
+    const rows = [rawDepth({ product: "trade", classifications: 2 })];
+    const snapshot = JSON.parse(JSON.stringify(rows));
+    shapeProductDepth(rows);
+    expect(rows).toEqual(snapshot);
+  });
+});
+
+describe("isDepthEmpty", () => {
+  it("is empty for no rows", () => {
+    expect(isDepthEmpty([])).toBe(true);
+  });
+
+  it("is empty when every row has 0 outcomes AND 0 screenings", () => {
+    const rows = shapeProductDepth([
+      rawDepth({ product: "trade" }),
+      rawDepth({ product: "atlas" }),
+    ]);
+    expect(isDepthEmpty(rows)).toBe(true);
+  });
+
+  it("is NOT empty when a row has any outcomes", () => {
+    const rows = shapeProductDepth([
+      rawDepth({ product: "trade", classifications: 1 }),
+    ]);
+    expect(isDepthEmpty(rows)).toBe(false);
+  });
+
+  it("is NOT empty when a row has screenings but no outcomes (friction-only product)", () => {
+    const rows = shapeProductDepth([
+      rawDepth({ product: "trade", screeningsTotal: 4, screeningHits: 0 }),
+    ]);
+    expect(isDepthEmpty(rows)).toBe(false);
+  });
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+// revenueHeadline — the MRR/NRR fold.
+// ─────────────────────────────────────────────────────────────────────────────
+
+describe("revenueHeadline", () => {
+  it("is empty for null/undefined input", () => {
+    expect(revenueHeadline(null)).toEqual({ isEmpty: true, mrr: 0, nrr: null });
+    expect(revenueHeadline(undefined)).toEqual({
+      isEmpty: true,
+      mrr: 0,
+      nrr: null,
+    });
+  });
+
+  it("propagates isEmpty from the revenue lane (never €0-as-success)", () => {
+    const vm = revenueHeadline({ mrr: 0, nrr: 1.1, isEmpty: true });
+    expect(vm.isEmpty).toBe(true);
+    expect(vm.mrr).toBe(0);
+    expect(vm.nrr).toBeNull();
+  });
+
+  it("treats a non-finite MRR as empty", () => {
+    expect(
+      revenueHeadline({ mrr: Number.NaN, nrr: 1, isEmpty: false }).isEmpty,
+    ).toBe(true);
+  });
+
+  it("passes MRR + NRR through when present", () => {
+    const vm = revenueHeadline({ mrr: 12_500, nrr: 1.18, isEmpty: false });
+    expect(vm).toEqual({ isEmpty: false, mrr: 12_500, nrr: 1.18 });
+  });
+
+  it("keeps NRR null when it could not be computed", () => {
+    const vm = revenueHeadline({ mrr: 12_500, nrr: null, isEmpty: false });
+    expect(vm.isEmpty).toBe(false);
+    expect(vm.nrr).toBeNull();
+  });
+
+  it("normalises a non-finite NRR to null while keeping MRR", () => {
+    const vm = revenueHeadline({
+      mrr: 9000,
+      nrr: Number.POSITIVE_INFINITY,
+      isEmpty: false,
+    });
+    expect(vm.mrr).toBe(9000);
+    expect(vm.nrr).toBeNull();
+  });
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+// formatAsOf — hydration-safe freshness stamp.
+// ─────────────────────────────────────────────────────────────────────────────
+
+describe("formatAsOf", () => {
+  it("returns the UTC yyyy-mm-dd slice of a valid ISO timestamp", () => {
+    expect(formatAsOf("2026-06-09T03:21:00.000Z")).toBe("2026-06-09");
+  });
+
+  it("is stable regardless of the time-of-day within the same UTC date", () => {
+    expect(formatAsOf("2026-06-09T23:59:59.999Z")).toBe("2026-06-09");
+  });
+
+  it("returns null for a missing input", () => {
+    expect(formatAsOf(null)).toBeNull();
+    expect(formatAsOf(undefined)).toBeNull();
+    expect(formatAsOf("")).toBeNull();
+  });
+
+  it("returns null for an unparseable input (never 'Invalid Date')", () => {
+    expect(formatAsOf("not-a-date")).toBeNull();
   });
 });

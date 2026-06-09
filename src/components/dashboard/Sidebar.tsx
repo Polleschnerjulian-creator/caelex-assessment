@@ -1384,8 +1384,11 @@ export default function Sidebar({
                 >
                   Contact Requests
                 </NavItem>
+                {/* Points at the v2 Admin command center (/admin Cockpit),
+                    not the legacy /dashboard/admin/analytics page (frozen,
+                    superseded by the (admin) v2 surface). */}
                 <NavItem
-                  href="/dashboard/admin/analytics"
+                  href="/admin"
                   icon={<BarChart3 size={18} strokeWidth={1.5} />}
                   onClick={handleNavClick}
                   collapsed={collapsed}

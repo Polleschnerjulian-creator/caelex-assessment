@@ -12,12 +12,18 @@
  * {@link useAdminData}, which aborts the prior request on a fast toggle).
  *
  * Sections, top to bottom:
- *   1. Page header + range tabs.
- *   2. KPI row — DAU / WAU / MAU (latest-day point-in-time) and Signups /
+ *   1. Page header + range tabs + an "as of" freshness stamp (from the route's
+ *      `generatedAt`, formatted hydration-safe in `cockpit-data.ts`).
+ *   2. Revenue headline — plan-priced MRR + NRR (from the revenue lane), or an
+ *      honest empty state when revenue is structurally absent (never €0-as-win).
+ *   3. KPI row — DAU / WAU / MAU (latest-day point-in-time) and Signups /
  *      Page views / Revenue (summed across the range).
- *   3. DAU trend — an area+line sparkline over `dauTrend`.
- *   4. Usage by product — a compact table over `perProduct` (order preserved).
- *   5. Growth funnel — a horizontal bar list over `growthFunnel`, with the
+ *   4. Depth by product — REAL value-events from authoritative domain tables
+ *      (assessments, classifications, screening hit-rate, licenses, AI messages
+ *      + USD cost, documents) shaped in `cockpit-data.ts`.
+ *   5. DAU trend — an area+line sparkline over `dauTrend`.
+ *   6. Usage by product — a compact table over `perProduct` (order preserved).
+ *   7. Growth funnel — a horizontal bar list over `growthFunnel`, with the
  *      per-step completion % computed in `cockpit-data.ts` (this file stays a
  *      thin renderer; the arithmetic is unit-tested there).
  *
@@ -40,28 +46,43 @@ import {
   Tooltip,
 } from "recharts";
 import { BarChart3 } from "lucide-react";
-import type { AdminRange, CockpitResponse } from "@/lib/admin/analytics-types";
+import type { AdminRange } from "@/lib/admin/analytics-types";
 import AdminPageHeader from "@/components/admin/AdminPageHeader";
 import AdminCard from "@/components/admin/AdminCard";
 import KpiTile from "@/components/admin/KpiTile";
 import RangeTabs from "@/components/admin/RangeTabs";
 import { useAdminData } from "@/components/admin/useAdminData";
 import { compactNumber, eur, pctLabel } from "@/components/admin/format";
-import { funnelWithConversion, isCockpitEmpty } from "./cockpit-data";
+import {
+  funnelWithConversion,
+  isCockpitEmpty,
+  isDepthEmpty,
+  formatAsOf,
+  type CockpitResponseV2,
+  type ProductDepthVM,
+} from "./cockpit-data";
 
 export default function CockpitPage() {
   // The page owns the selected range; RangeTabs only reports changes and the
   // URL below is re-derived from it (the hook aborts the prior fetch on toggle).
   const [range, setRange] = useState<AdminRange>("30d");
-  const { data, loading, error } = useAdminData<CockpitResponse>(
+  const { data, loading, error } = useAdminData<CockpitResponseV2>(
     `/api/admin/v2/cockpit?range=${range}`,
   );
+
+  // Freshness: render the route's generatedAt as a stable "as of <date>" stamp
+  // (computed hydration-safe in the helper). Only shown once data is in hand.
+  const asOf = data ? formatAsOf(data.generatedAt) : null;
 
   return (
     <div>
       <AdminPageHeader
         title="Cockpit"
-        subtitle="Cross-product platform overview"
+        subtitle={
+          asOf
+            ? `Cross-product platform overview · as of ${asOf}`
+            : "Cross-product platform overview"
+        }
         right={<RangeTabs value={range} onChange={setRange} />}
       />
 
@@ -96,12 +117,16 @@ export default function CockpitPage() {
  * clean state machine (loading / error / empty / body).
  * ────────────────────────────────────────────────────────────────────────── */
 
-function CockpitBody({ data }: { data: CockpitResponse }) {
-  const { kpis, dauTrend, perProduct, growthFunnel } = data;
+function CockpitBody({ data }: { data: CockpitResponseV2 }) {
+  const { kpis, dauTrend, perProduct, growthFunnel, perProductDepth, revenue } =
+    data;
   const funnel = funnelWithConversion(growthFunnel);
 
   return (
     <div className="flex flex-col gap-5">
+      {/* Revenue headline — MRR + NRR, or an honest empty state. */}
+      <RevenueHeadline revenue={revenue} />
+
       {/* KPI row — 3 point-in-time + 3 range-summed stats. */}
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
         <KpiTile label="DAU" value={compactNumber(kpis.dau)} sub="latest day" />
@@ -120,10 +145,25 @@ function CockpitBody({ data }: { data: CockpitResponse }) {
         <KpiTile
           label="Revenue"
           value={eur(kpis.revenue)}
-          sub="this range"
-          tone="positive"
+          // Booked financial-entry revenue for the range — distinct from the
+          // plan-priced MRR headline above. Neutral tone on a true €0 so an empty
+          // FinancialEntry table never reads as a green "success".
+          sub="booked this range"
+          tone={kpis.revenue > 0 ? "positive" : "default"}
         />
       </div>
+
+      {/* Depth by product — REAL value-events from authoritative domain tables. */}
+      <AdminCard
+        title="Depth by product"
+        subtitle="Value-events produced this range — from authoritative domain tables, not page events"
+      >
+        {isDepthEmpty(perProductDepth) ? (
+          <NoSeries label="No value-events recorded for this range yet." />
+        ) : (
+          <ProductDepthTable rows={perProductDepth} />
+        )}
+      </AdminCard>
 
       {/* DAU trend sparkline. */}
       <AdminCard title="DAU trend" subtitle="Daily active users over the range">
@@ -162,12 +202,168 @@ function CockpitBody({ data }: { data: CockpitResponse }) {
 }
 
 /* ─────────────────────────────────────────────────────────────────────────────
+ * Revenue headline — plan-priced MRR + NRR as two big tiles. When the revenue
+ * lane reports `isEmpty` (no recurring revenue rows / revenue not yet wired) we
+ * render an HONEST empty state instead of a €0 tile that reads like a real zero.
+ * ────────────────────────────────────────────────────────────────────────── */
+
+function RevenueHeadline({
+  revenue,
+}: {
+  revenue: CockpitResponseV2["revenue"];
+}) {
+  if (revenue.isEmpty) {
+    return (
+      <AdminCard
+        title="Revenue"
+        subtitle={
+          revenue.asOf
+            ? `Plan-priced recurring revenue · as of ${revenue.asOf}`
+            : "Plan-priced recurring revenue"
+        }
+      >
+        <p
+          className="py-6 text-center text-[12px] leading-snug"
+          style={{ color: "var(--text-tertiary)" }}
+        >
+          No recurring revenue recorded yet. Once billing data is in place, MRR
+          and NRR appear here.
+        </p>
+      </AdminCard>
+    );
+  }
+
+  return (
+    <AdminCard
+      title="Revenue"
+      subtitle={
+        revenue.asOf
+          ? `Plan-priced recurring revenue · as of ${revenue.asOf}`
+          : "Plan-priced recurring revenue"
+      }
+    >
+      <div className="grid grid-cols-2 gap-3">
+        <KpiTile
+          label="MRR"
+          value={eur(revenue.mrr)}
+          sub="monthly recurring"
+          tone="positive"
+        />
+        <KpiTile
+          label="NRR"
+          value={revenue.nrr === null ? "—" : pctLabel(revenue.nrr)}
+          sub="net revenue retention"
+          tone={
+            revenue.nrr === null
+              ? "default"
+              : revenue.nrr >= 1
+                ? "positive"
+                : "warning"
+          }
+        />
+      </div>
+    </AdminCard>
+  );
+}
+
+/* ─────────────────────────────────────────────────────────────────────────────
+ * Depth-by-product table — the REAL per-product value-events from authoritative
+ * domain tables. Counts are compact; the screening hit-rate is a percent with an
+ * "of N" caption, or an em-dash when there were no screenings to rate (honest
+ * "no sample" — NOT a misleading 0%). AI cost is summed AtlasMessage.costUsd,
+ * shown precisely (sub-dollar) rather than compacted.
+ * ────────────────────────────────────────────────────────────────────────── */
+
+/** Precise USD for the (typically sub-dollar) AI cost; "$0" when there is none. */
+function usdCost(n: number): string {
+  if (!Number.isFinite(n) || n <= 0) return "$0";
+  // 2 dp for cents-scale spend, but drop to whole dollars once it's large.
+  return n >= 100 ? `$${Math.round(n)}` : `$${n.toFixed(2)}`;
+}
+
+function ProductDepthTable({ rows }: { rows: ProductDepthVM[] }) {
+  return (
+    <div className="overflow-x-auto">
+      <table className="w-full border-collapse text-[13px]">
+        <thead>
+          <tr className="text-left" style={{ color: "var(--text-secondary)" }}>
+            <Th className="text-left">Product</Th>
+            <Th className="text-right">Assessments</Th>
+            <Th className="text-right">Classifications</Th>
+            <Th className="text-right">Screen hit-rate</Th>
+            <Th className="text-right">Licenses</Th>
+            <Th className="text-right">AI msgs</Th>
+            <Th className="text-right">Docs</Th>
+            <Th className="text-right">AI cost</Th>
+          </tr>
+        </thead>
+        <tbody>
+          {rows.map((row) => (
+            <tr
+              key={row.product}
+              style={{ borderTop: "1px solid var(--border-default)" }}
+            >
+              <Td className="text-left">
+                <span
+                  className="font-medium capitalize"
+                  style={{ color: "var(--text-primary)" }}
+                >
+                  {row.product}
+                </span>
+              </Td>
+              <Td className="text-right tabular-nums">
+                {compactNumber(row.assessmentsCompleted)}
+              </Td>
+              <Td className="text-right tabular-nums">
+                {compactNumber(row.classifications)}
+              </Td>
+              <Td className="text-right tabular-nums">
+                {row.screeningHitRate === null ? (
+                  // No screenings → no rate. Em-dash, not "0%".
+                  <span style={{ color: "var(--text-tertiary)" }}>—</span>
+                ) : (
+                  <>
+                    {pctLabel(row.screeningHitRate)}
+                    <span
+                      className="ml-1 text-[11px]"
+                      style={{ color: "var(--text-tertiary)" }}
+                    >
+                      of {compactNumber(row.screeningsTotal)}
+                    </span>
+                  </>
+                )}
+              </Td>
+              <Td className="text-right tabular-nums">
+                {compactNumber(row.licensesIssued)}
+              </Td>
+              <Td className="text-right tabular-nums">
+                {compactNumber(row.aiMessages)}
+              </Td>
+              <Td className="text-right tabular-nums">
+                {compactNumber(row.documentsGenerated)}
+              </Td>
+              <Td className="text-right tabular-nums">
+                {row.aiCostUsd > 0 ? (
+                  usdCost(row.aiCostUsd)
+                ) : (
+                  <span style={{ color: "var(--text-tertiary)" }}>—</span>
+                )}
+              </Td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
+/* ─────────────────────────────────────────────────────────────────────────────
  * DAU trend chart — matches the established analytics-page Recharts language:
  * a soft emerald area under an emerald line, muted axis ticks, token-coloured
  * grid + tooltip.
  * ────────────────────────────────────────────────────────────────────────── */
 
-function DauTrendChart({ points }: { points: CockpitResponse["dauTrend"] }) {
+function DauTrendChart({ points }: { points: CockpitResponseV2["dauTrend"] }) {
   return (
     <div className="h-[260px] w-full">
       <ResponsiveContainer width="100%" height="100%">
@@ -237,7 +433,11 @@ function DauTrendChart({ points }: { points: CockpitResponse["dauTrend"] }) {
  * seconds or an em-dash when the rollup has no duration sample.
  * ────────────────────────────────────────────────────────────────────────── */
 
-function ProductUsageTable({ rows }: { rows: CockpitResponse["perProduct"] }) {
+function ProductUsageTable({
+  rows,
+}: {
+  rows: CockpitResponseV2["perProduct"];
+}) {
   return (
     <div className="overflow-x-auto">
       <table className="w-full border-collapse text-[13px]">

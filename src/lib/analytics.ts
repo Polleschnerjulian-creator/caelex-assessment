@@ -481,7 +481,30 @@ export const serverAnalytics = {
   },
 
   /**
-   * Track server-side event
+   * Track a server-emitted event in the SAME canonical shape the cross-product
+   * spine expects (so server emits roll up identically to client emits).
+   *
+   * Two things make a row "canonical" (verified against `AnalyticsEvent` in
+   * `prisma/schema.prisma`, the `EVENT_TYPES`/envelope in `./analytics/events.ts`,
+   * and the readers in `./analytics/rollups.ts`):
+   *
+   *   1. The dimensional ENVELOPE (`product`/`surface`/`feature`/`topic?`) lives
+   *      at the TOP of `eventData`, and the event-specific data is NESTED under a
+   *      `payload` key — exactly the persisted shape {@link buildEventData}
+   *      produces for client emits. The nightly rollups read event-specific
+   *      fields from `eventData.payload`, so a flat `eventData` (the previous
+   *      behaviour) silently misses them.
+   *   2. The `product` is ALSO stamped on the top-level `AnalyticsEvent.product`
+   *      COLUMN (nullable, index-driven). The per-product rollup passes scan by
+   *      this column (`@@index([product, eventType, timestamp])`) rather than
+   *      JSON-scanning, so an unstamped column drops the row from every
+   *      per-product metric.
+   *
+   * `product`/`surface`/`feature`/`topic` are OPTIONAL on `options`: a caller
+   * that does not yet supply them keeps working (the column stays `null` — the
+   * backfill-safe default the schema documents — and only `payload` is written).
+   * Callers in the typed taxonomy SHOULD pass them so the event lands in the
+   * canonical, roll-up-able shape. No value is ever invented here.
    */
   track: async (
     eventType: string,
@@ -490,9 +513,30 @@ export const serverAnalytics = {
       userId?: string;
       organizationId?: string;
       category?: EventCategory;
+      /** Cross-product dimension — stamped on the column AND the envelope. */
+      product?: Product;
+      /** Optional route-group / named feature area (slug). */
+      surface?: string;
+      /** Optional named action area (slug). */
+      feature?: string;
+      /** Optional normalised topic id/hash (slug) — NEVER raw query text. */
+      topic?: string;
+      /** Optional pathname (no query string) for path/funnel reconstruction. */
+      path?: string;
     } = {},
   ): Promise<void> => {
     const { prisma } = await import("@/lib/prisma");
+
+    // Persisted `eventData` = dimensional envelope flattened on top + the
+    // event-specific data nested under `payload`. Mirrors `buildEventData`'s
+    // persisted shape so server emits roll up identically to client emits.
+    const persistedEventData: Record<string, unknown> = {
+      ...(options.product !== undefined ? { product: options.product } : {}),
+      ...(options.surface !== undefined ? { surface: options.surface } : {}),
+      ...(options.feature !== undefined ? { feature: options.feature } : {}),
+      ...(options.topic !== undefined ? { topic: options.topic } : {}),
+      payload: eventData ?? {},
+    };
 
     try {
       await prisma.analyticsEvent.create({
@@ -502,7 +546,12 @@ export const serverAnalytics = {
           sessionId: "server",
           userId: options.userId,
           organizationId: options.organizationId,
-          eventData: eventData as Record<
+          // Top-level product column (index-driven per-product rollups).
+          ...(options.product !== undefined
+            ? { product: options.product }
+            : {}),
+          ...(options.path !== undefined ? { path: options.path } : {}),
+          eventData: persistedEventData as Record<
             string,
             string | number | boolean | null
           >,

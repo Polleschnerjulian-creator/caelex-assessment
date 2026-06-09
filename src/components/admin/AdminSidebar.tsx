@@ -6,14 +6,17 @@
  * Admin/Analytics Center — the fixed left navigation rail (Phase 4).
  * ════════════════════════════════════════════════════════════════════════════
  *
- * Four destinations for the cross-product analytics cockpit. Active state is
- * derived from usePathname: the Cockpit root ("/admin") matches exactly (so it
- * doesn't light up on every sub-route), while the leaf pages match a prefix.
- * A muted "← Back to app" link returns to the operator dashboard.
+ * Six destinations for the cross-product command center — Steering, Cockpit,
+ * CRM, Retention, Funnels, Paths. Steering is the founder home (top of the
+ * rail). Active state is derived from usePathname: both Steering ("/admin/
+ * steering") and the Cockpit root ("/admin") match EXACTLY (so the Cockpit
+ * doesn't light up on every sub-route and Steering stays distinct), while the
+ * other leaf pages match a prefix. A muted "← Back to app" link returns to the
+ * operator dashboard.
  *
  * Visual language mirrors the operator Sidebar (glass surface, --sidebar-* and
  * accent tokens, rounded nav pills) but this is a self-contained, much simpler
- * rail — no collapse, no groups — because /admin has a flat four-item IA.
+ * rail — no collapse, no groups — because /admin has a flat single-level IA.
  *
  * SPDX-License-Identifier: LicenseRef-Caelex-Proprietary
  */
@@ -21,6 +24,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
+  Compass,
   LayoutDashboard,
   Contact2,
   Users,
@@ -39,6 +43,13 @@ interface NavLink {
 }
 
 const NAV: NavLink[] = [
+  {
+    // Founder home — sits above the Cockpit. Its own prefix so it stays
+    // distinct from the exact-matched Cockpit root.
+    href: "/admin/steering",
+    label: "Steering",
+    icon: <Compass size={18} strokeWidth={1.5} />,
+  },
   {
     href: "/admin",
     label: "Cockpit",
