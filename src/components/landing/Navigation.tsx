@@ -397,14 +397,20 @@ export default function Navigation({
     <>
       <nav
         className={`fixed top-0 left-0 right-0 z-50 ${showDarkText ? "" : "dark-section"}`}
+        style={{
+          // Palantir's exact glass bar: a 10% grey tint + a 10px blur frosts the
+          // content behind it (NOT an opaque white wash). Edge-to-edge, no border.
+          backgroundColor: "rgba(171, 171, 171, 0.1)",
+          backdropFilter: "blur(10px)",
+          WebkitBackdropFilter: "blur(10px)",
+        }}
         aria-label="Main navigation"
       >
         {/* Edge-to-edge bar (Palantir geometry): full width, 30px side padding,
             64px tall, transparent over the hero, faint white on scroll. */}
         <div className="w-full px-6 md:px-[30px]">
-          {/* Transparent always (Palantir): no band, no blur, no border — only the
-              logo + button colours flip on scroll via showDarkText. */}
-          <div className="flex h-16 items-center justify-between">
+          {/* 70px glass bar (Palantir). Logo + button colours flip on scroll. */}
+          <div className="flex h-[70px] items-center justify-between">
             {/* Logo — hard left */}
             <Link
               href="/"
