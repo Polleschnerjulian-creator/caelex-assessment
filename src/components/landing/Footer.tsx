@@ -92,6 +92,7 @@ const documentLinks = [
   { label: "What is Caelex", href: "/what-is-caelex" },
   { label: "Guides", href: "/guides" },
   { label: "Blog", href: "/blog" },
+  { label: "Changelog", href: "/changelog" },
   { label: "Glossary", href: "/glossary" },
   { label: "Modules", href: "/modules" },
   { label: "Jurisdictions", href: "/jurisdictions" },
