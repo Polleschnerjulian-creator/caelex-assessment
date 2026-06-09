@@ -26,9 +26,10 @@ import { usePathname } from "next/navigation";
 import {
   Compass,
   LayoutDashboard,
+  CircleDollarSign,
   TrendingUp,
   Building2,
-  Contact2,
+  Gauge,
   Users,
   Filter,
   GitBranch,
@@ -59,6 +60,12 @@ const NAV: NavLink[] = [
     exact: true,
   },
   {
+    // Board-grade revenue — MRR/ARR, movement waterfall, 90-day forecast + benchmarks.
+    href: "/admin/revenue",
+    label: "Revenue",
+    icon: <CircleDollarSign size={18} strokeWidth={1.5} />,
+  },
+  {
     // Growth / PMF — sits right after the Cockpit (acquisition + activation lens).
     href: "/admin/growth",
     label: "Growth",
@@ -69,6 +76,12 @@ const NAV: NavLink[] = [
     href: "/admin/customers",
     label: "Customers",
     icon: <Building2 size={18} strokeWidth={1.5} />,
+  },
+  {
+    // Efficiency — unit economics: viral coefficient + AI cost margin.
+    href: "/admin/efficiency",
+    label: "Efficiency",
+    icon: <Gauge size={18} strokeWidth={1.5} />,
   },
   {
     href: "/admin/retention",

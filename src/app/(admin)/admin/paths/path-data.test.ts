@@ -15,6 +15,9 @@ import {
   isExit,
   shortPathLabel,
   buildPathRows,
+  groupOutflows,
+  worstExits,
+  topEntries,
   isPathProduct,
   ENTRY_SENTINEL,
   EXIT_SENTINEL,
@@ -143,6 +146,195 @@ describe("buildPathRows", () => {
 
   it("returns an empty array for no edges", () => {
     expect(buildPathRows([])).toEqual([]);
+  });
+});
+
+describe("groupOutflows", () => {
+  // /dashboard fans out to two pages; /a is a separate, smaller source.
+  const edges: PathEdgeView[] = [
+    { fromPath: "(entry)", toPath: "/dashboard", transitions: 100 },
+    { fromPath: "/dashboard", toPath: "/dashboard/timeline", transitions: 60 },
+    { fromPath: "/dashboard", toPath: "/dashboard/incidents", transitions: 30 },
+    { fromPath: "/dashboard", toPath: "(exit)", transitions: 10 },
+    { fromPath: "/a", toPath: "/b", transitions: 20 },
+  ];
+
+  it("groups edges by their source node", () => {
+    const groups = groupOutflows(edges);
+    // Three distinct sources: (entry), /dashboard, /a.
+    expect(groups.map((g) => g.fromPath).sort()).toEqual([
+      "(entry)",
+      "/a",
+      "/dashboard",
+    ]);
+  });
+
+  it("sorts groups by total outflow desc, then source asc", () => {
+    const groups = groupOutflows(edges);
+    // /dashboard outflow = 100, (entry) = 100, /a = 20.
+    // /dashboard and (entry) tie at 100 → tie-break by name: "(entry)" < "/dashboard".
+    expect(groups.map((g) => g.fromPath)).toEqual([
+      "(entry)",
+      "/dashboard",
+      "/a",
+    ]);
+    expect(groups[0].totalOut).toBe(100);
+    expect(groups[2].totalOut).toBe(20);
+  });
+
+  it("sizes each out-edge as a share of ITS source's outflow", () => {
+    const groups = groupOutflows(edges);
+    const dash = groups.find((g) => g.fromPath === "/dashboard")!;
+    expect(dash.totalOut).toBe(100);
+    // outEdges sorted busiest-first: 60, 30, 10.
+    expect(dash.outEdges.map((o) => o.transitions)).toEqual([60, 30, 10]);
+    expect(dash.outEdges[0].shareOfSource).toBeCloseTo(0.6, 10);
+    expect(dash.outEdges[1].shareOfSource).toBeCloseTo(0.3, 10);
+    expect(dash.outEdges[2].shareOfSource).toBeCloseTo(0.1, 10);
+    // Shares within a source sum to 1.
+    expect(dash.outEdges.reduce((s, o) => s + o.shareOfSource, 0)).toBeCloseTo(
+      1,
+      10,
+    );
+  });
+
+  it("normalises group widthFrac against the busiest source", () => {
+    const groups = groupOutflows(edges);
+    const dash = groups.find((g) => g.fromPath === "/dashboard")!;
+    const a = groups.find((g) => g.fromPath === "/a")!;
+    expect(dash.widthFrac).toBe(1); // 100/100
+    expect(a.widthFrac).toBe(0.2); // 20/100
+  });
+
+  it("flags the entry source and exit destinations", () => {
+    const groups = groupOutflows(edges);
+    const entry = groups.find((g) => g.fromPath === "(entry)")!;
+    expect(entry.isEntry).toBe(true);
+    const dash = groups.find((g) => g.fromPath === "/dashboard")!;
+    expect(dash.isEntry).toBe(false);
+    const exitEdge = dash.outEdges.find((o) => o.toPath === "(exit)")!;
+    expect(exitEdge.isExit).toBe(true);
+    expect(
+      dash.outEdges.find((o) => o.toPath === "/dashboard/timeline")!.isExit,
+    ).toBe(false);
+  });
+
+  it("degrades to zero widths with no traffic and does not mutate input", () => {
+    const zero: PathEdgeView[] = [
+      { fromPath: "/a", toPath: "/b", transitions: 0 },
+      { fromPath: "/a", toPath: "/c", transitions: 0 },
+    ];
+    const snapshot = JSON.parse(JSON.stringify(zero));
+    const groups = groupOutflows(zero);
+    expect(groups[0].widthFrac).toBe(0);
+    expect(groups[0].outEdges.every((o) => o.shareOfSource === 0)).toBe(true);
+    expect(zero).toEqual(snapshot);
+    expect(groupOutflows([])).toEqual([]);
+  });
+
+  it("coerces a non-finite transition count to 0", () => {
+    const bad: PathEdgeView[] = [
+      { fromPath: "/a", toPath: "/b", transitions: 40 },
+      { fromPath: "/a", toPath: "/c", transitions: NaN as unknown as number },
+    ];
+    const groups = groupOutflows(bad);
+    const a = groups[0];
+    expect(a.totalOut).toBe(40);
+    const c = a.outEdges.find((o) => o.toPath === "/c")!;
+    expect(c.transitions).toBe(0);
+    expect(c.shareOfSource).toBe(0);
+  });
+});
+
+describe("worstExits", () => {
+  const edges: PathEdgeView[] = [
+    // /dashboard: 90 stay, 10 exit → 10% drop-off, high traffic.
+    { fromPath: "/dashboard", toPath: "/dashboard/timeline", transitions: 90 },
+    { fromPath: "/dashboard", toPath: "(exit)", transitions: 10 },
+    // /pricing: 2 stay, 8 exit → 80% drop-off, low traffic but bleeds.
+    { fromPath: "/pricing", toPath: "/contact", transitions: 2 },
+    { fromPath: "/pricing", toPath: "(exit)", transitions: 8 },
+    // An entry→exit bounce — must be EXCLUDED (no page to attribute to).
+    { fromPath: "(entry)", toPath: "(exit)", transitions: 50 },
+  ];
+
+  it("ranks real pages by absolute exit volume desc", () => {
+    const rows = worstExits(edges);
+    expect(rows.map((r) => r.fromPath)).toEqual(["/dashboard", "/pricing"]);
+    expect(rows[0].transitions).toBe(10);
+    expect(rows[1].transitions).toBe(8);
+  });
+
+  it("excludes the entry→exit bounce edge", () => {
+    const rows = worstExits(edges);
+    expect(rows.some((r) => r.fromPath === "(entry)")).toBe(false);
+  });
+
+  it("computes exitRate as the page's drop-off across ALL its outflow", () => {
+    const rows = worstExits(edges);
+    const dash = rows.find((r) => r.fromPath === "/dashboard")!;
+    const pricing = rows.find((r) => r.fromPath === "/pricing")!;
+    expect(dash.exitRate).toBeCloseTo(10 / 100, 10); // 10%
+    expect(pricing.exitRate).toBeCloseTo(8 / 10, 10); // 80%
+  });
+
+  it("normalises widthFrac against the biggest exit edge", () => {
+    const rows = worstExits(edges);
+    expect(rows[0].widthFrac).toBe(1); // 10 is the biggest exit
+    expect(rows[1].widthFrac).toBe(0.8); // 8/10
+  });
+
+  it("honours the limit and returns empty when there are no exits", () => {
+    expect(worstExits(edges, 1)).toHaveLength(1);
+    const noExits: PathEdgeView[] = [
+      { fromPath: "/a", toPath: "/b", transitions: 5 },
+    ];
+    expect(worstExits(noExits)).toEqual([]);
+  });
+
+  it("does not mutate the caller's array", () => {
+    const snapshot = JSON.parse(JSON.stringify(edges));
+    worstExits(edges);
+    expect(edges).toEqual(snapshot);
+  });
+});
+
+describe("topEntries", () => {
+  const edges: PathEdgeView[] = [
+    { fromPath: "(entry)", toPath: "/dashboard", transitions: 70 },
+    { fromPath: "(entry)", toPath: "/pricing", transitions: 30 },
+    // An entry→exit bounce — must be EXCLUDED (no landing page).
+    { fromPath: "(entry)", toPath: "(exit)", transitions: 15 },
+    // A non-entry edge — irrelevant to entries.
+    { fromPath: "/dashboard", toPath: "/dashboard/timeline", transitions: 40 },
+  ];
+
+  it("ranks real landing pages by entry volume desc", () => {
+    const rows = topEntries(edges);
+    expect(rows.map((r) => r.toPath)).toEqual(["/dashboard", "/pricing"]);
+    expect(rows[0].transitions).toBe(70);
+  });
+
+  it("excludes the entry→exit bounce and non-entry edges", () => {
+    const rows = topEntries(edges);
+    expect(rows.some((r) => r.toPath === "(exit)")).toBe(false);
+    expect(rows.some((r) => r.toPath === "/dashboard/timeline")).toBe(false);
+  });
+
+  it("computes share of total entry volume and relative width", () => {
+    const rows = topEntries(edges); // entry total = 100 (70 + 30)
+    expect(rows[0].share).toBeCloseTo(0.7, 10);
+    expect(rows[1].share).toBeCloseTo(0.3, 10);
+    expect(rows[0].widthFrac).toBe(1); // 70 is the biggest
+    expect(rows[1].widthFrac).toBeCloseTo(30 / 70, 10);
+  });
+
+  it("honours the limit and returns empty with no entries", () => {
+    expect(topEntries(edges, 1)).toHaveLength(1);
+    const none: PathEdgeView[] = [
+      { fromPath: "/a", toPath: "/b", transitions: 5 },
+    ];
+    expect(topEntries(none)).toEqual([]);
   });
 });
 
