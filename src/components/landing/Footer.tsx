@@ -148,6 +148,7 @@ export default function Footer({ theme = "dark" }: FooterProps) {
   const [subscribed, setSubscribed] = useState(false);
   const [subscribing, setSubscribing] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [emailFocused, setEmailFocused] = useState(false);
   const isLight = theme === "light";
 
   const handleNewsletterSubmit = async (e: React.FormEvent) => {
@@ -250,15 +251,25 @@ export default function Footer({ theme = "dark" }: FooterProps) {
                     type="email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
+                    onFocus={() => setEmailFocused(true)}
+                    onBlur={() => setEmailFocused(false)}
                     placeholder="your@email.com"
                     required
                     aria-required="true"
                     aria-describedby={error ? "newsletter-error" : undefined}
                     aria-invalid={!!error}
-                    className={`flex-1 md:w-[280px] rounded-l-lg px-4 py-2.5 text-body outline-none transition-colors ${
+                    style={{
+                      // Always a black (dark) border; thicker on focus — NOT the
+                      // global emerald focus outline (killed via outline:none).
+                      outline: "none",
+                      border: `${emailFocused ? 2 : 1}px solid ${
+                        isLight ? "#1d1d1f" : "rgba(255,255,255,0.6)"
+                      }`,
+                    }}
+                    className={`flex-1 md:w-[280px] rounded-l-lg px-4 py-2.5 text-body transition-colors ${
                       isLight
-                        ? "bg-[#f5f5f7] border border-[#d2d2d7] text-[#1d1d1f] placeholder:text-[#86868b] focus:border-[#86868b]"
-                        : "bg-white/[0.06] border border-white/10 text-white placeholder:text-white/25 focus:border-white/30"
+                        ? "bg-[#f5f5f7] text-[#1d1d1f] placeholder:text-[#86868b]"
+                        : "bg-white/[0.06] text-white placeholder:text-white/25"
                     }`}
                   />
                   <button
