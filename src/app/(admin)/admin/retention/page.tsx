@@ -148,7 +148,7 @@ function ToneLegend() {
             key={a}
             className="h-3 w-5 rounded-[3px]"
             style={{
-              background: `rgba(74, 98, 232, ${a})`,
+              background: `rgba(16, 185, 129, ${a})`,
               border: "1px solid var(--border-default)",
             }}
           />

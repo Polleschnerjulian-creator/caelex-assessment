@@ -150,7 +150,7 @@ export default function AdminSidebar() {
               key={item.href}
               href={item.href}
               aria-current={active ? "page" : undefined}
-              className="group flex items-center gap-2.5 rounded-[10px] px-3 py-2 text-[13.5px] transition-colors duration-150"
+              className="group relative flex items-center gap-2.5 rounded-[10px] px-3 py-2 text-[13.5px] transition-colors duration-150"
               style={{
                 background: active ? "var(--accent-primary-soft)" : undefined,
                 color: active
@@ -167,6 +167,18 @@ export default function AdminSidebar() {
                   e.currentTarget.style.color = "var(--text-secondary)";
               }}
             >
+              {/* Active indicator — an emerald bar with a soft glow at the rail edge. */}
+              {active && (
+                <span
+                  aria-hidden
+                  className="absolute left-0 top-1/2 h-5 -translate-y-1/2 rounded-r-full"
+                  style={{
+                    width: 2.5,
+                    background: "var(--accent-primary)",
+                    boxShadow: "0 0 12px var(--accent-primary)",
+                  }}
+                />
+              )}
               <span
                 className="flex-shrink-0"
                 style={{

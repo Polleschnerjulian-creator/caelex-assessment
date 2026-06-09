@@ -756,18 +756,37 @@ body:has(.scholar-surface) {
    toggle for /admin can be layered on later.
    ─────────────────────────────────────────────────────────────────────────── */
 .caelex-admin {
-  --bg-base: #f6f7f9;
-  --surface: #ffffff;
-  --surface-raised: #ffffff;
-  --text-primary: #0f172a;
-  --text-secondary: #5b6573;
-  --text-tertiary: #94a3b8;
-  --border-default: #e6e8ec;
-  --separator-strong: #eceef1;
-  --accent-primary: #4a62e8;
-  --accent-primary-soft: #eef1fd;
-  --accent-danger: #ef4444;
-  color-scheme: light;
+  /* Dark "data-terminal" theme — neutral near-black + emerald (brand accent).
+     Linear × Bloomberg: dominant neutrals, ONE sharp accent, mono figures. */
+  --bg-base: #08080b;
+  --surface: #101013;
+  --surface-raised: #16161c;
+  --text-primary: #e9edf4;
+  --text-secondary: #9aa4b4;
+  --text-tertiary: #5c6677;
+  --border-default: rgba(255, 255, 255, 0.075);
+  --separator: rgba(255, 255, 255, 0.045);
+  --separator-strong: rgba(255, 255, 255, 0.06);
+  --accent-primary: #10b981;
+  --accent-primary-hover: #2ed3a0;
+  --accent-primary-soft: rgba(16, 185, 129, 0.12);
+  --accent-line: rgba(16, 185, 129, 0.3);
+  --accent-warning: #f0b429;
+  --accent-warning-soft: rgba(240, 180, 41, 0.12);
+  --accent-danger: #f0556b;
+  --accent-danger-soft: rgba(240, 85, 107, 0.12);
+  --accent-success: #10b981;
+  --accent-success-soft: rgba(16, 185, 129, 0.12);
+  /* Surface + border variants used across the pages — defined here so the admin
+     is SELF-CONTAINED and never inherits the global (indigo) dark tokens. */
+  --surface-base: #101013;
+  --surface-sunken: #0b0b0e;
+  --border-strong: rgba(255, 255, 255, 0.12);
+  --border-subtle: rgba(255, 255, 255, 0.05);
+  color-scheme: dark;
+  /* Geist sans across the surface; numeric cells switch to Geist Mono below. */
+  font-family: var(--font-geist), system-ui, sans-serif;
+  letter-spacing: -0.011em;
 }
 
 /* Force the document background light while an /admin page is mounted, so the
@@ -775,7 +794,15 @@ body:has(.scholar-surface) {
    or a paint gap (same technique as the Scholar shell above). */
 html:has(.caelex-admin),
 body:has(.caelex-admin) {
-  background-color: #f6f7f9 !important;
+  background-color: #08080b !important;
+}
+
+/* The terminal signature: every numeric cell (anything already marked
+   `tabular-nums` by the components) renders in Geist Mono so figures align and
+   read like a trading terminal. One rule re-skins all the numbers at once. */
+.caelex-admin .tabular-nums {
+  font-family: var(--font-jetbrains), ui-monospace, "SF Mono", monospace;
+  letter-spacing: -0.02em;
 }
 
 /* Re-skin the dark-only glass utilities as light panels inside /admin: flat
@@ -790,9 +817,15 @@ body:has(.caelex-admin) {
   border-color: var(--border-default) !important;
 }
 .caelex-admin .glass-elevated {
+  /* A faint inset top-highlight lifts the panel off the black; a soft dark drop
+     gives depth without the heavy light-theme shadow. */
   box-shadow:
-    0 1px 2px rgba(16, 24, 40, 0.04),
-    0 1px 3px rgba(16, 24, 40, 0.05) !important;
+    inset 0 1px 0 rgba(255, 255, 255, 0.04),
+    0 2px 10px rgba(0, 0, 0, 0.45) !important;
+}
+.caelex-admin .glass-floating {
+  background: var(--surface-raised) !important;
+  box-shadow: 0 12px 34px rgba(0, 0, 0, 0.6) !important;
 }
 
 /* `.glass-surface` hard-sets `position: relative` (for its ::before glow),

@@ -31,7 +31,7 @@ import type { RetentionResponse } from "@/lib/admin/analytics-types";
  * `rgba(...)` per cell. One source of truth for the heatmap hue; if the brand
  * accent ever changes, update this single constant.
  */
-export const RETENTION_ACCENT_RGB = "74, 98, 232" as const;
+export const RETENTION_ACCENT_RGB = "16, 185, 129" as const;
 
 /**
  * Floor any cell's alpha to this so even a low-but-nonzero retention tile is

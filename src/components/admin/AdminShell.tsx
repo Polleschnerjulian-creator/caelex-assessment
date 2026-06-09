@@ -67,7 +67,10 @@ export default function AdminShell({ userEmail, children }: AdminShellProps) {
     <div
       className="caelex-admin min-h-screen"
       style={{
-        background: "var(--bg-base, #f6f7f9)",
+        // Near-black base with a single faint emerald glow top-right for depth
+        // (the brand accent breathing through the dark terminal).
+        background:
+          "radial-gradient(1100px 580px at 84% -12%, rgba(16,185,129,0.07), transparent 60%), var(--bg-base, #08080b)",
         color: "var(--text-primary)",
       }}
     >

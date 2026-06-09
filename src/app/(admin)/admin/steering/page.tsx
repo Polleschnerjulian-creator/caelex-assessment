@@ -41,10 +41,10 @@ import type { CsvRow } from "@/components/admin/export-utils";
 import { useAdminData } from "@/components/admin/useAdminData";
 import { compactNumber, pctLabel } from "@/components/admin/format";
 
-/** The platform accent (#4a62e8) as an "r,g,b" triple — CSS custom properties
- * can't be interpolated into an rgba() alpha, so the heatmap keeps the channel
- * values here (one source of truth; mirrors the retention grid). */
-const ACCENT_RGB = "74, 98, 232" as const;
+/** The platform accent (emerald #10b981) as an "r,g,b" triple — CSS custom
+ * properties can't be interpolated into an rgba() alpha, so the heatmap keeps
+ * the channel values here (one source of truth; mirrors the retention grid). */
+const ACCENT_RGB = "16, 185, 129" as const;
 /** Floor a non-zero heat cell's alpha so a faint-but-real cell stays visible. */
 const MIN_CELL_ALPHA = 0.08;
 

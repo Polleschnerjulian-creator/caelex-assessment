@@ -46,13 +46,14 @@ export default function AdminTopBar({ userEmail, children }: AdminTopBarProps) {
           {userEmail}
         </span>
         <span
-          className="rounded-md px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-[0.06em]"
+          className="rounded-full px-2.5 py-[3px] text-[9.5px] font-medium uppercase tracking-[0.12em]"
           style={{
             background: "var(--accent-primary-soft)",
             color: "var(--accent-primary)",
+            border: "1px solid var(--accent-line)",
           }}
         >
-          Super-Admin
+          Super-admin
         </span>
       </div>
     </header>
