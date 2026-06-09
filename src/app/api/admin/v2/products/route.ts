@@ -618,10 +618,11 @@ async function readTrade(
 
 /**
  * SCHOLAR — the student legal-research surface. Outcomes = Planspiel runs started
- * + bookmarks saved. Scholar's domain rows are USER-DECOUPLED in the schema (bare
- * ownerUserId / userId, NO organizationId), so a by-organization breakdown is
- * STRUCTURALLY IMPOSSIBLE — we surface that honestly via orgBreakdownUnavailable.
- * The distinct-user COUNT (a single number) still works. No AI spend lane.
+ * + bookmarks saved. Scholar's domain rows carry no organizationId, but Scholar
+ * users are provisioned UNDER a university org, so the by-organization breakdown
+ * is resolved INDIRECTLY via OrganizationMember (user → university) and aggregated
+ * org-level. The per-org distinct-user COUNT and the user-ids stay server-side and
+ * never enter the payload. No AI spend lane.
  */
 async function readScholar(
   since: Date,
@@ -655,9 +656,42 @@ async function readScholar(
   for (const r of priorRuns) if (r.ownerUserId) priorUsers.add(r.ownerUserId);
   for (const r of priorBookmarks) if (r.userId) priorUsers.add(r.userId);
 
-  // Entitlement still meaningful (orgs hold Scholar access), but no org can be
-  // marked "active" from outcomes since outcomes carry no org → activeOrgIds empty.
-  const entitlement = await readEntitlement("SCHOLAR", new Set<string>());
+  // ── By-university breakdown ──
+  // Scholar rows carry no organizationId, but Scholar users are provisioned UNDER
+  // a university org, so we resolve each active user's org via OrganizationMember
+  // and aggregate THERE. Org-level output only: the user-ids feed the per-org
+  // distinct-COUNT Set + the resolution map, and are NEVER returned in the payload.
+  const memberships =
+    distinctUsers.size > 0
+      ? await prisma.organizationMember.findMany({
+          where: { userId: { in: Array.from(distinctUsers) } },
+          select: { userId: true, organizationId: true },
+        })
+      : [];
+  const userToOrg = new Map<string, string>();
+  for (const m of memberships)
+    if (!userToOrg.has(m.userId)) userToOrg.set(m.userId, m.organizationId);
+
+  const byOrg = new Map<string, OrgAcc>();
+  const attributeScholar = (userId: string | null | undefined) => {
+    if (!userId) return;
+    const orgId = userToOrg.get(userId);
+    if (!orgId) return; // user with no org membership → not org-attributable
+    const acc = ensureOrg(byOrg, orgId);
+    acc.userIds.add(userId);
+    acc.outcomes += 1;
+  };
+  for (const r of runs) attributeScholar(r.ownerUserId);
+  for (const r of bookmarks) attributeScholar(r.userId);
+
+  const names = await resolveOrgNames(new Set(byOrg.keys()));
+  for (const [orgId, acc] of byOrg.entries())
+    acc.orgName = names.get(orgId) ?? "Unknown org";
+
+  // An org CAN now be marked active (it produced ≥1 Scholar outcome this window),
+  // so the entitlement activation rate becomes real for Scholar too.
+  const activeOrgIds = new Set(byOrg.keys());
+  const entitlement = await readEntitlement("SCHOLAR", activeOrgIds);
 
   const outcomeCounts: OutcomeCountRaw[] = [
     { outcomeId: "scholar_planspiel_run", count: runs.length },
@@ -676,8 +710,10 @@ async function readScholar(
     astraMessages: 0,
     astraUsdPerMtok: SONNET_INPUT_USD_PER_MTOK,
     outcomeCounts,
-    orgRows: [], // user-decoupled → no org rows
-    orgBreakdownUnavailable: true,
+    orgRows: projectOrgRows(byOrg),
+    // Available now (resolved via OrganizationMember). Rows can still be empty if
+    // no active Scholar user has an org membership (e.g. individually provisioned).
+    orgBreakdownUnavailable: false,
     entitledOrgs: entitlement.entitledOrgs,
     entitledActiveOrgs: entitlement.entitledActiveOrgs,
   };
