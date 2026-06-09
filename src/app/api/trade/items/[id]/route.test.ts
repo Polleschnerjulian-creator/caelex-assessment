@@ -28,6 +28,9 @@ vi.mock("@/lib/prisma", () => ({
       findFirst: vi.fn(),
       update: vi.fn(),
     },
+    tradeItemNote: {
+      create: vi.fn().mockResolvedValue({ id: "note-1" }),
+    },
     tradeOperation: {
       findMany: vi.fn().mockResolvedValue([]),
     },
@@ -257,7 +260,18 @@ describe("PATCH /api/trade/items/[id] — Tier 1.8 recompute-on-classification",
       { id: "op-2" },
     ] as never);
 
-    const res = await PATCH(req({ eccnEU: "9A004" }), ctx());
+    // A human definitive classification → the T-M18 gate requires an audited
+    // source + justification (the matcher/copilot supply these). With them the
+    // DRAFT item auto-advances to CLASSIFIED and the fan-out recomputes.
+    const res = await PATCH(
+      req({
+        eccnEU: "9A004",
+        overrideSource: "BAFA Güterliste — Pos. 9A004",
+        overrideJustification:
+          "Erstklassifizierung nach Datenblatt-Review (Erdbeobachtungs-Nutzlast).",
+      }),
+      ctx(),
+    );
     expect(res.status).toBe(200);
 
     // Fan-out filter: this item's lines, this org, excluding terminal/halted states.
@@ -275,6 +289,59 @@ describe("PATCH /api/trade/items/[id] — Tier 1.8 recompute-on-classification",
     expect(recomputeOperation).toHaveBeenCalledTimes(2);
     expect(recomputeOperation).toHaveBeenCalledWith("op-1", "org-1");
     expect(recomputeOperation).toHaveBeenCalledWith("op-2", "org-1");
+  });
+
+  it("accepts an AI suggestion (ASTRA_SUGGESTED) without a justification, parks it in review, and still recomputes", async () => {
+    // The matcher "Übernehmen" / create-from-datasheet path: an AI proposal is
+    // accepted into REQUIRES_REVIEW — exempt from the T-M18 justification gate
+    // (the audited reasoning is captured at the human CONFIRM step) and it must
+    // NEVER silently become CLASSIFIED. The code change still triggers the
+    // operation recompute fan-out.
+    vi.mocked(prisma.tradeItem.findFirst).mockResolvedValue({
+      id: "item-1",
+      organizationId: "org-1",
+      status: "DRAFT",
+    } as never);
+    vi.mocked(prisma.tradeItem.update).mockResolvedValue({
+      id: "item-1",
+      status: "REQUIRES_REVIEW",
+    } as never);
+    vi.mocked(prisma.tradeOperation.findMany).mockResolvedValue([
+      { id: "op-1" },
+    ] as never);
+
+    const res = await PATCH(
+      req({ eccnEU: "9A004", classificationSource: "ASTRA_SUGGESTED" }),
+      ctx(),
+    );
+    expect(res.status).toBe(200);
+
+    // The update must NOT have auto-advanced an un-justified AI suggestion to
+    // CLASSIFIED — the second half of the exemption guard.
+    const updateArg = vi.mocked(prisma.tradeItem.update).mock.calls[0][0] as {
+      data: Record<string, unknown>;
+    };
+    expect(updateArg.data.status).not.toBe("CLASSIFIED");
+
+    // …but the code change still recomputes the operations the item rides on.
+    expect(recomputeOperation).toHaveBeenCalledTimes(1);
+    expect(recomputeOperation).toHaveBeenCalledWith("op-1", "org-1");
+  });
+
+  it("rejects a human control-code change that lacks an audited justification (400, no recompute)", async () => {
+    // A definitive human classification with no source/justification and no
+    // ASTRA_SUGGESTED marker is exactly the silent-overwrite leak T-M18 closes.
+    vi.mocked(prisma.tradeItem.findFirst).mockResolvedValue({
+      id: "item-1",
+      organizationId: "org-1",
+      status: "DRAFT",
+    } as never);
+
+    const res = await PATCH(req({ eccnEU: "9A004" }), ctx());
+    expect(res.status).toBe(400);
+    const body = (await res.json()) as { code?: string };
+    expect(body.code).toBe("OVERRIDE_REASONING_REQUIRED");
+    expect(recomputeOperation).not.toHaveBeenCalled();
   });
 
   it("does NOT recompute when the PATCH changes no classification-relevant field", async () => {
@@ -310,7 +377,154 @@ describe("PATCH /api/trade/items/[id] — Tier 1.8 recompute-on-classification",
     ] as never);
     vi.mocked(recomputeOperation).mockRejectedValue(new Error("boom"));
 
-    const res = await PATCH(req({ eccnUS: "9A515.a" }), ctx());
+    const res = await PATCH(
+      req({
+        eccnUS: "9A515.a",
+        overrideSource: "BAFA",
+        overrideJustification: "reason",
+      }),
+      ctx(),
+    );
     expect(res.status).toBe(200);
+  });
+});
+
+// ── T-M18: raw control-code override must carry audited reasoning ─────────────
+
+describe("PATCH /api/trade/items/[id] — T-M18 override-reasoning gate", () => {
+  const auth = {
+    userId: "user-1",
+    organizationId: "org-1",
+    role: "MANAGER" as import("@prisma/client").OrganizationRole,
+  };
+
+  function req(body: unknown): Request {
+    return new Request("http://localhost/api/trade/items/item-1", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body),
+    });
+  }
+  const ctx = (id = "item-1") => ({ params: Promise.resolve({ id }) });
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    vi.mocked(getTradeAuth).mockResolvedValue(auth);
+    vi.mocked(prisma.tradeOperation.findMany).mockResolvedValue([] as never);
+    vi.mocked(recomputeOperation).mockResolvedValue({
+      statusChange: null,
+    } as never);
+    vi.mocked(prisma.tradeItemNote.create).mockResolvedValue({
+      id: "note-1",
+    } as never);
+  });
+
+  it("REJECTS (400) a control-code CHANGE with no source / justification", async () => {
+    // Existing item has eccnEU=null; the PATCH sets it → a real change.
+    vi.mocked(prisma.tradeItem.findFirst).mockResolvedValue({
+      id: "item-1",
+      organizationId: "org-1",
+      status: "DRAFT",
+      eccnEU: null,
+      eccnUS: null,
+      usmlCategory: null,
+      mtcrCategory: null,
+      germanAlEntry: null,
+    } as never);
+
+    const res = await PATCH(req({ eccnEU: "9A004" }), ctx());
+    expect(res.status).toBe(400);
+    const body = await res.json();
+    expect(body.code).toBe("OVERRIDE_REASONING_REQUIRED");
+    expect(body.changedFields).toContain("eccnEU");
+    // The silent write was refused.
+    expect(prisma.tradeItem.update).not.toHaveBeenCalled();
+  });
+
+  it("ALLOWS a control-code change WITH source + justification and records an audit note", async () => {
+    vi.mocked(prisma.tradeItem.findFirst).mockResolvedValue({
+      id: "item-1",
+      organizationId: "org-1",
+      status: "DRAFT",
+      eccnEU: null,
+      eccnUS: null,
+      usmlCategory: null,
+      mtcrCategory: null,
+      germanAlEntry: null,
+    } as never);
+    vi.mocked(prisma.tradeItem.update).mockResolvedValue({
+      id: "item-1",
+      status: "CLASSIFIED",
+    } as never);
+
+    const res = await PATCH(
+      req({
+        eccnEU: "9A004",
+        overrideSource: "BAFA AzG 2025-0042",
+        overrideJustification:
+          "Aperture confirmed sub-threshold per datasheet.",
+      }),
+      ctx(),
+    );
+    expect(res.status).toBe(200);
+    expect(prisma.tradeItem.update).toHaveBeenCalledOnce();
+
+    // The override reasoning is recorded on the audit trail with the human.
+    expect(prisma.tradeItemNote.create).toHaveBeenCalledOnce();
+    const noteArgs = vi.mocked(prisma.tradeItemNote.create).mock.calls[0][0];
+    expect(noteArgs.data.itemId).toBe("item-1");
+    expect(noteArgs.data.userId).toBe("user-1");
+    expect(noteArgs.data.body).toContain("eccnEU");
+    expect(noteArgs.data.body).toContain("BAFA AzG 2025-0042");
+    expect(noteArgs.data.body).toContain("sub-threshold");
+
+    // The audit-note's `overrideSource`/`overrideJustification` are NOT
+    // forwarded to the TradeItem update (they are not columns).
+    const updateArgs = vi.mocked(prisma.tradeItem.update).mock.calls[0][0];
+    expect(updateArgs.data).not.toHaveProperty("overrideSource");
+    expect(updateArgs.data).not.toHaveProperty("overrideJustification");
+  });
+
+  it("does NOT require reasoning for a non-code change (e.g. name only)", async () => {
+    vi.mocked(prisma.tradeItem.findFirst).mockResolvedValue({
+      id: "item-1",
+      organizationId: "org-1",
+      status: "CLASSIFIED",
+      eccnEU: "9A004",
+      eccnUS: null,
+      usmlCategory: null,
+      mtcrCategory: null,
+      germanAlEntry: null,
+    } as never);
+    vi.mocked(prisma.tradeItem.update).mockResolvedValue({
+      id: "item-1",
+      status: "CLASSIFIED",
+    } as never);
+
+    const res = await PATCH(req({ name: "Renamed" }), ctx());
+    expect(res.status).toBe(200);
+    expect(prisma.tradeItemNote.create).not.toHaveBeenCalled();
+  });
+
+  it("does NOT require reasoning for a same-value (no-op) code write", async () => {
+    // PATCH sends the SAME eccnEU value that's already on the item.
+    vi.mocked(prisma.tradeItem.findFirst).mockResolvedValue({
+      id: "item-1",
+      organizationId: "org-1",
+      status: "CLASSIFIED",
+      eccnEU: "9A004",
+      eccnUS: null,
+      usmlCategory: null,
+      mtcrCategory: null,
+      germanAlEntry: null,
+    } as never);
+    vi.mocked(prisma.tradeItem.update).mockResolvedValue({
+      id: "item-1",
+      status: "CLASSIFIED",
+    } as never);
+
+    const res = await PATCH(req({ eccnEU: "9A004" }), ctx());
+    expect(res.status).toBe(200);
+    expect(prisma.tradeItemNote.create).not.toHaveBeenCalled();
   });
 });

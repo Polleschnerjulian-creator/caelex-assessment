@@ -112,6 +112,8 @@ import {
 const CLEAN_PARTY = {
   id: "party_clean_001",
   organizationId: "org_001",
+  legalName: "XYZ GmbH",
+  countryCode: "DE",
   canonicalName: "XYZ GmbH Musterstadt",
   leiCode: null,
   vatNumber: null,
@@ -307,13 +309,14 @@ describe("screenParty — T-H3: fail-closed on missing critical sanctions list",
     expect(result.party.screeningStatus).toBe(TradeScreeningStatus.CLEAR);
     // Critical lists are all present — none of them should appear as missing.
     // (DDTC_DEBARRED may appear in snapshotsMissing — that's non-critical.)
+    const criticalLists: TradeSanctionsList[] = [
+      TradeSanctionsList.OFAC_SDN,
+      TradeSanctionsList.EU_FSF,
+      TradeSanctionsList.UN_CONSOLIDATED,
+      TradeSanctionsList.BIS_ENTITY,
+    ];
     const missingCritical = result.summary.snapshotsMissing.filter((l) =>
-      [
-        TradeSanctionsList.OFAC_SDN,
-        TradeSanctionsList.EU_FSF,
-        TradeSanctionsList.UN_CONSOLIDATED,
-        TradeSanctionsList.BIS_ENTITY,
-      ].includes(l),
+      criticalLists.includes(l),
     );
     expect(missingCritical).toHaveLength(0);
   });
@@ -706,5 +709,164 @@ describe("screenParty — SNAPSHOT-STALENESS: fail-closed on stale critical snap
 
     expect(result.summary.decision).toBe(TradeScreeningDecision.CLEAR);
     expect(result.summary.snapshotsStale).toHaveLength(0);
+  });
+});
+
+// ─── Tests: three-valued verification + Explanation Envelope ─────────────────
+//
+// The LANE INVARIANT: a would-be-CLEAR with an unscreened critical list must
+// surface as UNVERIFIED, never CLEAR. The persisted `decision` enum has no
+// UNVERIFIED value, so it stays POTENTIAL_MATCH (fail-closed write), but
+// `summary.verification` + `explained.confidence` carry the honest UNVERIFIED
+// signal the UI renders loudly.
+
+describe("screenParty — three-valued verification (UNVERIFIED, not CLEAR)", () => {
+  const DAY_MS = 24 * 60 * 60 * 1000;
+
+  it("MISSING critical list ⇒ verification UNVERIFIED (NOT CLEAR), persisted POTENTIAL_MATCH", async () => {
+    // Only a non-critical list present — OFAC_SDN/EU_FSF/UN/BIS all missing.
+    const snapshots = new Map<TradeSanctionsList, object>();
+    snapshots.set(
+      TradeSanctionsList.UK_OFSI,
+      makeSnapshot(TradeSanctionsList.UK_OFSI),
+    );
+    mockAllLatestSnapshots.mockResolvedValue(snapshots);
+    mockScreeningResultCreate.mockResolvedValue(
+      mockTransactionReturn(
+        TradeScreeningDecision.POTENTIAL_MATCH,
+        TradeScreeningStatus.POTENTIAL_MATCH,
+      )[0],
+    );
+    mockPartyUpdate.mockResolvedValue(
+      mockTransactionReturn(
+        TradeScreeningDecision.POTENTIAL_MATCH,
+        TradeScreeningStatus.POTENTIAL_MATCH,
+      )[1],
+    );
+
+    const result = await screenParty(CLEAN_PARTY.id);
+
+    // Honest state is UNVERIFIED — never CLEAR.
+    expect(result.summary.verification).toBe("UNVERIFIED");
+    expect(result.summary.verification).not.toBe("CLEAR");
+    // Persisted decision stays the safe non-CLEAR enum (fail-closed write).
+    expect(result.summary.decision).toBe(
+      TradeScreeningDecision.POTENTIAL_MATCH,
+    );
+    // Explanation Envelope confidence is UNVERIFIED, with WHAT/WHY/WHEREFORE.
+    expect(result.explained.confidence).toBe("UNVERIFIED");
+    expect(result.explained.value.verification).toBe("UNVERIFIED");
+    expect(result.explained.what).toMatch(/UNVERIFIED/i);
+    expect(result.explained.what.length).toBeGreaterThan(0);
+    expect(result.explained.why.length).toBeGreaterThan(0);
+    expect(result.explained.wherefore.length).toBeGreaterThan(0);
+    // The missing critical lists are carried as gap + sources (with listVersion).
+    expect(result.explained.value.gap.missing).toContain(
+      TradeSanctionsList.OFAC_SDN,
+    );
+    expect(result.explained.sources.length).toBeGreaterThan(0);
+    expect(
+      result.explained.sources.some((s) =>
+        /MISSING/i.test(s.listVersion ?? ""),
+      ),
+    ).toBe(true);
+  });
+
+  it("STALE critical list ⇒ verification UNVERIFIED (NOT CLEAR), stale list cited as a source", async () => {
+    const snaps = allCriticalSnapshots();
+    // OFAC_SDN present but 3 days old (> 48h TTL).
+    snaps.set(
+      TradeSanctionsList.OFAC_SDN,
+      makeSnapshot(
+        TradeSanctionsList.OFAC_SDN,
+        "stalehash",
+        new Date(Date.now() - 3 * DAY_MS),
+      ),
+    );
+    mockAllLatestSnapshots.mockResolvedValue(snaps);
+    mockScreeningResultCreate.mockResolvedValue(
+      mockTransactionReturn(
+        TradeScreeningDecision.POTENTIAL_MATCH,
+        TradeScreeningStatus.POTENTIAL_MATCH,
+      )[0],
+    );
+    mockPartyUpdate.mockResolvedValue(
+      mockTransactionReturn(
+        TradeScreeningDecision.POTENTIAL_MATCH,
+        TradeScreeningStatus.POTENTIAL_MATCH,
+      )[1],
+    );
+
+    const result = await screenParty(CLEAN_PARTY.id);
+
+    expect(result.summary.verification).toBe("UNVERIFIED");
+    expect(result.summary.decision).toBe(
+      TradeScreeningDecision.POTENTIAL_MATCH,
+    );
+    expect(result.explained.confidence).toBe("UNVERIFIED");
+    // The stale list is in the gap with its age + as a STALE-tagged source.
+    expect(
+      result.explained.value.gap.stale.some(
+        (s) => s.list === TradeSanctionsList.OFAC_SDN,
+      ),
+    ).toBe(true);
+    expect(
+      result.explained.sources.some((s) => /STALE/i.test(s.listVersion ?? "")),
+    ).toBe(true);
+  });
+
+  it("all critical lists fresh + NO hit ⇒ verification CLEAR with HIGH confidence + cited sources", async () => {
+    mockAllLatestSnapshots.mockResolvedValue(allCriticalSnapshots());
+    mockScreeningResultCreate.mockResolvedValue(
+      mockTransactionReturn(
+        TradeScreeningDecision.CLEAR,
+        TradeScreeningStatus.CLEAR,
+      )[0],
+    );
+    mockPartyUpdate.mockResolvedValue(
+      mockTransactionReturn(
+        TradeScreeningDecision.CLEAR,
+        TradeScreeningStatus.CLEAR,
+      )[1],
+    );
+
+    const result = await screenParty(CLEAN_PARTY.id);
+
+    expect(result.summary.verification).toBe("CLEAR");
+    expect(result.explained.confidence).toBe("HIGH");
+    // A CLEAR is a determined result ⇒ sources MUST be non-empty.
+    expect(result.explained.sources.length).toBeGreaterThan(0);
+    // No gap when CLEAR.
+    expect(result.explained.value.gap.missing).toHaveLength(0);
+    expect(result.explained.value.gap.stale).toHaveLength(0);
+  });
+
+  it("real hit (cascade) ⇒ verification POTENTIAL_MATCH with MEDIUM confidence (NOT UNVERIFIED)", async () => {
+    mockAllLatestSnapshots.mockResolvedValue(allCriticalSnapshots());
+    mockRunCascadeForParty.mockResolvedValue({
+      cascadeHit: true,
+      sanctionedAncestorCount: 1,
+      aggregateSanctionedOwnership: 0.6,
+      ancestors: [],
+    });
+    mockScreeningResultCreate.mockResolvedValue(
+      mockTransactionReturn(
+        TradeScreeningDecision.POTENTIAL_MATCH,
+        TradeScreeningStatus.POTENTIAL_MATCH,
+      )[0],
+    );
+    mockPartyUpdate.mockResolvedValue(
+      mockTransactionReturn(
+        TradeScreeningDecision.POTENTIAL_MATCH,
+        TradeScreeningStatus.POTENTIAL_MATCH,
+      )[1],
+    );
+
+    const result = await screenParty(CLEAN_PARTY.id);
+
+    expect(result.summary.verification).toBe("POTENTIAL_MATCH");
+    expect(result.explained.confidence).toBe("MEDIUM");
+    expect(result.explained.value.gap.missing).toHaveLength(0);
+    expect(result.explained.value.gap.stale).toHaveLength(0);
   });
 });

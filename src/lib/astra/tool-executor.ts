@@ -7,9 +7,11 @@
 
 import "server-only";
 import { prisma } from "@/lib/prisma";
+import type { Prisma } from "@prisma/client";
 import { fromCents } from "@/lib/trade/money";
 import type { AstraToolCall, AstraToolResult, AstraUserContext } from "./types";
 import { logAuditEvent } from "@/lib/audit";
+import { decideTradeToolGate, buildTradeProposal } from "./trade-tool-gate";
 import {
   getArticleByNumber,
   getArticlesForOperatorType,
@@ -307,6 +309,67 @@ export async function executeTool(
         input: toolCall.input,
       },
     });
+
+    // ─── Trade tool gate (G4 / T-H10) ────────────────────────────────
+    // The founder's thesis at the engine layer: the AI proposes, the
+    // human commits. This is the single, central enforcement boundary —
+    // it runs BEFORE the handler dispatch AND before the action-bridge
+    // fallback, so neither a TOOL_HANDLERS entry nor a defineAction()
+    // action can bypass it for a mutating Trade tool.
+    //
+    //   - read-only Trade tool → allow (falls through, runs directly)
+    //   - mutating Trade tool + auditor persona → denied (read-only)
+    //   - mutating Trade tool + any other persona → deflected to a
+    //     PROPOSAL the human reviews and applies (never a direct write)
+    const gate = decideTradeToolGate(toolCall.name, userContext);
+    if (gate.kind === "deny-auditor") {
+      await logAuditEvent({
+        action: "ASTRA_TOOL_RESULT",
+        entityType: "astra",
+        entityId: toolCall.id,
+        userId: userContext.userId,
+        metadata: {
+          organizationId: userContext.organizationId,
+          toolName: toolCall.name,
+          gate: "deny-auditor",
+          executionTimeMs: Date.now() - startTime,
+          success: false,
+        },
+      });
+      return {
+        toolCallId: toolCall.id,
+        success: false,
+        error: gate.reason,
+      };
+    }
+    if (gate.kind === "propose") {
+      const proposal = buildTradeProposal(
+        toolCall.name,
+        toolCall.input,
+        gate.reason,
+      );
+      await logAuditEvent({
+        action: "ASTRA_TOOL_RESULT",
+        entityType: "astra",
+        entityId: toolCall.id,
+        userId: userContext.userId,
+        metadata: {
+          organizationId: userContext.organizationId,
+          toolName: toolCall.name,
+          gate: "propose",
+          executionTimeMs: Date.now() - startTime,
+          success: true,
+        },
+      });
+      // success:true so the proposal envelope reaches the model intact;
+      // `committed: false` inside the envelope tells the model (and user)
+      // that nothing was written.
+      return {
+        toolCallId: toolCall.id,
+        success: true,
+        data: proposal,
+      };
+    }
 
     // Execute the appropriate tool handler. If no TOOL_HANDLERS entry
     // exists, fall through to the Action-Layer bridge (Sprint B1) — this
@@ -3384,7 +3447,7 @@ const TOOL_HANDLERS: Record<string, ToolHandler> = {
       ? Math.min(50, Math.max(1, Math.floor(limitRaw)))
       : 10;
 
-    const where: Parameters<typeof prisma.tradeParty.findMany>[0]["where"] = {
+    const where: Prisma.TradePartyWhereInput = {
       organizationId: userContext.organizationId,
     };
 

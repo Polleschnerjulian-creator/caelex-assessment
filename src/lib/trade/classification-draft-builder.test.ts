@@ -103,6 +103,7 @@ describe("composeDraft — possible-match fallback", () => {
       ],
       nearMisses: [],
       noAttributesPopulated: false,
+      sanityWarnings: [],
       disclaimer: "test disclaimer",
     };
 
@@ -153,6 +154,7 @@ describe("composeDraft — near-miss fallback", () => {
         },
       ],
       noAttributesPopulated: false,
+      sanityWarnings: [],
       disclaimer: "test disclaimer",
     };
 
@@ -205,6 +207,7 @@ describe("composeDraft — proposals capped at 3", () => {
       possibleMatches: [],
       nearMisses: [],
       noAttributesPopulated: false,
+      sanityWarnings: [],
       disclaimer: "test",
     };
 

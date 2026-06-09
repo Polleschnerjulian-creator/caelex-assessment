@@ -31,10 +31,40 @@ import {
   nextActionLabel,
   type OperationStatus,
 } from "./OperationStepper";
+import { ExplainedPanel } from "@/components/trade/ExplainedPanel";
+import type { ExplainedResult } from "@/lib/comply-v2/trade/explained-result";
 
 // Re-export so existing imports `import { OperationStatus } from "./OperationLifecyclePanel"`
 // keep working without ripple changes elsewhere in the tree.
 export type { OperationStatus };
+
+/**
+ * Shape of one unresolved pre-ship precondition reason returned by the
+ * server gate (mirror of ShipGateReason in
+ * `src/lib/trade/ship-gate-precondition.server.ts`). UI-only mirror — the
+ * server is the source of truth.
+ */
+interface ShipGateReason {
+  code: string;
+  message: string;
+  severity: "BLOCKING" | "GAP";
+  lineId?: string;
+  itemName?: string;
+}
+
+/** The 409 body the gate returns when LICENSED → EXECUTED is refused. */
+interface ShipGateBlock {
+  reasons: ShipGateReason[];
+  overridable: boolean;
+  /**
+   * The FULL ExplainedResult envelope (WHAT/WHY/WHEREFORE/CONFIDENCE/SOURCE/
+   * OVERRIDE) the server gate returned. Rendered through <ExplainedPanel>,
+   * which withholds an incomplete envelope — so the withhold-on-incomplete
+   * guarantee applies at the ship moment too. Typed loosely as the value is
+   * an opaque server payload; <ExplainedPanel> re-validates it via isExplained.
+   */
+  explained?: ExplainedResult<unknown>;
+}
 
 const ALLOWED_TRANSITIONS: Record<OperationStatus, OperationStatus[]> = {
   DRAFT: ["AWAITING_CLASSIFICATION", "BLOCKED"],
@@ -135,6 +165,13 @@ export function OperationLifecyclePanel({
     useState<OperationStatus | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [err, setErr] = useState<string | null>(null);
+  // Pre-ship gate (fix G1): when LICENSED → EXECUTED is refused 409, the
+  // server returns the SPECIFIC unresolved reasons. We hold them here so the
+  // confirm dialog can surface them and (for GAP-level outcomes) collect a
+  // conscious, logged override justification before re-submitting.
+  const [shipGateBlock, setShipGateBlock] = useState<ShipGateBlock | null>(
+    null,
+  );
 
   const allowed = ALLOWED_TRANSITIONS[status] ?? [];
   const meta = STATUS_META[status];
@@ -149,21 +186,45 @@ export function OperationLifecyclePanel({
   const secondaryActions = allowed.filter((t) => t !== primaryNext);
   const [showSecondary, setShowSecondary] = useState(false);
 
-  async function performTransition(target: OperationStatus) {
+  async function performTransition(
+    target: OperationStatus,
+    shipGateOverride?: { justification: string },
+  ) {
     setSubmitting(true);
     setErr(null);
     try {
       const res = await fetch(`/api/trade/operations/${operationId}`, {
         method: "PATCH",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({ status: target }),
+        body: JSON.stringify({
+          status: target,
+          ...(shipGateOverride ? { shipGateOverride } : {}),
+        }),
       });
       const data = await res.json();
       if (!res.ok) {
+        // Pre-ship gate refusal: surface the specific reasons in the dialog
+        // instead of a bare error string. SHIP_GATE_BLOCKED is a hard block
+        // (no override); SHIP_GATE_UNRESOLVED offers a logged-override path.
+        if (
+          res.status === 409 &&
+          (data.code === "SHIP_GATE_UNRESOLVED" ||
+            data.code === "SHIP_GATE_BLOCKED") &&
+          Array.isArray(data.reasons)
+        ) {
+          setShipGateBlock({
+            reasons: data.reasons,
+            overridable: Boolean(data.overridable),
+            explained: data.explained,
+          });
+          setErr(null);
+          return;
+        }
         setErr(data.error ?? "Failed to transition status");
         return;
       }
       setPendingTransition(null);
+      setShipGateBlock(null);
       onStatusChanged();
     } catch (e) {
       setErr(e instanceof Error ? e.message : "Network error");
@@ -289,9 +350,13 @@ export function OperationLifecyclePanel({
           from={status}
           to={pendingTransition}
           submitting={submitting}
-          onConfirm={() => performTransition(pendingTransition)}
+          shipGateBlock={shipGateBlock}
+          onConfirm={(override) =>
+            performTransition(pendingTransition, override)
+          }
           onCancel={() => {
             setPendingTransition(null);
+            setShipGateBlock(null);
             setErr(null);
           }}
         />
@@ -334,17 +399,22 @@ function TransitionButton({
   );
 }
 
+/** Minimum justification length — mirrors the server Zod `.min(10)`. */
+const MIN_OVERRIDE_JUSTIFICATION = 10;
+
 function ConfirmTransition({
   from,
   to,
   submitting,
+  shipGateBlock,
   onConfirm,
   onCancel,
 }: {
   from: OperationStatus;
   to: OperationStatus;
   submitting: boolean;
-  onConfirm: () => void;
+  shipGateBlock: ShipGateBlock | null;
+  onConfirm: (override?: { justification: string }) => void;
   onCancel: () => void;
 }) {
   const fromMeta = STATUS_META[from];
@@ -361,6 +431,27 @@ function ConfirmTransition({
         ? "trade-chip-danger border"
         : "trade-chip-info border";
 
+  const [justification, setJustification] = useState("");
+  const hasGate = Boolean(shipGateBlock);
+  const hardBlocked = Boolean(shipGateBlock && !shipGateBlock.overridable);
+  const overridable = Boolean(shipGateBlock && shipGateBlock.overridable);
+  const justificationValid =
+    justification.trim().length >= MIN_OVERRIDE_JUSTIFICATION;
+
+  // Confirm is disabled while submitting, and — when a GAP-level gate is
+  // showing — until a sufficient justification is entered. A hard block can
+  // never be confirmed at all.
+  const confirmDisabled =
+    submitting || hardBlocked || (overridable && !justificationValid);
+
+  function handleConfirm() {
+    if (overridable) {
+      onConfirm({ justification: justification.trim() });
+    } else if (!hasGate) {
+      onConfirm();
+    }
+  }
+
   return (
     <div className="border-t border-trade-border-subtle bg-trade-bg-subtle p-4">
       <div className="mb-3 text-[12px] text-trade-text-primary">
@@ -370,7 +461,7 @@ function ConfirmTransition({
       <p className="mb-3 text-[11px] text-trade-text-secondary">
         {toMeta.description}
       </p>
-      {isHighStakes && (
+      {isHighStakes && !hasGate && (
         <div className="trade-chip-warn mb-3 rounded-md border px-3 py-2 text-[11px]">
           <AlertTriangle className="mr-1.5 inline h-3 w-3" />
           {to === "EXECUTED" &&
@@ -381,21 +472,125 @@ function ConfirmTransition({
             "Final state. Indicates operator filed voluntary self-disclosure with BAFA/BIS regarding past non-compliance on this operation."}
         </div>
       )}
+
+      {/* Pre-ship precondition gate (fix G1): the server re-ran the
+          conservative assessment and refused this LICENSED → EXECUTED move.
+          Surface the SPECIFIC unresolved reasons; a hard block cannot be
+          overridden, a GAP-level block needs a conscious, logged
+          justification recorded against the named human. */}
+      {hasGate && shipGateBlock && (
+        <div className="mb-3 space-y-3">
+          {/* The FULL Explanation Envelope (WHAT/WHY/WHEREFORE/CONFIDENCE/
+              SOURCE/OVERRIDE) the server gate returned, rendered through the
+              SAME <ExplainedPanel> enforcement boundary used elsewhere. If the
+              envelope is incomplete the panel withholds the verdict — so the
+              withhold-on-incomplete guarantee now applies at the ship moment.
+              A hard block surfaces an un-collapsible red banner. */}
+          {shipGateBlock.explained ? (
+            <ExplainedPanel
+              result={shipGateBlock.explained}
+              kind="Versand-Vorprüfung"
+              hardBanner={
+                hardBlocked
+                  ? "Versand gesperrt — EXECUTED ist nicht möglich (harte Sperre)."
+                  : undefined
+              }
+              defaultOpen
+            />
+          ) : null}
+
+          {/* Structured per-reason list — machine codes + per-line severity +
+              the affected item name. Complements the envelope's prose WHY with
+              the exact, itemised unresolved preconditions for the operator. */}
+          <div
+            className={`rounded-md border px-3 py-2.5 ${
+              hardBlocked ? "trade-chip-danger" : "trade-chip-warn"
+            }`}
+          >
+            <div className="mb-1.5 flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wide">
+              <AlertTriangle className="h-3.5 w-3.5" />
+              {hardBlocked
+                ? "Versand gesperrt — EXECUTED nicht möglich"
+                : "Offene Versand-Voraussetzungen"}
+            </div>
+            <ul className="space-y-1.5">
+              {shipGateBlock.reasons.map((r, i) => (
+                <li
+                  key={`${r.code}-${r.lineId ?? i}`}
+                  className="flex items-start gap-1.5 text-[11px] text-trade-text-primary"
+                >
+                  <span
+                    className={`mt-1 inline-block h-1.5 w-1.5 shrink-0 rounded-full ${
+                      r.severity === "BLOCKING"
+                        ? "bg-trade-accent-danger"
+                        : "bg-trade-accent-warn"
+                    }`}
+                    aria-hidden="true"
+                  />
+                  <span>
+                    {r.itemName ? (
+                      <span className="font-semibold">{r.itemName}: </span>
+                    ) : null}
+                    {r.message}
+                    <span className="ml-1 font-mono text-[10px] text-trade-text-muted">
+                      [{r.code}]
+                    </span>
+                  </span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </div>
+      )}
+
+      {/* Conscious-override justification — only for GAP-level outcomes.
+          A hard block never shows this field. */}
+      {overridable && (
+        <div className="mb-3">
+          <label
+            htmlFor="ship-gate-justification"
+            className="mb-1 block text-[11px] font-semibold text-trade-text-primary"
+          >
+            Begründung für die bewusste Freigabe (wird protokolliert)
+          </label>
+          <textarea
+            id="ship-gate-justification"
+            value={justification}
+            onChange={(e) => setJustification(e.target.value)}
+            rows={3}
+            minLength={MIN_OVERRIDE_JUSTIFICATION}
+            maxLength={2000}
+            placeholder="Warum darf trotz offener Punkte versendet werden? Diese Begründung wird mit deinem Namen im Audit-Log gespeichert."
+            className="w-full rounded-md border border-trade-border-subtle bg-trade-bg-panel px-2.5 py-2 text-[11px] text-trade-text-primary placeholder:text-trade-text-muted focus:border-trade-accent focus:outline-none"
+          />
+          <p className="mt-1 text-[10px] text-trade-text-muted">
+            Mindestens {MIN_OVERRIDE_JUSTIFICATION} Zeichen. Du bleibst die
+            verantwortliche, im Audit-Log benannte Person.
+          </p>
+        </div>
+      )}
+
       <div className="flex justify-end gap-2">
         <button
           onClick={onCancel}
           disabled={submitting}
           className="rounded-md px-3 py-1.5 text-[11px] text-trade-text-secondary transition hover:text-trade-text-primary"
         >
-          Cancel
+          {hardBlocked ? "Schließen" : "Cancel"}
         </button>
-        <button
-          onClick={onConfirm}
-          disabled={submitting}
-          className={`rounded-md px-3 py-1.5 text-[11px] font-semibold transition disabled:opacity-50 ${confirmClass}`}
-        >
-          {submitting ? "Moving…" : `Move to ${toMeta.label}`}
-        </button>
+        {!hardBlocked && (
+          <button
+            onClick={handleConfirm}
+            disabled={confirmDisabled}
+            className={`rounded-md px-3 py-1.5 text-[11px] font-semibold transition disabled:opacity-50 ${confirmClass}`}
+          >
+            {submitting
+              ? "Moving…"
+              : overridable
+                ? "Trotzdem freigeben (protokolliert)"
+                : `Move to ${toMeta.label}`}
+          </button>
+        )}
       </div>
     </div>
   );

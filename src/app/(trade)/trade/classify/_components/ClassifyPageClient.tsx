@@ -51,6 +51,8 @@ export interface DraftRowVM {
   decision: Decision;
   sourceFilename: string | null;
   tradeItemId: string | null;
+  /** User who authored the draft — drives four-eyes (author ≠ approver). */
+  createdById: string;
   createdAt: string;
   reviewedAt: string | null;
   /** The persisted JSON proposal — full `ClassificationDraft` shape. */
@@ -59,6 +61,12 @@ export interface DraftRowVM {
 
 interface ClassifyPageClientProps {
   canEdit: boolean;
+  /** The signed-in user — compared against each draft's author for four-eyes. */
+  currentUserId: string;
+  /** Org policy: moderate four-eyes (author ≠ approver) ON. */
+  fourEyesEnabled: boolean;
+  /** True when the current user is the org's only eligible approver. */
+  soleEligibleApprover: boolean;
   initialDrafts: DraftRowVM[];
 }
 
@@ -66,6 +74,9 @@ interface ClassifyPageClientProps {
 
 export function ClassifyPageClient({
   canEdit,
+  currentUserId,
+  fourEyesEnabled,
+  soleEligibleApprover,
   initialDrafts,
 }: ClassifyPageClientProps) {
   const [drafts, setDrafts] = useState<DraftRowVM[]>(initialDrafts);
@@ -135,7 +146,11 @@ export function ClassifyPageClient({
       )}
 
       {canEdit && (
-        <UploadPane onCreated={handleDraftCreated} onError={setActionError} />
+        <UploadPane
+          currentUserId={currentUserId}
+          onCreated={handleDraftCreated}
+          onError={setActionError}
+        />
       )}
 
       <DraftsList
@@ -148,6 +163,9 @@ export function ClassifyPageClient({
         <ReviewModal
           draft={openDraft}
           canEdit={canEdit}
+          currentUserId={currentUserId}
+          fourEyesEnabled={fourEyesEnabled}
+          soleEligibleApprover={soleEligibleApprover}
           onClose={() => setOpenDraft(null)}
           onDecisionRecorded={handleDecisionRecorded}
           onError={setActionError}
@@ -160,11 +178,12 @@ export function ClassifyPageClient({
 // ─── Upload pane ───────────────────────────────────────────────────
 
 interface UploadPaneProps {
+  currentUserId: string;
   onCreated: (row: DraftRowVM) => void;
   onError: (msg: string) => void;
 }
 
-function UploadPane({ onCreated, onError }: UploadPaneProps) {
+function UploadPane({ currentUserId, onCreated, onError }: UploadPaneProps) {
   const [pending, startTransition] = useTransition();
   const [rawText, setRawText] = useState("");
   const [dragOver, setDragOver] = useState(false);
@@ -188,6 +207,7 @@ function UploadPane({ onCreated, onError }: UploadPaneProps) {
         decision: "PENDING",
         sourceFilename: null,
         tradeItemId: null,
+        createdById: currentUserId,
         createdAt: new Date().toISOString(),
         reviewedAt: null,
         evidence: null, // page will re-fetch on next navigation
@@ -230,6 +250,7 @@ function UploadPane({ onCreated, onError }: UploadPaneProps) {
             decision: "PENDING",
             sourceFilename: file.name,
             tradeItemId: null,
+            createdById: currentUserId,
             createdAt: new Date().toISOString(),
             reviewedAt: null,
             evidence: null,
@@ -417,6 +438,9 @@ function DraftListItem({ draft, onSelect }: DraftListItemProps) {
 interface ReviewModalProps {
   draft: DraftRowVM;
   canEdit: boolean;
+  currentUserId: string;
+  fourEyesEnabled: boolean;
+  soleEligibleApprover: boolean;
   onClose: () => void;
   onDecisionRecorded: (draftId: string, decision: Decision) => void;
   onError: (msg: string) => void;
@@ -425,12 +449,22 @@ interface ReviewModalProps {
 function ReviewModal({
   draft,
   canEdit,
+  currentUserId,
+  fourEyesEnabled,
+  soleEligibleApprover,
   onClose,
   onDecisionRecorded,
   onError,
 }: ReviewModalProps) {
   const [pending, startTransition] = useTransition();
   const [note, setNote] = useState("");
+  // Editable Modify (T-M18) — the operator can switch into an edit mode
+  // that actually changes the proposed control code + captures source +
+  // justification. Default OFF: Accept re-confirms the AI proposal as-is.
+  const [modifyMode, setModifyMode] = useState(false);
+  const [editedCode, setEditedCode] = useState("");
+  const [overrideSource, setOverrideSource] = useState("");
+  const [overrideJustification, setOverrideJustification] = useState("");
   const payload = useMemo(
     () => parseEvidence(draft.evidence),
     [draft.evidence],
@@ -438,23 +472,94 @@ function ReviewModal({
 
   const isPending = draft.decision === "PENDING";
 
+  // ── Four-eyes (T-M18): author ≠ approver ──
+  // The acting user cannot APPROVE / MODIFY a draft they authored when
+  // the org runs four-eyes. We surface this BEFORE any click so the
+  // operator is led by the hand, never hit with a silent failure.
+  const isAuthor = draft.createdById === currentUserId;
+  const selfApprovalBlocked = fourEyesEnabled && isAuthor;
+  // Approve / Modify are the code-advancing actions gated by four-eyes.
+  // Reject is always permitted (it lowers exposure, advances no code).
+  const canApprove = isPending && canEdit && !selfApprovalBlocked;
+
+  const enterModify = useCallback(() => {
+    // Pre-fill the editor with the current proposed code so the operator
+    // edits FROM the AI proposal rather than a blank field.
+    setEditedCode(payload?.primary?.canonicalId ?? "");
+    setOverrideSource("");
+    setOverrideJustification("");
+    setModifyMode(true);
+  }, [payload]);
+
   const submitDecision = useCallback(
     (decision: "ACCEPTED" | "REJECTED" | "MODIFIED") => {
+      // Client-side guard mirroring the server gate, so the operator gets
+      // an instant, specific message rather than a round-trip error.
+      if (
+        (decision === "ACCEPTED" || decision === "MODIFIED") &&
+        selfApprovalBlocked
+      ) {
+        onError(
+          soleEligibleApprover
+            ? "Vier-Augen-Prinzip: Für die Freigabe ist eine zweite berechtigte Person erforderlich. Füge ein weiteres Mitglied (MEMBER+) hinzu."
+            : "Vier-Augen-Prinzip: Diesen von dir erstellten Entwurf muss eine andere berechtigte Person freigeben.",
+        );
+        return;
+      }
+
+      let acceptedSnapshot: {
+        canonicalId: string;
+        regime: string;
+        confidence: "HIGH" | "MEDIUM" | "LOW";
+        overrideSource?: string | null;
+        overrideJustification?: string | null;
+        modifiedFromCanonicalId?: string | null;
+      } | null = null;
+
+      if (decision === "MODIFIED") {
+        // The operator EDITED the code — require a non-empty code, source
+        // and justification (the audited-reasoning fields).
+        const code = editedCode.trim();
+        if (!code) {
+          onError("Bitte gib den geänderten Kontroll-Code ein.");
+          return;
+        }
+        if (!overrideSource.trim()) {
+          onError(
+            "Bitte gib eine Quelle für die Änderung an (z. B. BAFA AzG / CCATS / Anwaltsgutachten).",
+          );
+          return;
+        }
+        if (!overrideJustification.trim()) {
+          onError(
+            "Bitte begründe, warum der vorgeschlagene Code geändert wurde.",
+          );
+          return;
+        }
+        acceptedSnapshot = {
+          canonicalId: code,
+          regime: payload?.primary?.regime ?? "UNKNOWN",
+          // An operator-edited code is no longer the AI's confidence —
+          // record it as LOW so nothing inherits an unearned HIGH.
+          confidence: "LOW",
+          overrideSource: overrideSource.trim(),
+          overrideJustification: overrideJustification.trim(),
+          modifiedFromCanonicalId: payload?.primary?.canonicalId ?? null,
+        };
+      } else if (decision === "ACCEPTED" && payload?.primary) {
+        acceptedSnapshot = {
+          canonicalId: payload.primary.canonicalId,
+          regime: payload.primary.regime,
+          confidence: payload.primary.confidence,
+        };
+      }
+
       startTransition(async () => {
         const result = await decideDraft({
           draftId: draft.id,
           decision,
           reviewNote: note,
-          acceptedSnapshot:
-            decision === "REJECTED"
-              ? null
-              : payload?.primary
-                ? {
-                    canonicalId: payload.primary.canonicalId,
-                    regime: payload.primary.regime,
-                    confidence: payload.primary.confidence,
-                  }
-                : null,
+          acceptedSnapshot,
         });
         if (!result.ok) {
           onError(result.error);
@@ -463,7 +568,18 @@ function ReviewModal({
         onDecisionRecorded(draft.id, result.decision);
       });
     },
-    [draft.id, note, payload, onDecisionRecorded, onError],
+    [
+      draft.id,
+      note,
+      payload,
+      editedCode,
+      overrideSource,
+      overrideJustification,
+      selfApprovalBlocked,
+      soleEligibleApprover,
+      onDecisionRecorded,
+      onError,
+    ],
   );
 
   return (
@@ -605,7 +721,80 @@ function ReviewModal({
             </p>
           )}
 
-          {isPending && canEdit && (
+          {/* Four-eyes banner (T-M18) — non-dismissible while it applies.
+              Tells the author EXACTLY why Accept/Modify are disabled and
+              what to do next, so the verdict is never a silent black box. */}
+          {isPending && canEdit && selfApprovalBlocked && (
+            <div className="flex items-start gap-2 rounded-md border border-trade-border px-3 py-2.5 trade-chip-warn">
+              <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" />
+              <div className="text-[12px] leading-[1.5]">
+                <p className="font-semibold">
+                  Vier-Augen-Prinzip — zweite Person erforderlich
+                </p>
+                <p className="mt-0.5">
+                  {soleEligibleApprover
+                    ? "Du hast diesen Entwurf erstellt und bist derzeit der einzige berechtigte Prüfer. Füge ein weiteres Mitglied (MEMBER+) hinzu, damit eine ANDERE Person die Einstufung freigeben kann. Ablehnen darfst du selbst."
+                    : "Du hast diesen Entwurf erstellt. Eine Einstufung muss von einer ANDEREN berechtigten Person geprüft und freigegeben werden. Ablehnen darfst du selbst."}
+                </p>
+              </div>
+            </div>
+          )}
+
+          {/* Editable Modify (T-M18) — when the operator chooses to change
+              the proposed code, capture the new code + a required source +
+              a required justification. This is the audited-reasoning the
+              old "Modify == silently re-accept" path skipped. */}
+          {isPending && canApprove && modifyMode && (
+            <Section title="Einstufung ändern — mit Begründung">
+              <div className="grid gap-2.5">
+                <label className="block">
+                  <span className="mb-1 block text-[11px] font-medium text-trade-text-secondary">
+                    Geänderter Kontroll-Code (ECCN / USML / EU Annex I)
+                  </span>
+                  <input
+                    className="w-full rounded-md border border-trade-border bg-trade-bg-page px-3 py-1.5 font-mono text-[12.5px] text-trade-text-primary placeholder:text-trade-text-muted outline-none transition focus:border-trade-accent focus:ring-2 focus:ring-trade-accent/30"
+                    value={editedCode}
+                    onChange={(e) => setEditedCode(e.target.value)}
+                    placeholder={
+                      payload?.primary?.canonicalId ?? "z. B. ECCN:9A515.a.1"
+                    }
+                  />
+                  {payload?.primary?.canonicalId &&
+                    editedCode.trim() !== payload.primary.canonicalId && (
+                      <span className="mt-1 block text-[10.5px] text-trade-text-muted">
+                        Vorschlag der KI: {payload.primary.canonicalId} →
+                        geändert auf {editedCode.trim() || "—"}
+                      </span>
+                    )}
+                </label>
+                <label className="block">
+                  <span className="mb-1 block text-[11px] font-medium text-trade-text-secondary">
+                    Quelle <span className="text-trade-accent-danger">*</span>
+                  </span>
+                  <input
+                    className="w-full rounded-md border border-trade-border bg-trade-bg-page px-3 py-1.5 text-[12.5px] text-trade-text-primary placeholder:text-trade-text-muted outline-none transition focus:border-trade-accent focus:ring-2 focus:ring-trade-accent/30"
+                    value={overrideSource}
+                    onChange={(e) => setOverrideSource(e.target.value)}
+                    placeholder="z. B. BAFA AzG 2024-…, BIS CCATS, DDTC CJ, Anwaltsgutachten"
+                  />
+                </label>
+                <label className="block">
+                  <span className="mb-1 block text-[11px] font-medium text-trade-text-secondary">
+                    Begründung{" "}
+                    <span className="text-trade-accent-danger">*</span>
+                  </span>
+                  <textarea
+                    className="h-[60px] w-full resize-none rounded-md border border-trade-border bg-trade-bg-page px-3 py-1.5 text-[12.5px] text-trade-text-primary placeholder:text-trade-text-muted outline-none transition focus:border-trade-accent focus:ring-2 focus:ring-trade-accent/30"
+                    value={overrideJustification}
+                    onChange={(e) => setOverrideJustification(e.target.value)}
+                    placeholder="Warum weicht die Einstufung vom KI-Vorschlag ab?"
+                  />
+                </label>
+              </div>
+            </Section>
+          )}
+
+          {isPending && canApprove && (
             <Section title="Review note (optional)">
               <textarea
                 className="h-[64px] w-full resize-none rounded-md border border-trade-border bg-trade-bg-page px-3 py-2 text-[12.5px] text-trade-text-primary placeholder:text-trade-text-muted outline-none transition focus:border-trade-accent focus:ring-2 focus:ring-trade-accent/30"
@@ -628,20 +817,51 @@ function ReviewModal({
               <XCircle className="h-3.5 w-3.5" />
               Reject
             </button>
+            {modifyMode ? (
+              <button
+                type="button"
+                disabled={pending || !canApprove}
+                onClick={() => submitDecision("MODIFIED")}
+                className="inline-flex items-center gap-1.5 rounded-md bg-trade-accent px-3 py-1.5 text-[12.5px] font-semibold text-white transition hover:bg-trade-accent-strong disabled:cursor-not-allowed disabled:opacity-50"
+                title={
+                  selfApprovalBlocked
+                    ? "Vier-Augen-Prinzip: andere Person erforderlich"
+                    : undefined
+                }
+              >
+                {pending ? (
+                  <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                ) : (
+                  <Pencil className="h-3.5 w-3.5" />
+                )}
+                Save modified
+              </button>
+            ) : (
+              <button
+                type="button"
+                disabled={pending || !canApprove}
+                onClick={enterModify}
+                className="inline-flex items-center gap-1.5 rounded-md border border-trade-border bg-trade-bg-panel px-3 py-1.5 text-[12.5px] font-medium text-trade-text-primary transition hover:bg-trade-hover disabled:cursor-not-allowed disabled:opacity-50"
+                title={
+                  selfApprovalBlocked
+                    ? "Vier-Augen-Prinzip: andere Person erforderlich"
+                    : undefined
+                }
+              >
+                <Pencil className="h-3.5 w-3.5" />
+                Modify
+              </button>
+            )}
             <button
               type="button"
-              disabled={pending}
-              onClick={() => submitDecision("MODIFIED")}
-              className="inline-flex items-center gap-1.5 rounded-md border border-trade-border bg-trade-bg-panel px-3 py-1.5 text-[12.5px] font-medium text-trade-text-primary transition hover:bg-trade-hover disabled:opacity-50"
-            >
-              <Pencil className="h-3.5 w-3.5" />
-              Modify
-            </button>
-            <button
-              type="button"
-              disabled={pending}
+              disabled={pending || !canApprove}
               onClick={() => submitDecision("ACCEPTED")}
-              className="inline-flex items-center gap-1.5 rounded-md bg-trade-accent px-3 py-1.5 text-[12.5px] font-semibold text-white transition hover:bg-trade-accent-strong disabled:opacity-50"
+              className="inline-flex items-center gap-1.5 rounded-md bg-trade-accent px-3 py-1.5 text-[12.5px] font-semibold text-white transition hover:bg-trade-accent-strong disabled:cursor-not-allowed disabled:opacity-50"
+              title={
+                selfApprovalBlocked
+                  ? "Vier-Augen-Prinzip: andere Person erforderlich"
+                  : undefined
+              }
             >
               {pending ? (
                 <Loader2 className="h-3.5 w-3.5 animate-spin" />

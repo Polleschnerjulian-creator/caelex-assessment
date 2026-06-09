@@ -33,7 +33,14 @@ import {
   FileSignature,
   AlertOctagon,
   Sparkles,
+  HelpCircle,
 } from "lucide-react";
+import {
+  deriveVerificationFromPersistedRow,
+  type ExplainedResult,
+  type ScreeningVerdict,
+} from "@/lib/comply-v2/trade/screening/screening-explained";
+import { ExplainedPanel } from "@/components/trade/ExplainedPanel";
 
 interface ScreeningHit {
   entryId: string;
@@ -82,6 +89,23 @@ interface ScreeningRow {
   decidedBy: { id: string; name: string | null; email: string } | null;
 }
 
+/**
+ * The status the screening panel RENDERS. Extends the Prisma
+ * TradeScreeningStatus with a synthetic UNVERIFIED display state — a
+ * would-be-CLEAR that could not be verified because a critical sanctions list
+ * was missing/stale. UNVERIFIED is NOT a persisted enum value; it is derived
+ * from the latest screening row's evidence (see deriveVerificationFromPersistedRow)
+ * and layered over the stored POTENTIAL_MATCH so the UI is honest: neutral/amber,
+ * never green.
+ */
+type DisplayScreeningStatus =
+  | "NOT_SCREENED"
+  | "CLEAR"
+  | "POTENTIAL_MATCH"
+  | "CONFIRMED_HIT"
+  | "STALE"
+  | "UNVERIFIED";
+
 interface PartyDetail {
   id: string;
   legalName: string;
@@ -119,6 +143,12 @@ export default function CounterpartyDetailPage({
   const [loading, setLoading] = useState(true);
   const [screening, setScreening] = useState(false);
   const [screenError, setScreenError] = useState<string | null>(null);
+  // The Explanation Envelope from the most recent LIVE "Screen now" run. Holds
+  // the real critical-list gap + cited list versions, which the persisted GET
+  // does not carry. Rendered through <ExplainedPanel> — the renderer withholds
+  // an incomplete envelope, so a screening verdict can't show without reasoning.
+  const [liveExplained, setLiveExplained] =
+    useState<ExplainedResult<ScreeningVerdict> | null>(null);
 
   async function reload() {
     setLoading(true);
@@ -150,6 +180,11 @@ export default function CounterpartyDetailPage({
         setScreenError(data.error ?? "Screening failed");
         return;
       }
+      // Capture the live Explanation Envelope so the panel can render the
+      // verdict WITH its full reasoning + cited list versions.
+      if (data.explained) {
+        setLiveExplained(data.explained as ExplainedResult<ScreeningVerdict>);
+      }
       await reload();
     } catch (err) {
       setScreenError(err instanceof Error ? err.message : "Network error");
@@ -178,6 +213,28 @@ export default function CounterpartyDetailPage({
       </div>
     );
   }
+
+  // ── Honest three-valued verification (CLEAR / POTENTIAL_MATCH / UNVERIFIED) ──
+  // The denormalized party.screeningStatus is POTENTIAL_MATCH for BOTH a real
+  // hit AND a fail-closed missing/stale-critical-list gate. Reconstruct the
+  // honest state from the LATEST screening row's evidence so a would-be-CLEAR
+  // that could NOT be verified renders as UNVERIFIED (neutral/amber), never as
+  // a green clear. Conservative: when no row exists we keep the raw status.
+  const latestScreening = party.screenings[0] ?? null;
+  const derivedVerification = latestScreening
+    ? deriveVerificationFromPersistedRow({
+        decision: latestScreening.decision,
+        hits: latestScreening.hits,
+        cascade: latestScreening.cascade,
+      })
+    : null;
+  // The status the status-panel renders. UNVERIFIED is a synthetic display
+  // state (not a Prisma enum) layered on top of POTENTIAL_MATCH.
+  const displayStatus: DisplayScreeningStatus =
+    derivedVerification === "UNVERIFIED" &&
+    party.screeningStatus === "POTENTIAL_MATCH"
+      ? "UNVERIFIED"
+      : party.screeningStatus;
 
   return (
     <div className="mx-auto max-w-screen-2xl px-8 py-8">
@@ -299,13 +356,13 @@ export default function CounterpartyDetailPage({
         {/* Right: Screening status + history */}
         <section className="space-y-6">
           <div
-            className={`rounded-md border p-6 ${statusPanelClass(party.screeningStatus)}`}
+            className={`rounded-md border p-6 ${statusPanelClass(displayStatus)}`}
           >
             <div className="mb-3 flex items-center gap-3">
-              <ScreeningIcon status={party.screeningStatus} />
+              <ScreeningIcon status={displayStatus} />
               <div>
                 <div className="text-[15px] font-semibold text-trade-text-primary">
-                  {statusLabel(party.screeningStatus)}
+                  {statusLabel(displayStatus)}
                 </div>
                 <div className="text-[11px] text-trade-text-muted">
                   {party.lastScreenedAt
@@ -315,9 +372,66 @@ export default function CounterpartyDetailPage({
               </div>
             </div>
             <p className="text-[12px] leading-relaxed text-trade-text-secondary">
-              {statusExplain(party.screeningStatus)}
+              {statusExplain(displayStatus)}
             </p>
+            {displayStatus === "UNVERIFIED" && (
+              <div className="mt-4 space-y-3 border-t border-trade-border pt-3 text-[11px] leading-relaxed">
+                <div>
+                  <div className="mb-0.5 font-semibold uppercase tracking-[0.12em] text-trade-text-secondary">
+                    Why
+                  </div>
+                  <p className="text-trade-text-secondary">
+                    No name, identifier, or ownership hit was found against the
+                    lists that <em>were</em> available — but a critical
+                    designated-party list (OFAC SDN / BIS Entity / EU FSF / UN
+                    Consolidated) was{" "}
+                    <strong className="text-trade-text-primary">
+                      missing or stale
+                    </strong>{" "}
+                    at screen time. A CLEAR cannot be issued while a critical
+                    list is unscreened: clearing against a missing or weeks-old
+                    list is no safer than clearing against none.
+                  </p>
+                </div>
+                <div>
+                  <div className="mb-0.5 font-semibold uppercase tracking-[0.12em] text-trade-text-secondary">
+                    What it means
+                  </div>
+                  <p className="text-trade-text-secondary">
+                    This is{" "}
+                    <strong className="text-trade-text-primary">
+                      not a hit and not a clear
+                    </strong>
+                    . Do not transact on this result. Re-sync the sanctions
+                    lists (or wait for the daily cron), then run{" "}
+                    <strong>Screen now</strong> again. Treat the party as{" "}
+                    <strong className="text-trade-text-primary">
+                      not cleared
+                    </strong>{" "}
+                    until a fresh screen against all critical lists returns
+                    CLEAR.
+                  </p>
+                </div>
+                <div className="text-[10px] text-trade-text-muted">
+                  Source: critical sanctions list missing/stale (fail-closed
+                  gate — T-H3 / snapshot-staleness). Confidence:{" "}
+                  <span className="font-semibold uppercase tracking-wide">
+                    UNVERIFIED
+                  </span>
+                  .
+                </div>
+              </div>
+            )}
           </div>
+
+          {/* Explanation Envelope from the latest live "Screen now" — the
+              enforcement boundary. The verdict (CLEAR / POTENTIAL_MATCH /
+              UNVERIFIED) is surfaced through <ExplainedPanel>, which withholds
+              an incomplete envelope. UNVERIFIED renders amber (never green) and
+              cites the exact missing/stale critical list(s). */}
+          {liveExplained && (
+            <ExplainedPanel result={liveExplained} kind="Screening" />
+          )}
 
           <div className="rounded-md border border-trade-border-subtle bg-trade-bg-panel">
             <div className="border-b border-trade-border-subtle px-5 py-3">
@@ -388,12 +502,19 @@ function KV({
   );
 }
 
-function ScreeningIcon({ status }: { status: PartyDetail["screeningStatus"] }) {
+function ScreeningIcon({ status }: { status: DisplayScreeningStatus }) {
   const className = "h-7 w-7 shrink-0";
   if (status === "CLEAR")
     return (
       <ShieldCheck
         className={`${className} text-trade-accent-success`}
+        strokeWidth={1.75}
+      />
+    );
+  if (status === "UNVERIFIED")
+    return (
+      <HelpCircle
+        className={`${className} text-trade-accent-warn`}
         strokeWidth={1.75}
       />
     );
@@ -426,10 +547,12 @@ function ScreeningIcon({ status }: { status: PartyDetail["screeningStatus"] }) {
   );
 }
 
-function statusPanelClass(status: PartyDetail["screeningStatus"]): string {
+function statusPanelClass(status: DisplayScreeningStatus): string {
   switch (status) {
     case "CLEAR":
       return "trade-chip-success border-trade-border";
+    case "UNVERIFIED":
+      return "trade-chip-warn border-trade-border";
     case "POTENTIAL_MATCH":
       return "trade-chip-warn border-trade-border";
     case "CONFIRMED_HIT":
@@ -442,22 +565,25 @@ function statusPanelClass(status: PartyDetail["screeningStatus"]): string {
   }
 }
 
-function statusLabel(status: PartyDetail["screeningStatus"]): string {
+function statusLabel(status: DisplayScreeningStatus): string {
   return {
     NOT_SCREENED: "Not screened yet",
     CLEAR: "Clear — no sanctions match",
+    UNVERIFIED: "Unverified — could not be cleared",
     POTENTIAL_MATCH: "Potential match — review required",
     CONFIRMED_HIT: "Confirmed hit — block transactions",
     STALE: "Stale — last screen >30 days ago",
   }[status];
 }
 
-function statusExplain(status: PartyDetail["screeningStatus"]): string {
+function statusExplain(status: DisplayScreeningStatus): string {
   return {
     NOT_SCREENED:
       "This counterparty has not been screened against any sanctions list yet. Run a screening before any transaction.",
     CLEAR:
       "Latest screening run found no name matches above the FATF/Wolfsberg weak-match threshold (0.75) across OFAC SDN, BIS Entity, and DDTC Debarred.",
+    UNVERIFIED:
+      "The latest screen could NOT rule out a sanctions match: a critical designated-party list was missing or stale at screen time. This is neither a hit nor a clear — do not transact until a fresh screen against all critical lists returns CLEAR.",
     POTENTIAL_MATCH:
       "One or more sanctions entries scored ≥0.75 against this counterparty's canonical name. Human triage required: confirm whether the hit is the same person/entity as our counterparty, or a false positive. Do not transact until decided.",
     CONFIRMED_HIT:
@@ -485,7 +611,19 @@ function ScreeningRowItem({
   const [err, setErr] = useState<string | null>(null);
   const topScore =
     row.hits.length > 0 ? Math.max(...row.hits.map((h) => h.score)) : 0;
-  const isPending = row.decision === "POTENTIAL_MATCH" && !row.decidedAt;
+  // Honest per-row state: a no-evidence POTENTIAL_MATCH is the fail-closed
+  // missing/stale-critical-list gate ⇒ UNVERIFIED (not a triageable hit).
+  const rowVerification = deriveVerificationFromPersistedRow({
+    decision: row.decision,
+    hits: row.hits,
+    cascade: row.cascade,
+  });
+  const isUnverified = rowVerification === "UNVERIFIED";
+  // Only a REAL hit is pending human triage. An UNVERIFIED row has nothing to
+  // confirm/dismiss — the fix is to re-sync the list and re-screen — so the
+  // triage workflow is suppressed for it.
+  const isPending =
+    row.decision === "POTENTIAL_MATCH" && !row.decidedAt && !isUnverified;
 
   async function submitDecision() {
     if (!triageMode || notes.trim().length === 0) return;
@@ -521,14 +659,20 @@ function ScreeningRowItem({
         onClick={() => setExpanded((s) => !s)}
         className="flex w-full items-center gap-3 text-left"
       >
-        <DecisionPill decision={row.decision} />
+        <DecisionPill decision={row.decision} unverified={isUnverified} />
         <div className="min-w-0 flex-1">
           <div className="text-[12px] text-trade-text-primary">
             {new Date(row.createdAt).toLocaleString("en-GB")}{" "}
             <span className="text-trade-text-muted">
-              · {row.hits.length} {row.hits.length === 1 ? "hit" : "hits"}
-              {row.hits.length > 0 && ` · top ${topScore.toFixed(3)}`}
+              {isUnverified
+                ? "· could not verify (critical list missing/stale)"
+                : `· ${row.hits.length} ${row.hits.length === 1 ? "hit" : "hits"}${row.hits.length > 0 ? ` · top ${topScore.toFixed(3)}` : ""}`}
             </span>
+            {isUnverified && (
+              <span className="trade-chip-warn ml-2 rounded px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-widest">
+                Unverified
+              </span>
+            )}
             {isPending && (
               <span className="trade-chip-warn ml-2 rounded px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-widest">
                 Needs review
@@ -550,6 +694,25 @@ function ScreeningRowItem({
 
       {expanded && (
         <div className="mt-3 space-y-2">
+          {isUnverified && (
+            <div className="trade-chip-warn rounded-md border border-trade-border px-3 py-2.5 text-[11px] leading-relaxed">
+              <div className="mb-1 flex items-center gap-1.5 font-semibold uppercase tracking-widest text-trade-text-secondary">
+                <HelpCircle className="h-3 w-3" />
+                Unverified — no clear, no hit
+              </div>
+              <p className="text-trade-text-secondary">
+                This run found no match against the lists that were available,
+                but a critical designated-party list (OFAC SDN / BIS Entity / EU
+                FSF / UN Consolidated) was missing or stale at screen time, so a
+                CLEAR could not be issued. Re-sync the sanctions lists and
+                re-screen — there is nothing here to confirm or dismiss.
+              </p>
+              <p className="mt-1.5 font-mono text-[10px] text-trade-text-muted">
+                Snapshot {row.snapshotHash.slice(0, 16)}… · confidence
+                UNVERIFIED
+              </p>
+            </div>
+          )}
           {row.hits.slice(0, 10).map((h, i) => (
             <div
               key={`${h.list}-${h.entryId}-${i}`}
@@ -657,7 +820,22 @@ function ScreeningRowItem({
   );
 }
 
-function DecisionPill({ decision }: { decision: ScreeningRow["decision"] }) {
+function DecisionPill({
+  decision,
+  unverified,
+}: {
+  decision: ScreeningRow["decision"];
+  unverified?: boolean;
+}) {
+  // An UNVERIFIED row is persisted as POTENTIAL_MATCH but is NOT a hit — render
+  // a distinct neutral "could-not-verify" pill instead of the "?" review pill.
+  if (unverified) {
+    return (
+      <span className="trade-chip-warn flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-[12px] font-bold">
+        ⚠
+      </span>
+    );
+  }
   const config: Record<
     ScreeningRow["decision"],
     { className: string; label: string }

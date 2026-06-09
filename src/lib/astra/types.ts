@@ -238,6 +238,15 @@ export interface AstraUserContext {
    * page reads useCase via useUseCase() and passes it through.
    */
   useCase?: "operator" | "consultant" | "auditor" | "investor";
+  /**
+   * The Caelex product surface this chat is embedded in (Trade =
+   * Passage, Comply, Atlas, Pharos, or the default dashboard). Drives
+   * product-scoping of the Astra tool surface: a Trade chat only sees
+   * Trade + universal read-only tools, never the full cross-product
+   * tool set. Optional — legacy callers leave it undefined, which keeps
+   * the historic "all tools" behaviour for the default dashboard.
+   */
+  product?: "trade" | "comply" | "atlas" | "pharos" | "default";
   /** NIS2 entity classification */
   nis2Classification?: "essential" | "important" | "out_of_scope";
   /** Current compliance scores by module */
@@ -372,6 +381,13 @@ export interface AstraChatRequest {
    * we drop it silently (defense against client tampering).
    */
   useCase?: "operator" | "consultant" | "auditor" | "investor";
+  /**
+   * G4 / T-H10 — the Caelex product surface this chat is embedded in.
+   * Drives product-scoping of the Astra tool surface (a Trade/Passage
+   * chat only sees Trade + universal read-only tools). Optional + server
+   * validated; an unknown value is dropped to "default" (all tools).
+   */
+  product?: "trade" | "comply" | "atlas" | "pharos" | "default";
 }
 
 export interface AstraChatResponse {

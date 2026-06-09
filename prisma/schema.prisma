@@ -14614,6 +14614,13 @@ model TradeScreeningConfig {
   /// Re-screen existing parties every N days. null = no auto re-screen.
   reScreenIntervalDays Int? @default(30)
 
+  /// Four-eyes (T-M18): an item classification may only be APPROVED /
+  /// MODIFIED by a DIFFERENT human than the one who authored it.
+  /// Default ON ("moderate" four-eyes) — the highest-liability call in
+  /// the product gets a mandatory second set of eyes. Turning this off
+  /// is an auditable org decision (recorded via updatedById).
+  classificationFourEyes Boolean @default(true)
+
   updatedById String?
   updatedBy   User?    @relation("TradeScreeningConfigUpdatedBy", fields: [updatedById], references: [id], onDelete: SetNull)
   createdAt   DateTime @default(now())

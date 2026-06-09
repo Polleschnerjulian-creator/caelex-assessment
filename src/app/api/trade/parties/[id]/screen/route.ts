@@ -60,16 +60,13 @@ export async function POST(
       systemDecisionUserId: tradeAuth.userId,
     });
 
-    logger.info(
-      {
-        partyId: id,
-        userId: tradeAuth.userId,
-        decision: result.summary.decision,
-        hitCount: result.summary.hitCount,
-        topScore: result.summary.topScore,
-      },
-      "trade party screened",
-    );
+    logger.info("trade party screened", {
+      partyId: id,
+      userId: tradeAuth.userId,
+      decision: result.summary.decision,
+      hitCount: result.summary.hitCount,
+      topScore: result.summary.topScore,
+    });
 
     await emitTradeEvent("trade.party.screened", {
       organizationId: tradeAuth.organizationId,
@@ -89,9 +86,14 @@ export async function POST(
       screeningResult: result.screeningResult,
       party: result.party,
       summary: result.summary,
+      // The Explanation Envelope (WHAT/WHY/WHEREFORE/CONFIDENCE/SOURCE/
+      // OVERRIDE) for THIS live screen — carries the real missing/stale-list
+      // gap + cited list versions. Rendered through <ExplainedPanel> on the
+      // party page so a verdict reaches the operator only with its reasoning.
+      explained: result.explained,
     });
   } catch (err) {
-    logger.error({ err }, "POST /api/trade/parties/[id]/screen failed");
+    logger.error("POST /api/trade/parties/[id]/screen failed", err);
     return NextResponse.json({ error: "Internal error" }, { status: 500 });
   }
 }

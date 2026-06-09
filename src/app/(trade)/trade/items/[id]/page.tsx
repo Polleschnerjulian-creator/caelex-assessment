@@ -180,6 +180,9 @@ export default function TradeItemDetailPage({
   const [editing, setEditing] = useState(false);
   const [saving, setSaving] = useState(false);
   const [recomputing, setRecomputing] = useState(false);
+  // Override gate (T-M18) — captured when the edit changes a control code.
+  const [overrideSource, setOverrideSource] = useState("");
+  const [overrideJustification, setOverrideJustification] = useState("");
 
   // Edit state mirrors item classification codes + properties
   const [draft, setDraft] = useState({
@@ -242,8 +245,33 @@ export default function TradeItemDetailPage({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id]);
 
+  // True when the edit changes at least one control code vs the saved
+  // item — this is the condition that demands audited override reasoning.
+  const controlCodeChanged = (() => {
+    if (!item) return false;
+    const norm = (v: string | null | undefined) => (v && v.length ? v : null);
+    return (
+      norm(draft.eccnEU) !== norm(item.eccnEU) ||
+      norm(draft.eccnUS) !== norm(item.eccnUS) ||
+      norm(draft.usmlCategory) !== norm(item.usmlCategory) ||
+      norm(draft.mtcrCategory) !== norm(item.mtcrCategory) ||
+      norm(draft.germanAlEntry) !== norm(item.germanAlEntry)
+    );
+  })();
+
   const handleSave = async () => {
     if (!item) return;
+    // Override gate (T-M18): a control-code change requires a source + a
+    // justification — surfaced inline BEFORE the PATCH so the operator is
+    // led by the hand. The server enforces this independently (400).
+    if (controlCodeChanged) {
+      if (!overrideSource.trim() || !overrideJustification.trim()) {
+        alert(
+          "Eine Änderung der Kontroll-Codes erfordert eine Quelle und eine Begründung (Vier-Augen-/Audit-Disziplin). Bitte beide Felder ausfüllen.",
+        );
+        return;
+      }
+    }
     setSaving(true);
     try {
       const toNum = (s: string) => (s ? parseFloat(s) : null);
@@ -265,13 +293,28 @@ export default function TradeItemDetailPage({
           apertureMeters: toNum(draft.apertureMeters),
           rangeKm: toNum(draft.rangeKm),
           payloadKg: toNum(draft.payloadKg),
+          // Only send override reasoning when a code actually changed.
+          ...(controlCodeChanged
+            ? {
+                overrideSource: overrideSource.trim(),
+                overrideJustification: overrideJustification.trim(),
+              }
+            : {}),
         }),
       });
-      if (!res.ok) throw new Error("Save failed");
+      if (!res.ok) {
+        const body = await res.json().catch(() => null);
+        throw new Error(
+          (body && typeof body.error === "string" && body.error) ||
+            "Save failed",
+        );
+      }
       const { item: updated } = await res.json();
       setItem(updated);
       initDraft(updated);
       setEditing(false);
+      setOverrideSource("");
+      setOverrideJustification("");
       await recomputeClassification();
     } catch (err) {
       alert(err instanceof Error ? err.message : "Save failed");
@@ -367,6 +410,8 @@ export default function TradeItemDetailPage({
                     onClick={() => {
                       setEditing(false);
                       if (item) initDraft(item);
+                      setOverrideSource("");
+                      setOverrideJustification("");
                     }}
                     className="flex items-center gap-1.5 rounded-md px-3 py-2 text-[12px] text-trade-text-secondary transition hover:bg-trade-hover hover:text-trade-text-primary"
                   >
@@ -476,6 +521,49 @@ export default function TradeItemDetailPage({
                 />
               </div>
             </div>
+
+            {/* Override gate (T-M18) — a raw control-code change must carry
+                audited reasoning (source + justification), recorded on the
+                item's audit trail with the human as decision-of-record.
+                Appears only while editing AND a code actually changed. */}
+            {editing && controlCodeChanged && (
+              <div className="mt-3 rounded-md border border-trade-border px-4 py-3 trade-chip-warn">
+                <div className="mb-2 flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-[0.12em]">
+                  <AlertTriangle className="h-3.5 w-3.5" />
+                  Begründung der Code-Änderung erforderlich
+                </div>
+                <p className="mb-2.5 text-[11.5px] leading-[1.5] text-trade-text-secondary">
+                  Du änderst einen Kontroll-Code. Diese Entscheidung wird mit
+                  deinem Namen, Quelle und Begründung im Audit-Trail
+                  festgehalten — du bist die verantwortliche Person.
+                </p>
+                <div className="grid gap-2.5">
+                  <label className="block">
+                    <span className="mb-1 block text-[11px] font-medium text-trade-text-secondary">
+                      Quelle <span className="text-trade-accent-danger">*</span>
+                    </span>
+                    <input
+                      className="w-full rounded-md border border-trade-border bg-trade-bg-panel px-3 py-1.5 text-[12.5px] text-trade-text-primary placeholder:text-trade-text-muted outline-none transition focus:border-trade-accent focus:ring-2 focus:ring-trade-accent/30"
+                      value={overrideSource}
+                      onChange={(e) => setOverrideSource(e.target.value)}
+                      placeholder="z. B. BAFA AzG 2024-…, BIS CCATS, DDTC CJ, Anwaltsgutachten"
+                    />
+                  </label>
+                  <label className="block">
+                    <span className="mb-1 block text-[11px] font-medium text-trade-text-secondary">
+                      Begründung{" "}
+                      <span className="text-trade-accent-danger">*</span>
+                    </span>
+                    <textarea
+                      className="h-[56px] w-full resize-none rounded-md border border-trade-border bg-trade-bg-panel px-3 py-1.5 text-[12.5px] text-trade-text-primary placeholder:text-trade-text-muted outline-none transition focus:border-trade-accent focus:ring-2 focus:ring-trade-accent/30"
+                      value={overrideJustification}
+                      onChange={(e) => setOverrideJustification(e.target.value)}
+                      placeholder="Warum wird der Code so eingestuft / geändert?"
+                    />
+                  </label>
+                </div>
+              </div>
+            )}
           </section>
 
           {/* Classification Honesty Note — shown when there are no codes and the

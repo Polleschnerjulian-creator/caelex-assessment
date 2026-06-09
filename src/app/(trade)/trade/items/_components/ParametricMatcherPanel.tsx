@@ -45,6 +45,8 @@ import {
 } from "@/lib/trade/item-parametric-classification";
 import { fieldForCanonicalId } from "@/lib/trade/auto-classify-on-create";
 import type { CandidateMatch } from "@/lib/comply-v2/trade/classification/parametric-matcher";
+import { explainClassification } from "@/lib/comply-v2/trade/explain-classification";
+import { ExplainedPanel } from "@/components/trade/ExplainedPanel";
 
 // ─── Component ──────────────────────────────────────────────────────
 
@@ -62,6 +64,12 @@ export function ParametricMatcherPanel({
   onApplied,
 }: ParametricMatcherPanelProps) {
   const result = useMemo(() => classifyTradeItemParametric(item), [item]);
+  // Explanation Envelope over the matcher result (WHAT/WHY/WHEREFORE/
+  // CONFIDENCE/SOURCE/OVERRIDE). Rendered through <ExplainedPanel>, which
+  // REFUSES to display an incomplete envelope — so a classification verdict
+  // can never reach the operator without its full reasoning. A no-match maps
+  // to UNVERIFIED (never a clearance), the fail-closed legal invariant.
+  const explained = useMemo(() => explainClassification(result), [result]);
   const [showDetails, setShowDetails] = useState(false);
   const [applying, setApplying] = useState<string | null>(null);
   const [applyError, setApplyError] = useState<string | null>(null);
@@ -135,6 +143,11 @@ export function ParametricMatcherPanel({
 
       {!result.noAttributesPopulated && (
         <div className="space-y-4">
+          {/* Explanation Envelope — the enforcement boundary. The matcher
+              verdict is surfaced ONLY through <ExplainedPanel>, which withholds
+              an incomplete envelope. A no-candidate result renders UNVERIFIED
+              (amber, never green) — absence is not a clearance. */}
+          <ExplainedPanel result={explained} kind="Classification" />
           {/* Sprint Z3r — Elevate see-through-rule warnings to a
               prominent banner above all sections. The amber inline
               note on the entry is easy to miss; ITAR § 123.1(b) is

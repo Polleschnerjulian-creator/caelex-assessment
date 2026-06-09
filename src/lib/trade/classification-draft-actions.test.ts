@@ -18,7 +18,8 @@ const {
 } = vi.hoisted(() => ({
   mockPrisma: {
     organization: { findFirst: vi.fn() },
-    organizationMember: { findFirst: vi.fn() },
+    organizationMember: { findFirst: vi.fn(), count: vi.fn() },
+    tradeScreeningConfig: { findUnique: vi.fn() },
     tradeItem: { findFirst: vi.fn() },
     tradeItemClassificationDraft: {
       create: vi.fn(),
@@ -48,6 +49,11 @@ import {
 beforeEach(() => {
   vi.clearAllMocks();
   mockIsSuperAdmin.mockReturnValue(false);
+  // Default approval context: four-eyes ON (no row → defaults), and a
+  // SECOND eligible approver exists (count of OTHER members = 1) so the
+  // org is not in the "sole approver" state.
+  mockPrisma.tradeScreeningConfig.findUnique.mockResolvedValue(null);
+  mockPrisma.organizationMember.count.mockResolvedValue(1);
 });
 
 function asMemberSession() {
@@ -122,6 +128,9 @@ describe("decideDraft", () => {
     mockPrisma.tradeItemClassificationDraft.findFirst.mockResolvedValue({
       id: "d-1",
       decision: "PENDING",
+      // Author is a DIFFERENT user than the acting approver (user-1) →
+      // four-eyes is satisfied.
+      createdById: "author-other",
       evidence: { disclaimer: "DISCLAIMER VERBATIM" },
     });
     mockPrisma.tradeItemClassificationDraft.update.mockResolvedValue({
@@ -150,6 +159,36 @@ describe("decideDraft", () => {
     expect(args.data.reviewedById).toBe("user-1");
     expect(args.data.acceptedSnapshot).toBeTruthy();
     expect(mockRevalidatePath).toHaveBeenCalledWith("/trade/classify");
+  });
+
+  it("BLOCKS self-approval and returns a policyBlock reason (four-eyes ON)", async () => {
+    asMemberSession();
+    // The acting user (user-1) authored the draft.
+    mockPrisma.tradeItemClassificationDraft.findFirst.mockResolvedValue({
+      id: "d-1",
+      decision: "PENDING",
+      createdById: "user-1",
+      evidence: { disclaimer: "D" },
+    });
+
+    const result = await decideDraft({
+      draftId: "d-1",
+      decision: "ACCEPTED",
+      acceptedSnapshot: {
+        canonicalId: "USML:XV(a)(7)(i)",
+        regime: "ITAR-USML",
+        confidence: "HIGH",
+      },
+    });
+
+    expect(result.ok).toBe(false);
+    if (!result.ok) {
+      expect(result.policyBlock).toBe("SELF_APPROVAL_BLOCKED");
+    }
+    // No write happened — self-approval is blocked at the gate.
+    expect(
+      mockPrisma.tradeItemClassificationDraft.update,
+    ).not.toHaveBeenCalled();
   });
 
   it("blocks decisions on drafts that already have one", async () => {

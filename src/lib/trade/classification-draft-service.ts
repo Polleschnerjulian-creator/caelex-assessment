@@ -35,6 +35,10 @@ import type {
 import { prisma } from "@/lib/prisma";
 
 import type { ClassificationDraft } from "./classification-draft-builder";
+import {
+  evaluateApprovalEligibility,
+  type ApprovalPolicyResult,
+} from "./classification-approval-policy";
 
 // ─── Public input/output types ──────────────────────────────────────
 
@@ -61,8 +65,60 @@ export interface RecordDecisionInput {
   /**
    * The (possibly modified) accepted proposal snapshot. Required when
    * decision is ACCEPTED or MODIFIED; ignored when REJECTED.
+   *
+   * For a MODIFIED decision this carries the operator's EDITED control
+   * code (canonicalId/regime/confidence) plus the audited-reasoning
+   * fields `overrideSource` + `overrideJustification`, persisted in the
+   * `acceptedSnapshot` JSON for the audit trail.
    */
-  acceptedSnapshot?: ClassificationDraft["primary"] | null;
+  acceptedSnapshot?: AcceptedSnapshot | null;
+  /**
+   * Four-eyes (T-M18) gate inputs. When provided + `fourEyesEnabled`,
+   * the service BLOCKS an ACCEPT/MODIFY where the acting user authored
+   * the draft. Resolved by `resolveApprovalContext()`. When omitted the
+   * gate falls back to fail-safe ON (four-eyes assumed) — a caller can
+   * never accidentally bypass the control by forgetting to pass it.
+   */
+  approvalPolicy?: {
+    fourEyesEnabled: boolean;
+    soleEligibleApprover?: boolean;
+  };
+}
+
+/**
+ * Accepted/modified proposal snapshot. A subset of the builder's
+ * `primary` proposal shape (the UI sends only the load-bearing
+ * cells — `canonicalId` is always required) plus the audited-reasoning
+ * fields captured when the operator EDITS the proposed code (editable
+ * Modify, T-M18). The blob is persisted as JSON, so extra proposal
+ * fields are optional rather than mandatory.
+ */
+export type AcceptedSnapshot = Partial<
+  NonNullable<ClassificationDraft["primary"]>
+> & {
+  /** The proposed/edited control code — always present. */
+  canonicalId: string;
+  /** Source the operator cited for the edit (e.g. "BAFA AzG 2024-…"). */
+  overrideSource?: string | null;
+  /** Why the operator changed the proposed code. */
+  overrideJustification?: string | null;
+  /** The AI's original proposed code, preserved for the diff/audit. */
+  modifiedFromCanonicalId?: string | null;
+};
+
+/**
+ * Raised when the four-eyes policy blocks a decision. Distinct class so
+ * the action layer can map it to a clean, operator-facing message
+ * (rather than the generic "Unexpected error" path).
+ */
+export class ApprovalPolicyError extends Error {
+  constructor(
+    public readonly policy: ApprovalPolicyResult,
+    public readonly reason: ApprovalPolicyResult["reason"],
+  ) {
+    super(policy.message);
+    this.name = "ApprovalPolicyError";
+  }
 }
 
 // Cap raw text snapshots to 64 kB to keep the row small while still
@@ -131,13 +187,14 @@ export async function recordDecision(
   input: RecordDecisionInput,
 ): Promise<TradeItemClassificationDraft> {
   // Fetch + scope-guard. We can't update by id alone because that
-  // would let a caller in org A flip a draft owned by org B.
+  // would let a caller in org A flip a draft owned by org B. We also
+  // need `createdById` for the four-eyes (author ≠ approver) gate.
   const existing = await prisma.tradeItemClassificationDraft.findFirst({
     where: {
       id: input.draftId,
       organizationId: scope.organizationId,
     },
-    select: { id: true, decision: true, evidence: true },
+    select: { id: true, decision: true, evidence: true, createdById: true },
   });
   if (!existing) {
     throw new Error(
@@ -150,9 +207,51 @@ export async function recordDecision(
     );
   }
 
+  // ── Four-eyes (T-M18) — the ENFORCED gate ──
+  // Fail-safe: if the caller did not supply the policy context we assume
+  // four-eyes is ON. A missing context can therefore only ever make the
+  // gate MORE strict, never bypass it.
+  const policyResult = evaluateApprovalEligibility({
+    decision: input.decision,
+    fourEyesEnabled: input.approvalPolicy?.fourEyesEnabled ?? true,
+    authorUserId: existing.createdById,
+    actingUserId: scope.userId,
+    soleEligibleApprover: input.approvalPolicy?.soleEligibleApprover,
+  });
+  if (!policyResult.allowed) {
+    throw new ApprovalPolicyError(policyResult, policyResult.reason);
+  }
+
   // Carry the disclaimer from the persisted draft payload so the
   // record reflects what the operator actually saw.
   const disclaimerAtReview = extractDisclaimer(existing.evidence);
+
+  // ── Editable Modify (T-M18) — audited reasoning required ──
+  // A MODIFIED decision means the operator changed the proposed code, so
+  // the edit MUST carry a control code, a source, and a justification.
+  // We refuse a "modify" that silently re-accepts the unchanged snapshot
+  // with no reasoning — that is the leak the fix closes.
+  if (input.decision === "MODIFIED") {
+    const snap = input.acceptedSnapshot;
+    if (!snap?.canonicalId || snap.canonicalId.trim().length === 0) {
+      throw new Error(
+        "A modified classification must carry an edited control code (canonicalId).",
+      );
+    }
+    if (!snap.overrideSource || snap.overrideSource.trim().length === 0) {
+      throw new Error(
+        "A modified classification requires a source for the edit (e.g. BAFA AzG / CCATS / counsel opinion).",
+      );
+    }
+    if (
+      !snap.overrideJustification ||
+      snap.overrideJustification.trim().length === 0
+    ) {
+      throw new Error(
+        "A modified classification requires a justification — why the proposed code was changed.",
+      );
+    }
+  }
 
   const acceptedSnapshot =
     input.decision === "ACCEPTED" || input.decision === "MODIFIED"

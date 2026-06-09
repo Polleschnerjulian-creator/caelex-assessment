@@ -4,6 +4,7 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { isSuperAdmin } from "@/lib/super-admin";
 import { listDrafts } from "@/lib/trade/classification-draft-service";
+import { resolveApprovalContext } from "@/lib/trade/classification-approval-context.server";
 
 import { ClassifyPageClient } from "./_components/ClassifyPageClient";
 
@@ -40,9 +41,19 @@ export default async function TradeClassifyPage() {
     { take: 50 },
   );
 
+  // Four-eyes (T-M18): resolve the org policy + whether the current user
+  // is the org's sole eligible approver, so the UI can show the
+  // "second approver required" state and disable self-approval BEFORE a
+  // click — never a silent failure. Relative to the current user as the
+  // prospective author (the common case where they generated the draft).
+  const approval = await resolveApprovalContext(orgId, userId);
+
   return (
     <ClassifyPageClient
       canEdit={canEdit}
+      currentUserId={userId}
+      fourEyesEnabled={approval.fourEyesEnabled}
+      soleEligibleApprover={approval.soleEligibleApprover}
       initialDrafts={drafts.map(serialiseDraftRow)}
     />
   );
@@ -100,6 +111,9 @@ function serialiseDraftRow(
     decision: row.decision,
     sourceFilename: row.sourceFilename,
     tradeItemId: row.tradeItemId,
+    // Author identity — the client uses this to enforce author ≠ approver
+    // (four-eyes / T-M18) before enabling Accept / Modify.
+    createdById: row.createdById,
     createdAt: row.createdAt.toISOString(),
     reviewedAt: row.reviewedAt?.toISOString() ?? null,
     evidence: row.evidence as unknown,

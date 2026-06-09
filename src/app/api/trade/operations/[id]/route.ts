@@ -25,6 +25,10 @@ import {
   TradeOperationType,
 } from "@prisma/client";
 import { fromCents, fromCentsNullable } from "@/lib/trade/money";
+import {
+  evaluateShipGate,
+  OperationNotFoundError,
+} from "@/lib/trade/ship-gate-precondition.server";
 
 const UpdateTradeOperationSchema = z.object({
   description: z.string().max(2000).optional(),
@@ -55,6 +59,17 @@ const UpdateTradeOperationSchema = z.object({
   /// allowed via this endpoint; BLOCKED requires a separate gated
   /// endpoint with mandatory blockReason notes (future sprint).
   status: z.nativeEnum(TradeOperationStatus).optional(),
+  /// Conscious, logged human override for the LICENSED → EXECUTED
+  /// pre-ship precondition gate (fix G1). When the gate finds
+  /// unresolved GAP-level reasons, the named human may proceed ONLY by
+  /// re-submitting with this object: a non-empty justification recorded
+  /// to the AuditLog. A BLOCKED (hard-block) gate can NEVER be overridden
+  /// — the route refuses regardless of this field.
+  shipGateOverride: z
+    .object({
+      justification: z.string().trim().min(10).max(2000),
+    })
+    .optional(),
 });
 
 /**
@@ -182,7 +197,7 @@ export async function GET(
     };
     return NextResponse.json({ operation: serializedOperation });
   } catch (err) {
-    logger.error({ err }, "GET /api/trade/operations/[id] failed");
+    logger.error("GET /api/trade/operations/[id] failed", err);
     return NextResponse.json({ error: "Internal error" }, { status: 500 });
   }
 }
@@ -236,8 +251,105 @@ export async function PATCH(
       }
     }
 
-    // Build update payload — convert scheduledShipDate string → Date
-    const updates: Record<string, unknown> = { ...data };
+    // ── Pre-ship precondition gate (fix G1) ──────────────────────────
+    // The single most dangerous historical break: LICENSED → EXECUTED
+    // proceeded on the enum value ALONE. Before this transition is
+    // allowed, RE-RUN the conservative assess engine + per-line licence-
+    // coverage + screening + catch-all verification. A non-GO outcome is
+    // refused with the SPECIFIC unresolved reasons (machine + human),
+    // wrapped in the ExplainedResult envelope. A hard-blocked operation
+    // can NOT be overridden to EXECUTED at all; a GAP-level outcome may
+    // proceed only with a conscious, logged human override.
+    let shipGateOverrideLogged: {
+      justification: string;
+      reasonCodes: string[];
+    } | null = null;
+    // The deferred override AuditLog payload — written only AFTER the
+    // TOCTOU-guarded updateMany commits (C2). Captured inside the gate
+    // block so the full reasons/verdict provenance survives to the write.
+    let shipGateOverrideAudit: {
+      description: string;
+      reasons: unknown;
+      verdict: string;
+      justification: string;
+    } | null = null;
+    if (existing.status === "LICENSED" && data.status === "EXECUTED") {
+      let gate;
+      try {
+        gate = await evaluateShipGate(id, { organizationId });
+      } catch (e) {
+        if (e instanceof OperationNotFoundError) {
+          return NextResponse.json({ error: "Not found" }, { status: 404 });
+        }
+        throw e;
+      }
+
+      if (!gate.value.passed) {
+        const override = data.shipGateOverride;
+        // Hard block → refuse outright. No override path exists for a
+        // BLOCKED verdict / confirmed sanctions hit / ITAR-embargo-AnnexIV
+        // hard block. Fail closed.
+        if (gate.value.hardBlocked) {
+          return NextResponse.json(
+            {
+              error: "Ship gate blocked — EXECUTED refused.",
+              code: "SHIP_GATE_BLOCKED",
+              reasons: gate.value.reasons,
+              explained: gate,
+              overridable: false,
+            },
+            { status: 409 },
+          );
+        }
+        // GAP-level: allow ONLY a conscious, logged override. Without one,
+        // surface the exact reasons so the confirm dialog can show them.
+        if (!override) {
+          return NextResponse.json(
+            {
+              error:
+                "Ship gate preconditions unresolved — EXECUTED requires a logged override.",
+              code: "SHIP_GATE_UNRESOLVED",
+              reasons: gate.value.reasons,
+              explained: gate,
+              overridable: true,
+            },
+            { status: 409 },
+          );
+        }
+        // A justified override was supplied. Capture the override payload
+        // now (while we hold the gate result), but DEFER the AuditLog write
+        // until AFTER the TOCTOU-guarded updateMany actually commits the
+        // LICENSED → EXECUTED transition (count > 0). Recording an override
+        // before the write could otherwise log an override for a transition
+        // that then loses the concurrency race and never happens.
+        shipGateOverrideLogged = {
+          justification: override.justification,
+          reasonCodes: gate.value.reasons.map((r) => r.code),
+        };
+        shipGateOverrideAudit = {
+          description: `Trade operation ${existing.reference}: pre-ship gate OVERRIDDEN by ${userId} — ${gate.value.reasons.length} unresolved reason(s): ${gate.value.reasons.map((r) => r.code).join(", ")}`,
+          reasons: gate.value.reasons,
+          verdict: gate.value.verdict,
+          justification: override.justification,
+        };
+        logger.warn(
+          "trade pre-ship gate overridden — EXECUTED proceeding on logged human justification",
+          {
+            operationId: id,
+            reference: existing.reference,
+            userId,
+            reasonCodes: gate.value.reasons.map((r) => r.code),
+          },
+        );
+      }
+      // gate.value.passed === true → proceed normally (no override needed).
+    }
+
+    // Build update payload — convert scheduledShipDate string → Date.
+    // Strip shipGateOverride: it is a control field for the gate, NOT a
+    // persisted operation column.
+    const { shipGateOverride: _shipGateOverride, ...persistable } = data;
+    const updates: Record<string, unknown> = { ...persistable };
     if (data.scheduledShipDate !== undefined) {
       updates.scheduledShipDate = data.scheduledShipDate
         ? new Date(data.scheduledShipDate)
@@ -279,17 +391,41 @@ export async function PATCH(
       where: { id, organizationId },
     });
 
-    logger.info(
-      {
-        operationId: id,
-        reference: existing.reference,
+    // C2 — the ship-gate override AuditLog is written ONLY now that the
+    // guarded updateMany has committed (count > 0). An override is therefore
+    // recorded iff the LICENSED → EXECUTED transition actually happened — a
+    // concurrent clobber that returned 409 above never reaches here.
+    if (shipGateOverrideAudit) {
+      const overrideCtx = getRequestContext(req);
+      await logAuditEvent({
         userId,
-        fields: Object.keys(data),
-        statusFrom: existing.status,
-        statusTo: data.status ?? existing.status,
-      },
-      "trade operation updated",
-    );
+        organizationId,
+        action: "trade_operation_ship_gate_override",
+        entityType: "trade_operation",
+        entityId: id,
+        previousValue: { status: existing.status },
+        newValue: { status: data.status },
+        description: shipGateOverrideAudit.description,
+        metadata: {
+          shipGateOverride: true,
+          justification: shipGateOverrideAudit.justification,
+          reasons: shipGateOverrideAudit.reasons,
+          verdict: shipGateOverrideAudit.verdict,
+        },
+        ipAddress: overrideCtx.ipAddress,
+        userAgent: overrideCtx.userAgent,
+      });
+    }
+
+    logger.info("trade operation updated", {
+      operationId: id,
+      reference: existing.reference,
+      userId,
+      fields: Object.keys(persistable),
+      statusFrom: existing.status,
+      statusTo: data.status ?? existing.status,
+      shipGateOverridden: Boolean(shipGateOverrideLogged),
+    });
 
     // AuditLog — separate verb for status transitions vs other updates.
     // Status transitions are the legally-significant event (gating
@@ -304,7 +440,18 @@ export async function PATCH(
         entityId: id,
         previousValue: { status: existing.status },
         newValue: { status: data.status },
-        description: `Trade operation ${existing.reference}: ${existing.status} → ${data.status}`,
+        description: shipGateOverrideLogged
+          ? `Trade operation ${existing.reference}: ${existing.status} → ${data.status} (ship gate OVERRIDDEN by ${userId})`
+          : `Trade operation ${existing.reference}: ${existing.status} → ${data.status}`,
+        ...(shipGateOverrideLogged
+          ? {
+              metadata: {
+                shipGateOverride: true,
+                justification: shipGateOverrideLogged.justification,
+                reasonCodes: shipGateOverrideLogged.reasonCodes,
+              },
+            }
+          : {}),
         ipAddress: reqCtx.ipAddress,
         userAgent: reqCtx.userAgent,
       });
@@ -326,8 +473,8 @@ export async function PATCH(
         action: "trade_operation_updated",
         entityType: "trade_operation",
         entityId: id,
-        newValue: data,
-        description: `Trade operation ${existing.reference} updated (${Object.keys(data).join(", ")})`,
+        newValue: persistable,
+        description: `Trade operation ${existing.reference} updated (${Object.keys(persistable).join(", ")})`,
         ipAddress: reqCtx.ipAddress,
         userAgent: reqCtx.userAgent,
       });
@@ -335,7 +482,7 @@ export async function PATCH(
 
     return NextResponse.json({ operation });
   } catch (err) {
-    logger.error({ err }, "PATCH /api/trade/operations/[id] failed");
+    logger.error("PATCH /api/trade/operations/[id] failed", err);
     return NextResponse.json({ error: "Internal error" }, { status: 500 });
   }
 }

@@ -153,6 +153,7 @@ export type AuditAction =
   | "trade_operation_created"
   | "trade_operation_updated"
   | "trade_operation_status_changed"
+  | "trade_operation_ship_gate_override"
   | "trade_operation_line_added"
   | "trade_operation_line_removed"
   | "trade_operation_line_license_assigned"

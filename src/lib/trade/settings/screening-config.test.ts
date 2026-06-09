@@ -144,4 +144,26 @@ describe("normalizeScreeningConfig", () => {
         .autoBlockOnConfirmedHit,
     ).toBe(false);
   });
+
+  it("classificationFourEyes defaults ON (T-M18 moderate)", () => {
+    expect(SCREENING_DEFAULTS.classificationFourEyes).toBe(true);
+    expect(normalizeScreeningConfig(null).classificationFourEyes).toBe(true);
+    // A missing/legacy value (undefined) must NOT silently disable it.
+    expect(normalizeScreeningConfig({}).classificationFourEyes).toBe(true);
+    expect(
+      normalizeScreeningConfig({ classificationFourEyes: null })
+        .classificationFourEyes,
+    ).toBe(true);
+  });
+
+  it("only an explicit false disables classificationFourEyes (auditable opt-out)", () => {
+    expect(
+      normalizeScreeningConfig({ classificationFourEyes: false })
+        .classificationFourEyes,
+    ).toBe(false);
+    expect(
+      normalizeScreeningConfig({ classificationFourEyes: true })
+        .classificationFourEyes,
+    ).toBe(true);
+  });
 });

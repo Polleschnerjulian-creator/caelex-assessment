@@ -160,6 +160,24 @@ export async function POST(request: NextRequest) {
         ? (body.useCase as (typeof VALID_USE_CASES)[number])
         : undefined;
 
+    // G4 / T-H10 — Validate product surface. Only the known product
+    // values pass; anything else (mistyped, tampered, legacy) is dropped
+    // to undefined, leaving the engine in its "default = all tools"
+    // behaviour. A Trade/Passage chat sends product:"trade" so Astra is
+    // scoped to Trade + universal read-only tools.
+    const VALID_PRODUCTS = [
+      "trade",
+      "comply",
+      "atlas",
+      "pharos",
+      "default",
+    ] as const;
+    const product =
+      body.product &&
+      (VALID_PRODUCTS as readonly string[]).includes(body.product)
+        ? (body.product as (typeof VALID_PRODUCTS)[number])
+        : undefined;
+
     // H-API5: if the caller passes a conversationId, verify it belongs
     // to this user BEFORE feeding the message into the engine. Without
     // this, a user could post into another user's conversation (the
@@ -238,6 +256,7 @@ export async function POST(request: NextRequest) {
               pageContext,
               body.missionData,
               useCase, // Sprint UF15 — persona forwarded to engine.
+              product, // G4 / T-H10 — product surface for tool-scoping.
             );
 
             // Send truncation warning before metadata if message was truncated
@@ -328,6 +347,7 @@ export async function POST(request: NextRequest) {
         pageContext,
         body.missionData,
         useCase, // Sprint UF15 — persona forwarded to engine.
+        product, // G4 / T-H10 — product surface for tool-scoping.
       );
 
     // ─── Log Audit Event ───

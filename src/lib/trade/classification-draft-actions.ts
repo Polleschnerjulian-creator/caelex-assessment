@@ -40,7 +40,9 @@ import {
   createDraft,
   recordDecision,
   listDrafts,
+  ApprovalPolicyError,
 } from "@/lib/trade/classification-draft-service";
+import { resolveApprovalContext } from "@/lib/trade/classification-approval-context.server";
 
 // ─── Public action result type (mirrors euc-actions) ───────────────
 
@@ -50,7 +52,16 @@ export type ClassifyActionResult =
 
 export type DecisionActionResult =
   | { ok: true; draftId: string; decision: ClassificationDraftDecision }
-  | { ok: false; error: string };
+  | {
+      ok: false;
+      error: string;
+      /**
+       * Set when the four-eyes policy blocked the decision, so the UI
+       * can render a distinct "second approver required" / "self-approval
+       * blocked" state rather than a generic error toast.
+       */
+      policyBlock?: "SELF_APPROVAL_BLOCKED" | "SECOND_APPROVER_REQUIRED";
+    };
 
 // ─── Auth helpers ──────────────────────────────────────────────────
 
@@ -96,12 +107,19 @@ const decideSchema = z.object({
   /**
    * The (possibly modified) primary proposal the operator confirmed.
    * Required when decision is ACCEPTED or MODIFIED; ignored otherwise.
+   *
+   * For MODIFIED the operator may EDIT `canonicalId` (the control code)
+   * and MUST supply `overrideSource` + `overrideJustification` — the
+   * audited-reasoning fields that make the edit defensible.
    */
   acceptedSnapshot: z
     .object({
       canonicalId: z.string(),
       regime: z.string(),
       confidence: z.enum(["HIGH", "MEDIUM", "LOW"]),
+      overrideSource: z.string().nullable(),
+      overrideJustification: z.string().nullable(),
+      modifiedFromCanonicalId: z.string().nullable(),
     })
     .partial()
     .optional()
@@ -158,6 +176,12 @@ export async function decideDraft(
       };
     }
 
+    // Resolve the four-eyes policy + sole-approver signal for THIS org
+    // and the acting user. The author identity is read inside the
+    // service (from the draft row) — here we only supply the org-level
+    // policy so the gate can fail closed.
+    const approvalCtx = await resolveApprovalContext(ctx.orgId, ctx.userId);
+
     const updated = await recordDecision(
       { organizationId: ctx.orgId, userId: ctx.userId },
       {
@@ -173,12 +197,25 @@ export async function decideDraft(
             : ((parsed.data.acceptedSnapshot ?? null) as unknown as
                 | null
                 | Parameters<typeof recordDecision>[1]["acceptedSnapshot"]),
+        approvalPolicy: {
+          fourEyesEnabled: approvalCtx.fourEyesEnabled,
+          soleEligibleApprover: approvalCtx.soleEligibleApprover,
+        },
       },
     );
 
     revalidatePath("/trade/classify");
     return { ok: true, draftId: updated.id, decision: updated.decision };
   } catch (err) {
+    // Four-eyes block → surface the specific reason so the UI can guide
+    // the operator (ask a colleague vs. add a second reviewer).
+    if (err instanceof ApprovalPolicyError) {
+      return {
+        ok: false,
+        error: err.policy.message,
+        policyBlock: err.reason ?? undefined,
+      };
+    }
     if (err instanceof ActionError) {
       return { ok: false, error: err.publicMessage };
     }

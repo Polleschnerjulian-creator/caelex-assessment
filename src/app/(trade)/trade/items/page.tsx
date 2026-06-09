@@ -174,9 +174,14 @@ function NewItemForm({
       }
       const { item } = await res.json();
 
-      // Additive: if a datasheet suggested a code, apply the top one. The
-      // create flow is never blocked — any failure falls through to the
-      // plain onSuccess(item) below so manual classification stays available.
+      // Additive: if a datasheet suggested a code, apply the top one as an
+      // AI SUGGESTION (classificationSource ASTRA_SUGGESTED → the item lands
+      // in REQUIRES_REVIEW, pending a human confirm — never silently
+      // CLASSIFIED). Marking it ASTRA_SUGGESTED also exempts it from the
+      // T-M18 override-reasoning gate, since the audited justification is
+      // captured at the human confirm step, not on an AI proposal. The create
+      // flow is never blocked — any failure falls through to the plain
+      // onSuccess(item) below so manual classification stays available.
       const top = applied?.suggestions[0];
       if (top && item?.id) {
         try {
@@ -192,7 +197,11 @@ function NewItemForm({
           const patchRes = await fetch(`/api/trade/items/${item.id}`, {
             method: "PATCH",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(codePatch),
+            body: JSON.stringify({
+              ...codePatch,
+              classificationSource: "ASTRA_SUGGESTED",
+              status: "REQUIRES_REVIEW",
+            }),
           });
           if (patchRes.ok) {
             const { item: classified } = await patchRes.json();

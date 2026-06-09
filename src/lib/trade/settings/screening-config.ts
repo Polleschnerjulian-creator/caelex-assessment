@@ -120,6 +120,14 @@ export interface ScreeningConfig {
   autoBlockOnConfirmedHit: boolean;
   /** Re-screen cadence in days; null = no automatic re-screening. */
   reScreenIntervalDays: number | null;
+  /**
+   * Four-eyes (T-M18): when true, an item classification may only be
+   * APPROVED / MODIFIED by a different human than the one who authored
+   * it. Default ON ("moderate" four-eyes). Turning it OFF is an
+   * explicit, auditable opt-out of the second-set-of-eyes control on
+   * the highest-liability call in the product.
+   */
+  classificationFourEyes: boolean;
 }
 
 /**
@@ -131,6 +139,9 @@ export const SCREENING_DEFAULTS: ScreeningConfig = {
   matchThreshold: 0.75,
   autoBlockOnConfirmedHit: true,
   reScreenIntervalDays: 30,
+  // T-M18 default: moderate four-eyes ON. A missing/legacy config must
+  // therefore behave as four-eyes-enabled — conservative-by-design.
+  classificationFourEyes: true,
 };
 
 /** Clamp a fuzzy-match threshold into the allowed band; NaN → default. */
@@ -169,6 +180,7 @@ export interface RawScreeningConfig {
   matchThreshold?: number | null;
   autoBlockOnConfirmedHit?: boolean | null;
   reScreenIntervalDays?: number | null;
+  classificationFourEyes?: boolean | null;
 }
 
 /**
@@ -203,6 +215,13 @@ export function normalizeScreeningConfig(
       "reScreenIntervalDays" in input
         ? sanitizeInterval(input.reScreenIntervalDays)
         : SCREENING_DEFAULTS.reScreenIntervalDays,
+    // Fail-safe default: anything that is not an explicit `false` keeps
+    // four-eyes ON. A null/undefined/legacy value must not silently
+    // disable the second-set-of-eyes control.
+    classificationFourEyes:
+      input.classificationFourEyes === false
+        ? false
+        : SCREENING_DEFAULTS.classificationFourEyes,
   };
 }
 

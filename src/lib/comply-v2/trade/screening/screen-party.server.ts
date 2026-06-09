@@ -28,6 +28,7 @@ import "server-only";
 import { createHash } from "node:crypto";
 import { prisma } from "@/lib/prisma";
 import {
+  Prisma,
   TradeScreeningStatus,
   TradeScreeningDecision,
   TradeSanctionsList,
@@ -51,6 +52,13 @@ import type { CanonicalSanctionsEntry } from "./sources/types";
 import { runCascadeForParty } from "./cascade-50pct.server";
 import type { CascadeResult } from "./cascade-50pct";
 import { sendTradeSanctionsHit } from "@/lib/email";
+import {
+  buildScreeningExplained,
+  type ExplainedResult,
+  type ScreeningGap,
+  type ScreeningVerdict,
+  type ScreeningVerification,
+} from "./screening-explained";
 
 // ─── Critical lists (T-H3: fail-closed gate) ────────────────────────
 //
@@ -131,6 +139,12 @@ export interface ScreenPartyResult {
     hitCount: number;
     topScore: number;
     decision: TradeScreeningDecision;
+    /**
+     * Honest THREE-VALUED state the UI keys colour/copy off — distinct from
+     * the persisted `decision` enum. A missing/stale critical list yields
+     * UNVERIFIED (not a hit, not a clear), persisted as POTENTIAL_MATCH.
+     */
+    verification: ScreeningVerification;
     listsConsulted: TradeSanctionsList[];
     snapshotsMissing: TradeSanctionsList[];
     /** Critical lists whose latest snapshot is older than the staleness TTL. */
@@ -140,6 +154,15 @@ export interface ScreenPartyResult {
     /** Number of CONFIRMED_HIT ancestors found via cascade traversal. */
     sanctionedAncestorCount: number;
   };
+  /**
+   * The Explanation Envelope for this screen — WHAT/WHY/WHEREFORE/CONFIDENCE/
+   * SOURCE/OVERRIDE. UNVERIFIED carries confidence "UNVERIFIED" + the
+   * missing/stale critical list(s) as sources (with listVersion). This is the
+   * shape the <ExplainedPanel> renderer consumes; a CLEAR can never hide a
+   * critical-list gap because the engine only reaches CLEAR with all critical
+   * lists present + fresh.
+   */
+  explained: ExplainedResult<ScreeningVerdict>;
 }
 
 // ─── Main entry point ───────────────────────────────────────────────
@@ -182,8 +205,8 @@ export async function screenParty(
   // a special note so the user understands why no hits appeared.
   if (snapshots.size === 0) {
     logger.warn(
-      { partyId },
       "screenParty: no sanctions snapshots available — sync cron may not have run yet",
+      { partyId },
     );
   }
 
@@ -262,8 +285,8 @@ export async function screenParty(
   const missingCritical = CRITICAL_LISTS.filter((l) => !snapshots.has(l));
   if (missingCritical.length > 0) {
     logger.warn(
-      { partyId, missingCritical },
       "screenParty: critical sanctions list(s) missing — a would-be-CLEAR result will be escalated to POTENTIAL_MATCH (T-H3)",
+      { partyId, missingCritical },
     );
   }
 
@@ -279,15 +302,48 @@ export async function screenParty(
       !!snap && nowMs - snap.fetchedAt.getTime() > CRITICAL_SNAPSHOT_MAX_AGE_MS
     );
   });
+  // Capture each stale snapshot's provenance (version + age) so the
+  // Explanation Envelope can cite the EXACT stale list version as a source.
+  const staleCriticalDetail = staleCritical.map((l) => {
+    const snap = snapshots.get(l)!;
+    return {
+      list: l,
+      snapshotHash: snap.hash,
+      upstreamVersion: snap.upstreamVersion ?? undefined,
+      fetchedAt: snap.fetchedAt.toISOString(),
+      ageHours: Math.floor(
+        (nowMs - snap.fetchedAt.getTime()) / (60 * 60 * 1000),
+      ),
+    };
+  });
   if (staleCritical.length > 0) {
     logger.warn(
-      { partyId, staleCritical, maxAgeMs: CRITICAL_SNAPSHOT_MAX_AGE_MS },
       "screenParty: critical sanctions list snapshot(s) STALE — a would-be-CLEAR result will be escalated to POTENTIAL_MATCH (SNAPSHOT-STALENESS)",
+      { partyId, staleCritical, maxAgeMs: CRITICAL_SNAPSHOT_MAX_AGE_MS },
     );
   }
 
+  // ── Three-valued verification + persisted decision ────────────────
+  //
+  // `verification` is the HONEST state the UI surfaces (CLEAR /
+  // POTENTIAL_MATCH / UNVERIFIED). `decision`/`newStatus` are the persisted
+  // Prisma enums (no UNVERIFIED value — additive-only, no migration), so an
+  // UNVERIFIED screen is stored as the safe non-CLEAR enum POTENTIAL_MATCH.
+  // This preserves the fail-closed write + the existing triage path while the
+  // Explanation Envelope carries the gap-not-hit reason.
+  //
+  // Precedence:
+  //   1. A real signal (name/identifier hit, 50%-cascade, control-only) ⇒
+  //      POTENTIAL_MATCH — a genuine match suspicion, human triage.
+  //   2. ELSE a missing/stale CRITICAL list ⇒ UNVERIFIED — a would-be-CLEAR
+  //      that we could NOT verify; NEVER green. (T-H3 / SNAPSHOT-STALENESS.)
+  //   3. ELSE CLEAR — a real negative against every present + fresh critical
+  //      list. The ONLY branch that can be green.
+  const criticalGapPresent =
+    missingCritical.length > 0 || staleCritical.length > 0;
   let decision: TradeScreeningDecision;
   let newStatus: TradeScreeningStatus;
+  let verification: ScreeningVerification;
   if (
     band === "confirmed" ||
     band === "potential" ||
@@ -299,6 +355,7 @@ export async function screenParty(
     // ownership requires human review before clearing.
     decision = TradeScreeningDecision.POTENTIAL_MATCH;
     newStatus = TradeScreeningStatus.POTENTIAL_MATCH;
+    verification = "POTENTIAL_MATCH";
   } else if (sanctionedControlOnlyCount > 0) {
     // T-H5: sanctioned control-without-equity owner (post-Dec-2025 OFAC
     // trustee doctrine). Softer than a 50%-rule cascade hit — the legal
@@ -306,22 +363,32 @@ export async function screenParty(
     // human to review. Escalate to POTENTIAL_MATCH rather than auto-block.
     // Uses existing enum values — no migration required.
     logger.warn(
-      { partyId, sanctionedControlOnlyCount },
       "screenParty: sanctioned control-without-equity owner detected (T-H5) — escalating to POTENTIAL_MATCH",
+      { partyId, sanctionedControlOnlyCount },
     );
     decision = TradeScreeningDecision.POTENTIAL_MATCH;
     newStatus = TradeScreeningStatus.POTENTIAL_MATCH;
-  } else if (missingCritical.length > 0 || staleCritical.length > 0) {
+    verification = "POTENTIAL_MATCH";
+  } else if (criticalGapPresent) {
     // T-H3 / SNAPSHOT-STALENESS: Would otherwise be CLEAR, but a critical
     // list's snapshot is unavailable (missing) or past its freshness TTL
     // (sync cron silently stopped). An infra failure must NOT silently
-    // produce a "compliant" verdict. Escalate to POTENTIAL_MATCH so a human
-    // reviews it. Uses existing enum values — no migration required.
+    // produce a "compliant" verdict. This is UNVERIFIED — we could not RULE
+    // OUT a match, which is categorically different from POTENTIAL_MATCH (a
+    // match suspicion). Persisted as POTENTIAL_MATCH (the safe non-CLEAR enum)
+    // but surfaced as UNVERIFIED so the UI is honest: neutral/amber, never
+    // green. Uses existing enum values — no migration required.
+    logger.warn(
+      "screenParty: would-be-CLEAR escalated to UNVERIFIED — critical list missing/stale (fail-closed, NOT a hit)",
+      { partyId, missingCritical, staleCritical },
+    );
     decision = TradeScreeningDecision.POTENTIAL_MATCH;
     newStatus = TradeScreeningStatus.POTENTIAL_MATCH;
+    verification = "UNVERIFIED";
   } else {
     decision = TradeScreeningDecision.CLEAR;
     newStatus = TradeScreeningStatus.CLEAR;
+    verification = "CLEAR";
   }
 
   // Compose snapshotHash — we hash the per-list hashes together so the
@@ -336,7 +403,7 @@ export async function screenParty(
     prisma.tradeScreeningResult.create({
       data: {
         partyId,
-        hits: allHits as unknown as object[],
+        hits: allHits as unknown as Prisma.InputJsonValue,
         decision,
         decidedById:
           decision === TradeScreeningDecision.CLEAR
@@ -347,21 +414,62 @@ export async function screenParty(
         // Sprint A6: persist cascade snapshot so the UI can display
         // ancestor chains weeks later, and audit captures the exact
         // ownership-graph state used.
-        cascade: cascade ? (cascade as unknown as object) : undefined,
+        cascade: cascade
+          ? (cascade as unknown as Prisma.InputJsonValue)
+          : undefined,
       },
     }),
     prisma.tradeParty.update({
       where: { id: partyId },
       data: {
         screeningStatus: newStatus,
+        // Nullable Json column: an explicit JSON-null must be written as
+        // Prisma.JsonNull, not the JS `null` literal (Prisma type rule).
         screeningHits:
           allHits.length > 0
-            ? (allHits.slice(0, 10) as unknown as object[])
-            : null,
+            ? (allHits.slice(0, 10) as unknown as Prisma.InputJsonValue)
+            : Prisma.JsonNull,
         lastScreenedAt: now,
       },
     }),
   ]);
+
+  // ── Build the Explanation Envelope (WHAT/WHY/WHEREFORE/…) ──────────
+  // The critical lists actually consulted (present + fresh) — cited as the
+  // SOURCE basis on CLEAR, and the corpus basis on POTENTIAL_MATCH.
+  const criticalConsulted = CRITICAL_LISTS.filter(
+    (l) => snapshots.has(l) && !staleCritical.includes(l),
+  ).map((l) => {
+    const snap = snapshots.get(l)!;
+    return {
+      list: l,
+      snapshotHash: snap.hash,
+      upstreamVersion: snap.upstreamVersion ?? undefined,
+      fetchedAt: snap.fetchedAt.toISOString(),
+    };
+  });
+  // Distinct lists that produced a fuzzy/identifier hit (cited on a match).
+  const hitLists = Array.from(new Set(allHits.map((h) => h.list)));
+
+  const gap: ScreeningGap = {
+    missing: missingCritical,
+    stale: staleCriticalDetail,
+    maxAgeHours: Math.floor(CRITICAL_SNAPSHOT_MAX_AGE_MS / (60 * 60 * 1000)),
+  };
+  const verdict: ScreeningVerdict = {
+    verification,
+    decision:
+      decision === TradeScreeningDecision.CLEAR ? "CLEAR" : "POTENTIAL_MATCH",
+    topScore,
+    hitCount: allHits.length,
+    cascadeHit,
+    gap,
+  };
+  const explained = buildScreeningExplained(verdict, {
+    partyName: updatedParty.legalName,
+    criticalConsulted,
+    hitLists,
+  });
 
   const result: ScreenPartyResult = {
     partyId,
@@ -374,26 +482,28 @@ export async function screenParty(
       cascadeHit,
       sanctionedAncestorCount: cascadeAncestorCount,
       decision,
+      verification,
       listsConsulted,
       snapshotsMissing: missingLists(listsConsulted),
       snapshotsStale: staleCritical,
     },
+    explained,
   };
 
-  logger.info(
-    {
-      partyId,
-      decision,
-      hitCount: allHits.length,
-      topScore: topScore.toFixed(3),
-      listsConsulted: listsConsulted.length,
-      cascadeHit,
-      sanctionedAncestorCount: cascadeAncestorCount,
-      cascadeAggregate: cascade?.aggregateSanctionedOwnership.toFixed(3),
-      sanctionedControlOnlyCount,
-    },
-    "screenParty: completed",
-  );
+  logger.info("screenParty: completed", {
+    partyId,
+    decision,
+    verification,
+    hitCount: allHits.length,
+    topScore: topScore.toFixed(3),
+    listsConsulted: listsConsulted.length,
+    missingCriticalCount: missingCritical.length,
+    staleCriticalCount: staleCritical.length,
+    cascadeHit,
+    sanctionedAncestorCount: cascadeAncestorCount,
+    cascadeAggregate: cascade?.aggregateSanctionedOwnership.toFixed(3),
+    sanctionedControlOnlyCount,
+  });
 
   // Sprint E2: dispatch sanctions-hit email when the screening decision
   // escalates from CLEAR. Best-effort — if email fails, the screening

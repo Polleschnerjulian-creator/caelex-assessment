@@ -64,6 +64,7 @@ export async function updateScreeningConfig(
       matchThreshold: clean.matchThreshold,
       autoBlockOnConfirmedHit: clean.autoBlockOnConfirmedHit,
       reScreenIntervalDays: clean.reScreenIntervalDays,
+      classificationFourEyes: clean.classificationFourEyes,
       updatedById: updatedById ?? null,
     },
     update: {
@@ -71,6 +72,7 @@ export async function updateScreeningConfig(
       matchThreshold: clean.matchThreshold,
       autoBlockOnConfirmedHit: clean.autoBlockOnConfirmedHit,
       reScreenIntervalDays: clean.reScreenIntervalDays,
+      classificationFourEyes: clean.classificationFourEyes,
       updatedById: updatedById ?? null,
     },
   });

@@ -22,6 +22,7 @@ import { buildSystemPrompt } from "./system-prompt";
 import { buildCompleteContext, detectTopics } from "./context-builder";
 import { ALL_TOOLS } from "./tool-definitions";
 import { executeTool } from "./tool-executor";
+import { scopeToolsToProduct, type AstraProduct } from "./trade-tool-gate";
 // Sprint B1 — wire the Action-Layer (comply-v2) bridge into the engine
 // so every defineAction()-registered action becomes an Astra tool. The
 // bridge module is side-effect-imported here to ensure all action
@@ -329,6 +330,16 @@ export class AstraEngine implements IAstraEngine {
     let totalTokens = 0;
     let iterations = 0;
 
+    // G4 / T-H10 — product-scope the OFFER surface so a Trade (Passage)
+    // chat only sees Trade + universal read-only tools, and other
+    // products never see Trade tooling. This is defence-in-depth; the
+    // hard enforcement boundary is decideTradeToolGate() in the executor.
+    const product: AstraProduct = userContext.product ?? "default";
+    const offeredTools = [
+      ...scopeToolsToProduct(ALL_TOOLS, product),
+      ...scopeToolsToProduct(getAstraToolDefinitions(), product),
+    ];
+
     while (iterations < ASTRA_CONFIG.maxToolIterations) {
       iterations++;
 
@@ -339,10 +350,7 @@ export class AstraEngine implements IAstraEngine {
           max_tokens: ASTRA_CONFIG.maxTokens,
           system: systemPrompt,
           messages: messages as Anthropic.MessageParam[],
-          tools: [
-            ...(ALL_TOOLS as Anthropic.Tool[]),
-            ...(getAstraToolDefinitions() as unknown as Anthropic.Tool[]),
-          ],
+          tools: offeredTools as unknown as Anthropic.Tool[],
           temperature: ASTRA_CONFIG.temperature,
         }),
       );
@@ -438,6 +446,11 @@ export class AstraEngine implements IAstraEngine {
     let totalTokens = 0;
     let iterations = 0;
 
+    // G4 / T-H10 — same product-scoping of the offer surface as the
+    // non-streaming path. Hard enforcement still lives in the executor.
+    const product: AstraProduct = userContext.product ?? "default";
+    const offeredTools = scopeToolsToProduct(ALL_TOOLS, product);
+
     while (iterations < ASTRA_CONFIG.maxToolIterations) {
       iterations++;
 
@@ -446,7 +459,7 @@ export class AstraEngine implements IAstraEngine {
         max_tokens: ASTRA_CONFIG.maxTokens,
         system: systemPrompt,
         messages: messages as Anthropic.MessageParam[],
-        tools: ALL_TOOLS as Anthropic.Tool[],
+        tools: offeredTools as unknown as Anthropic.Tool[],
         temperature: ASTRA_CONFIG.temperature,
       });
 
@@ -605,6 +618,8 @@ export class AstraEngine implements IAstraEngine {
     missionData?: AstraMissionData,
     // Sprint UF15 — persona passes through from API to system-prompt.
     useCase?: "operator" | "consultant" | "auditor" | "investor",
+    // G4 / T-H10 — product surface drives Astra tool-scoping.
+    product?: AstraProduct,
   ): Promise<{
     response: AstraResponse;
     conversationId: string;
@@ -638,6 +653,10 @@ export class AstraEngine implements IAstraEngine {
     // Sprint UF15 — merge persona into context for buildSystemPrompt.
     if (useCase) {
       userContext.useCase = useCase;
+    }
+    // G4 / T-H10 — merge product surface so the tool loop can scope.
+    if (product) {
+      userContext.product = product;
     }
 
     // Convert history to conversation messages
@@ -697,6 +716,8 @@ export class AstraEngine implements IAstraEngine {
     missionData?: AstraMissionData,
     // Sprint UF15 — persona passes through from API to system-prompt.
     useCase?: "operator" | "consultant" | "auditor" | "investor",
+    // G4 / T-H10 — product surface drives Astra tool-scoping.
+    product?: AstraProduct,
   ): Promise<{
     response: AstraResponse;
     conversationId: string;
@@ -729,6 +750,10 @@ export class AstraEngine implements IAstraEngine {
     // is called. Engine itself doesn't know about useCase.
     if (useCase) {
       userContext.useCase = useCase;
+    }
+    // G4 / T-H10 — merge product surface so the tool loop can scope.
+    if (product) {
+      userContext.product = product;
     }
 
     const conversationMessages: AstraConversationMessage[] = history.map(
