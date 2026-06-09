@@ -18,6 +18,9 @@ import { checkRateLimit, getIdentifier } from "@/lib/ratelimit";
 import { logger } from "@/lib/logger";
 import { randomUUID } from "crypto";
 import { sendNewsletterConfirmation } from "@/lib/email/templates/newsletter-confirmation";
+import { serverAnalytics } from "@/lib/analytics";
+import { EVENT_TYPES, PRODUCTS } from "@/lib/analytics/events";
+import { normalizeUtmValue } from "@/lib/analytics/utm";
 
 export async function POST(request: NextRequest) {
   try {
@@ -131,6 +134,28 @@ export async function POST(request: NextRequest) {
         tokenExpiresAt,
       },
     });
+
+    // ─── Acquisition event (fire-and-forget) ───
+    // Emitted on a genuinely NEW subscription intent (double opt-in PENDING).
+    // Canonical P0 shape; the only attribution carried is the normalised signup
+    // `source` slug as `topic` (e.g. "footer") — no email / PII in the store.
+    const sourceTopic = normalizeUtmValue(source);
+    void serverAnalytics
+      .track(
+        EVENT_TYPES.ACQ_NEWSLETTER_SUBSCRIBED,
+        {},
+        {
+          product: PRODUCTS.MARKETING,
+          surface: "newsletter",
+          feature: "subscribe",
+          path: "/",
+          category: "conversion",
+          ...(sourceTopic !== undefined ? { topic: sourceTopic } : {}),
+        },
+      )
+      .catch(() => {
+        /* analytics must never break the request */
+      });
 
     // Send confirmation email
     sendNewsletterConfirmation(normalizedEmail, token).catch((err) => {

@@ -5,6 +5,12 @@ import { subDays, startOfDay, endOfDay } from "date-fns";
 import { logger } from "@/lib/logger";
 import { productFromPath, type Product } from "@/lib/analytics/events";
 import { deriveFeature } from "@/lib/analytics/feature-map";
+import {
+  buildDomainRollups,
+  type DailyAggregatePayload,
+  type ProductActivity,
+} from "@/lib/analytics/domain-rollups";
+import type { ValueProduct } from "@/lib/admin/value-events";
 
 export const runtime = "nodejs";
 export const maxDuration = 120;
@@ -54,6 +60,7 @@ export async function GET(request: Request) {
     healthScores: 0,
     revenueSnapshot: false,
     apiMetrics: 0,
+    domainAggregates: 0,
   };
 
   try {
@@ -460,6 +467,26 @@ export async function GET(request: Request) {
       results.apiMetrics++;
     }
 
+    // 11. DB-derived domain aggregates → AnalyticsDailyAggregate (generic grid).
+    //
+    // Gives the admin REAL time-series sourced from AUTHORITATIVE DOMAIN TABLES
+    // (not the mostly-unwired AnalyticsEvent value-event taxonomy), so per-product
+    // engagement + compliance-outcome series exist before events are wired. The
+    // predicates + timestamp columns + product attribution MIRROR EXACTLY the
+    // steering route (src/app/api/admin/v2/steering/route.ts) and the WACO
+    // catalogue (src/lib/admin/value-events.ts) — see domain-rollups.ts. All the
+    // counting/ratio math is PURE + unit-tested there; here we only do I/O.
+    //
+    // The DAU/WAU/MAU windows need the trailing 30 days of value-event activity,
+    // so this block reads a 30-day window for the activity tuples but a 1-day
+    // ("yesterday") window for the deadline/NCA/doc/Astra series.
+    const thirtyDayStart = startOfDay(subDays(yesterday, 29));
+    results.domainAggregates = await runDomainRollups(
+      dayStart,
+      dayEnd,
+      thirtyDayStart,
+    );
+
     return NextResponse.json({
       success: true,
       date: dayStart.toISOString(),
@@ -496,4 +523,388 @@ async function upsertAggregate(date: Date, metricType: string, value: number) {
       },
     });
   }
+}
+
+/**
+ * Idempotent upsert of ONE domain-rollup payload, dimension-aware.
+ *
+ * The table's `@@unique([date, metricType, dimension, dimensionValue])` includes
+ * two NULLABLE columns. Prisma's compound-unique `where` arg treats SQL NULL as
+ * "no filter", so a generated unique selector can't reliably target a row whose
+ * dimension is null. We therefore find-then-update/create with an EXACT match on
+ * all four key fields (null included), exactly like {@link upsertAggregate} but
+ * generalised to carry a non-null dimension. Backfill-safe + re-run-safe: running
+ * the cron twice for the same day overwrites the metricValue rather than
+ * duplicating the row.
+ */
+async function upsertDomainAggregate(p: DailyAggregatePayload): Promise<void> {
+  const existing = await prisma.analyticsDailyAggregate.findFirst({
+    where: {
+      date: p.date,
+      metricType: p.metricType,
+      dimension: p.dimension,
+      dimensionValue: p.dimensionValue,
+    },
+    select: { id: true },
+  });
+
+  if (existing) {
+    await prisma.analyticsDailyAggregate.update({
+      where: { id: existing.id },
+      data: { metricValue: p.metricValue },
+    });
+  } else {
+    await prisma.analyticsDailyAggregate.create({
+      data: {
+        date: p.date,
+        metricType: p.metricType,
+        dimension: p.dimension,
+        dimensionValue: p.dimensionValue,
+        metricValue: p.metricValue,
+      },
+    });
+  }
+}
+
+/** UTC-midnight ms of the day a timestamp falls on (for activity bucketing). */
+function utcDayMs(ts: Date): number {
+  return Date.UTC(ts.getUTCFullYear(), ts.getUTCMonth(), ts.getUTCDate());
+}
+
+/** Stable tenant actor key (mirrors the steering route). org > user > anon. */
+function actorKey(
+  orgId: string | null | undefined,
+  userId: string | null | undefined,
+): string {
+  if (orgId) return `org:${orgId}`;
+  if (userId) return `user:${userId}`;
+  return "anon";
+}
+
+/**
+ * Compute + upsert the DB-derived domain aggregates for the target day.
+ *
+ * Reads AUTHORITATIVE DOMAIN ROWS over two windows:
+ *   • [dayStart, dayEnd]      — the "yesterday" day for the deadline / NCA /
+ *                                document / Astra series.
+ *   • [thirtyDayStart, dayEnd] — the trailing 30 days of per-product VALUE-EVENT
+ *                                activity that the rolling DAU/WAU/MAU windows
+ *                                slice (the pure layer windows each off the day).
+ *
+ * Every predicate + timestamp column + product attribution MATCHES the steering
+ * route so the admin's series can never disagree with the North-Star screen.
+ * Pharos has no authoritative outcome table in steering, so it honestly produces
+ * NO activity (its per-product series read 0 — never invented). Returns the
+ * number of payloads upserted.
+ */
+async function runDomainRollups(
+  dayStart: Date,
+  dayEnd: Date,
+  thirtyDayStart: Date,
+): Promise<number> {
+  // ── A. Day-windowed rows for the scalar / dimensional COUNT series. ──
+  const [deadlines, ncaSubmissions, documents, astraMessages] =
+    await Promise.all([
+      // Deadlines: need created/met/overdue, so pull rows touching the day by
+      // ANY of the three timestamps (createdAt / completedAt / dueDate). The pure
+      // layer classifies each precisely.
+      prisma.deadline.findMany({
+        where: {
+          OR: [
+            { createdAt: { gte: dayStart, lte: dayEnd } },
+            { completedAt: { gte: dayStart, lte: dayEnd } },
+            { dueDate: { gte: dayStart, lte: dayEnd } },
+          ],
+        },
+        select: {
+          createdAt: true,
+          dueDate: true,
+          status: true,
+          completedAt: true,
+        },
+      }),
+      prisma.nCASubmission.findMany({
+        where: { submittedAt: { gte: dayStart, lte: dayEnd } },
+        select: { status: true, submittedAt: true },
+      }),
+      prisma.generatedDocument.findMany({
+        where: {
+          status: "COMPLETED",
+          updatedAt: { gte: dayStart, lte: dayEnd },
+        },
+        select: { documentType: true, status: true, updatedAt: true },
+      }),
+      prisma.astraMessage.findMany({
+        where: { createdAt: { gte: dayStart, lte: dayEnd } },
+        select: { createdAt: true },
+      }),
+    ]);
+
+  // ── B. 30-day per-product VALUE-EVENT activity (for DAU/WAU/MAU + active_orgs). ──
+  // Same predicates as the steering route; only the keys + timestamp we need.
+  const [
+    // comply (org-scoped assessment models + cross-product comply outcomes)
+    debris,
+    cyber,
+    nis2,
+    insurance,
+    environmental,
+    // comply (user-scoped assessment models — no organizationId column)
+    copuos,
+    ukSpace,
+    usReg,
+    exportCtrl,
+    spectrum,
+    ncaFiled,
+    docsCompleted,
+    deadlinesMet,
+    // trade
+    tradeItems,
+    tradeScreenings,
+    tradeLicenses,
+    // atlas
+    atlasDrafts,
+    // scholar (user-scoped)
+    planspielRuns,
+    bookmarks,
+  ] = await Promise.all([
+    prisma.debrisAssessment.findMany({
+      where: { planGenerated: true, planGeneratedAt: { gte: thirtyDayStart } },
+      select: { organizationId: true, userId: true, planGeneratedAt: true },
+    }),
+    prisma.cybersecurityAssessment.findMany({
+      where: {
+        frameworkGenerated: true,
+        frameworkGeneratedAt: { gte: thirtyDayStart },
+      },
+      select: {
+        organizationId: true,
+        userId: true,
+        frameworkGeneratedAt: true,
+      },
+    }),
+    prisma.nIS2Assessment.findMany({
+      where: {
+        reportGenerated: true,
+        reportGeneratedAt: { gte: thirtyDayStart },
+      },
+      select: { organizationId: true, userId: true, reportGeneratedAt: true },
+    }),
+    prisma.insuranceAssessment.findMany({
+      where: {
+        reportGenerated: true,
+        reportGeneratedAt: { gte: thirtyDayStart },
+      },
+      select: { organizationId: true, userId: true, reportGeneratedAt: true },
+    }),
+    prisma.environmentalAssessment.findMany({
+      where: {
+        OR: [
+          { reportGenerated: true, reportGeneratedAt: { gte: thirtyDayStart } },
+          {
+            status: { in: ["submitted", "approved"] },
+            updatedAt: { gte: thirtyDayStart },
+          },
+        ],
+      },
+      select: {
+        organizationId: true,
+        userId: true,
+        reportGeneratedAt: true,
+        updatedAt: true,
+      },
+    }),
+    prisma.copuosAssessment.findMany({
+      where: {
+        OR: [
+          { reportGenerated: true, reportGeneratedAt: { gte: thirtyDayStart } },
+          { status: "completed", updatedAt: { gte: thirtyDayStart } },
+        ],
+      },
+      select: { userId: true, reportGeneratedAt: true, updatedAt: true },
+    }),
+    prisma.ukSpaceAssessment.findMany({
+      where: {
+        OR: [
+          { reportGenerated: true, reportGeneratedAt: { gte: thirtyDayStart } },
+          { status: "completed", updatedAt: { gte: thirtyDayStart } },
+        ],
+      },
+      select: { userId: true, reportGeneratedAt: true, updatedAt: true },
+    }),
+    prisma.usRegulatoryAssessment.findMany({
+      where: {
+        OR: [
+          { reportGenerated: true, reportGeneratedAt: { gte: thirtyDayStart } },
+          { status: "completed", updatedAt: { gte: thirtyDayStart } },
+        ],
+      },
+      select: { userId: true, reportGeneratedAt: true, updatedAt: true },
+    }),
+    prisma.exportControlAssessment.findMany({
+      where: {
+        OR: [
+          { reportGenerated: true, reportGeneratedAt: { gte: thirtyDayStart } },
+          { status: "completed", updatedAt: { gte: thirtyDayStart } },
+        ],
+      },
+      select: { userId: true, reportGeneratedAt: true, updatedAt: true },
+    }),
+    prisma.spectrumAssessment.findMany({
+      where: {
+        OR: [
+          { reportGenerated: true, reportGeneratedAt: { gte: thirtyDayStart } },
+          { status: "completed", updatedAt: { gte: thirtyDayStart } },
+        ],
+      },
+      select: { userId: true, reportGeneratedAt: true, updatedAt: true },
+    }),
+    prisma.nCASubmission.findMany({
+      where: { submittedAt: { gte: thirtyDayStart } },
+      select: { userId: true, submittedAt: true },
+    }),
+    prisma.generatedDocument.findMany({
+      where: { status: "COMPLETED", updatedAt: { gte: thirtyDayStart } },
+      select: { organizationId: true, userId: true, updatedAt: true },
+    }),
+    prisma.deadline.findMany({
+      where: { status: "COMPLETED", completedAt: { gte: thirtyDayStart } },
+      select: { organizationId: true, userId: true, completedAt: true },
+    }),
+    prisma.tradeItem.findMany({
+      where: { status: "CLASSIFIED", classifiedAt: { gte: thirtyDayStart } },
+      select: { organizationId: true, createdById: true, classifiedAt: true },
+    }),
+    prisma.tradeScreeningResult.findMany({
+      where: {
+        decision: {
+          in: ["CLEAR", "CONFIRMED_HIT", "FALSE_POSITIVE_DISMISSED"],
+        },
+        OR: [
+          { decidedAt: { gte: thirtyDayStart } },
+          { createdAt: { gte: thirtyDayStart } },
+        ],
+      },
+      select: {
+        decidedAt: true,
+        createdAt: true,
+        decidedById: true,
+        party: { select: { organizationId: true } },
+      },
+    }),
+    prisma.tradeLicense.findMany({
+      where: { issuedAt: { gte: thirtyDayStart } },
+      select: { organizationId: true, issuedAt: true },
+    }),
+    prisma.atlasMessage.findMany({
+      where: { role: "assistant", createdAt: { gte: thirtyDayStart } },
+      select: {
+        createdAt: true,
+        senderUserId: true,
+        chat: { select: { organizationId: true, ownerUserId: true } },
+      },
+    }),
+    prisma.scholarPlanspielRun.findMany({
+      where: { startedAt: { gte: thirtyDayStart } },
+      select: { ownerUserId: true, startedAt: true },
+    }),
+    prisma.scholarBookmark.findMany({
+      where: { createdAt: { gte: thirtyDayStart } },
+      select: { userId: true, createdAt: true },
+    }),
+  ]);
+
+  // ── C. Fold every qualifying row into a ProductActivity tuple. ──
+  // Bucket each event's real timestamp to its UTC day; attribute product + a
+  // stable tenant actorKey. orgKey is the raw org id (or null for user-scoped
+  // surfaces) — used ONLY for the active_orgs distinct count.
+  const activity: ProductActivity[] = [];
+  const pushActivity = (
+    product: ValueProduct,
+    orgId: string | null | undefined,
+    userId: string | null | undefined,
+    when: Date | null | undefined,
+    fallbackWhen?: Date | null,
+  ): void => {
+    const ts = when ?? fallbackWhen;
+    if (!ts) return; // never fabricate a timestamp
+    activity.push({
+      product,
+      actorKey: actorKey(orgId, userId),
+      orgKey: orgId ?? null,
+      dayMs: utcDayMs(ts),
+    });
+  };
+
+  for (const r of debris)
+    pushActivity("comply", r.organizationId, r.userId, r.planGeneratedAt);
+  for (const r of cyber)
+    pushActivity("comply", r.organizationId, r.userId, r.frameworkGeneratedAt);
+  for (const r of nis2)
+    pushActivity("comply", r.organizationId, r.userId, r.reportGeneratedAt);
+  for (const r of insurance)
+    pushActivity("comply", r.organizationId, r.userId, r.reportGeneratedAt);
+  for (const r of environmental)
+    pushActivity(
+      "comply",
+      r.organizationId,
+      r.userId,
+      r.reportGeneratedAt,
+      r.updatedAt,
+    );
+  for (const r of copuos)
+    pushActivity("comply", null, r.userId, r.reportGeneratedAt, r.updatedAt);
+  for (const r of ukSpace)
+    pushActivity("comply", null, r.userId, r.reportGeneratedAt, r.updatedAt);
+  for (const r of usReg)
+    pushActivity("comply", null, r.userId, r.reportGeneratedAt, r.updatedAt);
+  for (const r of exportCtrl)
+    pushActivity("comply", null, r.userId, r.reportGeneratedAt, r.updatedAt);
+  for (const r of spectrum)
+    pushActivity("comply", null, r.userId, r.reportGeneratedAt, r.updatedAt);
+  for (const r of ncaFiled)
+    pushActivity("comply", null, r.userId, r.submittedAt);
+  for (const r of docsCompleted)
+    pushActivity("comply", r.organizationId, r.userId, r.updatedAt);
+  for (const r of deadlinesMet)
+    pushActivity("comply", r.organizationId, r.userId, r.completedAt);
+
+  for (const r of tradeItems)
+    pushActivity("trade", r.organizationId, r.createdById, r.classifiedAt);
+  for (const r of tradeScreenings)
+    pushActivity(
+      "trade",
+      r.party?.organizationId ?? null,
+      r.decidedById,
+      r.decidedAt,
+      r.createdAt,
+    );
+  for (const r of tradeLicenses)
+    pushActivity("trade", r.organizationId, null, r.issuedAt);
+
+  for (const r of atlasDrafts)
+    pushActivity(
+      "atlas",
+      r.chat?.organizationId ?? null,
+      r.senderUserId ?? r.chat?.ownerUserId ?? null,
+      r.createdAt,
+    );
+
+  for (const r of planspielRuns)
+    pushActivity("scholar", null, r.ownerUserId, r.startedAt);
+  for (const r of bookmarks)
+    pushActivity("scholar", null, r.userId, r.createdAt);
+
+  // ── D. Build all payloads via the PURE composer + upsert each idempotently. ──
+  const payloads = buildDomainRollups({
+    date: dayStart,
+    deadlines,
+    ncaSubmissions,
+    documents,
+    astraMessages,
+    productActivity: activity,
+  });
+
+  for (const p of payloads) await upsertDomainAggregate(p);
+  return payloads.length;
 }

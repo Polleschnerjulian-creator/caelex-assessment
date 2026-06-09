@@ -536,13 +536,30 @@ function median(values: number[]): number {
 
 /**
  * The default funnels materialised every night. EXACT step keys + event-type
- * allow-lists per the Phase-3 contract.
+ * allow-lists per the Phase-3 contract, EXTENDED (P1a) with one
+ * `<product>_activation` funnel for EVERY {@link Product} that has a sign-up →
+ * "aha" journey (atlas, scholar, pharos, trade), mirroring the original
+ * `comply_activation` shape. Each per-product funnel starts at the shared
+ * `signup` lifecycle event (step 0) and walks that product's own activation
+ * events; `product` is set so the dashboard can scope the funnel grid per
+ * product. EVERY `eventTypes` entry below is an already-DEFINED `EventType`
+ * string from `./events` — NO new event types are invented here (this lane is
+ * DEFINITION-only; emission is wired in a later phase).
  *
  * EVENT-TYPE DUALITY is honoured in the `growth` funnel's acquisition step,
  * which lists `acq_page_viewed` (marketing-specific), the NEW provider's
  * `page_viewed`, AND the LEGACY `page_view` — so a visit counts no matter which
  * emitter produced it. The activation step unions one "aha" event per product so
  * a signup that did ANYTHING meaningful in any product counts as activated.
+ *
+ * ORDERING / INVARIANTS (asserted by the tests):
+ *   - `growth` is first (the cross-product spine), then the original
+ *     `trade_classify_to_license` + `comply_activation`, then the four new
+ *     per-product activation funnels `atlas/scholar/pharos/trade`.
+ *   - Every `funnelId` is UNIQUE; every funnel has ≥ 1 step; no step within a
+ *     funnel repeats its `stepKey`.
+ *   - `marketing` has NO activation funnel — it is top-of-funnel only and is
+ *     already represented as the `growth` funnel's acquisition step.
  */
 export const DEFAULT_FUNNELS: FunnelDef[] = [
   {
@@ -605,6 +622,90 @@ export const DEFAULT_FUNNELS: FunnelDef[] = [
       {
         stepKey: "assessment_completed",
         eventTypes: ["comply_assessment_completed"],
+      },
+    ],
+  },
+  // ── Per-product activation funnels (P1a) — signup → product "aha" ──────────
+  // Each mirrors comply_activation: step 0 is the shared `signup` lifecycle
+  // event, then the product's own already-defined activation events in journey
+  // order. These exist so the per-product funnel grid lights up the moment the
+  // (later-phase) emitters fire — no schema change, no new event types.
+  {
+    // ATLAS: a lawyer who signs up, runs a search, then OPENS a source/case is
+    // activated. The terminal step unions source-read + case-read (either counts
+    // as the research "aha"); semantic search is folded into the search step.
+    funnelId: "atlas_activation",
+    product: "atlas",
+    steps: [
+      {
+        stepKey: "signup",
+        eventTypes: ["signup"],
+      },
+      {
+        stepKey: "search_ran",
+        eventTypes: ["atlas_search_ran", "atlas_semantic_search_ran"],
+      },
+      {
+        stepKey: "source_read",
+        eventTypes: ["atlas_source_read", "atlas_case_read"],
+      },
+    ],
+  },
+  {
+    // SCHOLAR: the student surface only emits one meaningful activation event
+    // today (`scholar_source_read`), so this is an honest 2-step funnel rather
+    // than an invented middle step. Signup → first source read = activated.
+    funnelId: "scholar_activation",
+    product: "scholar",
+    steps: [
+      {
+        stepKey: "signup",
+        eventTypes: ["signup"],
+      },
+      {
+        stepKey: "source_read",
+        eventTypes: ["scholar_source_read"],
+      },
+    ],
+  },
+  {
+    // PHAROS: a regulator who signs up, OPENS an oversight case, then ADVANCES
+    // its workflow is activated (they did real review work, not just landed).
+    funnelId: "pharos_activation",
+    product: "pharos",
+    steps: [
+      {
+        stepKey: "signup",
+        eventTypes: ["signup"],
+      },
+      {
+        stepKey: "oversight_initiated",
+        eventTypes: ["pharos_oversight_initiated"],
+      },
+      {
+        stepKey: "workflow_advanced",
+        eventTypes: ["pharos_workflow_advanced"],
+      },
+    ],
+  },
+  {
+    // TRADE: the SIGN-UP→activation funnel (distinct from the existing
+    // trade_classify_to_license OUTCOME funnel above, which starts mid-product
+    // at classify_started). Here: signup → start a classification → complete it.
+    funnelId: "trade_activation",
+    product: "trade",
+    steps: [
+      {
+        stepKey: "signup",
+        eventTypes: ["signup"],
+      },
+      {
+        stepKey: "classify_started",
+        eventTypes: ["trade_classify_started"],
+      },
+      {
+        stepKey: "classify_completed",
+        eventTypes: ["trade_classify_completed"],
       },
     ],
   },

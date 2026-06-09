@@ -26,6 +26,8 @@ import { usePathname } from "next/navigation";
 import {
   Compass,
   LayoutDashboard,
+  TrendingUp,
+  Building2,
   Contact2,
   Users,
   Filter,
@@ -57,9 +59,16 @@ const NAV: NavLink[] = [
     exact: true,
   },
   {
-    href: "/admin/crm",
-    label: "CRM",
-    icon: <Contact2 size={18} strokeWidth={1.5} />,
+    // Growth / PMF — sits right after the Cockpit (acquisition + activation lens).
+    href: "/admin/growth",
+    label: "Growth",
+    icon: <TrendingUp size={18} strokeWidth={1.5} />,
+  },
+  {
+    // Customers — account-level depth; precedes Retention in the IA.
+    href: "/admin/customers",
+    label: "Customers",
+    icon: <Building2 size={18} strokeWidth={1.5} />,
   },
   {
     href: "/admin/retention",

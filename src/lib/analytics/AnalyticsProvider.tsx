@@ -54,12 +54,14 @@ import {
 } from "@/lib/analytics";
 import {
   EVENT_TYPES,
+  PRODUCTS,
   SLUG_REGEX,
   isEssentialEventType,
   productFromPath,
   type EventType,
 } from "@/lib/analytics/events";
 import { deriveEnvelopeHead, segmentToSlug } from "@/lib/analytics/surface";
+import { captureAcquisition } from "@/lib/analytics/utm";
 import { DwellAccumulator, ScrollDepthTracker } from "@/lib/analytics/dwell";
 
 /** Periodic scroll sampling throttle (ms). */
@@ -153,6 +155,38 @@ function useTracking(): void {
     const head = currentHeadRef.current;
     if (head && mayEmit(EVENT_TYPES.PAGE_VIEWED)) {
       emitEvent(EVENT_TYPES.PAGE_VIEWED, {}, headToOptions(head, pathname));
+
+      // 3b. On TOP-OF-FUNNEL (marketing) pages, ALSO emit `acq_page_viewed`
+      // carrying the acquisition attribution: UTM slugs from the query string +
+      // a coarse referrer host. captureAcquisition() turns the raw query +
+      // `document.referrer` into SLUG-ONLY values (or drops them), so no full
+      // URL / query text / referrer path ever leaves the browser (GDPR §6.1).
+      // Only fired for `marketing` so in-app product navigations don't carry an
+      // acquisition signal. Consent-gated like every other non-essential event.
+      if (
+        head.product === PRODUCTS.MARKETING &&
+        mayEmit(EVENT_TYPES.ACQ_PAGE_VIEWED)
+      ) {
+        const { utm, referrer } = captureAcquisition(
+          typeof window !== "undefined" ? window.location.search : "",
+          typeof document !== "undefined" ? document.referrer : "",
+          typeof window !== "undefined" ? window.location.origin : null,
+        );
+        // UtmSlugs is a closed interface (no index signature) so it isn't
+        // structurally a Record<string, unknown>; the values are plain
+        // string|undefined, so widening to the payload type is safe.
+        emitEvent(
+          EVENT_TYPES.ACQ_PAGE_VIEWED,
+          utm as unknown as Record<string, unknown>,
+          {
+            ...headToOptions(head, pathname),
+            // The referrer host rides as the normalised `topic` slug — the one
+            // bounded token field the envelope allows (the acq payload schema is
+            // strict + has no referrer key). Omitted entirely for direct traffic.
+            ...(referrer !== undefined ? { topic: referrer } : {}),
+          },
+        );
+      }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pathname]);

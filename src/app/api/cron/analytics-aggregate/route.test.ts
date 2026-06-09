@@ -25,6 +25,27 @@ vi.mock("@/lib/prisma", () => ({
     revenueSnapshot: { upsert: vi.fn() },
     $queryRaw: vi.fn(),
     apiEndpointMetrics: { upsert: vi.fn() },
+    // P1a domain-aggregate reads (deadlines, NCA, docs, per-product activity).
+    deadline: { findMany: vi.fn() },
+    nCASubmission: { findMany: vi.fn() },
+    generatedDocument: { findMany: vi.fn() },
+    astraMessage: { findMany: vi.fn() },
+    atlasMessage: { findMany: vi.fn() },
+    tradeItem: { findMany: vi.fn() },
+    tradeScreeningResult: { findMany: vi.fn() },
+    tradeLicense: { findMany: vi.fn() },
+    scholarPlanspielRun: { findMany: vi.fn() },
+    scholarBookmark: { findMany: vi.fn() },
+    debrisAssessment: { findMany: vi.fn() },
+    cybersecurityAssessment: { findMany: vi.fn() },
+    nIS2Assessment: { findMany: vi.fn() },
+    insuranceAssessment: { findMany: vi.fn() },
+    environmentalAssessment: { findMany: vi.fn() },
+    copuosAssessment: { findMany: vi.fn() },
+    ukSpaceAssessment: { findMany: vi.fn() },
+    usRegulatoryAssessment: { findMany: vi.fn() },
+    exportControlAssessment: { findMany: vi.fn() },
+    spectrumAssessment: { findMany: vi.fn() },
   },
 }));
 
@@ -131,8 +152,38 @@ describe("GET /api/cron/analytics-aggregate", () => {
       });
       mockPrisma.revenueSnapshot.upsert.mockResolvedValue({});
 
-      // API metrics (raw query returns empty)
-      mockPrisma.$queryRaw.mockResolvedValueOnce([]);
+      // P1a domain aggregates: each new per-domain read returns empty so the new
+      // series compute real zeros (the legacy 6+ aggregates still populate).
+      for (const model of [
+        "deadline",
+        "nCASubmission",
+        "generatedDocument",
+        "astraMessage",
+        "atlasMessage",
+        "tradeItem",
+        "tradeScreeningResult",
+        "tradeLicense",
+        "scholarPlanspielRun",
+        "scholarBookmark",
+        "debrisAssessment",
+        "cybersecurityAssessment",
+        "nIS2Assessment",
+        "insuranceAssessment",
+        "environmentalAssessment",
+        "copuosAssessment",
+        "ukSpaceAssessment",
+        "usRegulatoryAssessment",
+        "exportControlAssessment",
+        "spectrumAssessment",
+      ]) {
+        mockPrisma[model].findMany.mockResolvedValue([]);
+      }
+
+      // API metrics (raw query returns empty). $queryRaw is mocked as a bare
+      // vi.fn(), so cast past the object-shaped mockPrisma index type.
+      (
+        mockPrisma.$queryRaw as unknown as ReturnType<typeof vi.fn>
+      ).mockResolvedValueOnce([]);
 
       const res = await GET(makeRequest("Bearer test-secret"));
       expect(res.status).toBe(200);

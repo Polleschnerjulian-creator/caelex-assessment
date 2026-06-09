@@ -29,6 +29,8 @@ import {
 import { logger, maskEmail } from "@/lib/logger";
 import { getSafeErrorMessage } from "@/lib/validations";
 import { linkInboundLead } from "@/lib/crm/auto-link.server";
+import { serverAnalytics } from "@/lib/analytics";
+import { EVENT_TYPES, PRODUCTS } from "@/lib/analytics/events";
 
 function escapeHtml(str: string): string {
   return str
@@ -118,6 +120,26 @@ export async function POST(request: NextRequest) {
       email: maskEmail(email),
       subject: subjectEnum,
     });
+
+    // ─── Acquisition event (fire-and-forget; runs only past the honeypot) ───
+    // Canonical P0 shape (product column + envelope, data under `payload`). The
+    // payload is empty — only the conversion fact is recorded; the contact's
+    // identity stays in ContactRequest, never the analytics store.
+    void serverAnalytics
+      .track(
+        EVENT_TYPES.ACQ_CONTACT_SUBMITTED,
+        {},
+        {
+          product: PRODUCTS.MARKETING,
+          surface: "contact",
+          feature: "submit",
+          path: "/contact",
+          category: "conversion",
+        },
+      )
+      .catch(() => {
+        /* analytics must never break the request */
+      });
 
     // ─── Send notification email ─────────────────────────────────────────
     const resendApiKey = process.env.RESEND_API_KEY;

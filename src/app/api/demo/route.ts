@@ -36,6 +36,8 @@ import {
   isCalendarConfigured,
 } from "@/lib/google-calendar.server";
 import { linkInboundLead } from "@/lib/crm/auto-link.server";
+import { serverAnalytics } from "@/lib/analytics";
+import { EVENT_TYPES, PRODUCTS } from "@/lib/analytics/events";
 
 const TIMEZONE = "Europe/Berlin";
 const DEFAULT_DURATION_MINUTES = 15;
@@ -113,6 +115,27 @@ export async function POST(request: NextRequest) {
       email: maskEmail(email),
       scheduled: !!scheduledAtIso,
     });
+
+    // ─── Acquisition event (fire-and-forget; never block / break the lead) ───
+    // Feeds the (admin) v2 acquisition/funnel surface in the canonical P0 shape
+    // (product on the column + envelope, event-data under `payload`). No PII:
+    // the empty payload carries only the conversion signal — the lead's name /
+    // email live in DemoRequest, not the analytics store.
+    void serverAnalytics
+      .track(
+        EVENT_TYPES.ACQ_DEMO_REQUESTED,
+        {},
+        {
+          product: PRODUCTS.MARKETING,
+          surface: "demo",
+          feature: "request",
+          path: "/demo",
+          category: "conversion",
+        },
+      )
+      .catch(() => {
+        /* analytics must never break the request */
+      });
 
     // ─── Booking + Google Calendar sync (only if slot was chosen) ─────────
     let booking: {

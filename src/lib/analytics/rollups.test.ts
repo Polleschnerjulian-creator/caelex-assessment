@@ -37,6 +37,7 @@ import {
   type FunnelDef,
 } from "./rollups";
 import { normalizePath } from "./feature-map";
+import { EVENT_TYPE_VALUES } from "./events";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Helpers
@@ -659,12 +660,16 @@ describe("computeFunnelDaily", () => {
 });
 
 describe("DEFAULT_FUNNELS", () => {
-  it("contains exactly the three contract funnels with the exact ids", () => {
-    expect(DEFAULT_FUNNELS).toHaveLength(3);
+  it("contains the contract funnels + the four per-product activation funnels in order", () => {
+    expect(DEFAULT_FUNNELS).toHaveLength(7);
     expect(DEFAULT_FUNNELS.map((f) => f.funnelId)).toEqual([
       "growth",
       "trade_classify_to_license",
       "comply_activation",
+      "atlas_activation",
+      "scholar_activation",
+      "pharos_activation",
+      "trade_activation",
     ]);
   });
 
@@ -721,6 +726,122 @@ describe("DEFAULT_FUNNELS", () => {
     expect(f.steps[0].eventTypes).toEqual(["signup"]);
     expect(f.steps[1].eventTypes).toEqual(["comply_module_opened"]);
     expect(f.steps[2].eventTypes).toEqual(["comply_assessment_completed"]);
+  });
+
+  it("atlas_activation funnel: product atlas, signup → search → source read", () => {
+    const f = DEFAULT_FUNNELS.find((x) => x.funnelId === "atlas_activation")!;
+    expect(f.product).toBe("atlas");
+    expect(f.steps.map((s) => s.stepKey)).toEqual([
+      "signup",
+      "search_ran",
+      "source_read",
+    ]);
+    expect(f.steps[0].eventTypes).toEqual(["signup"]);
+    // semantic search is unioned into the search step.
+    expect(f.steps[1].eventTypes).toEqual([
+      "atlas_search_ran",
+      "atlas_semantic_search_ran",
+    ]);
+    // either a source OR a case read counts as the research "aha".
+    expect(f.steps[2].eventTypes).toEqual([
+      "atlas_source_read",
+      "atlas_case_read",
+    ]);
+  });
+
+  it("scholar_activation funnel: product scholar, honest 2-step signup → source read", () => {
+    const f = DEFAULT_FUNNELS.find((x) => x.funnelId === "scholar_activation")!;
+    expect(f.product).toBe("scholar");
+    expect(f.steps.map((s) => s.stepKey)).toEqual(["signup", "source_read"]);
+    expect(f.steps[0].eventTypes).toEqual(["signup"]);
+    expect(f.steps[1].eventTypes).toEqual(["scholar_source_read"]);
+  });
+
+  it("pharos_activation funnel: product pharos, signup → oversight → workflow", () => {
+    const f = DEFAULT_FUNNELS.find((x) => x.funnelId === "pharos_activation")!;
+    expect(f.product).toBe("pharos");
+    expect(f.steps.map((s) => s.stepKey)).toEqual([
+      "signup",
+      "oversight_initiated",
+      "workflow_advanced",
+    ]);
+    expect(f.steps[0].eventTypes).toEqual(["signup"]);
+    expect(f.steps[1].eventTypes).toEqual(["pharos_oversight_initiated"]);
+    expect(f.steps[2].eventTypes).toEqual(["pharos_workflow_advanced"]);
+  });
+
+  it("trade_activation funnel: product trade, signup → classify started → completed (distinct from the outcome funnel)", () => {
+    const f = DEFAULT_FUNNELS.find((x) => x.funnelId === "trade_activation")!;
+    expect(f.product).toBe("trade");
+    expect(f.steps.map((s) => s.stepKey)).toEqual([
+      "signup",
+      "classify_started",
+      "classify_completed",
+    ]);
+    expect(f.steps[0].eventTypes).toEqual(["signup"]);
+    expect(f.steps[1].eventTypes).toEqual(["trade_classify_started"]);
+    expect(f.steps[2].eventTypes).toEqual(["trade_classify_completed"]);
+    // It is genuinely a DIFFERENT funnel from the classify→license outcome one
+    // (which starts mid-product, has no signup step, and ends at license_granted).
+    const outcome = DEFAULT_FUNNELS.find(
+      (x) => x.funnelId === "trade_classify_to_license",
+    )!;
+    expect(f.funnelId).not.toBe(outcome.funnelId);
+    expect(outcome.steps.some((s) => s.stepKey === "signup")).toBe(false);
+  });
+
+  it("every activation funnel starts at the shared `signup` lifecycle step", () => {
+    const activation = DEFAULT_FUNNELS.filter((f) =>
+      f.funnelId.endsWith("_activation"),
+    );
+    // comply + atlas + scholar + pharos + trade = 5 activation funnels.
+    expect(activation).toHaveLength(5);
+    for (const f of activation) {
+      expect(f.steps[0].stepKey).toBe("signup");
+      expect(f.steps[0].eventTypes).toEqual(["signup"]);
+    }
+  });
+
+  it("has unique funnelIds, ≥1 step each, and no duplicate stepKey within a funnel", () => {
+    const ids = DEFAULT_FUNNELS.map((f) => f.funnelId);
+    expect(new Set(ids).size).toBe(ids.length); // unique funnelIds
+
+    for (const f of DEFAULT_FUNNELS) {
+      expect(f.steps.length).toBeGreaterThanOrEqual(1); // at least one step
+      const keys = f.steps.map((s) => s.stepKey);
+      expect(new Set(keys).size).toBe(keys.length); // no duplicate stepKey
+      for (const s of f.steps) {
+        expect(s.eventTypes.length).toBeGreaterThanOrEqual(1); // each step matches something
+      }
+    }
+  });
+
+  it("references ONLY already-defined event types (no invented events) — except the legacy page_view duality string", () => {
+    const known = new Set<string>(EVENT_TYPE_VALUES);
+    // The growth acquisition step intentionally carries the LEGACY `page_view`
+    // string (the pre-taxonomy emitter), which is NOT in the closed EventType
+    // union. It is the ONLY allowed exception (documented duality).
+    const allowedNonCatalogue = new Set<string>(["page_view"]);
+    for (const f of DEFAULT_FUNNELS) {
+      for (const step of f.steps) {
+        for (const et of step.eventTypes) {
+          if (allowedNonCatalogue.has(et)) continue;
+          expect(known.has(et)).toBe(true);
+        }
+      }
+    }
+  });
+
+  it("every activation funnel's product is a real (non-marketing) product code", () => {
+    const activation = DEFAULT_FUNNELS.filter((f) =>
+      f.funnelId.endsWith("_activation"),
+    );
+    for (const f of activation) {
+      // activation funnels are always product-scoped (never the cross-product null)
+      expect(f.product).not.toBeNull();
+      // and never the top-of-funnel marketing bucket
+      expect(f.product).not.toBe("marketing");
+    }
   });
 });
 
