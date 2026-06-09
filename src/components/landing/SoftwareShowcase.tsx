@@ -93,12 +93,10 @@ export default function SoftwareShowcase() {
           </h2>
         </AnimatedRow>
 
-        {/* Product rows */}
+        {/* Product rows — each name flies in from the side on scroll (Palantir) */}
         <div className="mt-8 md:mt-10">
-          {PRODUCTS.map((product, i) => (
-            <AnimatedRow key={product.name} delay={i * 0.06}>
-              <ProductRow product={product} />
-            </AnimatedRow>
+          {PRODUCTS.map((product) => (
+            <ProductRow key={product.name} product={product} />
           ))}
           {/* Closing divider */}
           <div className="border-t" style={{ borderColor: "#ECECEC" }} />
@@ -109,23 +107,28 @@ export default function SoftwareShowcase() {
 }
 
 function ProductRow({ product }: { product: (typeof PRODUCTS)[number] }) {
+  const ref = useRef(null);
+  const inView = useInView(ref, { once: true, margin: "-90px" });
+  const ease: [number, number, number, number] = [0.22, 1, 0.36, 1];
+
   return (
     <Link
       href={product.href}
       className="group block rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1d1d1f] focus-visible:ring-offset-2"
     >
       <div
-        className="border-t transition-colors group-hover:!border-[#D8D8D8]"
+        ref={ref}
+        className="overflow-hidden border-t transition-colors group-hover:!border-[#D8D8D8]"
         style={{
           borderColor: "#ECECEC",
           paddingTop: "16px",
           paddingBottom: "32px",
         }}
       >
-        {/* Big name (left) + version tag (top-right) */}
+        {/* Big name (flies in from the left + fades) + version tag */}
         <div className="flex items-start justify-between gap-6">
-          <h3
-            className="select-none transition-transform duration-500 ease-[cubic-bezier(0.25,0.1,0.25,1)] group-hover:translate-x-2"
+          <motion.h3
+            className="select-none"
             style={{
               fontFamily: GEIST,
               fontSize: "clamp(2.75rem, 7.5vw, 80px)",
@@ -134,10 +137,14 @@ function ProductRow({ product }: { product: (typeof PRODUCTS)[number] }) {
               lineHeight: 1,
               color: INK,
             }}
+            initial={{ opacity: 0, x: -80 }}
+            animate={inView ? { opacity: 1, x: 0 } : { opacity: 0, x: -80 }}
+            whileHover={{ x: 8 }}
+            transition={{ duration: 0.7, ease }}
           >
             {product.name}
-          </h3>
-          <span
+          </motion.h3>
+          <motion.span
             className="whitespace-nowrap tabular-nums"
             style={{
               fontFamily: GEIST,
@@ -145,13 +152,16 @@ function ProductRow({ product }: { product: (typeof PRODUCTS)[number] }) {
               fontWeight: 400,
               color: "#AAAAAA",
             }}
+            initial={{ opacity: 0 }}
+            animate={inView ? { opacity: 1 } : { opacity: 0 }}
+            transition={{ duration: 0.5, delay: 0.25, ease }}
           >
             {product.version}
-          </span>
+          </motion.span>
         </div>
 
-        {/* One sharp line — 20px, regular, dark */}
-        <p
+        {/* One sharp line — fades up just after the name */}
+        <motion.p
           className="mt-4 max-w-none"
           style={{
             fontFamily: GEIST,
@@ -160,9 +170,12 @@ function ProductRow({ product }: { product: (typeof PRODUCTS)[number] }) {
             lineHeight: 1.15,
             color: INK,
           }}
+          initial={{ opacity: 0, y: 12 }}
+          animate={inView ? { opacity: 1, y: 0 } : { opacity: 0, y: 12 }}
+          transition={{ duration: 0.6, delay: 0.18, ease }}
         >
           {product.description}
-        </p>
+        </motion.p>
       </div>
     </Link>
   );

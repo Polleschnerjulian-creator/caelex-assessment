@@ -403,7 +403,10 @@ export default function Navigation({
           className={
             fullWidth
               ? "w-full px-3 sm:px-4"
-              : "max-w-[1400px] mx-auto px-6 md:px-12"
+              : // Near-full-width floating bar: a small side margin so the rounded
+                // glass pill rounds off just before the viewport edge (not the old
+                // narrow max-w-1400 that left big gaps on wide screens).
+                "w-full px-3 sm:px-4 md:px-5"
           }
         >
           <div className="flex items-center justify-between h-20">
@@ -447,10 +450,13 @@ export default function Navigation({
                 {/* Get Started CTA — white bg, subtle border, soft radius */}
                 <Link
                   href="/get-started"
-                  className={`hidden sm:inline-flex items-center justify-center h-10 px-5 text-[13px] font-medium tracking-wide rounded-lg transition-all duration-300 ${
+                  style={{
+                    fontFamily: "var(--font-geist), system-ui, sans-serif",
+                  }}
+                  className={`hidden sm:inline-flex items-center justify-center h-10 px-8 text-[16px] font-normal rounded-none transition-colors duration-200 ${
                     ghost
-                      ? "border border-white/30 bg-transparent text-white backdrop-blur-sm hover:bg-white/10"
-                      : "bg-white text-[#111827] border border-[#E5E7EB] hover:bg-[#F9FAFB]"
+                      ? "border border-white/50 bg-transparent text-white hover:bg-white hover:text-[#1E1F2B]"
+                      : "bg-white text-[#1E1F2B] border border-[#1E1F2B] hover:bg-[#1E1F2B] hover:text-white"
                   }`}
                 >
                   Get Started
@@ -458,10 +464,10 @@ export default function Navigation({
 
                 {/* Search + Hamburger — white bg, subtle border, soft radius */}
                 <div
-                  className={`flex items-center overflow-hidden rounded-lg ${
+                  className={`flex items-center overflow-hidden rounded-none ${
                     ghost
-                      ? "border border-white/30 bg-transparent backdrop-blur-sm"
-                      : "bg-white border border-[#E5E7EB]"
+                      ? "border border-white/50 bg-transparent"
+                      : "bg-white border border-[#1E1F2B]"
                   }`}
                 >
                   <button
