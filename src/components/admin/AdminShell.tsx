@@ -44,6 +44,7 @@ function topBarTitle(pathname: string): string {
 
   const prefixes: { prefix: string; label: string }[] = [
     { prefix: "/admin/steering", label: "Steering" },
+    { prefix: "/admin/products", label: "Products" },
     { prefix: "/admin/revenue", label: "Revenue" },
     { prefix: "/admin/growth", label: "Growth" },
     { prefix: "/admin/customers", label: "Customers" },

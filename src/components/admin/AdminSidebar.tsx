@@ -26,6 +26,7 @@ import { usePathname } from "next/navigation";
 import {
   Compass,
   LayoutDashboard,
+  Boxes,
   CircleDollarSign,
   TrendingUp,
   Building2,
@@ -58,6 +59,12 @@ const NAV: NavLink[] = [
     label: "Cockpit",
     icon: <LayoutDashboard size={18} strokeWidth={1.5} />,
     exact: true,
+  },
+  {
+    // Per-product deep-dive — usage, AI spend, by-org breakdown (aggregate only).
+    href: "/admin/products",
+    label: "Products",
+    icon: <Boxes size={18} strokeWidth={1.5} />,
   },
   {
     // Board-grade revenue — MRR/ARR, movement waterfall, 90-day forecast + benchmarks.
