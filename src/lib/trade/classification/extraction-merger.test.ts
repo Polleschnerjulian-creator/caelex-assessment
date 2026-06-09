@@ -51,6 +51,9 @@ function vision(
     value,
     confidence,
     reasoning,
+    // Lane 5 (T-M17) made guardResult a required field on every emitted
+    // VisionAttribute; these fixtures are accepted (in-bounds) values.
+    guardResult: { passedSanity: true },
   };
 }
 

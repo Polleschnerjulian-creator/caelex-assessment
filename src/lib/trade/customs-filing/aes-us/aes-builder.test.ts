@@ -38,6 +38,10 @@ import {
 } from "./aes-builder";
 import { serializeAesXml } from "./aes-serializer";
 import { AES_SCHEMA_VERSION } from "./aes-payload";
+import {
+  MISSING_IDENTIFIER_PLACEHOLDER,
+  isMissingIdentifier,
+} from "../export-identifier";
 
 // ─── Fixture ──────────────────────────────────────────────────────
 
@@ -224,13 +228,21 @@ describe("Z14b — buildAesPayload", () => {
     expect(payload.Filing.USPPI.IdentifierValue).toBe("123456789");
   });
 
-  it("falls back to placeholder identifier when EIN + DUNS both absent", () => {
+  it("emits an HONEST placeholder identifier (never a fabricated zero-fill) when EIN + DUNS both absent", () => {
     const input = fixtureInput();
     input.usppi.einNumber = null;
     input.usppi.dunsNumber = null;
     const payload = buildAesPayload(input);
     expect(payload.Filing.USPPI.IdentifierType).toBe("EIN");
-    expect(payload.Filing.USPPI.IdentifierValue).toBe("000000000");
+    // Fail-closed (export-control invariant): a missing EIN/DUNS must surface
+    // a loud placeholder that flags the draft, NOT a fabricated "000000000".
+    expect(payload.Filing.USPPI.IdentifierValue).toBe(
+      MISSING_IDENTIFIER_PLACEHOLDER,
+    );
+    expect(payload.Filing.USPPI.IdentifierValue).not.toBe("000000000");
+    expect(isMissingIdentifier(payload.Filing.USPPI.IdentifierValue)).toBe(
+      true,
+    );
   });
 
   it("uses appliedLicense.LicenseCode when set on the line", () => {

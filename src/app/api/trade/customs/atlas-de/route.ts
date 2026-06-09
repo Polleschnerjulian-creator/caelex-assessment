@@ -38,6 +38,7 @@ import {
 } from "@/lib/ratelimit";
 import { getTradeAuth } from "@/lib/trade/trade-auth";
 import { buildAtlasXml } from "@/lib/trade/customs-filing/atlas-de";
+import { getProfile } from "@/lib/trade/settings/org-profile-service";
 import { fromCents } from "@/lib/trade/money";
 
 export async function GET(req: Request) {
@@ -67,7 +68,11 @@ export async function GET(req: Request) {
       where: { id: operationId, organizationId: tradeAuth.organizationId },
       include: {
         organization: {
-          select: { id: true, name: true },
+          select: {
+            id: true,
+            name: true,
+            vatNumber: true,
+          },
         },
         counterparty: {
           select: {
@@ -113,11 +118,31 @@ export async function GET(req: Request) {
       return NextResponse.json({ error: "Not found" }, { status: 404 });
     }
 
+    const org = operation.organization;
+
+    // Customs identifiers live in the AES-256-GCM-encrypted TradeOrgProfile,
+    // NOT on the Organization row. `getProfile` returns the decrypted view
+    // (eoriNumber / dunsPlus4 are decrypted from the *_Enc columns). A null
+    // identifier is fed through to the builder, which emits the honest
+    // MISSING_IDENTIFIER_PLACEHOLDER and flags the draft — fail-closed,
+    // never a fabricated value.
+    const profile = await getProfile(tradeAuth.organizationId);
+
+    // No per-org override field exists for the exporter name or export-port
+    // code — the legal name comes from Organization.name; the port code has
+    // no home yet, so we pass null (the builder flags it honestly).
+    const exporterName = org?.name ?? null;
+    const eoriNumber = profile?.eoriNumber ?? null;
+    const officeOfExportCode: string | null = null;
+
     const xml = buildAtlasXml({
       generatedAt: new Date(),
       exporter: {
-        legalName: operation.organization?.name ?? "(Organisation unknown)",
+        legalName: exporterName ?? "(Organisation unknown)",
         addressCountry: "DE",
+        // REAL EORI from the encrypted org profile; null ⇒ builder flags the draft.
+        eoriNumber,
+        vatNumber: org?.vatNumber ?? null,
       },
       operation: {
         id: operation.id,
@@ -129,6 +154,9 @@ export async function GET(req: Request) {
         endUseCountry: operation.endUseCountry,
         scheduledShipDate: operation.scheduledShipDate,
         createdAt: operation.createdAt,
+        // No export-port field exists yet (neither per-operation nor on the
+        // profile). null ⇒ builder emits the honest placeholder + flags it.
+        officeOfExportCode,
         previousDocuments: [],
         counterparty: operation.counterparty,
         lines: operation.lines.map((l) => ({

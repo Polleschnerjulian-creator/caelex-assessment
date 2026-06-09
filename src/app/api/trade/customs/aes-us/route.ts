@@ -34,6 +34,7 @@ import {
 } from "@/lib/ratelimit";
 import { getTradeAuth } from "@/lib/trade/trade-auth";
 import { buildAesXml } from "@/lib/trade/customs-filing/aes-us";
+import { getProfile } from "@/lib/trade/settings/org-profile-service";
 import { fromCents } from "@/lib/trade/money";
 
 export async function GET(req: Request) {
@@ -63,7 +64,10 @@ export async function GET(req: Request) {
       where: { id: operationId, organizationId: tradeAuth.organizationId },
       include: {
         organization: {
-          select: { id: true, name: true },
+          select: {
+            id: true,
+            name: true,
+          },
         },
         counterparty: {
           select: {
@@ -105,11 +109,31 @@ export async function GET(req: Request) {
       return NextResponse.json({ error: "Not found" }, { status: 404 });
     }
 
+    const org = operation.organization;
+
+    // Customs identifiers live in the AES-256-GCM-encrypted TradeOrgProfile,
+    // NOT on the Organization row. `getProfile` returns the decrypted view.
+    // DUNS+4 is the project's canonical US exporter identifier (there is no
+    // EIN field) — it feeds the AES USPPI identifier block. A null identifier
+    // is passed through to the builder, which emits the honest
+    // MISSING_IDENTIFIER_PLACEHOLDER and flags the draft (fail-closed).
+    const profile = await getProfile(tradeAuth.organizationId);
+
+    // No per-org override field exists for the exporter name or export-port
+    // code — the legal name comes from Organization.name; the port code has
+    // no home yet, so we pass null (the builder flags it honestly).
+    const exporterName = org?.name ?? null;
+    const usExporterId = profile?.dunsPlus4 ?? null;
+    const portOfExport: string | null = null;
+
     const xml = buildAesXml({
       generatedAt: new Date(),
       usppi: {
-        legalName: operation.organization?.name ?? "(Organisation unknown)",
+        legalName: exporterName ?? "(Organisation unknown)",
         addressCountry: "US",
+        // REAL US exporter ID (DUNS+4) from the encrypted org profile; null ⇒
+        // builder flags the draft. Never a fabricated EIN.
+        einNumber: usExporterId,
       },
       operation: {
         id: operation.id,
@@ -123,6 +147,9 @@ export async function GET(req: Request) {
         endUserSector: operation.endUserSector,
         scheduledShipDate: operation.scheduledShipDate,
         createdAt: operation.createdAt,
+        // No export-port field exists yet (neither per-operation nor on the
+        // profile). null ⇒ builder emits the honest placeholder + flags it.
+        portOfExport,
         counterparty: operation.counterparty,
         lines: operation.lines.map((l) => ({
           id: l.id,

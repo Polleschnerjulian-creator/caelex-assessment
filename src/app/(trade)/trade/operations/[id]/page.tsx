@@ -39,6 +39,16 @@ import { BafaPdfButton } from "@/components/trade/BafaPdfButton";
 import { BafaXmlButton } from "@/components/trade/BafaXmlButton";
 import { BafaXsdVersionWarning } from "@/components/trade/BafaXsdVersionWarning";
 import { DcsGeneratorButton } from "@/components/trade/DcsGeneratorButton";
+// Verdict surface (G2). The wizard's VerdictPanel is self-contained — it
+// fetches /api/trade/operations/[id]/assess from its { operationId } prop —
+// so we mount it cross-dir on the persistent detail page WITHOUT moving it
+// (the new-operation wizard still imports it from its own dir).
+import { VerdictPanel } from "../new/_components/VerdictPanel";
+// Cross-lane self-contained components (mounted by agreed contract):
+//   WhyThisDossierButton (Lane 2) props { operationId: string }
+//   CustomsStagePanel    (Lane 3) props { operationId: string; status: string }
+import { WhyThisDossierButton } from "@/components/trade/WhyThisDossierButton";
+import { CustomsStagePanel } from "@/components/trade/CustomsStagePanel";
 
 interface RiskFactorView {
   key: string;
@@ -287,13 +297,16 @@ export default function OperationDetailPage({
               {op.description}
             </p>
           )}
-          <div className="mt-3">
+          <div className="mt-3 flex flex-wrap items-center gap-2">
             <Link
               href={`/trade/astra?prefill=${encodeURIComponent(astraQuery)}`}
               className="inline-flex items-center gap-1.5 rounded-lg border border-trade-border bg-trade-bg-panel px-3 py-2 text-[13px] text-trade-text-primary transition hover:bg-trade-hover"
             >
               <Sparkles className="h-4 w-4 text-trade-accent" /> Astra fragen
             </Link>
+            {/* Lane 2 — "Warum dieses Ergebnis? — Dossier". Self-contained;
+                fetches its own data from { operationId }. */}
+            <WhyThisDossierButton operationId={op.id} />
           </div>
         </div>
         <div className="shrink-0 text-right">
@@ -441,6 +454,25 @@ export default function OperationDetailPage({
           }}
         />
       </div>
+
+      {/* ── Bewertung / Verdict (G2) ───────────────────────────────
+          The persistent detail page previously never surfaced the
+          licence verdict — a returning operator could not see GO /
+          REVIEW / BLOCKED, the licence type, the authority, or the
+          WHY without re-running the wizard. VerdictPanel is the same
+          self-contained component the new-operation wizard uses; it
+          fetches /api/trade/operations/[id]/assess itself from the
+          { operationId } prop and renders verdict + per-line licence
+          determination + the "Was jetzt?" WHY/licence/authority. */}
+      <section
+        className="mb-6 rounded-md border border-trade-border-subtle bg-trade-bg-panel p-6"
+        aria-label="Bewertung / Verdict"
+      >
+        <h2 className="mb-4 text-[10px] font-semibold uppercase tracking-[0.14em] text-trade-text-secondary">
+          Bewertung · Verdict
+        </h2>
+        <VerdictPanel operationId={op.id} />
+      </section>
 
       {/* ── Caelex Comply Cross-Domain Panels ──────────────────────
           Read-only surface of the related spacecraft's Debris,
@@ -594,6 +626,13 @@ export default function OperationDetailPage({
             }}
           />
         </div>
+      </div>
+
+      {/* Lane 3 — customs/export-execution stage. Self-contained; mounted
+          unconditionally because CustomsStagePanel returns null unless the
+          operation status is "EXECUTED". */}
+      <div className="mt-6">
+        <CustomsStagePanel operationId={op.id} status={op.status} />
       </div>
 
       <p className="mt-8 max-w-3xl text-[11px] leading-relaxed text-trade-text-muted">

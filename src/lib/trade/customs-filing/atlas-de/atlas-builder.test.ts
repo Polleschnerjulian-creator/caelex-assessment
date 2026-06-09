@@ -32,6 +32,10 @@ import {
 } from "./atlas-builder";
 import { serializeAtlasXml } from "./atlas-serializer";
 import { ATLAS_XSD_VERSION } from "./atlas-payload";
+import {
+  MISSING_IDENTIFIER_PLACEHOLDER,
+  isMissingIdentifier,
+} from "../export-identifier";
 
 // ─── Fixture ──────────────────────────────────────────────────────
 
@@ -171,11 +175,17 @@ describe("Z14a — buildAtlasPayload", () => {
     expect(e.Address.CountryCode).toBe("DE");
   });
 
-  it("falls back to placeholder EORI when input lacks one", () => {
+  it("emits an HONEST placeholder EORI (never a fabricated zero-fill) when input lacks one", () => {
     const input = fixtureInput();
     input.exporter.eoriNumber = null;
     const payload = buildAtlasPayload(input);
-    expect(payload.Declaration.Exporter.EORI).toBe("DE000000000000000");
+    // Fail-closed (export-control invariant): a missing EORI must surface a
+    // loud placeholder that flags the draft, NOT a fabricated "DE000…0".
+    expect(payload.Declaration.Exporter.EORI).toBe(
+      MISSING_IDENTIFIER_PLACEHOLDER,
+    );
+    expect(payload.Declaration.Exporter.EORI).not.toBe("DE000000000000000");
+    expect(isMissingIdentifier(payload.Declaration.Exporter.EORI)).toBe(true);
   });
 
   it("splits counterparty addressLines into Street/PostalCode/City", () => {

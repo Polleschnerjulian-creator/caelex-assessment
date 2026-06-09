@@ -34,6 +34,9 @@ import {
   AlertOctagon,
   Sparkles,
   HelpCircle,
+  ChevronDown,
+  ChevronUp,
+  Tag,
 } from "lucide-react";
 import {
   deriveVerificationFromPersistedRow,
@@ -42,12 +45,36 @@ import {
 } from "@/lib/comply-v2/trade/screening/screening-explained";
 import { ExplainedPanel } from "@/components/trade/ExplainedPanel";
 
+/**
+ * Reason-for-listing metadata threaded from the source parsers' `listMetadata`
+ * (OFAC programs, EU regulation refs, UN reference, remarks) + the list's
+ * authority citation. All optional — a hit may lack reason data, in which case
+ * the UI shows "Grund nicht in der Quelle hinterlegt" (never an invented one).
+ */
+interface HitReasonMeta {
+  reasonForListing?: string;
+  programs?: string[];
+  remarks?: string;
+  authorityCitation?: string;
+  listLabel?: string;
+}
+
 interface ScreeningHit {
   entryId: string;
   matchedName: string;
   score: number;
   list: string;
   matchedFields: string[];
+  /**
+   * The listed entity's PRIMARY/legal name. Present on hits produced after the
+   * reason-threading change; absent on older persisted rows (the UI degrades
+   * gracefully — no AKA flag shown when unknown).
+   */
+  legalName?: string;
+  /** True when the match was on an ALIAS, not the legal name (AKA flagging). */
+  aliasMatch?: boolean;
+  /** Reason-for-listing projection (progressive-disclosure "Warum …?" detail). */
+  reason?: HitReasonMeta;
 }
 
 interface CascadeAncestorView {
@@ -71,6 +98,14 @@ interface CascadeView {
   cascadeHit: boolean;
   sanctionedAncestorCount: number;
   totalCascadedOwnership: number;
+  /**
+   * Fail-closed beneficial-ownership resolution status. Absent on older rows
+   * persisted before this field existed (treated as UNKNOWN by the UI — never
+   * silently COMPLETE). When not COMPLETE the cascade view renders an amber
+   * "UBO unvollständig" alert so a partial/unknown ownership chain is never
+   * mistaken for a clean cascade.
+   */
+  uboStatus?: "COMPLETE" | "INCOMPLETE" | "UNKNOWN";
 }
 
 interface ScreeningRow {
@@ -714,26 +749,7 @@ function ScreeningRowItem({
             </div>
           )}
           {row.hits.slice(0, 10).map((h, i) => (
-            <div
-              key={`${h.list}-${h.entryId}-${i}`}
-              className="flex items-center gap-2 rounded-md border border-trade-border-subtle bg-trade-bg-subtle px-3 py-2 text-[11px] text-trade-text-primary"
-            >
-              <span className="rounded bg-trade-bg-panel px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-widest text-trade-text-secondary ring-1 ring-trade-border-subtle">
-                {h.list.replace("_", " ")}
-              </span>
-              <span className="flex-1 truncate">{h.matchedName}</span>
-              <span
-                className={
-                  h.score >= 0.95
-                    ? "font-mono text-trade-accent-danger"
-                    : h.score >= 0.85
-                      ? "font-mono text-trade-accent-warn"
-                      : "font-mono text-trade-text-secondary"
-                }
-              >
-                {h.score.toFixed(3)}
-              </span>
-            </div>
+            <ScreeningHitRow key={`${h.list}-${h.entryId}-${i}`} hit={h} />
           ))}
 
           {row.cascade && row.cascade.ancestors.length > 0 && (
@@ -868,6 +884,154 @@ function DecisionPill({
   );
 }
 
+/**
+ * One sanctions hit, rendered with the progressive-disclosure pattern:
+ *   - ALWAYS-VISIBLE one-line verdict: list badge + matched name + score.
+ *   - When the match was on an alias, an AKA flag line so the operator knows it
+ *     was NOT the legal name that matched.
+ *   - A collapsed "Warum steht diese Partei auf der Liste?" chevron carrying
+ *     the reason-for-listing (programmes / regulation refs / remarks) + the
+ *     authority citation. When no reason metadata was published by the source,
+ *     it says so honestly — never an invented reason.
+ *
+ * PRESENTATION ONLY — the score, list, and decision are unchanged; this adds
+ * transparency around an existing hit.
+ */
+function ScreeningHitRow({ hit }: { hit: ScreeningHit }) {
+  const [open, setOpen] = useState(false);
+  const reason = hit.reason;
+  // A hit matched on an alias rather than the listed legal name.
+  const isAka =
+    hit.aliasMatch === true &&
+    typeof hit.legalName === "string" &&
+    hit.legalName.length > 0 &&
+    hit.legalName !== hit.matchedName;
+  // Whether the source published ANY reason datum to disclose.
+  const hasReasonData = Boolean(
+    reason &&
+    (reason.reasonForListing ||
+      (reason.programs && reason.programs.length > 0) ||
+      reason.remarks),
+  );
+  const scoreClass =
+    hit.score >= 0.95
+      ? "font-mono text-trade-accent-danger"
+      : hit.score >= 0.85
+        ? "font-mono text-trade-accent-warn"
+        : "font-mono text-trade-text-secondary";
+
+  return (
+    <div className="rounded-md border border-trade-border-subtle bg-trade-bg-subtle">
+      {/* One-line verdict (always visible) */}
+      <div className="flex items-center gap-2 px-3 py-2 text-[11px] text-trade-text-primary">
+        <span className="rounded bg-trade-bg-panel px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-widest text-trade-text-secondary ring-1 ring-trade-border-subtle">
+          {hit.list.replace("_", " ")}
+        </span>
+        <span className="flex-1 truncate">{hit.matchedName}</span>
+        <span className={scoreClass}>{hit.score.toFixed(3)}</span>
+      </div>
+
+      {/* AKA flag — the match was on an alias, not the legal name. */}
+      {isAka && (
+        <div className="flex items-start gap-1.5 px-3 pb-2 text-[10px] leading-relaxed text-trade-accent-warn">
+          <Tag className="mt-0.5 h-2.5 w-2.5 shrink-0" />
+          <span>
+            Treffer über Aliasname:{" "}
+            <span className="font-medium">{hit.matchedName}</span>{" "}
+            <span className="text-trade-text-muted">
+              (Listenname: {hit.legalName})
+            </span>
+          </span>
+        </div>
+      )}
+
+      {/* Progressive-disclosure: "Warum steht diese Partei auf der Liste?" */}
+      <div className="border-t border-trade-border-subtle px-3 py-1.5">
+        <button
+          type="button"
+          onClick={() => setOpen((v) => !v)}
+          aria-expanded={open}
+          className="flex w-full items-center gap-1.5 text-left text-[10px] font-medium text-trade-text-secondary transition hover:text-trade-text-primary"
+        >
+          {open ? (
+            <ChevronUp className="h-3 w-3 shrink-0" />
+          ) : (
+            <ChevronDown className="h-3 w-3 shrink-0" />
+          )}
+          Warum steht diese Partei auf der Liste?
+        </button>
+
+        {open && (
+          <div className="mt-2 space-y-2 border-l-2 border-trade-border pl-3 text-[10px] leading-relaxed">
+            {/* WHAT — the listed identity */}
+            <div>
+              <div className="mb-0.5 font-semibold uppercase tracking-[0.12em] text-trade-text-muted">
+                Eintrag
+              </div>
+              <p className="text-trade-text-secondary">
+                {reason?.listLabel ?? hit.list.replace("_", " ")} · Listenname{" "}
+                <span className="text-trade-text-primary">
+                  {hit.legalName ?? hit.matchedName}
+                </span>
+              </p>
+            </div>
+
+            {/* WHY — reason-for-listing + programmes/regulation refs */}
+            {hasReasonData ? (
+              <div>
+                <div className="mb-0.5 font-semibold uppercase tracking-[0.12em] text-trade-text-muted">
+                  Grund der Listung
+                </div>
+                {reason?.reasonForListing && (
+                  <p className="text-trade-text-secondary">
+                    {reason.reasonForListing}
+                  </p>
+                )}
+                {reason?.remarks &&
+                  reason.remarks !== reason.reasonForListing && (
+                    <p className="mt-1 text-trade-text-secondary">
+                      {reason.remarks}
+                    </p>
+                  )}
+                {reason?.programs && reason.programs.length > 0 && (
+                  <div className="mt-1 flex flex-wrap gap-1">
+                    {reason.programs.map((p) => (
+                      <span
+                        key={p}
+                        className="rounded bg-trade-bg-panel px-1.5 py-0.5 font-mono text-[9px] text-trade-text-secondary ring-1 ring-trade-border-subtle"
+                      >
+                        {p}
+                      </span>
+                    ))}
+                  </div>
+                )}
+              </div>
+            ) : (
+              <div className="text-trade-text-muted">
+                Grund nicht in der Quelle hinterlegt — die Listenquelle
+                veröffentlicht für diesen Eintrag keinen Listungsgrund. Prüfung
+                über die Behördenquelle erforderlich.
+              </div>
+            )}
+
+            {/* SOURCE — the authority + legal basis for the list */}
+            {reason?.authorityCitation && (
+              <div>
+                <div className="mb-0.5 font-semibold uppercase tracking-[0.12em] text-trade-text-muted">
+                  Quelle / Rechtsgrundlage
+                </div>
+                <p className="font-mono text-[9px] text-trade-text-muted">
+                  {reason.authorityCitation}
+                </p>
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
 function CascadeChainView({ cascade }: { cascade: CascadeView }) {
   const sanctionedAncestors = cascade.ancestors.filter(
     (a) => a.screeningStatus === "CONFIRMED_HIT" || a.isBlocked,
@@ -875,6 +1039,20 @@ function CascadeChainView({ cascade }: { cascade: CascadeView }) {
   const cleanAncestors = cascade.ancestors.filter(
     (a) => a.screeningStatus !== "CONFIRMED_HIT" && !a.isBlocked,
   );
+
+  // ── Fail-closed UBO resolution status ──────────────────────────────
+  // Beneficial ownership is "resolved" only when the modeled graph covers ~all
+  // equity. Anything else is a GAP: a partial/unknown ownership chain must
+  // NEVER read as a clean cascade. Conservative for older rows that predate the
+  // uboStatus field: derive INCOMPLETE/UNKNOWN from the coverage they DO carry.
+  const uboStatus: "COMPLETE" | "INCOMPLETE" | "UNKNOWN" =
+    cascade.uboStatus ??
+    (cascade.ancestors.length === 0
+      ? "UNKNOWN"
+      : cascade.totalCascadedOwnership >= 0.999
+        ? "COMPLETE"
+        : "INCOMPLETE");
+  const uboIncomplete = uboStatus !== "COMPLETE";
 
   return (
     <div
@@ -899,6 +1077,27 @@ function CascadeChainView({ cascade }: { cascade: CascadeView }) {
           {cascade.cascadeHit && " · TRIGGERED"}
         </span>
       </div>
+
+      {/* UBO not resolved — AMBER, loud. A partial/unknown ownership chain is a
+          GAP (blocking-but-neutral), never a clean cascade. */}
+      {uboIncomplete && (
+        <div className="trade-chip-warn mb-2 flex items-start gap-1.5 rounded-md border border-trade-border px-2.5 py-2 text-[10px] leading-relaxed">
+          <AlertTriangle className="mt-0.5 h-3 w-3 shrink-0 text-trade-accent-warn" />
+          <div>
+            <div className="font-semibold uppercase tracking-widest text-trade-accent-warn">
+              UBO unvollständig — vor Transaktion erneut prüfen
+            </div>
+            <p className="mt-0.5 text-trade-text-secondary">
+              {uboStatus === "UNKNOWN"
+                ? "Für diese Partei sind keine Eigentümer im Graphen erfasst. Die wirtschaftlich Berechtigten (UBO) sind unbekannt — die 50%-Kaskade konnte die Eigentümerkette nicht prüfen."
+                : `Nur ${(cascade.totalCascadedOwnership * 100).toFixed(1)}% des Eigentums sind im Graphen modelliert; der Rest wird von noch nicht erfassten Parteien gehalten. Die wirtschaftlich Berechtigten sind nicht vollständig aufgelöst.`}{" "}
+              Eine unvollständige Eigentümerkette ist KEINE Freigabe: behandeln
+              Sie die Partei als noch nicht geklärt und ergänzen Sie die
+              fehlenden Eigentümer vor einer Transaktion.
+            </p>
+          </div>
+        </div>
+      )}
 
       {sanctionedAncestors.length > 0 && (
         <div className="mb-2 space-y-1">

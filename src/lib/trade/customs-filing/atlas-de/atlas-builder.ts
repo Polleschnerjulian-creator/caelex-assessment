@@ -32,6 +32,7 @@ import type {
   AtlasPayload,
   AtlasPreviousDocument,
 } from "./atlas-payload";
+import { resolveIdentifierOrPlaceholder } from "../export-identifier";
 
 // ─── Input shape ──────────────────────────────────────────────────
 
@@ -50,7 +51,11 @@ export interface AtlasBuilderInput {
     addressZip?: string | null;
     addressCity?: string | null;
     addressCountry?: string | null;
-    /** EORI — required by ATLAS. Falls back to a placeholder if absent. */
+    /**
+     * EORI — required by ATLAS. When absent, the builder emits an HONEST
+     * "⚠ FEHLT" placeholder (never a fabricated zero-fill); the surface
+     * flags the draft as not-fileable. Fail-closed (export-control invariant).
+     */
     eoriNumber?: string | null;
     vatNumber?: string | null;
     contactEmail?: string | null;
@@ -67,8 +72,9 @@ export interface AtlasBuilderInput {
     scheduledShipDate: string | Date | null;
     createdAt: string | Date;
     /**
-     * Optional declared customs office code. Falls back to a sensible
-     * default if absent ("DE000000" = placeholder for "select office").
+     * Optional declared customs office / port-of-export code. When absent
+     * the builder emits an HONEST "⚠ FEHLT" placeholder (never a fabricated
+     * "DE000000"), so the draft is flagged not-fileable. Fail-closed.
      */
     officeOfExportCode?: string | null;
     officeOfExportName?: string | null;
@@ -346,7 +352,10 @@ export function buildAtlasPayload(input: AtlasBuilderInput): AtlasPayload {
         City: exporter.addressCity ?? "",
         CountryCode: exporter.addressCountry ?? "DE",
       },
-      EORI: exporter.eoriNumber ?? "DE000000000000000",
+      // Fail-closed: never substitute a fabricated all-zero EORI. When the
+      // org has not set its EORI we emit a loud, human-readable placeholder
+      // so the draft is unmistakably not-fileable and the surface flags it.
+      EORI: resolveIdentifierOrPlaceholder(exporter.eoriNumber),
       VATNumber: exporter.vatNumber ?? undefined,
       ContactEmail: exporter.contactEmail ?? undefined,
     },
@@ -356,7 +365,12 @@ export function buildAtlasPayload(input: AtlasBuilderInput): AtlasPayload {
       TradeName: operation.counterparty.tradeName ?? undefined,
     },
     OfficeOfExport: {
-      ReferenceNumber: operation.officeOfExportCode ?? "DE000000",
+      // Fail-closed: prefer the per-operation office code, else the org's
+      // default port code (passed into officeOfExportCode by the caller),
+      // else an HONEST placeholder — never a fabricated "DE000000".
+      ReferenceNumber: resolveIdentifierOrPlaceholder(
+        operation.officeOfExportCode,
+      ),
       Name: operation.officeOfExportName ?? undefined,
     },
     DispatchCountry: operation.shipFromCountry,

@@ -68,6 +68,51 @@ export async function assessOperation(
 
   const destinationCountry = operation.shipToCountry ?? null;
 
+  // ── Gate 0 threading (G6): EU 833/2014 Annex IV Art. 2b prohibition ──
+  // The per-line license gate can only fire the non-derogable Annex IV
+  // PROHIBITION when it is told which sanctions lists the counterparty
+  // matched. Fetch the LATEST persisted screening for the counterparty and
+  // extract the distinct sanctions lists from its hits. This can only ADD a
+  // block — it never removes one. CONSERVATIVE: if no screening exists yet
+  // we pass `undefined` (the gate simply does not fire — never an invented
+  // clear). The hits JSON is an array of { list: TradeSanctionsList, … }.
+  let screeningContext: { sanctionsLists: string[] } | undefined;
+  try {
+    const latestScreening = await prisma.tradeScreeningResult.findFirst({
+      where: { partyId: operation.counterpartyId },
+      orderBy: { createdAt: "desc" },
+      select: { hits: true },
+    });
+    if (latestScreening) {
+      const hits = Array.isArray(latestScreening.hits)
+        ? (latestScreening.hits as Array<{ list?: unknown }>)
+        : [];
+      const sanctionsLists = Array.from(
+        new Set(
+          hits
+            .map((h) => (typeof h?.list === "string" ? h.list : null))
+            .filter((l): l is string => l !== null),
+        ),
+      );
+      // Only build a context when at least one list is present; an empty
+      // list array would be indistinguishable from "no Annex IV" and adds
+      // nothing — keeping it undefined avoids a misleading empty context.
+      if (sanctionsLists.length > 0) {
+        screeningContext = { sanctionsLists };
+      }
+    }
+  } catch (err) {
+    // A screening-lookup failure must NEVER weaken the verdict. We log and
+    // fall through with screeningContext undefined: the Annex IV gate then
+    // does not fire (fail-safe in the SAFE direction — it cannot invent a
+    // clear, only fail to add the extra block, which the human still owns).
+    logger.error(
+      "assessOperation: latest-screening lookup failed; Annex IV gate not threaded",
+      err,
+      { counterpartyId: operation.counterpartyId },
+    );
+  }
+
   const lineAssessments: LineAssessment[] = operation.lines.map((l) => {
     const item = l.item;
     let classified = isClassified(item);
@@ -78,15 +123,15 @@ export async function assessOperation(
           item as unknown as ClassifiableItem,
           {
             destinationCountry,
+            screeningContext,
           },
         );
       } catch (err) {
         // Engine failure must never produce a false GO: degrade to a gap so the
         // verdict becomes REVIEW, and the operation stays resumable.
-        logger.error(
-          { err, itemId: item.id },
-          "classifyItemForOperation failed",
-        );
+        logger.error("classifyItemForOperation failed", err, {
+          itemId: item.id,
+        });
         classified = false;
         classification = null;
       }

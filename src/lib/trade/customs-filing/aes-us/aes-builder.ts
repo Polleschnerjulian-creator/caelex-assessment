@@ -27,6 +27,7 @@ import type {
   AesPayload,
   AesTransportMode,
 } from "./aes-payload";
+import { resolveIdentifierOrPlaceholder } from "../export-identifier";
 
 // ─── Input shape ──────────────────────────────────────────────────
 
@@ -44,7 +45,11 @@ export interface AesBuilderInput {
     addressState?: string | null;
     addressZip?: string | null;
     addressCountry?: string | null;
-    /** EIN (9-digit, no hyphen). Falls back to placeholder when absent. */
+    /**
+     * EIN (9-digit, no hyphen). When EIN + DUNS are both absent the builder
+     * emits an HONEST "⚠ FEHLT" placeholder (never a fabricated "000000000"),
+     * so the AES draft is flagged not-fileable. Fail-closed.
+     */
     einNumber?: string | null;
     /** D-U-N-S — used when EIN is absent. */
     dunsNumber?: string | null;
@@ -333,13 +338,18 @@ export function buildAesPayload(input: AesBuilderInput): AesPayload {
     operation.counterparty.countryCode,
   );
 
-  // Identifier-type preference: EIN > DUNS > placeholder.
+  // Identifier-type preference: EIN > DUNS > (honest placeholder).
   const identifierType: "EIN" | "DUNS" | "SSN" = usppi.einNumber
     ? "EIN"
     : usppi.dunsNumber
       ? "DUNS"
       : "EIN";
-  const identifierValue = usppi.einNumber ?? usppi.dunsNumber ?? "000000000";
+  // Fail-closed: when both EIN and DUNS are absent we emit a loud,
+  // human-readable placeholder — NEVER a fabricated "000000000" that
+  // could travel into a real AES filing as a false statement.
+  const identifierValue = resolveIdentifierOrPlaceholder(
+    usppi.einNumber ?? usppi.dunsNumber,
+  );
 
   // Ultimate consignee may be different from immediate counterparty
   // when endUserName is set (re-export / triangle-trade).
@@ -380,7 +390,10 @@ export function buildAesPayload(input: AesBuilderInput): AesPayload {
       SCACorIATA: operation.carrierCode ?? "ZZZZ",
     },
     TransportMode: operation.transportMode ?? "40",
-    PortOfExport: operation.portOfExport ?? "0000",
+    // Fail-closed: prefer the per-operation port, else an HONEST placeholder
+    // (the caller passes the org's default exportPortCode in here) — never a
+    // fabricated "0000".
+    PortOfExport: resolveIdentifierOrPlaceholder(operation.portOfExport),
     CountryOfDestination: operation.endUseCountry ?? operation.shipToCountry,
     Commodities: commodities,
     HazardousMaterials: operation.hazardousMaterials ?? false,

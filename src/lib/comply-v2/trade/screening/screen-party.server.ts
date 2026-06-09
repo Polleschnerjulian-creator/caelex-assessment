@@ -50,10 +50,11 @@ import { getEffectiveScreeningConfig } from "@/lib/trade/settings/screening-conf
 import { REGISTERED_PARSERS } from "./sync.server";
 import type { CanonicalSanctionsEntry } from "./sources/types";
 import { runCascadeForParty } from "./cascade-50pct.server";
-import type { CascadeResult } from "./cascade-50pct";
+import type { CascadeResultWithUbo } from "./cascade-50pct.server";
 import { sendTradeSanctionsHit } from "@/lib/email";
 import {
   buildScreeningExplained,
+  listLabel,
   type ExplainedResult,
   type ScreeningGap,
   type ScreeningVerdict,
@@ -96,11 +97,63 @@ export const CRITICAL_SNAPSHOT_MAX_AGE_MS = 48 * 60 * 60 * 1000;
 // ─── Types ──────────────────────────────────────────────────────────
 
 /**
- * Hit augmented with the source list (which list the entryId came from).
- * Persisted on TradeScreeningResult.hits as JSONB.
+ * Reason-for-listing metadata projected from a sanctions entry's
+ * `listMetadata` (OFAC programs, BIS policy, EU regulation ref, UN reference,
+ * remarks) plus the authority citation for the list. Surfaced on the party
+ * page as the progressive-disclosure "Warum steht diese Partei auf der Liste?"
+ * detail.
+ *
+ * PRESENTATION ONLY — derived from already-parsed source data, never affects a
+ * screening decision. Every field is optional: when a source did not publish a
+ * given datum the UI shows "Grund nicht in der Quelle hinterlegt" rather than
+ * inventing one.
+ */
+export interface HitReasonMeta {
+  /**
+   * The single-line reason-for-listing, when the source carries one. Composed
+   * from the most specific datum available (OFAC remarks, EU/UN remarks). Never
+   * fabricated — absent when the source did not publish a reason.
+   */
+  reasonForListing?: string;
+  /**
+   * Sanctions programmes / regulation references that designated this entry:
+   *   - OFAC SDN: programme tags (e.g. "SDGT", "RUSSIA-EO14024")
+   *   - EU FSF: regulation numbers (e.g. "833/2014")
+   *   - UN: UN list type
+   *   - BIS: licence policy code, when present
+   */
+  programs?: string[];
+  /** Free-form remarks/title the source published (extra context for triage). */
+  remarks?: string;
+  /** The authority + legal-basis citation for the LIST this hit came from. */
+  authorityCitation?: string;
+  /** Human label for the list (e.g. "OFAC SDN"), for the disclosure header. */
+  listLabel?: string;
+}
+
+/**
+ * Hit augmented with the source list (which list the entryId came from) plus
+ * additive presentation metadata threaded for the party page. Persisted on
+ * TradeScreeningResult.hits as JSONB. The added fields are OPTIONAL so historic
+ * rows (without them) and the existing `FuzzyHit` consumers stay valid.
  */
 export interface PersistableHit extends FuzzyHit {
   list: TradeSanctionsList;
+  /**
+   * The listed entity's PRIMARY/legal name (entry.names[0]). Lets the UI flag
+   * an AKA match: when `matchedName` differs from `legalName`, the operator
+   * matched on an alias, not the legal name. Absent only when the source had
+   * no name (defensive — should never happen for a real hit).
+   */
+  legalName?: string;
+  /**
+   * True when the fuzzy `matchedName` is an ALIAS rather than the entry's legal
+   * name (matchedName !== legalName). Surfaces "Treffer über Aliasname …".
+   * False/undefined for an identifier hit or a legal-name match.
+   */
+  aliasMatch?: boolean;
+  /** Reason-for-listing projection (program/policy/reg refs + authority). */
+  reason?: HitReasonMeta;
 }
 
 export interface ScreenPartyOptions {
@@ -132,8 +185,12 @@ export interface ScreenPartyResult {
    * in the org's graph. Null if no edges exist for this party (cascade
    * couldn't compute anything meaningful — common for newly-added
    * counterparties before ownership is captured).
+   *
+   * Carries the fail-closed `uboStatus` (COMPLETE/INCOMPLETE/UNKNOWN) so the
+   * UI can show an amber "UBO unvollständig" alert when beneficial ownership
+   * could not be fully resolved — never implying a clean cascade.
    */
-  cascade: CascadeResult | null;
+  cascade: CascadeResultWithUbo | null;
   /** Summary for logging/UI. */
   summary: {
     hitCount: number;
@@ -163,6 +220,113 @@ export interface ScreenPartyResult {
    * lists present + fresh.
    */
   explained: ExplainedResult<ScreeningVerdict>;
+}
+
+// ─── Reason-for-listing projection (PRESENTATION ONLY) ───────────────
+//
+// The authority + legal-basis citation per critical list, mirroring the table
+// in screening-explained.ts. Used to attach an authority citation to each hit's
+// reason detail so the operator can trace WHY the entry is listed back to the
+// designating authority. Presentation-only — never feeds a decision.
+const HIT_LIST_AUTHORITY: Partial<Record<TradeSanctionsList, string>> = {
+  [TradeSanctionsList.OFAC_SDN]:
+    "31 CFR Part 501 — OFAC Specially Designated Nationals",
+  [TradeSanctionsList.BIS_ENTITY]:
+    "15 CFR Part 744 Supp. No. 4 — BIS Entity List",
+  [TradeSanctionsList.EU_FSF]: "EU Consolidated Financial Sanctions File",
+  [TradeSanctionsList.UN_CONSOLIDATED]:
+    "UN Security Council Consolidated Sanctions List",
+};
+
+/**
+ * Read a string field from a sanctions entry's `listMetadata` bag, returning
+ * `undefined` for anything that is not a non-empty string. Defensive: the bag
+ * is `Record<string, unknown>`, so values may be of any type.
+ */
+function metaString(
+  meta: Record<string, unknown>,
+  key: string,
+): string | undefined {
+  const v = meta[key];
+  return typeof v === "string" && v.trim().length > 0 ? v.trim() : undefined;
+}
+
+/**
+ * Read a string[] field from `listMetadata`, returning `undefined` when absent
+ * or empty. Filters non-string / empty elements.
+ */
+function metaStringArray(
+  meta: Record<string, unknown>,
+  key: string,
+): string[] | undefined {
+  const v = meta[key];
+  if (!Array.isArray(v)) return undefined;
+  const out = v.filter(
+    (x): x is string => typeof x === "string" && x.trim().length > 0,
+  );
+  return out.length > 0 ? out.map((s) => s.trim()) : undefined;
+}
+
+/**
+ * Project a sanctions entry's already-parsed `listMetadata` into the
+ * presentation-only `HitReasonMeta` surfaced on the party page. PURE — no I/O,
+ * no decision impact.
+ *
+ * The reason-for-listing is composed from the MOST SPECIFIC datum the source
+ * published (remarks / title), the programme / regulation references, and the
+ * list's authority citation. Nothing is fabricated: when a source carries no
+ * reason datum, `reasonForListing`/`remarks`/`programs` are simply absent and
+ * the UI shows "Grund nicht in der Quelle hinterlegt".
+ */
+export function projectHitReason(
+  entry: CanonicalSanctionsEntry,
+  list: TradeSanctionsList,
+): HitReasonMeta {
+  const meta = entry.listMetadata ?? {};
+  const programs = metaStringArray(meta, "programs");
+  // OFAC/BIS use "remarks"; some sources also carry a "title". Prefer the
+  // richest free-text reason the source published.
+  const remarks = metaString(meta, "remarks");
+  const title = metaString(meta, "title");
+  const reasonForListing = remarks ?? title;
+
+  return {
+    ...(reasonForListing ? { reasonForListing } : {}),
+    ...(programs ? { programs } : {}),
+    ...(remarks ? { remarks } : {}),
+    authorityCitation: HIT_LIST_AUTHORITY[list] ?? listLabel(list),
+    listLabel: listLabel(list),
+  };
+}
+
+/**
+ * Enrich a raw FuzzyHit with the source list + presentation metadata threaded
+ * for the party page: the entry's legal name, an AKA-match flag, and the
+ * reason-for-listing projection. PURE — no I/O, no decision impact. The hit's
+ * `score` / `entryId` / `matchedName` / `matchedFields` are preserved
+ * byte-for-byte; only additive fields are layered on.
+ *
+ * AKA detection: a name hit whose `matchedName` differs from the entry's legal
+ * name (`names[0]`) matched on an ALIAS. Identifier hits set `matchedName` to
+ * `names[0]`, so they correctly report `aliasMatch: false`.
+ */
+export function enrichHit(
+  hit: FuzzyHit,
+  entry: CanonicalSanctionsEntry,
+  list: TradeSanctionsList,
+): PersistableHit {
+  const legalName = entry.names[0];
+  const aliasMatch =
+    typeof legalName === "string" &&
+    legalName.length > 0 &&
+    hit.matchedName !== legalName;
+  return {
+    ...hit,
+    list,
+    ...(legalName ? { legalName } : {}),
+    aliasMatch,
+    reason: projectHitReason(entry, list),
+  };
 }
 
 // ─── Main entry point ───────────────────────────────────────────────
@@ -230,6 +394,13 @@ export async function screenParty(
     hashesByList[list] = snapshot.hash;
     const entries = snapshot.entries as unknown as CanonicalSanctionsEntry[];
 
+    // entryId → entry lookup so we can enrich a FuzzyHit (which carries only
+    // entryId/matchedName/score) with the source entry's legal name + reason
+    // metadata for the UI. Presentation-only threading — does NOT affect which
+    // hits are produced or their scores.
+    const entryById = new Map<string, CanonicalSanctionsEntry>();
+    for (const entry of entries) entryById.set(entry.entryId, entry);
+
     // Track entryIds that already produced an identifier hit so we don't
     // double-count them from the fuzzy-name pass below.
     const identifierHitIds = new Set<string>();
@@ -238,7 +409,7 @@ export async function screenParty(
       for (const entry of entries) {
         const idHit = matchByIdentifier(partyIdentifiers, entry);
         if (idHit) {
-          allHits.push({ ...idHit, list });
+          allHits.push(enrichHit(idHit, entry, list));
           identifierHitIds.add(entry.entryId);
         }
       }
@@ -252,7 +423,8 @@ export async function screenParty(
     );
     for (const hit of nameHits) {
       if (!identifierHitIds.has(hit.entryId)) {
-        allHits.push({ ...hit, list });
+        const entry = entryById.get(hit.entryId);
+        allHits.push(entry ? enrichHit(hit, entry, list) : { ...hit, list });
       }
     }
   }
@@ -561,7 +733,7 @@ export async function screenParty(
 async function dispatchSanctionsHitEmails(
   party: TradeParty,
   hits: PersistableHit[],
-  cascade: CascadeResult | null,
+  cascade: CascadeResultWithUbo | null,
 ): Promise<void> {
   const recipients = await prisma.organizationMember.findMany({
     where: {
@@ -622,7 +794,7 @@ async function dispatchSanctionsHitEmails(
 async function createSanctionsHitNotifications(
   party: TradeParty,
   hits: PersistableHit[],
-  cascade: CascadeResult | null,
+  cascade: CascadeResultWithUbo | null,
 ): Promise<void> {
   const recipients = await prisma.organizationMember.findMany({
     where: {

@@ -49,6 +49,32 @@ import {
  *  consistency. */
 export type AttributeConfidence = "high" | "medium" | "low";
 
+/**
+ * Per-value sanity-guard provenance (G7 / T-M17).
+ *
+ * The LLM here is ONLY an OCR front-end — it reads numbers/booleans off a
+ * datasheet image. It must NEVER be able to STEER the downstream
+ * classification by emitting an absurd value (a garbled or adversarial
+ * datasheet injecting `apertureMeters: 999999999` to flip a controlled
+ * item to "below threshold"). Each extracted value is therefore run
+ * through a conservative physical-plausibility bound BEFORE it is allowed
+ * to flow into classification.
+ *
+ * `passedSanity` records the verdict; `whyRejected` carries the reason
+ * when a value was dropped, so the operator sees WHY the datasheet's claim
+ * was not trusted. A value with `passedSanity: false` is FAIL-CLOSED: it
+ * is never emitted as a populated attribute, so the three-valued matcher
+ * sees it as UNKNOWN → PossibleMatch, never as a confident
+ * below/above-threshold result.
+ */
+export interface AttributeGuardResult {
+  /** True when the value passed its plausibility bound and is safe to use. */
+  passedSanity: boolean;
+  /** Present ONLY when `passedSanity` is false — the documented reason the
+   *  value was rejected (out-of-range bound, non-finite, etc.). */
+  whyRejected?: string;
+}
+
 /** A single Claude-extracted attribute. */
 export interface VisionAttribute {
   attribute: AttributeName;
@@ -58,6 +84,13 @@ export interface VisionAttribute {
   /** One-sentence reason citing the PDF region/wording Claude relied on.
    *  Used by the UI to render an inline "why" tooltip. */
   reasoning: string;
+  /** Per-value sanity-guard provenance (G7 / T-M17). Always present on an
+   *  EMITTED attribute, and always `{ passedSanity: true }` — values that
+   *  fail the guard are dropped before emission (fail-closed) and recorded
+   *  in `warnings` instead, so they never flow into classification as if
+   *  valid. The field is surfaced so the UI can show the guarded-OK badge
+   *  alongside the existing reasoning + source. */
+  guardResult: AttributeGuardResult;
 }
 
 /** Discriminated-union result. */
@@ -267,6 +300,228 @@ const VALID_ATTR_NAMES: ReadonlySet<string> = new Set(
 const ATTR_TYPE_MAP: ReadonlyMap<string, "number" | "boolean" | "string"> =
   new Map(PROMPT_VOCABULARY.map((v) => [v.name, v.type]));
 
+// ─── Value-level sanity guard (G7 / T-M17) ─────────────────────────────
+//
+// The PROMPT_VOCABULARY whitelists attribute NAMES + their TYPE, but a
+// whitelisted name with an absurd VALUE can still steer the verdict — a
+// garbled or adversarial datasheet that gets Claude to OCR
+// `apertureMeters: 999999999` would, unguarded, drive the parametric
+// matcher to a confident (wrong) below/above-threshold result. The OCR
+// LLM must NEVER be able to pick the verdict; this table is the hard
+// physical bound that the EXTRACTED value must respect before it is
+// allowed to flow into classification.
+//
+// Bounds are CONSERVATIVE and documented per attribute: the goal is to
+// reject the physically-impossible / injection-grade outliers, NOT to
+// second-guess a plausible-but-unusual spec. A value inside the bound is
+// passed through untouched (no clamping — clamping would silently alter a
+// human-reviewable number); a value outside the bound is DROPPED
+// (fail-closed) and the reason recorded, so the three-valued matcher sees
+// the attribute as UNKNOWN → PossibleMatch rather than a confident result
+// driven by the datasheet's injected number.
+//
+// `min` is an EXCLUSIVE lower bound (values must be strictly > min) so a
+// physically-meaningless 0 or negative magnitude is rejected; `max` is an
+// INCLUSIVE upper bound. Every numeric attribute in PROMPT_VOCABULARY has
+// an entry — a numeric attribute with no bound entry is treated as a guard
+// failure (fail-closed: an un-bounded numeric value is not trusted).
+
+interface NumericBound {
+  /** Exclusive lower bound — value must be strictly greater than this. */
+  min: number;
+  /** Inclusive upper bound — value must be ≤ this. */
+  max: number;
+  /** Short human note documenting the physical basis of the bound, used in
+   *  the rejection reason so the operator sees WHY the value was dropped. */
+  note: string;
+}
+
+const NUMERIC_BOUNDS: ReadonlyMap<AttributeName, NumericBound> = new Map([
+  // Optical / imaging geometry.
+  [
+    "apertureMeters",
+    { min: 0, max: 100, note: "optical aperture in metres (>0, ≤100 m)" },
+  ],
+  [
+    "gsdMeters",
+    {
+      min: 0,
+      max: 100_000,
+      note: "ground sample distance in metres (>0, ≤100 km)",
+    },
+  ],
+  [
+    "antennaDiameterM",
+    { min: 0, max: 1000, note: "antenna diameter in metres (>0, ≤1000 m)" },
+  ],
+  [
+    "peakWavelengthNm",
+    {
+      min: 0,
+      max: 1_000_000,
+      note: "peak wavelength in nm (>0, ≤1 mm = 1e6 nm)",
+    },
+  ],
+  // Mass / mechanical.
+  [
+    "payloadKg",
+    { min: 0, max: 1_000_000, note: "payload mass in kg (>0, ≤1e6 kg)" },
+  ],
+  // Distance / range / kinematics.
+  [
+    "rangeKm",
+    {
+      min: 0,
+      max: 4_000_000,
+      note: "operational range in km (>0, ≤ ~Earth–Moon, 4e6 km)",
+    },
+  ],
+  [
+    "deltaVMetersPerSecond",
+    {
+      min: 0,
+      max: 100_000,
+      note: "delta-v in m/s (>0, ≤100 km/s)",
+    },
+  ],
+  // Propulsion.
+  [
+    "IspSeconds",
+    {
+      min: 0,
+      max: 100_000,
+      note: "specific impulse in seconds (>0, ≤1e5 s — well above any real thruster)",
+    },
+  ],
+  // RF / signals.
+  [
+    "transmitPowerW",
+    {
+      min: 0,
+      max: 10_000_000,
+      note: "RF transmit power in watts (>0, ≤10 MW)",
+    },
+  ],
+  [
+    "frequencyGhz",
+    { min: 0, max: 1000, note: "carrier frequency in GHz (>0, ≤1000 GHz)" },
+  ],
+  [
+    "radarCenterFreqGhz",
+    {
+      min: 0,
+      max: 1000,
+      note: "radar centre frequency in GHz (>0, ≤1000 GHz)",
+    },
+  ],
+  [
+    "radarBandwidthMhz",
+    {
+      min: 0,
+      max: 1_000_000,
+      note: "radar bandwidth in MHz (>0, ≤1e6 MHz = 1 THz)",
+    },
+  ],
+  // Radiation tolerance.
+  [
+    "radHardTidKrad",
+    {
+      min: 0,
+      max: 100_000,
+      note: "total ionising dose tolerance in krad(Si) (>0, ≤1e5 krad)",
+    },
+  ],
+  [
+    "seuRateErrorsPerBitDay",
+    {
+      // A rate per bit-day: physically a small positive fraction. Allow up
+      // to 1 (one upset per bit per day is already pathological) with a
+      // tiny floor so a 0 is treated as "not measured", not a real rate.
+      min: 0,
+      max: 1,
+      note: "SEU rate in errors/bit-day (>0, ≤1 — a rate, must be a small fraction)",
+    },
+  ],
+  // Spectral.
+  [
+    "spectralBandCount",
+    {
+      min: 0,
+      max: 100_000,
+      note: "spectral band count (>0, ≤1e5 — bounds hyperspectral sensors)",
+    },
+  ],
+]);
+
+/**
+ * Run a coerced value through its per-attribute sanity guard.
+ *
+ * - number: must be finite AND inside the documented `NUMERIC_BOUNDS`
+ *   entry for the attribute. A numeric attribute with NO bound entry
+ *   fails closed (an un-bounded numeric value is not trusted). NaN /
+ *   ±Infinity fail closed.
+ * - boolean: always sane (a true/false carries no magnitude to injure).
+ * - string: must be non-empty after trimming and within a generous length
+ *   cap (so a megabyte of injected prose can't masquerade as `itemClass`).
+ *
+ * Returns `{ passedSanity: true }` for an accepted value, or
+ * `{ passedSanity: false, whyRejected }` documenting the rejection. NEVER
+ * clamps — a guard failure DROPS the value (fail-closed) so it cannot
+ * steer the verdict; the caller records the reason.
+ */
+export function guardValue(
+  attribute: AttributeName,
+  value: number | boolean | string,
+): AttributeGuardResult {
+  if (typeof value === "boolean") {
+    // A boolean has no magnitude to inject — it is always within sanity.
+    return { passedSanity: true };
+  }
+
+  if (typeof value === "string") {
+    const trimmed = value.trim();
+    if (trimmed.length === 0) {
+      return {
+        passedSanity: false,
+        whyRejected: `"${attribute}": leerer String nach Trim — verworfen.`,
+      };
+    }
+    // Cap string length so an injected wall of text can't ride in as a
+    // taxonomy value. 256 chars is ample for any itemClass / taxonomy.
+    if (trimmed.length > 256) {
+      return {
+        passedSanity: false,
+        whyRejected: `"${attribute}": String zu lang (${trimmed.length} Zeichen, max 256) — als mögliche Injection verworfen.`,
+      };
+    }
+    return { passedSanity: true };
+  }
+
+  // number
+  if (!Number.isFinite(value)) {
+    return {
+      passedSanity: false,
+      whyRejected: `"${attribute}": nicht-endlicher Wert (${String(value)}) — verworfen.`,
+    };
+  }
+  const bound = NUMERIC_BOUNDS.get(attribute);
+  if (!bound) {
+    // Fail-closed: a numeric attribute we have no documented bound for is
+    // not trusted to flow into classification unchecked.
+    return {
+      passedSanity: false,
+      whyRejected: `"${attribute}": kein dokumentierter Plausibilitätsbereich hinterlegt — fail-closed verworfen.`,
+    };
+  }
+  if (value <= bound.min || value > bound.max) {
+    return {
+      passedSanity: false,
+      whyRejected: `"${attribute}": Wert ${value} außerhalb des plausiblen Bereichs (${bound.note}). Möglicher fehlerhafter/manipulierter Datensatz — verworfen, damit er die Einstufung nicht steuert.`,
+    };
+  }
+  return { passedSanity: true };
+}
+
 /**
  * Extract attributes from a datasheet PDF using Claude Vision.
  *
@@ -435,6 +690,26 @@ function normaliseExtraction(raw: unknown): NormalisedExtraction {
       continue;
     }
 
+    // ── Value-level sanity guard (G7 / T-M17) ──
+    // The OCR LLM may have read (or been steered to emit) an absurd value.
+    // A value that fails its physical-plausibility bound is FAIL-CLOSED:
+    // it is dropped here, never pushed into `attributes`, so it cannot
+    // flow into classification as a confident below/above-threshold
+    // result. The reason is recorded in `warnings` for the operator. The
+    // attribute then reads as UNKNOWN to the three-valued matcher →
+    // PossibleMatch, the conservative state. We also mark this attribute
+    // as `seen` so a later (lower-priority) duplicate of an injected value
+    // can't sneak back in.
+    const guardResult = guardValue(typedName, coercedValue);
+    if (!guardResult.passedSanity) {
+      warnings.push(
+        guardResult.whyRejected ??
+          `Attribut "${name}": Wert hat die Plausibilitätsprüfung nicht bestanden — verworfen.`,
+      );
+      seenNames.add(typedName);
+      continue;
+    }
+
     const confidence = normaliseConfidence(entry.confidence);
     const reasoning =
       typeof entry.reasoning === "string" && entry.reasoning.length > 0
@@ -446,6 +721,10 @@ function normaliseExtraction(raw: unknown): NormalisedExtraction {
       value: coercedValue,
       confidence,
       reasoning,
+      // Always { passedSanity: true } on an EMITTED attribute — failures
+      // never reach this point (they were dropped above). Surfaced so the
+      // UI can render the guarded-OK badge next to reasoning + source.
+      guardResult,
     });
     seenNames.add(typedName);
   }

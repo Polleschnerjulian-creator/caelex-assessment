@@ -70,7 +70,15 @@ export async function GET(
             decidedAt: true,
             createdAt: true,
             snapshotHash: true,
+            // `hits` (JSONB) carries the enriched PersistableHit shape written by
+            // screenParty(): each hit's matchedName/score/list PLUS the threaded
+            // presentation fields (legalName, aliasMatch, reason-for-listing
+            // projection). It is returned verbatim so the party page can render
+            // the AKA flag + "Warum steht diese Partei auf der Liste?" detail.
             hits: true,
+            // `cascade` (JSONB) carries the CascadeResultWithUbo snapshot,
+            // including the fail-closed `uboStatus` the page reads to show the
+            // amber "UBO unvollständig" alert. Returned verbatim.
             cascade: true,
             notes: true,
             decidedBy: { select: { id: true, name: true, email: true } },
