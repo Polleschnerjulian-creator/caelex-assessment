@@ -89,6 +89,17 @@ export const rateLimiters = redis
         prefix: "ratelimit:assessment",
       }),
 
+      // Quick-check calculate: 60 per hour per IP. One wizard run makes
+      // ~6 interim forming-counter calls + 1 final submit, so the 10/hr
+      // assessment tier was exhausted by a SINGLE legitimate run-through.
+      // The compute is pure server logic (no AI) behind the bot check.
+      assessment_calculate: new Ratelimit({
+        redis,
+        limiter: Ratelimit.slidingWindow(60, "1 h"),
+        analytics: true,
+        prefix: "ratelimit:assessment_calculate",
+      }),
+
       // Export/Download: 20 per hour (prevent data scraping)
       export: new Ratelimit({
         redis,
@@ -483,6 +494,7 @@ const fallbackLimiters = {
   auth: new InMemoryRateLimiter(3, 60000), // 3/min vs 5/min (Redis)
   registration: new InMemoryRateLimiter(1, 3600000), // 1/hr vs 3/hr (Redis)
   assessment: new InMemoryRateLimiter(5, 3600000), // 5/hr vs 10/hr (Redis)
+  assessment_calculate: new InMemoryRateLimiter(30, 3600000), // 30/hr vs 60/hr (Redis)
   export: new InMemoryRateLimiter(5, 3600000), // 5/hr vs 20/hr (Redis)
   sensitive: new InMemoryRateLimiter(2, 3600000), // 2/hr vs 5/hr (Redis)
   supplier: new InMemoryRateLimiter(10, 3600000), // 10/hr vs 30/hr (Redis)
@@ -528,6 +540,7 @@ export type RateLimitType =
   | "auth"
   | "registration"
   | "assessment"
+  | "assessment_calculate"
   | "export"
   | "sensitive"
   | "supplier"

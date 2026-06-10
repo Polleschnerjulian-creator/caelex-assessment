@@ -805,6 +805,14 @@ export default function SpineWizard({
         router.push(resultsPath);
         return;
       }
+      if (res.status === 429) {
+        // Honest, actionable copy instead of the raw "Too Many Requests" —
+        // answers are persisted server-side, so retrying later loses nothing.
+        setSubmitErrors([
+          "Too many checks from your connection in the last hour. Your answers are saved — please wait a few minutes, then press “See my results” again.",
+        ]);
+        return;
+      }
       const data: unknown = await res.json().catch(() => null);
       const messages: string[] = [];
       if (data !== null && typeof data === "object") {

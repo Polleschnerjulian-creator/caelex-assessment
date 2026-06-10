@@ -81,7 +81,13 @@ export async function POST(request: NextRequest) {
     const session = await auth();
     const userId = session?.user?.id ?? null;
     const identifier = getIdentifier(request, userId ?? undefined);
-    const rateLimitResult = await checkRateLimit("assessment", identifier);
+    // assessment_calculate (60/hr), NOT assessment (10/hr): the wizard's
+    // forming counter makes ~6 interim calls per run + the final submit —
+    // the 10/hr tier 429'd a single legitimate run-through at "See my results".
+    const rateLimitResult = await checkRateLimit(
+      "assessment_calculate",
+      identifier,
+    );
     if (!rateLimitResult.success) {
       return createRateLimitResponse(rateLimitResult);
     }
