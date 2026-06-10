@@ -7,7 +7,11 @@ import { getComplianceHealth } from "@/lib/trade/compliance-health-service";
 import { getActivityFeed } from "@/lib/trade/welcome-feed/activity-feed-service";
 import { aggregateActionItems } from "@/lib/trade/action-inbox-aggregator";
 import { pickHeroAction } from "@/lib/trade/home-hero";
+import type { TradeSanctionsList } from "@prisma/client";
 import { ActionInboxPanel } from "./_components/ActionInboxPanel";
+import ListFreshnessStrip, {
+  SANCTIONS_LIST_LABELS,
+} from "./_components/ListFreshnessStrip";
 import { assembleDeadlines } from "./_components/UpcomingDeadlinesStrip";
 import { HomeHero } from "./_components/HomeHero";
 import { HomeOnboarding } from "./_components/HomeOnboarding";
@@ -85,6 +89,9 @@ export default async function TradeDashboardPage() {
     vsdsDiscoveredRows,
     // ── Applicability front-door state (gate banner vs "dein Geltungsbereich") ──
     applicabilityProfile,
+    // ── Hub trust signals (ILA review #6/#10) ──
+    sanctionsFreshnessRows,
+    activeSagRows,
   ] = await Promise.all([
     prisma.organization.findUnique({
       where: { id: orgId },
@@ -251,6 +258,23 @@ export default async function TradeDashboardPage() {
         preferredRegimesJson: true,
       },
     }),
+    // Sanctions-list freshness (global reference data, not org-scoped) —
+    // latest snapshot per list for the hub trust strip.
+    prisma.tradeSanctionsSnapshot.groupBy({
+      by: ["list"],
+      _max: { fetchedAt: true },
+    }),
+    // ACTIVE Sammelgenehmigungen — value-cap utilization warnings (≥80%).
+    prisma.tradeSammelgenehmigung.findMany({
+      where: { organizationId: orgId, status: "ACTIVE" },
+      select: {
+        id: true,
+        title: true,
+        bafaReference: true,
+        totalValueCapEur: true,
+        drawnDownValueEur: true,
+      },
+    }),
   ]);
 
   // Reshape group-by results into lookup maps.
@@ -325,7 +349,22 @@ export default async function TradeDashboardPage() {
   // Action inbox — pure-function aggregator over the cohorts above.
   // The aggregator owns severity classification + sorting; the panel
   // is presentation-only.
+  // SAG value-cap utilization. BigInt cents (T-H12); ES2017 target → no
+  // BigInt literals. Percent fits in Number safely after the division.
+  const sagsHighUtilization = activeSagRows
+    .filter((s) => s.totalValueCapEur > BigInt(0))
+    .map((s) => ({
+      id: s.id,
+      title: s.title,
+      bafaReference: s.bafaReference,
+      utilizationPct: Number(
+        (s.drawnDownValueEur * BigInt(100)) / s.totalValueCapEur,
+      ),
+    }))
+    .filter((s) => s.utilizationPct >= 80);
+
   const actionItems = aggregateActionItems({
+    sagsHighUtilization,
     blockedOperations: blockedOperationRows.map((op) => ({
       id: op.id,
       reference: op.reference,
@@ -389,6 +428,18 @@ export default async function TradeDashboardPage() {
   const applicabilityRegimeLabel = summariseRegimes(
     applicabilityProfile?.preferredRegimesJson ?? null,
   );
+
+  // Freshness strip rows — EVERY list in the enum renders, never-fetched
+  // ones included (honest "nie geladen" beats a silent gap).
+  const freshnessByList = new Map(
+    sanctionsFreshnessRows.map((r) => [r.list, r._max.fetchedAt]),
+  );
+  const listFreshness = (
+    Object.keys(SANCTIONS_LIST_LABELS) as TradeSanctionsList[]
+  ).map((list) => ({
+    list,
+    fetchedAt: freshnessByList.get(list) ?? null,
+  }));
 
   const miniStats = [
     { label: "Vorgänge aktiv", value: String(operationsTotal) },
@@ -457,12 +508,14 @@ export default async function TradeDashboardPage() {
             <ApplicabilityGateBanner />
           )}
           <HomeOnboarding />
+          <ListFreshnessStrip rows={listFreshness} now={now} />
         </div>
       ) : (
         <div className="space-y-4">
           <MiniStatsStrip stats={miniStats} />
           <HomeHero state={heroState} />
           <ActionInboxPanel items={actionItems} />
+          <ListFreshnessStrip rows={listFreshness} now={now} />
         </div>
       )}
     </div>

@@ -37,7 +37,8 @@ export type ActionKind =
   | "euc-awaiting"
   | "party-needs-screening"
   | "vsd-deadline-approaching"
-  | "vsd-needs-investigation";
+  | "vsd-needs-investigation"
+  | "sag-utilization-high";
 
 export interface ActionItem {
   /** Stable id — `kind:sourceId` so React reconciles correctly. */
@@ -97,6 +98,17 @@ export interface AggregatorInput {
     id: string;
     title: string;
     discoveredAt: Date | string;
+  }>;
+  /**
+   * ACTIVE Sammelgenehmigungen whose value draw-down crossed the
+   * attention threshold (caller computes the percentage from the BigInt
+   * cap/drawn cents — the aggregator stays BigInt-free).
+   */
+  sagsHighUtilization?: ReadonlyArray<{
+    id: string;
+    title: string;
+    bafaReference: string | null;
+    utilizationPct: number;
   }>;
   /** Reference time — pass `new Date()` in prod, fixed in tests. */
   now: Date;
@@ -221,6 +233,25 @@ export function aggregateActionItems(input: AggregatorInput): ActionItem[] {
       subtitle: `Discovered ${daysSince} days ago — start investigation`,
       countdown: `discovered ${daysSince}d ago`,
       href: `/trade/vsd/${vsd.id}`,
+    });
+  }
+
+  // ── Sammelgenehmigungen close to their value cap. ≥95% is critical
+  //    (the next shipment may be blocked by the atomic draw-down guard),
+  //    80–94% is a warning to start the follow-up authorization early —
+  //    BAFA processing times make late filings expensive.
+  for (const sag of input.sagsHighUtilization ?? []) {
+    const pct = Math.round(sag.utilizationPct);
+    items.push({
+      id: `sag-utilization-high:${sag.id}`,
+      kind: "sag-utilization-high",
+      severity: pct >= 95 ? "critical" : "warning",
+      title: `SAG ${sag.bafaReference ?? sag.title} at ${pct}% of its value cap`,
+      subtitle:
+        pct >= 95
+          ? "Next draw-down may be blocked — file the follow-up authorization now"
+          : "Start the follow-up authorization before the cap blocks shipments",
+      href: `/trade/sammelgenehmigungen/${sag.id}`,
     });
   }
 

@@ -30,6 +30,7 @@ const LIST_HREF_BY_KIND: Record<ActionItem["kind"], string> = {
   "party-needs-screening": "/trade/parties",
   "vsd-deadline-approaching": "/trade/vsd",
   "vsd-needs-investigation": "/trade/vsd",
+  "sag-utilization-high": "/trade/sammelgenehmigungen",
 };
 
 /**
@@ -52,7 +53,10 @@ export function pickHeroAction(
       variant: "all-clear",
       title: "Alles erledigt 🎉",
       subtitle: "Keine offenen Punkte. Starte den nächsten Ausfuhrvorgang.",
-      cta: { label: "Neuer Vorgang", href: "/trade/operations/new" },
+      cta: {
+        label: "Darf ich liefern? — Vorgang prüfen",
+        href: "/trade/operations/new",
+      },
     };
   }
 
@@ -104,5 +108,7 @@ function headlineForKind(kind: ActionItem["kind"]): string {
       return "VSD-Fristen nahen";
     case "vsd-needs-investigation":
       return "VSDs zu untersuchen";
+    case "sag-utilization-high":
+      return "Sammelgenehmigungen fast ausgeschöpft";
   }
 }
