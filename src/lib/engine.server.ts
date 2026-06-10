@@ -446,7 +446,8 @@ function getAuthorizationPath(isThirdCountry: boolean, isEU: boolean): string {
 /**
  * Build a canonical "out of scope" result. Used for:
  *   (a) defense-only operators (Art. 2(3) exemption)
- *   (b) third-country operators with no EU services (Art. 2 scope test)
+ *   (b) pre-2030 grandfathered assets (Art. 2(3)(d))
+ *   (c) third-country operators with no EU services (Art. 2 scope test)
  *
  * All module statuses are set to "not_applicable", no articles apply,
  * no checklist items, no key dates. The UI can surface the specific
@@ -523,7 +524,28 @@ export function calculateCompliance(
     );
   }
 
-  // ── Rule 2: Third country with no EU services ──────────────────────────
+  // ── Rule 2: Pre-2030 assets grandfathered (COM(2025) 335 Art. 2(3)(d)) ──
+  // Mirrors the wizard's hard-stop: space objects launched before the EU
+  // Space Act's application date (1 January 2030) are outside its scope.
+  // The gate fires ONLY on an explicit "false" answer — an unknown/null
+  // value conservatively rounds UP to in-scope (more obligations), never to
+  // a definitive out-of-scope verdict. Previously this gate existed only in
+  // the client question config; a direct API call bypassed it entirely and
+  // received a confident full-compliance verdict.
+  if (answers.hasPostLaunchAssets === false) {
+    return buildOutOfScopeResult(
+      answers,
+      "Pre-existing assets are grandfathered under COM(2025) 335 Art. 2(3)(d): space objects launched before 1 January 2030 are excluded from the EU Space Act's scope. However, any new launches on or after that date will be fully in scope and will require compliance with the regulation.",
+      `${operatorTypeLabel} (Pre-2030 Assets — Grandfathered)`,
+      operatorType,
+      operatorAbbreviation,
+      isEU,
+      isThirdCountry,
+      data,
+    );
+  }
+
+  // ── Rule 3: Third country with no EU services ──────────────────────────
   // Previously fell through as an EU-like entity and was incorrectly given
   // EU authorization articles. Per Art. 2, the EU Space Act does not claim
   // jurisdiction over entities with no EU establishment AND no EU services.

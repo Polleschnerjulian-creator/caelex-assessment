@@ -2,6 +2,22 @@ import "server-only";
 
 export const ASSESSMENT_MIN_DURATION_MS = 3000;
 
+/**
+ * Anti-bot timing gate for the public assessment endpoints.
+ *
+ * `startedAt` is the client-reported epoch-ms timestamp of when the wizard
+ * was opened. It is REQUIRED by the assessment Zod schemas (a missing value
+ * is a 400 validation error, never a silently skipped check). A submission
+ * that completes faster than a human plausibly could — including clock-skewed
+ * future timestamps, which produce a negative elapsed time — is rejected.
+ */
+export function isAssessmentTooFast(
+  startedAt: number,
+  now: number = Date.now(),
+): boolean {
+  return now - startedAt < ASSESSMENT_MIN_DURATION_MS;
+}
+
 export function clampScore(score: number, min = 0, max = 100): number {
   return Math.max(min, Math.min(max, score));
 }

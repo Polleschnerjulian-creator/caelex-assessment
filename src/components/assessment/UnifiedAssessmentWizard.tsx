@@ -149,7 +149,12 @@ export default function UnifiedAssessmentWizard() {
   const [savedTimestamp, setSavedTimestamp] = useState<number | null>(null);
 
   const STORAGE_KEY = "caelex-unified-assessment-v2";
-  const STORAGE_VERSION = 2;
+  // Version 3 (2026-06-10): pre-fix sessions stored an "Unknown" click on
+  // the essential-service designation question as a hard
+  // `isEssentialServiceProvider: false`. A stored `false` is therefore
+  // ambiguous (could have been "Unknown"), so old sessions cannot be
+  // migrated — the version bump discards them and the user restarts.
+  const STORAGE_VERSION = 3;
   const MAX_AGE_MS = 7 * 24 * 60 * 60 * 1000; // 7 days
 
   // Resume detection on mount + Google OAuth return handling

@@ -314,6 +314,11 @@ export interface RedactedNIS2ComplianceResult {
   euSpaceActOverlap: {
     count: number;
     totalPotentialSavingsWeeks: number;
+    // Honesty disclaimers are NOT proprietary content and must survive
+    // redaction: the savings figure is an internal, non-validated estimate
+    // and the client must be able to say so.
+    confidenceLevel: "estimated" | "validated";
+    estimationSource: string;
   };
   penalties: NIS2ComplianceResult["penalties"];
   registrationRequired: boolean;

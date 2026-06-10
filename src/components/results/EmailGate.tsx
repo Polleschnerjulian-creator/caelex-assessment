@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import { X, FileDown, Mail, Building, User, Check } from "lucide-react";
 
@@ -13,19 +14,26 @@ interface EmailGateProps {
     role?: string,
     subscribe?: boolean,
   ) => void;
+  /** Which assessment wizard produced the report (for lead attribution). */
+  assessmentType?: "eu-space-act" | "nis2" | "space-law" | "unified";
 }
 
 export default function EmailGate({
   isOpen,
   onClose,
   onSubmit,
+  assessmentType = "eu-space-act",
 }: EmailGateProps) {
   const [email, setEmail] = useState("");
   const [company, setCompany] = useState("");
   const [role, setRole] = useState("");
-  const [subscribe, setSubscribe] = useState(true);
+  // GDPR Art. 7: newsletter consent must be an active opt-in — unchecked
+  // by default.
+  const [subscribe, setSubscribe] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [emailError, setEmailError] = useState<string | null>(null);
+  const [submitError, setSubmitError] = useState<string | null>(null);
+  const [honeypot, setHoneypot] = useState("");
 
   const validateEmail = (value: string): boolean => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -39,10 +47,39 @@ export default function EmailGate({
       return;
     }
     setEmailError(null);
+    setSubmitError(null);
     setIsSubmitting(true);
-    await new Promise((resolve) => setTimeout(resolve, 500));
-    onSubmit(email, company || undefined, role || undefined, subscribe);
-    setIsSubmitting(false);
+    try {
+      const response = await fetch("/api/assessment/lead", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          email,
+          company: company || undefined,
+          role: role || undefined,
+          assessmentType,
+          consentNewsletter: subscribe,
+          _hp: honeypot || undefined,
+        }),
+      });
+
+      if (!response.ok) {
+        setSubmitError(
+          response.status === 429
+            ? "Too many requests — please wait a moment and try again."
+            : "We couldn't save your details. Please try again.",
+        );
+        return;
+      }
+
+      onSubmit(email, company || undefined, role || undefined, subscribe);
+    } catch {
+      setSubmitError(
+        "We couldn't reach the server. Please check your connection and try again.",
+      );
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -178,35 +215,71 @@ export default function EmailGate({
                   </div>
                 </div>
 
-                {/* Subscribe checkbox */}
-                <label className="flex items-start gap-3 mb-6 cursor-pointer group">
-                  <div className="relative flex-shrink-0 mt-0.5">
-                    <input
-                      type="checkbox"
-                      checked={subscribe}
-                      onChange={(e) => setSubscribe(e.target.checked)}
-                      className="sr-only peer"
-                    />
-                    <div
-                      className={`w-5 h-5 rounded border flex items-center justify-center transition-all ${
-                        subscribe
-                          ? "bg-white border-white"
-                          : "border-white/[0.25] bg-transparent"
-                      }`}
-                    >
-                      {subscribe && (
-                        <Check
-                          size={12}
-                          className="text-black"
-                          aria-hidden="true"
-                        />
-                      )}
-                    </div>
-                  </div>
-                  <span className="text-body text-slate-500 dark:text-white/70 group-hover:text-slate-900 dark:group-hover:text-white transition-colors">
-                    Notify me when Caelex launches (we&apos;ll never spam you)
+                {/* Honeypot — hidden from humans, filled by bots */}
+                <input
+                  type="text"
+                  name="_hp"
+                  value={honeypot}
+                  onChange={(e) => setHoneypot(e.target.value)}
+                  tabIndex={-1}
+                  autoComplete="off"
+                  aria-hidden="true"
+                  style={{
+                    position: "absolute",
+                    left: "-9999px",
+                    width: "1px",
+                    height: "1px",
+                    opacity: 0,
+                  }}
+                />
+
+                {/* Optional newsletter consent — separate from the report
+                    delivery email above. Opt-in only (unchecked by default,
+                    GDPR Art. 7), confirmed via double opt-in email. */}
+                <div className="mb-6 pt-4 border-t border-slate-200 dark:border-white/[0.12]">
+                  <span className="block text-micro uppercase tracking-[0.15em] text-slate-500 dark:text-white/45 mb-2">
+                    Newsletter{" "}
+                    <span className="text-slate-400 dark:text-white/45">
+                      (optional)
+                    </span>
                   </span>
-                </label>
+                  <label className="flex items-start gap-3 cursor-pointer group">
+                    <div className="relative flex-shrink-0 mt-0.5">
+                      <input
+                        type="checkbox"
+                        checked={subscribe}
+                        onChange={(e) => setSubscribe(e.target.checked)}
+                        className="sr-only peer"
+                      />
+                      <div
+                        className={`w-5 h-5 rounded border flex items-center justify-center transition-all ${
+                          subscribe
+                            ? "bg-white border-white"
+                            : "border-white/[0.25] bg-transparent"
+                        }`}
+                      >
+                        {subscribe && (
+                          <Check
+                            size={12}
+                            className="text-black"
+                            aria-hidden="true"
+                          />
+                        )}
+                      </div>
+                    </div>
+                    <span className="text-body text-slate-500 dark:text-white/70 group-hover:text-slate-900 dark:group-hover:text-white transition-colors">
+                      Also email me Caelex product updates. We&apos;ll send a
+                      confirmation email first — unsubscribe anytime.
+                    </span>
+                  </label>
+                </div>
+
+                {/* Submission error */}
+                {submitError && (
+                  <p role="alert" className="mb-4 text-small text-red-400">
+                    {submitError}
+                  </p>
+                )}
 
                 {/* Submit */}
                 <button
@@ -220,7 +293,7 @@ export default function EmailGate({
                         className="w-4 h-4 border-2 border-black/20 border-t-black rounded-full animate-spin"
                         aria-hidden="true"
                       />
-                      Generating...
+                      Submitting...
                     </>
                   ) : (
                     <>
@@ -230,9 +303,20 @@ export default function EmailGate({
                   )}
                 </button>
 
-                {/* Privacy note */}
+                {/* Privacy note — GDPR Art. 13: describes the ACTUAL
+                    processing. The report is generated in your browser and
+                    downloaded directly — no email is sent to deliver it. The
+                    details are stored server-side as a contact record. */}
                 <p className="text-caption text-slate-400 dark:text-white/45 text-center mt-4">
-                  We respect your privacy. Your data is not stored or shared.
+                  We store your details to follow up about your assessment.
+                  Newsletter emails only if you tick the box above. See our{" "}
+                  <Link
+                    href="/legal/privacy"
+                    className="underline hover:text-slate-600 dark:hover:text-white/70 transition-colors"
+                  >
+                    Privacy Policy
+                  </Link>
+                  .
                 </p>
               </form>
             </div>

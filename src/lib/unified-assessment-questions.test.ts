@@ -370,5 +370,61 @@ describe("unified-assessment-questions", () => {
       const answered = isQuestionAnswered(q, { isDefenseOnly: false });
       expect(answered).toBe(true);
     });
+
+    it("counts an 'unknown' answer as answered (it is an explicit choice)", () => {
+      const q = UNIFIED_QUESTIONS.find(
+        (question) => question.id === "isEssentialServiceProvider",
+      )!;
+      const answered = isQuestionAnswered(q, {
+        isEssentialServiceProvider: "unknown",
+      });
+      expect(answered).toBe(true);
+    });
+  });
+
+  // ─── Honesty hotfix: uncertainty options must never masquerade as "No" ──
+  describe("honest uncertainty options", () => {
+    const UNCERTAINTY_PATTERN = /\b(unknown|not\s?_?sure|unsure)\b/i;
+
+    it("no unknown/unsure option carries a substantive false/'No' value", () => {
+      for (const q of UNIFIED_QUESTIONS) {
+        for (const option of q.options ?? []) {
+          const looksUncertain =
+            UNCERTAINTY_PATTERN.test(option.id) ||
+            UNCERTAINTY_PATTERN.test(option.label);
+          if (!looksUncertain) continue;
+
+          // An uncertainty option must never store the same value as a
+          // definitive "No": false-green answers fabricate certainty.
+          expect(
+            option.value,
+            `Question "${q.id}" option "${option.id}" stores uncertainty as a definitive false`,
+          ).not.toBe(false);
+
+          const noOption = (q.options ?? []).find(
+            (o) => o.id === "no" || /^no\b/i.test(o.label),
+          );
+          if (noOption) {
+            expect(
+              option.value,
+              `Question "${q.id}" option "${option.id}" shares its value with the "No" option`,
+            ).not.toBe(noOption.value);
+          }
+        }
+      }
+    });
+
+    it("isEssentialServiceProvider 'Unknown' carries the distinct 'unknown' value", () => {
+      const q = UNIFIED_QUESTIONS.find(
+        (question) => question.id === "isEssentialServiceProvider",
+      );
+      expect(q).toBeDefined();
+      const unknownOption = q!.options!.find((o) => o.id === "unknown");
+      expect(unknownOption).toBeDefined();
+      expect(unknownOption!.value).toBe("unknown");
+      // The Yes/No options stay boolean
+      expect(q!.options!.find((o) => o.id === "yes")!.value).toBe(true);
+      expect(q!.options!.find((o) => o.id === "no")!.value).toBe(false);
+    });
   });
 });

@@ -827,6 +827,7 @@ describe("POST /api/nis2/calculate", () => {
         answers: {
           sector: "space",
           entitySize: "medium",
+          isEUEstablished: true,
         },
         startedAt: Date.now() - 1000, // Only 1 second ago (< 3s threshold)
       },
@@ -861,15 +862,16 @@ describe("POST /api/nis2/calculate", () => {
     expect(res.status).toBe(429);
   });
 
-  it("should accept null values for optional fields", async () => {
+  it("should accept null values for optional fields (gate fields answered)", async () => {
     const req = makeRequest("http://localhost/api/nis2/calculate", {
       method: "POST",
       body: {
         answers: {
           sector: null,
           spaceSubSector: null,
-          entitySize: null,
-          isEUEstablished: null,
+          // Scope-gate fields are required and must be concrete answers:
+          entitySize: "medium",
+          isEUEstablished: true,
           memberStateCount: null,
           hasISO27001: null,
         },
@@ -878,10 +880,70 @@ describe("POST /api/nis2/calculate", () => {
     }) as never;
 
     const res = await calculatePOST(req);
+
+    expect(res.status).toBe(200);
+  });
+
+  // ─── Scope-gate fields are required (honesty hotfix) ───
+  // A missing/null isEUEstablished or entitySize must be a 400 validation
+  // error — never a confident classification from silent defaults.
+
+  it("should return 400 when isEUEstablished is missing", async () => {
+    const req = makeRequest("http://localhost/api/nis2/calculate", {
+      method: "POST",
+      body: {
+        answers: {
+          sector: "space",
+          entitySize: "medium",
+        },
+        startedAt: Date.now() - 30000,
+      },
+    }) as never;
+
+    const res = await calculatePOST(req);
     const data = await res.json();
 
-    // Null values should be valid (assessment just started)
-    expect(res.status).toBe(200);
+    expect(res.status).toBe(400);
+    expect(data.error).toBe("Validation failed");
+  });
+
+  it("should return 400 when entitySize is missing or null", async () => {
+    const req = makeRequest("http://localhost/api/nis2/calculate", {
+      method: "POST",
+      body: {
+        answers: {
+          sector: "space",
+          entitySize: null,
+          isEUEstablished: true,
+        },
+        startedAt: Date.now() - 30000,
+      },
+    }) as never;
+
+    const res = await calculatePOST(req);
+    const data = await res.json();
+
+    expect(res.status).toBe(400);
+    expect(data.error).toBe("Validation failed");
+  });
+
+  it("should return 400 when startedAt is missing (anti-bot check is mandatory)", async () => {
+    const req = makeRequest("http://localhost/api/nis2/calculate", {
+      method: "POST",
+      body: {
+        answers: {
+          sector: "space",
+          entitySize: "medium",
+          isEUEstablished: true,
+        },
+      },
+    }) as never;
+
+    const res = await calculatePOST(req);
+    const data = await res.json();
+
+    expect(res.status).toBe(400);
+    expect(data.error).toBe("Validation failed");
   });
 
   it("should include rate limit headers in response", async () => {
@@ -891,6 +953,7 @@ describe("POST /api/nis2/calculate", () => {
         answers: {
           sector: "space",
           entitySize: "medium",
+          isEUEstablished: true,
         },
         startedAt: Date.now() - 30000,
       },

@@ -974,10 +974,16 @@ const PHASE_4_QUESTIONS: UnifiedQuestion[] = [
         icon: "Circle",
       },
       {
+        // HONESTY: "Unknown" previously carried value:false, silently storing
+        // uncertainty as a definitive "No" on a NIS2 scope-relevant question.
+        // It now carries a distinct "unknown" value that is mapped
+        // conservatively (potentially in scope) and lowers the confidence
+        // score instead of producing a false out-of-scope verdict.
         id: "unknown",
-        value: false,
+        value: "unknown",
         label: "Unknown",
-        description: "Not sure of designation status",
+        description:
+          "Not sure of designation status — treated as potentially designated until confirmed",
         icon: "HelpCircle",
       },
     ],

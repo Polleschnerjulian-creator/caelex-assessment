@@ -32,28 +32,10 @@ export default function ResultsDashboard({
   }, []);
 
   const handleEmailSubmit = useCallback(
-    async (
-      email: string,
-      company?: string,
-      role?: string,
-      subscribe?: boolean,
-    ) => {
-      // Store lead locally for future CRM integration
-      try {
-        const leads = JSON.parse(
-          localStorage.getItem("caelex-assessment-leads") || "[]",
-        );
-        leads.push({
-          email,
-          company,
-          role,
-          subscribe,
-          timestamp: new Date().toISOString(),
-        });
-        localStorage.setItem("caelex-assessment-leads", JSON.stringify(leads));
-      } catch {
-        // localStorage may be unavailable
-      }
+    // Lead details (email/company/role/consent) are persisted server-side by
+    // EmailGate (POST /api/assessment/lead) before this callback fires — no
+    // client-side copy is kept.
+    async (email: string) => {
       setIsEmailGateOpen(false);
       setIsGeneratingPDF(true);
       setPdfError(null);

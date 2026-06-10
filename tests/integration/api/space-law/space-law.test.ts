@@ -571,7 +571,9 @@ describe("POST /api/space-law/calculate", () => {
     expect(res.status).toBe(200);
   });
 
-  it("should accept request without startedAt (no anti-bot check)", async () => {
+  it("should return 400 when startedAt is missing (anti-bot check is mandatory)", async () => {
+    // Honesty hotfix: startedAt used to be optional, which made the anti-bot
+    // timing check a no-op for any caller that simply omitted the field.
     const req = makeNextRequest("http://localhost/api/space-law/calculate", {
       method: "POST",
       body: {
@@ -580,7 +582,10 @@ describe("POST /api/space-law/calculate", () => {
     });
 
     const res = await calculatePOST(req);
-    expect(res.status).toBe(200);
+    const data = await res.json();
+
+    expect(res.status).toBe(400);
+    expect(data.error).toBe("Validation failed");
   });
 
   // ─── 400 Validation Error Cases ───

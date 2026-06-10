@@ -246,7 +246,13 @@ function buildCrossFrameworkOverlap(
     return overlaps;
   }
 
-  // Use the NIS2 engine's calculated overlaps
+  // Use ONLY the NIS2 engine's calculated overlaps.
+  //
+  // HONESTY: this function previously fabricated three hardcoded
+  // "structural overlaps" whenever the engine computed none, presenting
+  // invented cross-framework findings as analysis results. Removed — when
+  // the engines derive no overlaps, none are reported (downstream rendering
+  // omits the section / states that no overlaps were identified).
   if (
     nis2.euSpaceActOverlap &&
     nis2.euSpaceActOverlap.overlappingRequirements
@@ -260,28 +266,6 @@ function buildCrossFrameworkOverlap(
     }
   }
 
-  // Add known structural overlaps if the engine didn't find them
-  if (overlaps.length === 0) {
-    const structuralOverlaps = [
-      {
-        area: "Cybersecurity risk management",
-        euSpaceActRef: "Art. 76",
-        nis2Ref: "Art. 21(2)(a)",
-      },
-      {
-        area: "Incident reporting",
-        euSpaceActRef: "Art. 78",
-        nis2Ref: "Art. 23",
-      },
-      {
-        area: "Supply chain security",
-        euSpaceActRef: "Art. 77",
-        nis2Ref: "Art. 21(2)(d)",
-      },
-    ];
-    overlaps.push(...structuralOverlaps);
-  }
-
   return overlaps;
 }
 
@@ -290,6 +274,17 @@ function buildCrossFrameworkOverlap(
 interface ConfidenceField {
   key: keyof UnifiedAssessmentAnswers;
   weight: number; // 2 = required, 1.5 = important, 1 = standard
+  /**
+   * When provided and returning true, the field is not applicable to this
+   * profile (e.g. the question is never shown) and is EXCLUDED from scoring
+   * entirely — removed from both earned and total weight. An unasked
+   * question is not uncertainty, but it must not earn free credit either:
+   * granting full earned weight would inflate confidence
+   * ((E+w)/(T+w) > E/T for any partially-answered profile). Must only fire
+   * on an EXPLICIT answer that rules the field out; when in doubt the field
+   * stays applicable (conservative: confidence can only go down, never up).
+   */
+  notApplicableWhen?: (answers: Partial<UnifiedAssessmentAnswers>) => boolean;
 }
 
 export const CONFIDENCE_FIELDS: ConfidenceField[] = [
@@ -301,6 +296,16 @@ export const CONFIDENCE_FIELDS: ConfidenceField[] = [
   { key: "servesEUCustomers", weight: 1.5 },
   { key: "serviceTypes", weight: 1 },
   { key: "servesCriticalInfrastructure", weight: 1 },
+  {
+    // NIS2 scope-relevant designation question (asked when the entity serves
+    // critical infrastructure). An explicit "unknown" answer must visibly
+    // lower confidence — see the "unknown" handling in
+    // calculateConfidenceScore. Not applicable only when the user explicitly
+    // answered "No" to critical infrastructure (the question is never shown).
+    key: "isEssentialServiceProvider",
+    weight: 1,
+    notApplicableWhen: (a) => a.servesCriticalInfrastructure === false,
+  },
   { key: "hasCybersecurityPolicy", weight: 1 },
   { key: "hasRiskManagement", weight: 1 },
   { key: "hasIncidentResponsePlan", weight: 1 },
@@ -320,9 +325,21 @@ export function calculateConfidenceScore(
   let earnedWeight = 0;
 
   for (const field of CONFIDENCE_FIELDS) {
+    if (field.notApplicableWhen?.(answers)) {
+      // Question is explicitly ruled out for this profile — exclude it from
+      // the calculation entirely (skip the denominator too). This keeps
+      // "unasked ≠ uncertain" without inflating confidence: granting full
+      // earned weight here would push (E+w)/(T+w) above E/T for any
+      // partially-answered profile.
+      continue;
+    }
     totalWeight += field.weight;
     const value = answers[field.key];
     if (value === null || value === undefined) continue;
+    // Explicit "unknown" answers are uncertainty markers: they earn NO
+    // confidence weight, so stated uncertainty visibly lowers confidence
+    // instead of counting as a confident answer.
+    if (value === "unknown") continue;
 
     if (Array.isArray(value)) {
       if (value.length === 0) continue;
@@ -382,6 +399,15 @@ function buildIncidentTimeline(nis2: NIS2ComplianceResult | null): {
 }
 
 // ─── Build Unified Result ───
+
+/**
+ * Distinct NIS2 status for the unified result when scope cannot honestly be
+ * determined (insufficient inputs or an explicit "unknown" on a
+ * scope-relevant designation question). Renders alongside a
+ * "Needs clarification — answer X to determine" message instead of a
+ * definitive "does not apply" verdict.
+ */
+export const NIS2_NEEDS_CLARIFICATION = "needs_clarification";
 
 /**
  * Assemble the final RedactedUnifiedResult from real engine outputs.
@@ -459,8 +485,58 @@ export function buildUnifiedResult(
         };
 
   // NIS2 section
-  const nis2Classification = nis2Result?.entityClassification || "out_of_scope";
-  const nis2Applies = nis2Classification !== "out_of_scope";
+  //
+  // HONESTY (needs-clarification state): an "out of scope" NIS2 verdict that
+  // merely reflects missing or uncertain inputs must NOT render as a
+  // definitive "does not apply". Those cases are surfaced as a distinct
+  // "needs_clarification" status with a message naming the answer required
+  // to determine scope. Genuine, well-grounded out-of-scope verdicts are
+  // passed through unchanged.
+  const engineClassification =
+    nis2Result?.entityClassification || "out_of_scope";
+  let nis2Classification: string = engineClassification;
+  let nis2ClassificationReason =
+    nis2Result?.classificationReason || "Not assessed";
+
+  if (engineClassification === "out_of_scope") {
+    if (!nis2Result) {
+      nis2Classification = NIS2_NEEDS_CLARIFICATION;
+      nis2ClassificationReason =
+        "Needs clarification — the NIS2 assessment could not be completed for this profile. Answer the organization size and EU establishment questions to determine whether NIS2 applies.";
+    } else if (answers.entitySize == null) {
+      // The NIS2 engine returns out_of_scope when entity size is missing
+      // ("insufficient data"). That is not a scope determination.
+      nis2Classification = NIS2_NEEDS_CLARIFICATION;
+      nis2ClassificationReason =
+        "Needs clarification — answer the organization size question to determine your NIS2 classification. NIS2 applicability cannot be ruled out without it.";
+    } else if (answers.isEssentialServiceProvider === "unknown") {
+      // Explicit uncertainty on a designation question that can bring the
+      // entity into scope regardless of size (Art. 2(2)) — in dubio
+      // in-scope, never a definitive "does not apply".
+      nis2Classification = NIS2_NEEDS_CLARIFICATION;
+      nis2ClassificationReason =
+        "Needs clarification — confirm whether your entity is designated as an essential service provider (NIS2 Art. 2(2)). A designation brings you into NIS2 scope regardless of entity size, so applicability cannot be ruled out until this is confirmed with your national competent authority.";
+    } else if (
+      answers.servesCriticalInfrastructure === true &&
+      answers.isEssentialServiceProvider == null
+    ) {
+      // Uncertainty-by-omission rounds UP: the profile serves critical
+      // infrastructure but the designation answer is missing entirely
+      // (only possible via direct API payloads — the wizard requires the
+      // question once critical infrastructure is confirmed). A designation
+      // can bring the entity into scope regardless of size (Art. 2(2)), so
+      // an omitted answer must not yield a confident "does not apply".
+      nis2Classification = NIS2_NEEDS_CLARIFICATION;
+      nis2ClassificationReason =
+        "Needs clarification — your organization serves critical infrastructure, but the essential-service designation question (NIS2 Art. 2(2)) was not answered. A designation brings you into NIS2 scope regardless of entity size, so applicability cannot be ruled out until this is answered.";
+    }
+  }
+
+  const nis2Applies =
+    engineClassification === "essential" ||
+    engineClassification === "important";
+  const nis2NeedsClarification =
+    nis2Classification === NIS2_NEEDS_CLARIFICATION;
 
   // Calculate NIS2 readiness from unified cybersecurity answers
   const cyberChecks = [
@@ -484,7 +560,7 @@ export function buildUnifiedResult(
   const nis2Section = {
     applies: nis2Applies,
     entityClassification: nis2Classification,
-    classificationReason: nis2Result?.classificationReason || "Not assessed",
+    classificationReason: nis2ClassificationReason,
     requirementCount: nis2Result?.applicableCount || 0,
     complianceGapCount,
     estimatedReadiness,
@@ -531,7 +607,11 @@ export function buildUnifiedResult(
   const riskResult = calculateOverallRisk(
     euSpaceAct.applies,
     euSpaceAct.regime,
-    nis2Applies,
+    // Conservative: an unresolved "needs clarification" NIS2 state must not
+    // short-circuit risk to "low" — uncertainty rounds up, never down. The
+    // effort estimate below stays keyed to CONFIRMED applicability so no
+    // effort is fabricated for an undetermined scope.
+    nis2Applies || nis2NeedsClarification,
     nis2Classification,
     complianceGapCount,
     answers,

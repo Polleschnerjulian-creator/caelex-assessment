@@ -343,20 +343,30 @@ export const EUSpaceActAnswersSchema = z.object({
     .nullable()
     .optional(),
   primaryOrbit: z.enum(["LEO", "MEO", "GEO", "beyond"]).nullable().optional(),
-  establishment: z
-    .enum(["eu", "third_country_eu_services", "third_country_no_eu"])
-    .nullable()
-    .optional(),
+  // ── Scope-gate fields (REQUIRED) ──
+  // These three answers drive the wizard's hard-stop gates (defense-only
+  // exemption Art. 2(3)(a), pre-2030 grandfathering Art. 2(3)(d),
+  // third-country-no-EU-services Art. 2). They are required so that a direct
+  // API call that omits them gets a 400 validation error instead of a
+  // confident verdict computed from silent defaults. The gates themselves are
+  // enforced server-side in calculateCompliance (engine.server.ts).
+  establishment: z.enum([
+    "eu",
+    "third_country_eu_services",
+    "third_country_no_eu",
+  ]),
   constellationSize: z.number().min(0).max(100000).nullable().optional(),
-  isDefenseOnly: z.boolean().nullable().optional(),
-  hasPostLaunchAssets: z.boolean().nullable().optional(),
+  isDefenseOnly: z.boolean(),
+  hasPostLaunchAssets: z.boolean(),
   operatesConstellation: z.boolean().nullable().optional(),
   offersEUServices: z.boolean().nullable().optional(),
 });
 
 export const EUSpaceActCalculateSchema = z.object({
   answers: EUSpaceActAnswersSchema,
-  startedAt: z.number().optional(),
+  // Required: the anti-bot timing check must never silently degrade into a
+  // no-op because a caller omitted the field.
+  startedAt: z.number().int().positive(),
 });
 
 export const NIS2CalculateAnswersSchema = z.object({
@@ -373,14 +383,17 @@ export const NIS2CalculateAnswersSchema = z.object({
     ])
     .nullable()
     .optional(),
-  entitySize: z
-    .enum(["micro", "small", "medium", "large"])
-    .nullable()
-    .optional(),
+  // ── Scope-gate fields (REQUIRED) ──
+  // entitySize drives the NIS2 size-cap classification (Art. 2(1)/3) and
+  // isEUEstablished drives the establishment gate (Art. 2(4)). Both are
+  // required so a missing answer is a 400 validation error — previously a
+  // missing entitySize silently produced a definitive "out of scope" verdict,
+  // and a missing isEUEstablished silently defaulted to EU-established.
+  entitySize: z.enum(["micro", "small", "medium", "large"]),
   employeeCount: z.number().nullable().optional(),
   annualRevenue: z.number().nullable().optional(),
   memberStateCount: z.number().int().min(0).max(27).nullable().optional(),
-  isEUEstablished: z.boolean().nullable().optional(),
+  isEUEstablished: z.boolean(),
   operatesGroundInfra: z.boolean().nullable().optional(),
   operatesSatComms: z.boolean().nullable().optional(),
   manufacturesSpacecraft: z.boolean().nullable().optional(),
@@ -393,7 +406,9 @@ export const NIS2CalculateAnswersSchema = z.object({
 
 export const NIS2CalculateSchema = z.object({
   answers: NIS2CalculateAnswersSchema,
-  startedAt: z.number().optional(),
+  // Required: the anti-bot timing check must never silently degrade into a
+  // no-op because a caller omitted the field.
+  startedAt: z.number().int().positive(),
 });
 
 export const SpaceLawCalculateAnswersSchema = z.object({
@@ -409,7 +424,9 @@ export const SpaceLawCalculateAnswersSchema = z.object({
 
 export const SpaceLawCalculateSchema = z.object({
   answers: SpaceLawCalculateAnswersSchema,
-  startedAt: z.number().optional(),
+  // Required: the anti-bot timing check must never silently degrade into a
+  // no-op because a caller omitted the field.
+  startedAt: z.number().int().positive(),
 });
 
 /**
@@ -431,7 +448,15 @@ export const UnifiedCalculateAnswersSchema = z
     // Identity / establishment
     companyName: z.string().max(500).nullable().optional(),
     companyWebsite: z.string().max(500).nullable().optional(),
-    establishmentCountry: z.string().min(2).max(3),
+    // 2–3 char ISO country codes, plus the wizard's literal "OTHER" option
+    // ("Other Country", 5 chars). "OTHER" never matches EU_MEMBER_STATES /
+    // EEA / ESA membership checks in the mappers, so it flows through as a
+    // non-EU third-country establishment. Previously min(2).max(3) rejected
+    // it, 400-ing every "Other Country" visitor at completion.
+    establishmentCountry: z.union([
+      z.string().min(2).max(3),
+      z.literal("OTHER"),
+    ]),
     entitySize: z.enum(["micro", "small", "medium", "large"]),
     turnoverRange: z
       .enum(["under_2m", "2m_10m", "10m_50m", "50m_250m", "over_250m"])
@@ -446,17 +471,22 @@ export const UnifiedCalculateAnswersSchema = z
     internationalOrgType: z.string().max(200).nullable().optional(),
 
     // Activities and services
-    activityTypes: z.array(z.string().max(50)).optional().default([]),
+    // activityTypes is a required wizard question. Requiring at least one
+    // entry here prevents a direct API call with an empty list from sliding
+    // into the merger's null-result branch, which would mislabel an
+    // EU-established operator as having "no EU establishment or EU market
+    // presence".
+    activityTypes: z.array(z.string().max(50)).min(1),
     serviceTypes: z.array(z.string().max(50)).optional().default([]),
     dataProviderTypes: z.array(z.string().max(50)).optional().default([]),
     isDataResellerOnly: z.boolean().nullable().optional(),
 
-    // Defense
-    isDefenseOnly: z.boolean().nullable().optional(),
-    defenseInvolvement: z
-      .enum(["none", "partial", "full"])
-      .nullable()
-      .optional(),
+    // Defense (scope-gate fields — REQUIRED)
+    // Both questions are mandatory in the wizard. They drive the defense-only
+    // exemption (Art. 2(3)) hard-stop; a missing value must be a 400
+    // validation error, never a silent "not defense" default.
+    isDefenseOnly: z.boolean(),
+    defenseInvolvement: z.enum(["none", "partial", "full"]),
     hasPostLaunchResponsibility: z.boolean().nullable().optional(),
 
     // Operations
@@ -480,10 +510,19 @@ export const UnifiedCalculateAnswersSchema = z
       .optional(),
 
     // Market
-    servesEUCustomers: z.boolean().nullable().optional(),
+    // servesEUCustomers is a required wizard question and — together with
+    // providesServicesToEU (only asked of non-EU operators) — drives the
+    // third-country scope gate. Required so the gate cannot silently default
+    // to "no EU services".
+    servesEUCustomers: z.boolean(),
     providesServicesToEU: z.boolean().nullable().optional(),
     servesCriticalInfrastructure: z.boolean().nullable().optional(),
-    isEssentialServiceProvider: z.boolean().nullable().optional(),
+    // "unknown" = explicit uncertainty marker (never collapsed into false);
+    // mapped conservatively by the unified engine mappers.
+    isEssentialServiceProvider: z
+      .union([z.boolean(), z.literal("unknown")])
+      .nullable()
+      .optional(),
     partOfSupplyChain: z.boolean().nullable().optional(),
     governmentContracts: z.boolean().nullable().optional(),
 
@@ -532,7 +571,10 @@ export const UnifiedCalculateAnswersSchema = z
 
 export const UnifiedCalculateSchema = z.object({
   answers: UnifiedCalculateAnswersSchema,
-  startedAt: z.number().optional(),
+  // Required: the anti-bot timing check must never silently degrade into a
+  // no-op because a caller omitted the field. (Authenticated users are still
+  // exempt from the timing comparison itself in the route.)
+  startedAt: z.number().int().positive(),
 });
 
 // ─── Query Schemas ───

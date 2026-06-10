@@ -8,6 +8,7 @@ import type {
 } from "@/lib/types";
 import type { NIS2ComplianceResult } from "@/lib/nis2-types";
 import type { SpaceLawComplianceResult } from "@/lib/space-law-types";
+import type { UnifiedAssessmentAnswers } from "@/lib/unified-assessment-types";
 
 // Mock server-only
 vi.mock("server-only", () => ({}));
@@ -382,6 +383,10 @@ describe("buildUnifiedResult", () => {
       operatesConstellation: false,
       servesEUCustomers: true,
       servesCriticalInfrastructure: true,
+      // servesCriticalInfrastructure=true makes the essential-service
+      // designation question applicable — answer it for a fully-answered
+      // profile (an "unknown" answer would lower confidence by design).
+      isEssentialServiceProvider: true,
       hasCybersecurityPolicy: true,
       hasRiskManagement: true,
       hasIncidentResponsePlan: true,
@@ -988,7 +993,10 @@ describe("buildCrossFrameworkOverlap (via buildUnifiedResult)", () => {
     expect(result.crossFrameworkOverlap[0].nis2Ref).toBe("Art. 21(2)(a)");
   });
 
-  it("falls back to structural overlaps when NIS2 engine returns no overlaps", () => {
+  it("does NOT fabricate structural overlaps when NIS2 engine returns no overlaps (honesty hotfix)", () => {
+    // Previously this case emitted three hardcoded "structural overlaps"
+    // that were never derived from the underlying engine results. The
+    // unified result must only contain genuinely computed overlaps.
     const spaceAct = {
       applies: true,
       operatorTypes: ["Spacecraft Operator"],
@@ -1020,12 +1028,7 @@ describe("buildCrossFrameworkOverlap (via buildUnifiedResult)", () => {
       null,
       getDefaultUnifiedAnswers(),
     );
-    // Structural fallback should have 3 entries
-    expect(result.crossFrameworkOverlap).toHaveLength(3);
-    const areas = result.crossFrameworkOverlap.map((o) => o.area);
-    expect(areas).toContain("Cybersecurity risk management");
-    expect(areas).toContain("Incident reporting");
-    expect(areas).toContain("Supply chain security");
+    expect(result.crossFrameworkOverlap).toEqual([]);
   });
 });
 
@@ -1907,7 +1910,7 @@ describe("calculateConfidenceScore (quality-weighted)", () => {
       hasIncidentResponsePlan: true,
     });
 
-    // Required fields contribute 6/21 = 28.6%, standard contribute 3/21 = 14.3%
+    // Required fields contribute 6/23.5 ≈ 25.5%, standard contribute 3/23.5 ≈ 12.8%
     expect(requiredOnly).toBeGreaterThan(standardOnly);
   });
 
@@ -1934,6 +1937,8 @@ describe("calculateConfidenceScore (quality-weighted)", () => {
       operatesConstellation: true,
       servesEUCustomers: true,
       servesCriticalInfrastructure: true,
+      // Applicable because servesCriticalInfrastructure is true
+      isEssentialServiceProvider: true,
       hasCybersecurityPolicy: true,
       hasRiskManagement: true,
       hasIncidentResponsePlan: true,
@@ -2229,5 +2234,268 @@ describe("boundary conditions", () => {
     expect(merged.operatorTypes).toEqual(["Spacecraft Operator (EU)"]);
     expect(merged.applicableArticles).toHaveLength(1);
     expect(merged.applicableArticles[0].applicableActivities).toEqual(["SCO"]);
+  });
+});
+
+// ═══════════════════════════════════════════
+// Honesty hotfix — explicit uncertainty handling
+// ═══════════════════════════════════════════
+
+describe("calculateConfidenceScore — explicit 'unknown' uncertainty (honesty hotfix)", () => {
+  const baseAnswers: Partial<UnifiedAssessmentAnswers> = {
+    establishmentCountry: "DE",
+    entitySize: "small" as const,
+    activityTypes: ["SCO" as const, "LO" as const],
+    serviceTypes: ["SATCOM" as const, "EO" as const],
+    primaryOrbitalRegime: "LEO" as const,
+    operatesConstellation: false,
+    servesEUCustomers: true,
+    servesCriticalInfrastructure: true,
+    hasCybersecurityPolicy: true,
+    hasRiskManagement: true,
+    hasIncidentResponsePlan: true,
+    hasSupplyChainSecurity: true,
+    hasBusinessContinuityPlan: true,
+    hasEncryption: true,
+    hasAccessControl: true,
+    hasVulnerabilityManagement: true,
+    interestedJurisdictions: ["FR", "DE"],
+    hasInsurance: true,
+  };
+
+  it("an 'unknown' essential-service answer earns no confidence weight", () => {
+    const withAnswer = calculateConfidenceScore({
+      ...baseAnswers,
+      isEssentialServiceProvider: true,
+    });
+    const withUnknown = calculateConfidenceScore({
+      ...baseAnswers,
+      isEssentialServiceProvider: "unknown",
+    });
+    expect(withAnswer).toBe(100);
+    expect(withUnknown).toBeLessThan(withAnswer);
+  });
+
+  it("'unknown' scores the same as not answered (uncertainty ≠ knowledge)", () => {
+    const withUnknown = calculateConfidenceScore({
+      ...baseAnswers,
+      isEssentialServiceProvider: "unknown",
+    });
+    const withNull = calculateConfidenceScore({
+      ...baseAnswers,
+      isEssentialServiceProvider: null,
+    });
+    expect(withUnknown).toBe(withNull);
+  });
+
+  it("an explicit 'No' designation answer earns full confidence weight", () => {
+    const withNo = calculateConfidenceScore({
+      ...baseAnswers,
+      isEssentialServiceProvider: false,
+    });
+    expect(withNo).toBe(100);
+  });
+
+  it("does not penalize profiles where the designation question is never shown", () => {
+    // servesCriticalInfrastructure === false → the essential-service question
+    // is not asked (showIf gate). An unasked question is not uncertainty:
+    // the field is EXCLUDED from both earned and total weight, so a fully
+    // answered profile still scores 100.
+    const score = calculateConfidenceScore({
+      ...baseAnswers,
+      servesCriticalInfrastructure: false,
+      isEssentialServiceProvider: null,
+    });
+    expect(score).toBe(100);
+  });
+
+  it("a not-applicable designation question earns no free credit (no inflation)", () => {
+    // Half-answered profile where the designation question is ruled out:
+    // the field must be removed from the denominator, NOT granted full
+    // earned weight — granting it would score this sparse profile HIGHER
+    // than warranted ((E+w)/(T+w) > E/T). It must stay strictly below the
+    // same profile with the question applicable and explicitly answered.
+    const notApplicable = calculateConfidenceScore({
+      establishmentCountry: "DE",
+      entitySize: "small" as const,
+      servesCriticalInfrastructure: false,
+    });
+    const answered = calculateConfidenceScore({
+      establishmentCountry: "DE",
+      entitySize: "small" as const,
+      servesCriticalInfrastructure: true,
+      isEssentialServiceProvider: true,
+    });
+    expect(notApplicable).toBeLessThan(answered);
+  });
+
+  it("keeps the field applicable when critical-infrastructure is itself unanswered (conservative)", () => {
+    const score = calculateConfidenceScore({
+      ...baseAnswers,
+      servesCriticalInfrastructure: null,
+      isEssentialServiceProvider: null,
+    });
+    expect(score).toBeLessThan(100);
+  });
+});
+
+describe("buildUnifiedResult — NIS2 needs-clarification state (honesty hotfix)", () => {
+  it("surfaces needs_clarification instead of out_of_scope when NIS2 was not assessed", () => {
+    const answers = {
+      ...getDefaultUnifiedAnswers(),
+      establishmentCountry: "DE",
+      entitySize: "medium" as const,
+    };
+    const result = buildUnifiedResult(null, null, null, answers);
+    expect(result.nis2.entityClassification).toBe("needs_clarification");
+    expect(result.nis2.classificationReason).toMatch(/Needs clarification/i);
+    // No fabricated applicability: requirements stay at 0
+    expect(result.nis2.applies).toBe(false);
+    expect(result.nis2.requirementCount).toBe(0);
+  });
+
+  it("surfaces needs_clarification when the engine's out_of_scope is due to missing entity size", () => {
+    const nis2 = createNIS2Result({
+      entityClassification: "out_of_scope",
+      classificationReason:
+        "Entity size is required to determine NIS2 classification. Please complete the assessment.",
+      applicableCount: 0,
+    });
+    const answers = {
+      ...getDefaultUnifiedAnswers(),
+      establishmentCountry: "DE",
+      entitySize: null,
+    };
+    const result = buildUnifiedResult(null, nis2, null, answers);
+    expect(result.nis2.entityClassification).toBe("needs_clarification");
+    expect(result.nis2.classificationReason).toMatch(
+      /Needs clarification — answer the organization size question/i,
+    );
+  });
+
+  it("surfaces needs_clarification when the user answered 'unknown' to the essential-service question", () => {
+    // Small entity, otherwise out of scope — but designation status is
+    // UNKNOWN, and a designation would bring it into scope (Art. 2(2)).
+    // In dubio in-scope: never render a definitive "does not apply".
+    const nis2 = createNIS2Result({
+      entityClassification: "out_of_scope",
+      classificationReason: "Small entities are generally outside NIS2 scope.",
+      applicableCount: 0,
+    });
+    const answers = {
+      ...getDefaultUnifiedAnswers(),
+      establishmentCountry: "DE",
+      entitySize: "small" as const,
+      servesCriticalInfrastructure: true,
+      isEssentialServiceProvider: "unknown" as const,
+    };
+    const result = buildUnifiedResult(null, nis2, null, answers);
+    expect(result.nis2.entityClassification).toBe("needs_clarification");
+    expect(result.nis2.classificationReason).toMatch(/Art\. 2\(2\)/);
+    expect(result.nis2.classificationReason).toMatch(/Needs clarification/i);
+  });
+
+  it("surfaces needs_clarification when the designation answer is OMITTED despite critical infrastructure (API payload)", () => {
+    // Uncertainty-by-omission rounds UP: a crafted API payload can post
+    // servesCriticalInfrastructure: true while omitting the designation
+    // answer entirely (the wizard always asks it). A designation would
+    // bring the entity into scope regardless of size (Art. 2(2)), so the
+    // omission must not produce a confident out_of_scope.
+    const nis2 = createNIS2Result({
+      entityClassification: "out_of_scope",
+      classificationReason: "Small entities are generally outside NIS2 scope.",
+      applicableCount: 0,
+    });
+    const answers = {
+      ...getDefaultUnifiedAnswers(),
+      establishmentCountry: "DE",
+      entitySize: "small" as const,
+      servesCriticalInfrastructure: true,
+      isEssentialServiceProvider: null,
+    };
+    const result = buildUnifiedResult(null, nis2, null, answers);
+    expect(result.nis2.entityClassification).toBe("needs_clarification");
+    expect(result.nis2.classificationReason).toMatch(/Art\. 2\(2\)/);
+    expect(result.nis2.classificationReason).toMatch(/Needs clarification/i);
+    // No fabricated applicability
+    expect(result.nis2.applies).toBe(false);
+  });
+
+  it("passes genuine out_of_scope verdicts through unchanged (no false alarms)", () => {
+    const nis2 = createNIS2Result({
+      entityClassification: "out_of_scope",
+      classificationReason: "Small entities are generally outside NIS2 scope.",
+      applicableCount: 0,
+    });
+    const answers = {
+      ...getDefaultUnifiedAnswers(),
+      establishmentCountry: "DE",
+      entitySize: "small" as const,
+      servesCriticalInfrastructure: false,
+      isEssentialServiceProvider: null,
+      designatedByMemberState: false,
+    };
+    const result = buildUnifiedResult(null, nis2, null, answers);
+    expect(result.nis2.entityClassification).toBe("out_of_scope");
+    expect(result.nis2.applies).toBe(false);
+  });
+
+  it("never downgrades an in-scope classification because of an 'unknown' answer", () => {
+    // CONSERVATIVE-ONLY: uncertainty can only make the verdict less
+    // confident / more conservative — an essential classification stands.
+    const nis2 = createNIS2Result({
+      entityClassification: "essential",
+      applicableCount: 40,
+    });
+    const answers = {
+      ...getDefaultUnifiedAnswers(),
+      establishmentCountry: "DE",
+      entitySize: "large" as const,
+      isEssentialServiceProvider: "unknown" as const,
+    };
+    const result = buildUnifiedResult(null, nis2, null, answers);
+    expect(result.nis2.entityClassification).toBe("essential");
+    expect(result.nis2.applies).toBe(true);
+  });
+
+  it("needs_clarification does not short-circuit overall risk to 'low' when gaps exist", () => {
+    // Engine says out_of_scope only because entity size is missing; the user
+    // has explicit cybersecurity gaps. Uncertainty must round UP — the old
+    // behavior returned a false-green "low" risk here.
+    const nis2 = createNIS2Result({
+      entityClassification: "out_of_scope",
+      applicableCount: 0,
+    });
+    const answers = {
+      ...getDefaultUnifiedAnswers(),
+      establishmentCountry: "DE",
+      entitySize: null,
+      hasCybersecurityPolicy: false,
+      hasRiskManagement: false,
+      hasIncidentResponsePlan: false,
+      hasSupplyChainSecurity: false,
+      hasBusinessContinuityPlan: false,
+      hasSecurityTraining: false,
+      hasEncryption: false,
+      hasAccessControl: false,
+      hasVulnerabilityManagement: false,
+      conductsPenetrationTesting: false,
+    };
+    const result = buildUnifiedResult(null, nis2, null, answers);
+    expect(result.nis2.entityClassification).toBe("needs_clarification");
+    expect(result.overallSummary.overallRisk).not.toBe("low");
+  });
+
+  it("does not fabricate compliance effort for an undetermined NIS2 scope", () => {
+    // needs_clarification must not add NIS2 months to the effort estimate —
+    // that would invent obligations the assessment has not established.
+    const answers = {
+      ...getDefaultUnifiedAnswers(),
+      establishmentCountry: "DE",
+      entitySize: null,
+    };
+    const result = buildUnifiedResult(null, null, null, answers);
+    expect(result.nis2.entityClassification).toBe("needs_clarification");
+    expect(result.overallSummary.estimatedMonths).toBe(0);
   });
 });

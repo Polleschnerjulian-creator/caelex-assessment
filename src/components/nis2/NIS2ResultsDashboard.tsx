@@ -36,6 +36,10 @@ interface NIS2ResultsDashboardProps {
     euSpaceActOverlap: {
       count: number;
       totalPotentialSavingsWeeks: number;
+      // Honesty disclaimers — survive redaction (the savings figure is an
+      // internal, non-validated estimate and the UI must say so).
+      confidenceLevel?: "estimated" | "validated";
+      estimationSource?: string;
       overlappingRequirements?: {
         nis2RequirementId: string;
         nis2Article: string;
@@ -143,6 +147,7 @@ export default function NIS2ResultsDashboard({
               totalPotentialSavingsWeeks={
                 result.euSpaceActOverlap.totalPotentialSavingsWeeks
               }
+              estimationSource={result.euSpaceActOverlap.estimationSource}
             />
             <NIS2ComplianceMatrix
               penalties={result.penalties}

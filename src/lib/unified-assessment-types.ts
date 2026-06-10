@@ -280,7 +280,14 @@ export interface UnifiedAssessmentAnswers {
   serviceTypes: ServiceType[];
   servesEUCustomers: boolean | null;
   servesCriticalInfrastructure: boolean | null;
-  isEssentialServiceProvider: boolean | null;
+  /**
+   * Whether the entity is designated as an essential service provider.
+   * "unknown" is an explicit uncertainty marker: the user does not know
+   * their designation status. It must NEVER be collapsed into `false` —
+   * for NIS2 scope purposes uncertainty rounds toward in-scope
+   * (needs clarification), and it lowers the confidence score.
+   */
+  isEssentialServiceProvider: boolean | "unknown" | null;
   partOfSupplyChain: boolean | null;
   governmentContracts: boolean | null;
 

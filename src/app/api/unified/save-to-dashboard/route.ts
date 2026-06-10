@@ -32,8 +32,16 @@ const SaveToDashboardSchema = z.object({
         .optional(),
       nis2: z
         .object({
+          // "needs_clarification" = honest uncertainty state emitted by the
+          // unified result builder when NIS2 scope cannot be determined from
+          // the answers given (see unified-engine-merger.server.ts).
           entityClassification: z
-            .enum(["essential", "important", "out_of_scope"])
+            .enum([
+              "essential",
+              "important",
+              "out_of_scope",
+              "needs_clarification",
+            ])
             .optional(),
         })
         .passthrough()

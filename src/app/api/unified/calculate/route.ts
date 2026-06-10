@@ -24,7 +24,7 @@ import {
   createEngineErrorResponse,
   ErrorCode,
 } from "@/lib/api-response";
-import { ASSESSMENT_MIN_DURATION_MS } from "@/lib/engines/shared.server";
+import { isAssessmentTooFast } from "@/lib/engines/shared.server";
 import { EU_MEMBER_STATES } from "@/lib/unified-assessment-types";
 import {
   checkRateLimit,
@@ -60,17 +60,16 @@ export async function POST(request: NextRequest) {
     >;
     const startedAt = parsed.data.startedAt;
 
-    // Anti-bot: Check minimum time (skip for authenticated users)
+    // Anti-bot: Check minimum time (skip for authenticated users).
+    // startedAt is REQUIRED by the schema (a missing value is a 400 above),
+    // so anonymous callers can no longer bypass the check by omitting it.
     const session = await auth();
-    if (!session?.user && startedAt !== undefined) {
-      const elapsed = Date.now() - startedAt;
-      if (elapsed < ASSESSMENT_MIN_DURATION_MS) {
-        return createErrorResponse(
-          "Assessment completed too quickly. Please try again.",
-          ErrorCode.VALIDATION_ERROR,
-          400,
-        );
-      }
+    if (!session?.user && isAssessmentTooFast(startedAt)) {
+      return createErrorResponse(
+        "Assessment completed too quickly. Please try again.",
+        ErrorCode.VALIDATION_ERROR,
+        400,
+      );
     }
 
     // Constellation validation: default to "small" if operates constellation but no size set

@@ -300,7 +300,20 @@ export function mapToNIS2Answers(
     offersServicesInEU,
     // Wire the three NIS2-specific scope answers collected by the wizard that
     // were previously silently discarded. These directly affect classification.
-    designatedByMemberState: unified.designatedByMemberState ?? null,
+    //
+    // Conservative designation wiring (honesty hotfix): the phase-4 question
+    // `isEssentialServiceProvider` ("designated as essential service provider
+    // by a Member State or under EU regulations") was previously collected
+    // but never mapped. A "yes" on EITHER designation question brings the
+    // entity into NIS2 scope (Art. 2(2)) — in dubio in-scope. An "unknown"
+    // answer is NEVER treated as "no": it stays null here (no fabricated
+    // designation) and is surfaced as an explicit needs-clarification state
+    // by the unified result builder.
+    designatedByMemberState:
+      unified.designatedByMemberState === true ||
+      unified.isEssentialServiceProvider === true
+        ? true
+        : (unified.designatedByMemberState ?? null),
     providesDigitalInfrastructure:
       unified.providesDigitalInfrastructure ?? null,
     euControlledEntity: unified.euControlledEntity ?? null,

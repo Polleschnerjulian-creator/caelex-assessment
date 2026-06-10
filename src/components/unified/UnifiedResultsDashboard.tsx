@@ -566,7 +566,10 @@ export default function UnifiedResultsDashboard({ result, onRestart }: Props) {
                     <p className="text-body text-gray-500">
                       {result.nis2.applies
                         ? `${result.nis2.entityClassification.charAt(0).toUpperCase() + result.nis2.entityClassification.slice(1)} Entity • ${result.nis2.requirementCount} Requirements`
-                        : "Not applicable"}
+                        : result.nis2.entityClassification ===
+                            "needs_clarification"
+                          ? "Needs clarification"
+                          : "Not applicable"}
                     </p>
                   </div>
                 </div>
@@ -574,6 +577,11 @@ export default function UnifiedResultsDashboard({ result, onRestart }: Props) {
                   {result.nis2.applies ? (
                     <span className="px-3 py-1 rounded-full bg-emerald-50 text-emerald-700 text-caption font-medium uppercase tracking-wider border border-emerald-200">
                       In Force
+                    </span>
+                  ) : result.nis2.entityClassification ===
+                    "needs_clarification" ? (
+                    <span className="px-3 py-1 rounded-full bg-amber-50 text-amber-700 text-caption font-medium uppercase tracking-wider border border-amber-200">
+                      Needs Clarification
                     </span>
                   ) : (
                     <span className="px-3 py-1 rounded-full bg-gray-100 text-gray-500 text-caption font-medium uppercase tracking-wider border border-gray-200">

@@ -930,6 +930,61 @@ describe("mapToNIS2Answers — additional branches", () => {
     expect(result.designatedByMemberState).toBe(true);
   });
 
+  // ─── Honesty hotfix: conservative essential-service designation mapping ──
+
+  it("treats an explicit 'yes' on isEssentialServiceProvider as designated (in dubio in-scope)", () => {
+    const answers = {
+      ...getDefaultUnifiedAnswers(),
+      isEssentialServiceProvider: true,
+      designatedByMemberState: null,
+    };
+    const result = mapToNIS2Answers(answers);
+    expect(result.designatedByMemberState).toBe(true);
+  });
+
+  it("an essential-service 'yes' overrides a 'no' on the dedicated designation question (conservative)", () => {
+    const answers = {
+      ...getDefaultUnifiedAnswers(),
+      isEssentialServiceProvider: true,
+      designatedByMemberState: false,
+    };
+    const result = mapToNIS2Answers(answers);
+    expect(result.designatedByMemberState).toBe(true);
+  });
+
+  it("NEVER maps an 'unknown' essential-service answer to a definitive 'no'", () => {
+    const answers = {
+      ...getDefaultUnifiedAnswers(),
+      isEssentialServiceProvider: "unknown" as const,
+      designatedByMemberState: null,
+    };
+    const result = mapToNIS2Answers(answers);
+    // Uncertainty stays null (no fabricated designation either way); the
+    // unified result builder surfaces it as a needs-clarification state.
+    expect(result.designatedByMemberState).toBeNull();
+    expect(result.designatedByMemberState).not.toBe(false);
+  });
+
+  it("an 'unknown' essential-service answer does not override an explicit 'no' designation answer", () => {
+    const answers = {
+      ...getDefaultUnifiedAnswers(),
+      isEssentialServiceProvider: "unknown" as const,
+      designatedByMemberState: false,
+    };
+    const result = mapToNIS2Answers(answers);
+    expect(result.designatedByMemberState).toBe(false);
+  });
+
+  it("an essential-service 'no' adds no designation inference", () => {
+    const answers = {
+      ...getDefaultUnifiedAnswers(),
+      isEssentialServiceProvider: false,
+      designatedByMemberState: null,
+    };
+    const result = mapToNIS2Answers(answers);
+    expect(result.designatedByMemberState).toBeNull();
+  });
+
   it("wires providesDigitalInfrastructure from unified", () => {
     const answers = {
       ...getDefaultUnifiedAnswers(),

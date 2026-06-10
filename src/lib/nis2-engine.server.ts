@@ -480,7 +480,12 @@ export function redactNIS2ResultForClient(
       count: result.euSpaceActOverlap.count,
       totalPotentialSavingsWeeks:
         result.euSpaceActOverlap.totalPotentialSavingsWeeks,
-      // Deliberately omit: overlappingRequirements details
+      // Deliberately omit: overlappingRequirements details (proprietary).
+      // Honesty disclaimers always survive redaction: the savings number is
+      // an internal estimate, and stripping the "not empirically validated"
+      // note would present it to the public client as a validated figure.
+      confidenceLevel: result.euSpaceActOverlap.confidenceLevel,
+      estimationSource: result.euSpaceActOverlap.estimationSource,
     },
     penalties: result.penalties,
     registrationRequired: result.registrationRequired,

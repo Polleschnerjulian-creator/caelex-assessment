@@ -5375,6 +5375,45 @@ model PulseLead {
   @@index([lastEmailStage, createdAt])
 }
 
+// AssessmentLead — honesty hotfix 2026-06-10. Captures the email-gate
+// submission on the public assessment results page SERVER-SIDE (it was
+// previously saved only to the visitor's own localStorage, while the
+// privacy copy claimed data handling that never happened).
+//
+// No email is sent to deliver the report — the PDF is generated
+// client-side and downloaded directly in the browser. The email/company/
+// role are stored as a durable lead-capture record for follow-up about
+// the assessment (legitimate interest, disclosed in the email-gate
+// privacy note). `consentNewsletter` records the explicit OPT-IN
+// newsletter consent (checkbox unchecked by default, GDPR Art. 7) — the
+// actual subscription still goes through the NewsletterSubscription
+// double-opt-in flow; this flag is the durable consent record. No
+// nurture cron walks this table.
+model AssessmentLead {
+  id      String  @id @default(cuid())
+  email   String
+  company String?
+  role    String?
+
+  // Which wizard produced the report ("eu-space-act", "nis2", ...)
+  assessmentType String @default("eu-space-act")
+
+  // Explicit opt-in newsletter consent. False unless the visitor
+  // actively ticked the box.
+  consentNewsletter Boolean @default(false)
+
+  source String @default("assessment-results")
+
+  // Abuse signals (same shape as ContactRequest)
+  ipAddress String?
+  userAgent String? @db.Text
+
+  createdAt DateTime @default(now())
+
+  @@index([email])
+  @@index([createdAt])
+}
+
 // ─── Contact Requests ───
 
 enum ContactRequestStatus {

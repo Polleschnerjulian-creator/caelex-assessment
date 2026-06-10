@@ -255,18 +255,19 @@ describe("POST /api/assessment/calculate", () => {
     expect(data.error).toBe("Assessment calculation failed");
   });
 
-  // ─── Null fields are allowed ───
+  // ─── Null fields are allowed for optional (non-gate) fields ───
 
-  it("should accept null values for optional fields", async () => {
+  it("should accept null values for optional fields (gate fields answered)", async () => {
     const request = makeRequest({
       answers: {
         activityType: "spacecraft",
         entitySize: null,
         primaryOrbit: null,
-        establishment: null,
+        // Scope-gate fields are required and must be concrete answers:
+        establishment: "eu",
+        isDefenseOnly: false,
+        hasPostLaunchAssets: true,
         constellationSize: null,
-        isDefenseOnly: null,
-        hasPostLaunchAssets: null,
         operatesConstellation: null,
         offersEUServices: null,
       },
@@ -275,5 +276,61 @@ describe("POST /api/assessment/calculate", () => {
     const response = await POST(request);
 
     expect(response.status).toBe(200);
+  });
+
+  // ─── Scope-gate fields are required (honesty hotfix) ───
+  // A direct API call that omits a hard-stop gate field must get a 400
+  // validation error — never a confident verdict from silent defaults.
+
+  it("should return 400 when hasPostLaunchAssets is missing", async () => {
+    const { hasPostLaunchAssets: _omitted, ...answers } = validAnswers;
+    const request = makeRequest({ answers, startedAt: Date.now() - 60000 });
+    const response = await POST(request);
+    const data = await response.json();
+
+    expect(response.status).toBe(400);
+    expect(data.error).toBe("Validation failed");
+    expect(mockCalculateCompliance).not.toHaveBeenCalled();
+  });
+
+  it("should return 400 when isDefenseOnly is missing", async () => {
+    const { isDefenseOnly: _omitted, ...answers } = validAnswers;
+    const request = makeRequest({ answers, startedAt: Date.now() - 60000 });
+    const response = await POST(request);
+
+    expect(response.status).toBe(400);
+    expect(mockCalculateCompliance).not.toHaveBeenCalled();
+  });
+
+  it("should return 400 when establishment is missing", async () => {
+    const { establishment: _omitted, ...answers } = validAnswers;
+    const request = makeRequest({ answers, startedAt: Date.now() - 60000 });
+    const response = await POST(request);
+
+    expect(response.status).toBe(400);
+    expect(mockCalculateCompliance).not.toHaveBeenCalled();
+  });
+
+  it("should return 400 when null is sent for a gate field", async () => {
+    const request = makeRequest({
+      answers: { ...validAnswers, hasPostLaunchAssets: null },
+      startedAt: Date.now() - 60000,
+    });
+    const response = await POST(request);
+
+    expect(response.status).toBe(400);
+    expect(mockCalculateCompliance).not.toHaveBeenCalled();
+  });
+
+  // ─── startedAt is required (anti-bot check cannot be skipped) ───
+
+  it("should return 400 when startedAt is missing", async () => {
+    const request = makeRequest({ answers: validAnswers });
+    const response = await POST(request);
+    const data = await response.json();
+
+    expect(response.status).toBe(400);
+    expect(data.error).toBe("Validation failed");
+    expect(mockCalculateCompliance).not.toHaveBeenCalled();
   });
 });

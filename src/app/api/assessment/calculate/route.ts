@@ -16,6 +16,7 @@ import {
   loadSpaceActDataFromDisk,
   redactArticlesForClient,
 } from "@/lib/engine.server";
+import type { AssessmentAnswers } from "@/lib/types";
 import {
   checkRateLimit,
   getIdentifier,
@@ -28,7 +29,7 @@ import {
   createValidationError,
   createEngineErrorResponse,
 } from "@/lib/api-response";
-import { ASSESSMENT_MIN_DURATION_MS } from "@/lib/engines/shared.server";
+import { isAssessmentTooFast } from "@/lib/engines/shared.server";
 
 export async function POST(request: NextRequest) {
   try {
@@ -56,21 +57,40 @@ export async function POST(request: NextRequest) {
     const { startedAt } = parsed.data;
 
     // ─── Anti-Bot: Timing Validation ───
-    if (startedAt && typeof startedAt === "number") {
-      const elapsed = Date.now() - startedAt;
-      // If assessment completed in under 3 seconds, it's likely a bot
-      if (elapsed < ASSESSMENT_MIN_DURATION_MS) {
-        return NextResponse.json(
-          { error: "Assessment completed too quickly. Please try again." },
-          { status: 429 },
-        );
-      }
+    // startedAt is REQUIRED by the schema (a missing value is a 400 above),
+    // so this check can no longer be bypassed by simply omitting the field.
+    // If the assessment completed in under 3 seconds, it's likely a bot.
+    if (isAssessmentTooFast(startedAt)) {
+      return NextResponse.json(
+        { error: "Assessment completed too quickly. Please try again." },
+        { status: 429 },
+      );
     }
 
     // ─── Calculate Compliance ───
     try {
       const data = loadSpaceActDataFromDisk();
-      const result = calculateCompliance(parsed.data.answers, data);
+
+      // Normalize the validated payload into a complete AssessmentAnswers
+      // object. The scope-gate fields (isDefenseOnly, hasPostLaunchAssets,
+      // establishment) are guaranteed present by the schema; the remaining
+      // optional fields default to explicit null (= "not answered"), matching
+      // the wizard's semantics. The engine enforces the hard-stop gates and
+      // returns the honest out-of-scope verdict when one fires.
+      const a = parsed.data.answers;
+      const answers: AssessmentAnswers = {
+        activityType: a.activityType ?? null,
+        isDefenseOnly: a.isDefenseOnly,
+        hasPostLaunchAssets: a.hasPostLaunchAssets,
+        establishment: a.establishment,
+        entitySize: a.entitySize ?? null,
+        operatesConstellation: a.operatesConstellation ?? null,
+        constellationSize: a.constellationSize ?? null,
+        primaryOrbit: a.primaryOrbit ?? null,
+        offersEUServices: a.offersEUServices ?? null,
+      };
+
+      const result = calculateCompliance(answers, data);
 
       // ─── Redact sensitive article details before sending to client ───
       const redactedResult = redactArticlesForClient(result);

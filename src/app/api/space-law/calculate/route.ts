@@ -26,7 +26,7 @@ import {
   ErrorCode,
   createErrorResponse,
 } from "@/lib/api-response";
-import { ASSESSMENT_MIN_DURATION_MS } from "@/lib/engines/shared.server";
+import { isAssessmentTooFast } from "@/lib/engines/shared.server";
 import { logger } from "@/lib/logger";
 
 const spaceLawAnswersSchema = z.object({
@@ -61,7 +61,9 @@ const spaceLawAnswersSchema = z.object({
 
 const spaceLawBodySchema = z.object({
   answers: spaceLawAnswersSchema,
-  startedAt: z.number().optional(),
+  // Required: the anti-bot timing check must never silently degrade into a
+  // no-op because a caller omitted the field.
+  startedAt: z.number().int().positive(),
 });
 
 export async function POST(request: NextRequest) {
@@ -94,15 +96,14 @@ export async function POST(request: NextRequest) {
     const { answers, startedAt } = parsed.data;
 
     // ─── Anti-Bot: Timing Validation ───
-    if (startedAt && typeof startedAt === "number") {
-      const elapsed = Date.now() - startedAt;
-      if (elapsed < ASSESSMENT_MIN_DURATION_MS) {
-        return createErrorResponse(
-          "Assessment completed too quickly. Please try again.",
-          ErrorCode.RATE_LIMITED,
-          429,
-        );
-      }
+    // startedAt is REQUIRED by the schema (a missing value is a 400 above),
+    // so this check can no longer be bypassed by simply omitting the field.
+    if (isAssessmentTooFast(startedAt)) {
+      return createErrorResponse(
+        "Assessment completed too quickly. Please try again.",
+        ErrorCode.RATE_LIMITED,
+        429,
+      );
     }
 
     // ─── Calculate ───

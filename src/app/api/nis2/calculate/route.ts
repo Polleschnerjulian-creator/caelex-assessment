@@ -26,7 +26,7 @@ import {
   createValidationError,
   createEngineErrorResponse,
 } from "@/lib/api-response";
-import { ASSESSMENT_MIN_DURATION_MS } from "@/lib/engines/shared.server";
+import { isAssessmentTooFast } from "@/lib/engines/shared.server";
 import type { NIS2AssessmentAnswers } from "@/lib/nis2-types";
 import { logger } from "@/lib/logger";
 
@@ -56,15 +56,14 @@ export async function POST(request: NextRequest) {
     const { answers, startedAt } = parsed.data;
 
     // ─── Anti-Bot: Timing Validation ───
-    if (startedAt && typeof startedAt === "number") {
-      const elapsed = Date.now() - startedAt;
-      // If assessment completed too quickly, it's likely a bot
-      if (elapsed < ASSESSMENT_MIN_DURATION_MS) {
-        return NextResponse.json(
-          { error: "Assessment completed too quickly. Please try again." },
-          { status: 429 },
-        );
-      }
+    // startedAt is REQUIRED by the schema (a missing value is a 400 above),
+    // so this check can no longer be bypassed by simply omitting the field.
+    // If the assessment completed too quickly, it's likely a bot.
+    if (isAssessmentTooFast(startedAt)) {
+      return NextResponse.json(
+        { error: "Assessment completed too quickly. Please try again." },
+        { status: 429 },
+      );
     }
 
     // Caelex is space-only — ensure sector is always "space"
