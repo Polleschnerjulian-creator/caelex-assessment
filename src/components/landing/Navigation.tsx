@@ -6,7 +6,7 @@ import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import Logo from "@/components/ui/Logo";
-import { Menu, X, ArrowRight, Search } from "lucide-react";
+import { Menu, X, Search } from "lucide-react";
 
 interface NavigationProps {
   theme?: "light" | "dark";
@@ -523,8 +523,8 @@ export default function Navigation({
             exit={{ opacity: 0 }}
             transition={{ duration: 0.2 }}
           >
-            {/* Background — clean white */}
-            <div className="absolute inset-0 bg-white" />
+            {/* Background — Palantir near-black */}
+            <div className="absolute inset-0 bg-[#0A0A0C]" />
 
             <div className="relative h-full flex flex-col overflow-y-auto">
               {/* Header */}
@@ -537,24 +537,24 @@ export default function Navigation({
                       className="transition-opacity duration-300 hover:opacity-70"
                       aria-label="Caelex — Go to homepage"
                     >
-                      <Logo size={34} className="text-[#1d1d1f]" />
+                      <Logo size={34} className="text-white" />
                     </Link>
 
                     <div className="flex items-center gap-3">
                       <Link
                         href="/get-started"
                         onClick={closeMenu}
-                        className="hidden sm:inline-flex items-center justify-center h-10 px-5 text-[13px] font-medium tracking-wide rounded-lg bg-[#1d1d1f] text-white hover:bg-[#333] transition-all duration-300"
+                        className="hidden sm:inline-flex items-center justify-center h-10 px-8 text-[16px] font-normal rounded-none border border-white/50 bg-transparent text-white hover:bg-white hover:text-[#1E1F2B] transition-colors duration-200"
                       >
                         Get Started
                       </Link>
-                      <div className="flex items-center rounded-lg bg-[#F3F4F6] overflow-hidden">
+                      <div className="flex items-center overflow-hidden rounded-none border border-white/50">
                         <button
                           onClick={() => {
                             setSearchOpen(true);
                             setMenuOpen(false);
                           }}
-                          className="flex items-center justify-center w-10 h-10 text-[#6B7280] hover:text-[#1d1d1f] hover:bg-[#E5E7EB] transition-colors duration-200"
+                          className="flex items-center justify-center w-10 h-10 text-white/80 hover:text-white hover:bg-white/10 transition-colors duration-200"
                           aria-label="Search"
                         >
                           <Search
@@ -563,10 +563,10 @@ export default function Navigation({
                             aria-hidden="true"
                           />
                         </button>
-                        <div className="w-px h-5 bg-[#D1D5DB]" />
+                        <div className="w-px h-5 bg-white/25" />
                         <button
                           onClick={closeMenu}
-                          className="flex items-center justify-center w-10 h-10 text-[#6B7280] hover:text-[#1d1d1f] hover:bg-[#E5E7EB] transition-colors duration-200"
+                          className="flex items-center justify-center w-10 h-10 text-white/80 hover:text-white hover:bg-white/10 transition-colors duration-200"
                           aria-label="Close menu"
                         >
                           <X size={16} strokeWidth={2} aria-hidden="true" />
@@ -577,24 +577,23 @@ export default function Navigation({
                 </div>
               </div>
 
-              <div className="w-full border-t border-[#E5E7EB]" />
-
               {/* Multi-column Body */}
               <div className="flex-1 max-w-[1400px] w-full mx-auto px-6 md:px-12 py-10 md:py-14">
                 <div className="grid grid-cols-1 md:grid-cols-12 gap-12 md:gap-6">
-                  {/* Left — Primary Navigation */}
+                  {/* Left — Primary Navigation (Palantir anatomy: thin top
+                      rule, micro-caps label, large white entries, large
+                      ↳-children) */}
                   <motion.div
                     className="md:col-span-4"
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.3, delay: 0.05 }}
                   >
-                    <p
-                      style={{ color: "#86868b" }}
-                      className="text-[11px] font-semibold uppercase tracking-[0.2em] mb-8"
-                    >
-                      Navigation
-                    </p>
+                    <div className="border-t border-white/30 pt-4 mb-8">
+                      <p className="text-[11px] font-medium uppercase tracking-[0.2em] text-white/55">
+                        Navigation
+                      </p>
+                    </div>
                     <nav aria-label="Primary navigation">
                       <div className="flex flex-col gap-0.5">
                         {navSections.primary.map((link) => (
@@ -602,11 +601,7 @@ export default function Navigation({
                             <Link
                               href={link.href}
                               onClick={closeMenu}
-                              className={`block py-1.5 text-[32px] md:text-[38px] font-normal tracking-[-0.03em] transition-all duration-200 ${
-                                pathname === link.href
-                                  ? "text-[#1d1d1f]"
-                                  : "text-[#1d1d1f] hover:text-[#86868b]"
-                              }`}
+                              className="block py-1.5 text-[32px] md:text-[38px] font-normal tracking-[-0.03em] text-white hover:text-white/60 transition-colors duration-200"
                             >
                               {link.label}
                             </Link>
@@ -616,9 +611,12 @@ export default function Navigation({
                                   key={child.label}
                                   href={child.href}
                                   onClick={closeMenu}
-                                  className="flex items-center gap-2.5 py-1 pl-2 text-[15px] text-[#6e6e73] hover:text-[#1d1d1f] transition-colors duration-200"
+                                  className="flex items-baseline gap-3 py-1 pl-1 text-[22px] md:text-[26px] font-normal tracking-[-0.02em] text-white/90 hover:text-white/55 transition-colors duration-200"
                                 >
-                                  <span className="text-[#c8cacd]">
+                                  <span
+                                    aria-hidden="true"
+                                    className="text-white/35 text-[20px]"
+                                  >
                                     &#8627;
                                   </span>
                                   {child.label}
@@ -629,18 +627,18 @@ export default function Navigation({
                       </div>
 
                       {/* Auth — prominent, above divider */}
-                      <div className="flex flex-col gap-1 mt-6">
+                      <div className="flex flex-col gap-1 mt-8">
                         <Link
                           href="/login"
                           onClick={closeMenu}
-                          className="py-2 text-[18px] font-normal text-[#6e6e73] hover:text-[#1d1d1f] transition-colors duration-200"
+                          className="py-1.5 text-[17px] font-normal text-white/60 hover:text-white transition-colors duration-200"
                         >
                           Log in
                         </Link>
                         <Link
                           href="/signup"
                           onClick={closeMenu}
-                          className="py-2 text-[18px] font-normal text-[#6e6e73] hover:text-[#1d1d1f] transition-colors duration-200"
+                          className="py-1.5 text-[17px] font-normal text-white/60 hover:text-white transition-colors duration-200"
                         >
                           Create account
                         </Link>
@@ -655,24 +653,21 @@ export default function Navigation({
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.3, delay: 0.1 }}
                   >
-                    <div className="flex items-center justify-between mb-8">
-                      <p
-                        style={{ color: "#86868b" }}
-                        className="text-[11px] font-semibold uppercase tracking-[0.2em]"
-                      >
+                    <div className="border-t border-white/30 pt-4 mb-8 flex items-center justify-between">
+                      <p className="text-[11px] font-medium uppercase tracking-[0.2em] text-white/55">
                         Latest News
                       </p>
                       <Link
                         href="/blog"
                         onClick={closeMenu}
-                        className="text-[11px] font-semibold uppercase tracking-[0.15em] text-[#86868b] hover:text-[#1d1d1f] transition-colors"
+                        className="text-[11px] font-medium uppercase tracking-[0.15em] text-white/70 hover:text-white underline underline-offset-4 decoration-white/40 transition-colors"
                       >
-                        Newsroom &rarr;
+                        Newsroom &#8599;
                       </Link>
                     </div>
 
                     {/* News Cards — rotates bi-weekly */}
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                       {getCurrentNews().map((news) => (
                         <Link
                           key={news.title}
@@ -680,117 +675,121 @@ export default function Navigation({
                           onClick={closeMenu}
                           className="group block"
                         >
-                          <div className="relative aspect-[16/10] rounded-lg overflow-hidden mb-3 bg-[#F3F4F6] border border-[#E5E7EB]">
+                          <p className="text-[11px] mb-2 uppercase tracking-wider text-white/50">
+                            {news.category} &middot; {news.date}
+                          </p>
+                          <div className="relative aspect-[16/10] overflow-hidden mb-3 bg-white/[0.06]">
                             <Image
                               src={news.image}
                               alt={news.title}
                               fill
                               sizes="(min-width: 768px) 360px, 90vw"
-                              className="object-cover opacity-80 group-hover:opacity-100 group-hover:scale-105 transition-all duration-500"
+                              className="object-cover opacity-85 group-hover:opacity-100 group-hover:scale-105 transition-all duration-500"
                             />
                           </div>
-                          <p
-                            style={{ color: "#9a9ea3" }}
-                            className="text-[11px] mb-1.5 uppercase tracking-wider"
-                          >
-                            {news.category} &middot; {news.date}
-                          </p>
-                          <p
-                            style={{ color: "#2d2d2d" }}
-                            className="text-[14px] font-medium leading-snug group-hover:text-[#1d1d1f] transition-colors"
-                          >
+                          <p className="text-[15px] font-medium leading-snug text-white group-hover:text-white/80 transition-colors">
                             {news.title}
                           </p>
+                          <span className="inline-flex items-baseline gap-2 mt-2 text-[13px] text-white/70 group-hover:text-white underline underline-offset-4 decoration-white/40 transition-colors">
+                            <span aria-hidden="true" className="text-white/40">
+                              &#8627;
+                            </span>
+                            Read more
+                          </span>
                         </Link>
                       ))}
                     </div>
 
-                    {/* Platform Description */}
-                    <div className="mt-8 pt-6 border-t border-[#E5E7EB]">
-                      <p
-                        style={{ color: "#86868b" }}
-                        className="text-[11px] font-semibold uppercase tracking-[0.2em] mb-4"
-                      >
-                        Platform
-                      </p>
-                      <p
-                        style={{ color: "#6e6e73" }}
-                        className="text-[14px] leading-relaxed"
-                      >
-                        Compliance intelligence for European space operations.
-                        10 jurisdictions. 119 regulatory articles. Automated
-                        document generation, NCA submission, and cryptographic
-                        compliance proof.
-                      </p>
+                    {/* Resources teaser (Palantir's view-all divider row) */}
+                    <div className="mt-8 pt-4 border-t border-white/20 flex justify-end">
                       <Link
-                        href="/platform"
+                        href="/resources"
                         onClick={closeMenu}
-                        className="inline-flex items-center gap-1.5 mt-3 text-[13px] text-[#86868b] hover:text-[#1d1d1f] transition-colors"
+                        className="text-[11px] font-medium uppercase tracking-[0.15em] text-white/70 hover:text-white underline underline-offset-4 decoration-white/40 transition-colors"
                       >
-                        Learn more
-                        <ArrowRight size={12} />
+                        View all resources &#8599;
                       </Link>
                     </div>
                   </motion.div>
 
-                  {/* Right — Quick Links + CTA */}
+                  {/* Right — Platform statement (Palantir's "Offerings"
+                      anatomy) + plain quick links pinned to the bottom */}
                   <motion.div
-                    className="md:col-span-3"
+                    className="md:col-span-3 flex flex-col"
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.3, delay: 0.15 }}
                   >
-                    <p
-                      style={{ color: "#86868b" }}
-                      className="text-[11px] font-semibold uppercase tracking-[0.2em] mb-8"
-                    >
-                      Quick Links
+                    <div className="border-t border-white/30 pt-4 mb-8 flex items-center justify-between">
+                      <p className="text-[11px] font-medium uppercase tracking-[0.2em] text-white/55">
+                        Platform
+                      </p>
+                      <Link
+                        href="/platform"
+                        onClick={closeMenu}
+                        className="text-[11px] font-medium uppercase tracking-[0.15em] text-white/70 hover:text-white underline underline-offset-4 decoration-white/40 transition-colors"
+                      >
+                        View all &#8599;
+                      </Link>
+                    </div>
+
+                    <p className="text-[19px] md:text-[22px] font-normal leading-snug tracking-[-0.01em] text-white">
+                      Compliance intelligence for European space operations — 10
+                      jurisdictions, 119 regulatory articles, automated document
+                      generation, NCA submission, and cryptographic compliance
+                      proof.
                     </p>
-                    <div className="flex flex-col">
+                    <div className="mt-5 flex flex-col gap-2.5">
+                      <Link
+                        href="/platform"
+                        onClick={closeMenu}
+                        className="inline-flex items-baseline gap-2 text-[14px] text-white/80 hover:text-white underline underline-offset-4 decoration-white/40 transition-colors"
+                      >
+                        <span aria-hidden="true" className="text-white/40">
+                          &#8627;
+                        </span>
+                        Learn more about the Platform
+                      </Link>
+                      <Link
+                        href="/demo"
+                        onClick={closeMenu}
+                        className="inline-flex items-baseline gap-2 text-[14px] text-white/80 hover:text-white underline underline-offset-4 decoration-white/40 transition-colors"
+                      >
+                        <span aria-hidden="true" className="text-white/40">
+                          &#8627;
+                        </span>
+                        Request a demo
+                      </Link>
+                    </div>
+
+                    {/* Bottom-pinned plain links (Palantir bottom-right) */}
+                    <div className="mt-auto pt-12 flex flex-col gap-2">
                       {navSections.quickLinks.map((link) => (
                         <Link
                           key={link.label}
                           href={link.href}
                           onClick={closeMenu}
-                          className="py-2.5 text-[14px] text-[#6e6e73] hover:text-[#1d1d1f] transition-colors duration-200 border-b border-[#E5E7EB] last:border-0"
+                          className="text-[15px] text-white/75 hover:text-white transition-colors duration-200"
                         >
                           {link.label}
                         </Link>
                       ))}
-                    </div>
-
-                    {/* LinkedIn */}
-                    <a
-                      href="https://www.linkedin.com/company/caelex"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="flex items-center gap-2.5 py-2.5 mt-4 text-[14px] text-[#6e6e73] hover:text-[#1d1d1f] transition-colors duration-200 border-b border-[#E5E7EB]"
-                    >
-                      <svg
-                        className="w-5 h-5"
-                        viewBox="0 0 24 24"
-                        fill="currentColor"
+                      <a
+                        href="https://www.linkedin.com/company/caelex"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-2 text-[15px] text-white/75 hover:text-white transition-colors duration-200"
                       >
-                        <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 01-2.063-2.065 2.064 2.064 0 112.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z" />
-                      </svg>
-                      LinkedIn
-                    </a>
-
-                    <div className="mt-8">
-                      <Link
-                        href="/demo"
-                        onClick={closeMenu}
-                        className="inline-flex items-center justify-center w-full h-12 text-[14px] font-medium rounded-lg border border-[#E5E7EB] text-[#1d1d1f] hover:bg-[#1d1d1f] hover:text-white transition-all duration-300"
-                      >
-                        Request Demo
-                      </Link>
-                      <Link
-                        href="/get-started"
-                        onClick={closeMenu}
-                        className="inline-flex items-center justify-center w-full h-12 mt-2 text-[14px] font-medium rounded-lg bg-white text-black hover:bg-white/90 transition-all duration-300"
-                      >
-                        Get Started
-                      </Link>
+                        <svg
+                          className="w-4 h-4"
+                          viewBox="0 0 24 24"
+                          fill="currentColor"
+                          aria-hidden="true"
+                        >
+                          <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 01-2.063-2.065 2.064 2.064 0 112.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z" />
+                        </svg>
+                        LinkedIn
+                      </a>
                     </div>
                   </motion.div>
                 </div>
@@ -798,11 +797,11 @@ export default function Navigation({
 
               {/* Footer */}
               <div className="max-w-[1400px] w-full mx-auto px-6 md:px-12 pb-8">
-                <div className="border-t border-[#E5E7EB] pt-5 flex items-center justify-between">
-                  <p style={{ color: "#9a9ea3" }} className="text-[11px]">
+                <div className="border-t border-white/15 pt-5 flex items-center justify-between">
+                  <p className="text-[11px] text-white/40">
                     European Space Compliance Intelligence
                   </p>
-                  <p style={{ color: "#9a9ea3" }} className="text-[11px]">
+                  <p className="text-[11px] text-white/40">
                     &copy; {new Date().getFullYear()} Caelex
                   </p>
                 </div>
@@ -826,7 +825,7 @@ export default function Navigation({
             exit={{ opacity: 0 }}
             transition={{ duration: 0.2 }}
           >
-            <div className="absolute inset-0 bg-white" />
+            <div className="absolute inset-0 bg-[#0A0A0C]" />
 
             <div className="relative h-full flex flex-col">
               {/* Header */}
@@ -838,31 +837,31 @@ export default function Navigation({
                       onClick={closeSearch}
                       className="transition-opacity duration-300 hover:opacity-70"
                     >
-                      <Logo size={34} className="text-[#1d1d1f]" />
+                      <Logo size={34} className="text-white" />
                     </Link>
                     <div className="flex items-center gap-3">
                       <Link
                         href="/get-started"
                         onClick={closeSearch}
-                        className="hidden sm:inline-flex items-center justify-center h-10 px-5 text-[13px] font-medium tracking-wide rounded-lg bg-[#1d1d1f] text-white hover:bg-[#333] transition-all duration-300"
+                        className="hidden sm:inline-flex items-center justify-center h-10 px-8 text-[16px] font-normal rounded-none border border-white/50 bg-transparent text-white hover:bg-white hover:text-[#1E1F2B] transition-colors duration-200"
                       >
                         Get Started
                       </Link>
-                      <div className="flex items-center rounded-lg bg-[#F3F4F6] overflow-hidden">
+                      <div className="flex items-center overflow-hidden rounded-none border border-white/50">
                         <button
                           onClick={() => {
                             closeSearch();
                             setMenuOpen(true);
                           }}
-                          className="flex items-center justify-center w-10 h-10 text-[#6B7280] hover:text-[#1d1d1f] hover:bg-[#E5E7EB] transition-colors duration-200"
+                          className="flex items-center justify-center w-10 h-10 text-white/80 hover:text-white hover:bg-white/10 transition-colors duration-200"
                           aria-label="Open menu"
                         >
                           <Menu size={16} strokeWidth={2} />
                         </button>
-                        <div className="w-px h-5 bg-[#D1D5DB]" />
+                        <div className="w-px h-5 bg-white/25" />
                         <button
                           onClick={closeSearch}
-                          className="flex items-center justify-center w-10 h-10 text-[#6B7280] hover:text-[#1d1d1f] hover:bg-[#E5E7EB] transition-colors duration-200"
+                          className="flex items-center justify-center w-10 h-10 text-white/80 hover:text-white hover:bg-white/10 transition-colors duration-200"
                           aria-label="Close search"
                         >
                           <X size={16} strokeWidth={2} />
@@ -889,16 +888,16 @@ export default function Navigation({
                       }
                     }}
                     placeholder="Start typing to search"
-                    className="w-full bg-transparent text-[clamp(1.5rem,4vw,3rem)] font-light tracking-[-0.02em] placeholder-[#c8cacd] outline-none caret-[#1d1d1f] border-none ring-0 focus:ring-0 focus:outline-none appearance-none"
+                    className="w-full bg-transparent text-[clamp(1.5rem,4vw,3rem)] font-light tracking-[-0.02em] placeholder-white/30 outline-none caret-white border-none ring-0 focus:ring-0 focus:outline-none appearance-none"
                     style={{
                       backgroundColor: "transparent",
                       border: "none",
                       boxShadow: "none",
-                      color: "#1d1d1f",
-                      WebkitTextFillColor: "#1d1d1f",
+                      color: "#ffffff",
+                      WebkitTextFillColor: "#ffffff",
                     }}
                   />
-                  <div className="h-px bg-[#E5E7EB] mt-4" />
+                  <div className="h-px bg-white/20 mt-4" />
                 </div>
 
                 {/* Search Results */}
@@ -915,23 +914,23 @@ export default function Navigation({
                         onClick={closeSearch}
                         className="flex items-center justify-between py-3 group"
                       >
-                        <span className="text-[18px] text-[#6e6e73] group-hover:text-[#1d1d1f] transition-colors">
+                        <span className="text-[18px] text-white/70 group-hover:text-white transition-colors">
                           {result.title}
                         </span>
-                        <span className="text-[12px] uppercase tracking-wider text-[#9a9ea3] group-hover:text-[#6e6e73] transition-colors">
+                        <span className="text-[12px] uppercase tracking-wider text-white/40 group-hover:text-white/70 transition-colors">
                           {result.category}
                         </span>
                       </Link>
                     ))}
                   </motion.div>
                 ) : searchQuery.length > 0 ? (
-                  <p style={{ color: "#9a9ea3" }} className="text-[16px]">
+                  <p className="text-[16px] text-white/40">
                     No results for &ldquo;{searchQuery}&rdquo;
                   </p>
                 ) : (
                   /* Popular Searches */
                   <div className="flex items-center gap-4 flex-wrap">
-                    <span className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[#9a9ea3]">
+                    <span className="text-[11px] font-semibold uppercase tracking-[0.2em] text-white/40">
                       Popular Searches
                     </span>
                     {POPULAR_SEARCHES.map((item) => (
@@ -939,7 +938,7 @@ export default function Navigation({
                         key={item.label}
                         href={item.href}
                         onClick={closeSearch}
-                        className="text-[15px] text-[#86868b] hover:text-[#1d1d1f] underline underline-offset-4 decoration-[#d2d2d7] hover:decoration-[#1d1d1f] transition-all duration-200"
+                        className="text-[15px] text-white/65 hover:text-white underline underline-offset-4 decoration-white/30 hover:decoration-white transition-all duration-200"
                       >
                         {item.label}
                       </Link>
