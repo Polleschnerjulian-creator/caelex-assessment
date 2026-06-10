@@ -44,6 +44,7 @@ import {
 } from "lucide-react";
 import EmailGate from "@/components/results/EmailGate";
 import RulebookStamp from "./RulebookStamp";
+import { recallUtmSource } from "@/lib/assessment/utm-client";
 import {
   isFindingComplete,
   type AssessmentFinding,
@@ -367,6 +368,9 @@ export default function QuickResultPanel({
           company,
           role,
           consentNewsletter: subscribe ?? false,
+          // Campaign attribution (e.g. the ILA QR) — remembered by the
+          // wizard, stamped onto the lead row server-side.
+          source: recallUtmSource() ?? undefined,
         }),
       });
       if (!res.ok) {

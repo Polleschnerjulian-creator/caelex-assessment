@@ -36,6 +36,7 @@ import {
   GitBranch,
   ArrowLeft,
   ShieldCheck,
+  Inbox,
 } from "lucide-react";
 
 interface NavLink {
@@ -77,6 +78,13 @@ const NAV: NavLink[] = [
     href: "/admin/growth",
     label: "Growth",
     icon: <TrendingUp size={18} strokeWidth={1.5} />,
+  },
+  {
+    // Captured assessment leads (email-gated reports) incl. campaign
+    // attribution — the follow-up list after a fair/QR campaign.
+    href: "/admin/leads",
+    label: "Leads",
+    icon: <Inbox size={18} strokeWidth={1.5} />,
   },
   {
     // Customers — account-level depth; precedes Retention in the IA.

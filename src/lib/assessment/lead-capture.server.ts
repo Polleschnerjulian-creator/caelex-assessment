@@ -39,9 +39,27 @@ export interface AssessmentLeadInput {
   consentNewsletter: boolean;
   ipAddress: string | null;
   userAgent: string | null;
+  /**
+   * Acquisition attribution (e.g. a utm_source like "ila2026") carried
+   * from the visitor's landing URL onto the LEAD ROW itself — page-level
+   * analytics alone can't tie a captured email back to a campaign.
+   * Slug-sanitized here; anything else falls back to the default.
+   */
+  source?: string | null;
   /** When set, skip creating a duplicate row if an identical lead (same
    *  email + assessmentType) was created within the window. */
   dedupeWindowMs?: number;
+}
+
+const SOURCE_SLUG_RE = /^[a-z0-9_-]{2,40}$/;
+
+/** Slug-validate an untrusted source; null when it doesn't qualify. */
+export function sanitizeLeadSource(
+  raw: string | null | undefined,
+): string | null {
+  if (typeof raw !== "string") return null;
+  const slug = raw.trim().toLowerCase();
+  return SOURCE_SLUG_RE.test(slug) ? slug : null;
 }
 
 export interface AssessmentLeadResult {
@@ -136,7 +154,7 @@ export async function captureAssessmentLead(
       role: input.role || null,
       assessmentType: input.assessmentType,
       consentNewsletter: input.consentNewsletter,
-      source: "assessment-results",
+      source: sanitizeLeadSource(input.source) ?? "assessment-results",
       ipAddress: input.ipAddress,
       userAgent: input.userAgent ? input.userAgent.slice(0, 500) : null,
     },

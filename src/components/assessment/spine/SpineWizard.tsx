@@ -53,6 +53,7 @@ import {
 } from "@/lib/assessment/answers";
 import type { Question as LegacyQuestion } from "@/lib/questions";
 import { csrfHeaders } from "@/lib/csrf-client";
+import { rememberUtmSource } from "@/lib/assessment/utm-client";
 
 import ProgressBar from "@/components/assessment/ProgressBar";
 import QuestionStep from "@/components/assessment/QuestionStep";
@@ -601,6 +602,9 @@ export default function SpineWizard({
 
   // ─── Profile bootstrap: GET resume → POST create (cookie carry-forward) ───
   useEffect(() => {
+    // Lead attribution: remember ?utm_source=… (e.g. the ILA QR) so the
+    // email gate on the RESULTS page can stamp it onto the lead row.
+    rememberUtmSource();
     let cancelled = false;
     (async () => {
       let resumed: AnswerMap = {};

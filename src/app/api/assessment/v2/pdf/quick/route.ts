@@ -51,6 +51,9 @@ const bodySchema = z.object({
   company: z.string().max(200).optional(),
   role: z.string().max(200).optional(),
   consentNewsletter: z.boolean().optional().default(false),
+  // Acquisition attribution (utm_source carried via sessionStorage from the
+  // landing URL). Slug-sanitized server-side; junk falls back to the default.
+  source: z.string().max(60).optional(),
   _hp: z.string().optional(),
 });
 
@@ -82,7 +85,8 @@ export async function POST(request: Request) {
       return NextResponse.json({ success: true });
     }
 
-    const { profileId, email, company, role, consentNewsletter } = parsed.data;
+    const { profileId, email, company, role, consentNewsletter, source } =
+      parsed.data;
 
     // ─── Ownership (no enumeration — foreign/missing profile is one 404) ───
     const profile = await prisma.operatorAssessmentProfile.findUnique({
@@ -123,6 +127,7 @@ export async function POST(request: Request) {
       role,
       assessmentType: "quick-check",
       consentNewsletter,
+      source,
       ipAddress: identifier === "unknown" ? null : identifier,
       userAgent,
       dedupeWindowMs: LEAD_DEDUPE_WINDOW_MS,
