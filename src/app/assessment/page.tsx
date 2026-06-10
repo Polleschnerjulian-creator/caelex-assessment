@@ -1,51 +1,25 @@
 import { Metadata } from "next";
-import RegulationPicker from "@/components/assessment/RegulationPicker";
-import { BreadcrumbJsonLd } from "@/components/seo/JsonLd";
+import { permanentRedirect } from "next/navigation";
+
+/**
+ * /assessment — retired picker (landing review item #1, 2026-06-10).
+ *
+ * The four-regulation picker became a zombie after the Phase-4 cutover:
+ * every card pointed at a legacy wizard route that 308s to
+ * /assessment/quick anyway (a pointless double hop for footer/about
+ * traffic). The ONE canonical entry is /assessment/quick — this page
+ * now redirects there permanently. Canonical metadata moves with it.
+ */
 
 export const metadata: Metadata = {
   title: "Compliance Assessment",
   description:
     "Start your free space compliance assessment. Get your regulatory profile across EU Space Act, NIS2, and 10 national jurisdictions in minutes.",
-  keywords: [
-    "space compliance assessment",
-    "EU Space Act assessment",
-    "satellite compliance check",
-  ],
-  openGraph: {
-    title: "Compliance Assessment",
-    description:
-      "Start your free space compliance assessment. Get your regulatory profile across EU Space Act, NIS2, and 10 national jurisdictions in minutes.",
-    type: "website",
-    url: "https://www.caelex.eu/assessment",
-    images: [
-      {
-        url: "https://www.caelex.eu/og-image.png",
-        width: 1200,
-        height: 630,
-        alt: "Compliance Assessment",
-      },
-    ],
-  },
-  twitter: {
-    card: "summary_large_image",
-    title: "Compliance Assessment",
-    description: "Start your free space compliance assessment.",
-  },
   alternates: {
-    canonical: "https://www.caelex.eu/assessment",
+    canonical: "https://www.caelex.eu/assessment/quick",
   },
 };
 
 export default function AssessmentPage() {
-  return (
-    <div className="landing-light bg-[#F7F8FA] text-[#111827]">
-      <BreadcrumbJsonLd
-        items={[
-          { name: "Home", url: "https://www.caelex.eu" },
-          { name: "Assessment", url: "https://www.caelex.eu/assessment" },
-        ]}
-      />
-      <RegulationPicker />
-    </div>
-  );
+  permanentRedirect("/assessment/quick");
 }

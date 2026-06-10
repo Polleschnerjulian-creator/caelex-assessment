@@ -54,22 +54,24 @@ const navSections = {
 
 // ─── Rotating News Items (2 shown at a time, rotates bi-weekly) ─────────────
 
+// Every item must be TRUE and link to a real destination — the menu's
+// "Latest News" follows the same disclosure bar as /changelog (no invented
+// products, no unverified regulatory claims).
 const NEWS_ITEMS = [
   {
-    date: "March 2026",
-    category: "Regulation",
+    date: "June 2026",
+    category: "Product",
     title:
-      "EU Space Act (COM 2025/335) enters trilogue — what operators need to know now",
-    href: "/resources/eu-space-act",
+      "Free 3-minute quick check is live — map your EU Space Act obligations",
+    href: "/assessment/quick",
     image:
       "https://images.unsplash.com/photo-1446776811953-b23d57bd21aa?w=600&h=400&fit=crop",
   },
   {
-    date: "March 2026",
+    date: "June 2026",
     category: "Product",
-    title:
-      "Caelex Shield: Compliance intelligence layer for collision avoidance",
-    href: "/platform",
+    title: "Passage: export control that explains itself",
+    href: "/changelog",
     image:
       "https://images.unsplash.com/photo-1614728263952-84ea256f9679?w=600&h=400&fit=crop",
   },
@@ -83,11 +85,10 @@ const NEWS_ITEMS = [
       "https://images.unsplash.com/photo-1550751827-4bd374c3f58b?w=600&h=400&fit=crop",
   },
   {
-    date: "February 2026",
-    category: "Data",
-    title:
-      "Caelex integrates ESA DISCOS — European space object catalog now live",
-    href: "/platform",
+    date: "May 2026",
+    category: "Product",
+    title: "Screening that follows the ownership chain",
+    href: "/changelog",
     image:
       "https://images.unsplash.com/photo-1457364887197-9150188c107b?w=600&h=400&fit=crop",
   },
@@ -130,7 +131,7 @@ const POPULAR_SEARCHES = [
   { label: "NIS2", href: "/solutions/cybersecurity-nis2" },
   { label: "Debris Mitigation", href: "/modules/debris" },
   { label: "Authorization", href: "/modules/authorization" },
-  { label: "Compliance Assessment", href: "/assessment" },
+  { label: "Compliance Assessment", href: "/assessment/quick" },
 ];
 
 const SEARCH_PAGES = [
@@ -179,7 +180,8 @@ const SEARCH_PAGES = [
   },
   { title: "Glossary", href: "/resources/glossary", category: "Resource" },
   { title: "FAQ", href: "/resources/faq", category: "Resource" },
-  { title: "Free Assessment", href: "/assessment", category: "Tool" },
+  { title: "Free Assessment", href: "/assessment/quick", category: "Tool" },
+  { title: "Export Control Check", href: "/passage/check", category: "Tool" },
   { title: "API Documentation", href: "/docs/api", category: "Developer" },
   { title: "Verity — Compliance Proof", href: "/verity", category: "Product" },
   {

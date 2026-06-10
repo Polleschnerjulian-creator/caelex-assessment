@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
+import Link from "next/link";
 import Button from "@/components/ui/Button";
 
 const MODULES = [
@@ -114,6 +115,14 @@ export default function Hero() {
                   Request Demo
                 </Button>
               </div>
+
+              {/* Frictionless entry — the 3-minute public quick check */}
+              <Link
+                href="/assessment/quick"
+                className="inline-flex items-center gap-1.5 -mt-2 text-body text-white/70 hover:text-white underline underline-offset-4 decoration-white/40 transition-colors"
+              >
+                Check your obligations in 3 minutes &rarr;
+              </Link>
 
               {/* Summary */}
               <p className="text-body text-white leading-[1.7] max-w-[400px]">

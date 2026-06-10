@@ -252,7 +252,7 @@ export default function AboutPage() {
 
               <div className="flex flex-wrap gap-4">
                 <Link
-                  href="/assessment"
+                  href="/assessment/quick"
                   className="inline-flex items-center gap-2 px-6 py-3.5 rounded-full bg-[#111827] text-white text-body-lg font-medium transition-all duration-300 hover:bg-[#374151] hover:scale-[1.02]"
                 >
                   Start Free Assessment
@@ -616,7 +616,9 @@ export default function AboutPage() {
       <section className="relative py-24 md:py-32 overflow-hidden">
         <div className="relative z-10 max-w-[1400px] mx-auto px-6 md:px-12">
           <GlassCard className="p-8 md:p-12" hover={false}>
-            <div className="grid lg:grid-cols-2 gap-12 items-center">
+            {/* Single column — the decorative globe placeholder was removed
+                (landing review #5): no filler boxes on the public site. */}
+            <div className="max-w-[720px]">
               <div>
                 <span className="inline-block text-caption font-medium text-[#9CA3AF] uppercase tracking-[0.2em] mb-4">
                   Built in Berlin
@@ -651,17 +653,6 @@ export default function AboutPage() {
                       </div>
                     </div>
                   ))}
-                </div>
-              </div>
-
-              <div className="relative">
-                <div className="aspect-[4/3] rounded-xl overflow-hidden bg-[#F1F3F5] border border-[#E5E7EB] flex items-center justify-center">
-                  <div className="text-center">
-                    <Globe size={64} className="text-[#9CA3AF] mx-auto mb-4" />
-                    <p className="text-body-lg text-[#4B5563]">
-                      Serving space operators across Europe
-                    </p>
-                  </div>
                 </div>
               </div>
             </div>

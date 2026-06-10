@@ -251,6 +251,13 @@ export default function sitemap(): MetadataRoute.Sitemap {
       changeFrequency: "monthly" as const,
       priority: 0.9,
     },
+    {
+      // The public Passage export-control teaser (corpus-only check).
+      url: `${baseUrl}/passage/check`,
+      lastModified: new Date("2026-06-10"),
+      changeFrequency: "monthly" as const,
+      priority: 0.8,
+    },
   ];
 
   // Additional standalone pages

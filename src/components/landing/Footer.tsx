@@ -20,6 +20,7 @@ const solutionLinks = [
   },
   { label: "Cybersecurity & NIS2", href: "/solutions/cybersecurity-nis2" },
   { label: "Export Control (ITAR/EAR)", href: "/solutions/export-control" },
+  { label: "Export Control Check", href: "/passage/check" },
   { label: "Debris Mitigation", href: "/solutions/debris-mitigation" },
   {
     label: "Insurance Requirements",
@@ -29,7 +30,7 @@ const solutionLinks = [
   { label: "Document Generation", href: "/solutions/document-generation" },
   { label: "NCA Submissions", href: "/solutions/nca-submissions" },
   { label: "Audit & Evidence", href: "/solutions/audit-evidence" },
-  { label: "Risk Assessment", href: "/assessment" },
+  { label: "Risk Assessment", href: "/assessment/quick" },
   { label: "Legal Network", href: "/legal-network" },
 ];
 
