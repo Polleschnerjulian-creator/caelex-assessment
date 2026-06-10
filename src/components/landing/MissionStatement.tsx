@@ -20,8 +20,10 @@ export default function MissionStatement() {
 
   let globalIndex = 0;
 
+  // Bottom padding deliberately tighter than the top: the gap to the
+  // following "Our Software" section matches Palantir's rhythm.
   return (
-    <section className="bg-white py-32 md:py-44">
+    <section className="bg-white pt-32 md:pt-44 pb-14 md:pb-20">
       <div className="max-w-[1500px] mx-auto px-6 md:px-12">
         <div ref={ref}>
           <p

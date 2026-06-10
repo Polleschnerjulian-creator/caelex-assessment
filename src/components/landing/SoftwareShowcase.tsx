@@ -76,7 +76,9 @@ function AnimatedRow({
 
 export default function SoftwareShowcase() {
   return (
-    <section className="bg-white py-32 md:py-44">
+    // Top padding tighter than the bottom: closes the gap to the mission
+    // statement above (Palantir spacing).
+    <section className="bg-white pt-14 md:pt-24 pb-32 md:pb-44">
       <div className="max-w-[1500px] mx-auto px-6 md:px-12">
         {/* Section label — 20px, regular, dark (matches Palantir) */}
         <AnimatedRow>
