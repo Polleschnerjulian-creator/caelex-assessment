@@ -588,10 +588,11 @@ export default function QuickResultPanel({
               Your {view.unknownsCount} unknown
               {view.unknownsCount === 1 ? "" : "s"} and{" "}
               {view.unassessedObligations} unassessed obligation
-              {view.unassessedObligations === 1 ? "" : "s"} are waiting in the
-              full assessment — every &quot;I&apos;m not sure&quot; you resolve
-              narrows your obligation set and raises confidence; it never gets
-              cleaner by staying unknown.
+              {view.unassessedObligations === 1 ? "" : "s"} — create a free
+              account to resolve them in the full assessment. Every
+              &quot;I&apos;m not sure&quot; you resolve narrows your obligation
+              set and raises confidence; it never gets cleaner by staying
+              unknown.
             </p>
             <Link
               href="/assessment/full"

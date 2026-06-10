@@ -161,6 +161,22 @@ describe("QuickResultPanel — unknowns + full-tier CTA (§6b conversion)", () =
     });
     expect(cta).toHaveAttribute("href", "/assessment/full");
   });
+
+  it("renders the Task 3.6 conversion framing: gap from REAL counts + the free-account pitch", () => {
+    renderPanel();
+    const section = screen.getByRole("region", {
+      name: "Unknowns to resolve",
+    });
+    // The gap framing comes from the projection's real counts (2 unknowns,
+    // 1 unassessed obligation in the fixture) — never invented copy.
+    expect(section.textContent).toMatch(
+      /Your 2 unknowns and 1 unassessed obligation — create a free\s*account to resolve them/i,
+    );
+    // …and the conversion path is the full tier.
+    expect(
+      within(section).getByRole("link", { name: /Run the full assessment/i }),
+    ).toHaveAttribute("href", "/assessment/full");
+  });
 });
 
 describe("QuickResultPanel — NO overall score (honesty invariant #6)", () => {

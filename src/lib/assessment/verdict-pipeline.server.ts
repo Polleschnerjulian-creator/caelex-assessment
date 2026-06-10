@@ -163,6 +163,13 @@ export interface ObligationMapResult {
   readiness?: ClusterReadiness[];
   creditMap?: CreditMapping[];
   roadmap?: RoadmapItem[];
+  /** The engine's own per-module statuses (Task 3.5): the SINGLE source the
+   *  dashboard import derives ArticleStatus rows from — applicability is
+   *  never recomputed from a second dataset. */
+  spaceActModules?: {
+    id: string;
+    status: "required" | "simplified" | "recommended" | "not_applicable";
+  }[];
 }
 
 export class SubmissionInvalidError extends Error {
@@ -992,6 +999,12 @@ export async function runVerdictPipeline(
     readiness,
     creditMap,
     roadmap,
+    // Task 3.5: the engine's own module statuses ride the snapshot so the
+    // dashboard import never consults a second dataset for applicability.
+    spaceActModules: merged?.moduleStatuses.map((m) => ({
+      id: m.id,
+      status: m.status,
+    })),
   });
 }
 
