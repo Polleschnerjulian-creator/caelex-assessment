@@ -10,6 +10,7 @@ import {
   suggestionsFromAttributesAndText,
   type SuggestInputAttribute,
 } from "@/lib/trade/classify-suggest";
+import { findOrgPrecedents } from "@/lib/trade/classification/org-precedents.server";
 
 export const runtime = "nodejs";
 
@@ -28,11 +29,13 @@ export async function POST(req: Request) {
     const body = (await req.json().catch(() => null)) as {
       attributes?: unknown;
       text?: unknown;
+      excludeItemId?: unknown;
     } | null;
     if (!body || !Array.isArray(body.attributes)) {
       return NextResponse.json(
         {
-          error: "Expected { attributes: SuggestInputAttribute[], text?: string }",
+          error:
+            "Expected { attributes: SuggestInputAttribute[], text?: string }",
         },
         { status: 400 },
       );
@@ -47,7 +50,21 @@ export async function POST(req: Request) {
       body.attributes as SuggestInputAttribute[],
       text,
     );
-    return NextResponse.json({ suggestions });
+
+    // ILA review #5 — the org's own reviewed classifications as ranked
+    // precedents ("you classified X similarly"). Suggestion-only; the
+    // apply path parks them in REQUIRES_REVIEW like every candidate.
+    const orgPrecedents = text
+      ? await findOrgPrecedents(
+          tradeAuth.organizationId,
+          text,
+          typeof body.excludeItemId === "string"
+            ? body.excludeItemId
+            : undefined,
+        ).catch(() => [])
+      : [];
+
+    return NextResponse.json({ suggestions, orgPrecedents });
   } catch (err) {
     logger.error("POST /api/trade/classify/suggest-codes failed", err);
     return NextResponse.json({ error: "Internal error" }, { status: 500 });

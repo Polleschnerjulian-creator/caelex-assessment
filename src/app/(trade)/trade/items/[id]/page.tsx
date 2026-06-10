@@ -34,6 +34,7 @@ import { DeMinimisPanel } from "./_components/DeMinimisPanel";
 import { DeemedExportWarning } from "./_components/DeemedExportWarning";
 import { evaluateDeemedExportRisk } from "@/lib/trade/deemed-export";
 import { ClassificationCoverageNote } from "../../_components/ClassificationCoverageNote";
+import { OrgPrecedentsPanel } from "../_components/OrgPrecedentsPanel";
 import { assessItemClassificationHonesty } from "@/lib/trade/classification-coverage";
 
 // ─── Types ────────────────────────────────────────────────────────────
@@ -747,6 +748,18 @@ export default function TradeItemDetailPage({
             <ParametricMatcherPanel
               item={item}
               itemId={item.id}
+              onApplied={loadItem}
+            />
+          </div>
+
+          {/* ILA review #5 — the org's own reviewed classifications as
+              ranked precedents for THIS item's description. The learning
+              loop without a schema change: every reviewed classification
+              becomes a precedent for the next similar item. */}
+          <div className="mt-6">
+            <OrgPrecedentsPanel
+              itemId={item.id}
+              queryText={`${item.name} ${item.description}`}
               onApplied={loadItem}
             />
           </div>
