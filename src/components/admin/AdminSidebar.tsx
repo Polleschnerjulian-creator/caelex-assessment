@@ -37,6 +37,7 @@ import {
   ArrowLeft,
   ShieldCheck,
   Inbox,
+  BookUser,
 } from "lucide-react";
 
 interface NavLink {
@@ -85,6 +86,13 @@ const NAV: NavLink[] = [
     href: "/admin/leads",
     label: "Leads",
     icon: <Inbox size={18} strokeWidth={1.5} />,
+  },
+  {
+    // The full contact/company/deal workspace (pipeline, notes, tasks,
+    // meeting importer) — existed but was unreachable from the nav.
+    href: "/admin/crm",
+    label: "CRM",
+    icon: <BookUser size={18} strokeWidth={1.5} />,
   },
   {
     // Customers — account-level depth; precedes Retention in the IA.

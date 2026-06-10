@@ -165,3 +165,88 @@ export async function POST(request: NextRequest) {
     );
   }
 }
+
+const patchSchema = z.object({
+  id: z.string().cuid(),
+  status: z.enum(["OPEN", "COMPLETED", "CANCELLED"]),
+});
+
+/**
+ * PATCH /api/admin/crm/tasks — complete / reopen / cancel a task.
+ * Mirrors the GET/POST gate; completion stamps completedAt and logs a
+ * TASK_COMPLETED activity on the task's contact/company/deal.
+ */
+export async function PATCH(request: NextRequest) {
+  try {
+    const session = await auth();
+    if (!session?.user?.id) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+    if (!isSuperAdmin(session.user.email)) {
+      await requireRole(["admin"]);
+    }
+
+    const body = await request.json();
+    const parsed = patchSchema.safeParse(body);
+    if (!parsed.success) {
+      return NextResponse.json(
+        { error: "Invalid input", details: parsed.error.flatten().fieldErrors },
+        { status: 400 },
+      );
+    }
+
+    const existing = await prisma.crmTask.findUnique({
+      where: { id: parsed.data.id },
+      select: {
+        id: true,
+        title: true,
+        contactId: true,
+        companyId: true,
+        dealId: true,
+      },
+    });
+    if (!existing) {
+      return NextResponse.json({ error: "Not found" }, { status: 404 });
+    }
+
+    const task = await prisma.crmTask.update({
+      where: { id: parsed.data.id },
+      data: {
+        status: parsed.data.status,
+        completedAt: parsed.data.status === "COMPLETED" ? new Date() : null,
+      },
+    });
+
+    if (parsed.data.status === "COMPLETED") {
+      await prisma.crmActivity.create({
+        data: {
+          type: "TASK_COMPLETED",
+          source: "MANUAL",
+          summary: `Task erledigt: ${existing.title}`,
+          contactId: existing.contactId,
+          companyId: existing.companyId,
+          dealId: existing.dealId,
+          userId: session.user.id,
+        },
+      });
+    }
+
+    return NextResponse.json({ task });
+  } catch (error: unknown) {
+    const errName = error instanceof Error ? error.name : "";
+    if (errName === "UnauthorizedError") {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+    if (errName === "ForbiddenError") {
+      return NextResponse.json(
+        { error: "Admin access required" },
+        { status: 403 },
+      );
+    }
+    logger.error("Failed to update CRM task", error);
+    return NextResponse.json(
+      { error: getSafeErrorMessage(error, "Failed to update task") },
+      { status: 500 },
+    );
+  }
+}

@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma";
+import { ConvertLeadButton } from "./ConvertLeadButton";
 
 /**
  * /admin/leads — the captured assessment leads (the follow-up list).
@@ -104,6 +105,7 @@ export default async function AdminLeadsPage() {
                 <th className="px-4 py-3">Quelle</th>
                 <th className="px-4 py-3">Newsletter</th>
                 <th className="px-4 py-3">Datum</th>
+                <th className="px-4 py-3">CRM</th>
               </tr>
             </thead>
             <tbody>
@@ -130,6 +132,9 @@ export default async function AdminLeadsPage() {
                       .toISOString()
                       .slice(0, 16)
                       .replace("T", " ")}
+                  </td>
+                  <td className="px-4 py-2.5">
+                    <ConvertLeadButton leadId={lead.id} />
                   </td>
                 </tr>
               ))}

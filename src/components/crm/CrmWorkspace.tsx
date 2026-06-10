@@ -25,6 +25,11 @@ import LeadScoreBadge from "@/components/crm/LeadScoreBadge";
 import { DealStageBadge, LifecycleBadge } from "@/components/crm/StageBadge";
 import ActivityTimeline from "@/components/crm/ActivityTimeline";
 import MeetingImport from "@/components/crm/MeetingImport";
+import TodayPanel from "@/components/crm/TodayPanel";
+import {
+  CreateContactDialog,
+  CreateCompanyDialog,
+} from "@/components/crm/CreateRecordDialogs";
 import type { DealCardData } from "@/components/crm/DealCard";
 import type {
   CrmDealStage,
@@ -32,7 +37,13 @@ import type {
   CrmOperatorType,
 } from "@prisma/client";
 
-type Tab = "pipeline" | "contacts" | "companies" | "deals" | "activities";
+type Tab =
+  | "today"
+  | "pipeline"
+  | "contacts"
+  | "companies"
+  | "deals"
+  | "activities";
 
 interface Stats {
   pipelineValue: number;
@@ -71,11 +82,14 @@ function formatEuro(cents: number): string {
 function CrmPageContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
-  const initialTab = (searchParams.get("tab") as Tab) || "pipeline";
+  // "today" is the default — the CRM opens on what needs doing NOW.
+  const initialTab = (searchParams.get("tab") as Tab) || "today";
   const [tab, setTab] = useState<Tab>(initialTab);
   const [stats, setStats] = useState<Stats | null>(null);
   const [statsLoading, setStatsLoading] = useState(true);
   const [showImport, setShowImport] = useState(false);
+  const [showNewContact, setShowNewContact] = useState(false);
+  const [showNewCompany, setShowNewCompany] = useState(false);
 
   const changeTab = useCallback(
     (newTab: Tab) => {
@@ -209,11 +223,51 @@ function CrmPageContent() {
         />
       </div>
 
+      {/* Quick create */}
+      <div className="flex items-center gap-2">
+        <button
+          type="button"
+          onClick={() => setShowNewContact(true)}
+          className="inline-flex items-center gap-1.5 rounded-md border px-3 py-1.5 text-small font-medium"
+          style={{
+            borderColor: "var(--border-default)",
+            color: "var(--text-primary)",
+          }}
+        >
+          <Plus size={14} /> Kontakt
+        </button>
+        <button
+          type="button"
+          onClick={() => setShowNewCompany(true)}
+          className="inline-flex items-center gap-1.5 rounded-md border px-3 py-1.5 text-small font-medium"
+          style={{
+            borderColor: "var(--border-default)",
+            color: "var(--text-primary)",
+          }}
+        >
+          <Plus size={14} /> Firma
+        </button>
+      </div>
+      <CreateContactDialog
+        open={showNewContact}
+        onClose={() => setShowNewContact(false)}
+      />
+      <CreateCompanyDialog
+        open={showNewCompany}
+        onClose={() => setShowNewCompany(false)}
+      />
+
       {/* Tabs */}
       <div
         className="flex items-center gap-1 border-b"
         style={{ borderColor: "var(--border-default)" }}
       >
+        <TabButton
+          active={tab === "today"}
+          onClick={() => changeTab("today")}
+          icon={<ClipboardPaste size={14} />}
+          label="Heute"
+        />
         <TabButton
           active={tab === "pipeline"}
           onClick={() => changeTab("pipeline")}
@@ -247,6 +301,7 @@ function CrmPageContent() {
       </div>
 
       {/* Tab content */}
+      {tab === "today" && <TodayPanel />}
       {tab === "pipeline" && <PipelineTab stats={stats} />}
       {tab === "contacts" && <ContactsTab />}
       {tab === "companies" && <CompaniesTab />}

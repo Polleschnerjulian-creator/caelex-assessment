@@ -15,6 +15,7 @@ import LeadScoreBadge from "@/components/crm/LeadScoreBadge";
 import { LifecycleBadge, DealStageBadge } from "@/components/crm/StageBadge";
 import ActivityTimeline from "@/components/crm/ActivityTimeline";
 import NotesPanel from "@/components/crm/NotesPanel";
+import TasksPanel from "@/components/crm/TasksPanel";
 import type {
   CrmLifecycleStage,
   CrmDealStage,
@@ -259,6 +260,20 @@ export default function ContactDetail({ id }: { id: string }) {
               Activity
             </h2>
             <ActivityTimeline activities={activities} />
+          </section>
+
+          {/* Aufgaben — "was gemacht werden kann" (CRM Phase 1) */}
+          <section
+            className="rounded-xl border p-5"
+            style={{
+              background: "var(--surface-raised)",
+              borderColor: "var(--border-default)",
+            }}
+          >
+            <h2 className="text-caption font-semibold uppercase tracking-wider text-[var(--text-tertiary)] mb-4">
+              Aufgaben
+            </h2>
+            <TasksPanel contactId={contact.id} />
           </section>
 
           {/* Notes */}
