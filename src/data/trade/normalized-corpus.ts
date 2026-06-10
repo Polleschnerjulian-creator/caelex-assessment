@@ -43,6 +43,7 @@ import {
   DE_AUSFUHRLISTE_AS_OF,
 } from "./de-ausfuhrliste";
 import { EU_ANNEX_I_ENTRIES } from "./eu-annex-i";
+import { EU_ANNEX_I_CAT1_2_ENTRIES } from "./eu-annex-i-cat1-2";
 import { EU_ANNEX_I_CAT3_ENTRIES } from "./eu-annex-i-cat3";
 import {
   EU_ANNEX_I_CAT4_ENTRIES,
@@ -323,11 +324,23 @@ export const NORMALIZED_CORPUS_UNION: NormalizedCorpusEntry[] = (() => {
     ...adaptIndiaScomet(),
     ...adaptDeAusfuhrliste(),
     // EU Annex I (Reg. 2021/821) — the core EU dual-use list, all categories.
-    ...adaptClassificationEntries(EU_ANNEX_I_ENTRIES, "EU_ANNEX_I", "EU Annex I"),
+    ...adaptClassificationEntries(
+      EU_ANNEX_I_ENTRIES,
+      "EU_ANNEX_I",
+      "EU Annex I",
+    ),
     ...adaptClassificationEntries(
       EU_ANNEX_I_CAT3_ENTRIES,
       "EU_ANNEX_I",
       "EU Annex I Cat. 3",
+    ),
+    // ILA review #7 — supplier-relevant Cat 1 (materials) + Cat 2
+    // (manufacturing) so composites/machining suppliers stop falling
+    // through the matcher's coverage.
+    ...adaptClassificationEntries(
+      EU_ANNEX_I_CAT1_2_ENTRIES,
+      "EU_ANNEX_I",
+      "EU Annex I Cat. 1+2",
     ),
     ...adaptClassificationEntries(
       EU_ANNEX_I_CAT4_ENTRIES,
