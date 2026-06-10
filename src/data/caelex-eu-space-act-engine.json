@@ -12,7 +12,7 @@
     "legal_basis": "Article 114 TFEU (Internal Market)",
     "version": "1.0",
     "last_updated": "2026-02-03",
-    "note": "Based on original Commission proposal. Danish Council Presidency released updated text on 2025-12-05. Updates may modify specific provisions.",
+    "note": "Based on original Commission proposal. Danish Council Presidency released updated text on 2025-12-05. Updates may modify specific provisions. The application date is subject to legislative adoption and contested: 1 January 2030 / 1 January 2032 second prong (Commission) vs 36 months after entry into force (Council track / EP ITRE).",
     "enforcement": {
       "max_fine_percentage_turnover": 2.0,
       "alternative_fine_basis": "Twice the profit gained or losses avoided from non-compliance",
@@ -132,14 +132,14 @@
         "Standard authorization per satellite or simplified if identical design"
       ]
     },
-    "medium_constellation": {
+    "constellation": {
       "count": "10-99",
       "special_provisions": [
         "Additional debris mitigation requirements",
         "Constellation-level authorization possible"
       ]
     },
-    "large_constellation": {
+    "mega_constellation": {
       "count": "100-999",
       "special_provisions": [
         "Enhanced debris mitigation",
@@ -147,7 +147,7 @@
         "Additional safety standards"
       ]
     },
-    "mega_constellation": {
+    "giga_constellation": {
       "count": "1000+",
       "special_provisions": [
         "Full enhanced requirements",
@@ -179,7 +179,7 @@
         {
           "number": 2,
           "title": "Scope",
-          "summary": "Applies to: space operators, collision avoidance providers, primary data providers, international organizations. Excludes: defense/national security objects, objects launched before 2030-01-01, radio spectrum management. Title IV Chapters I and V do not apply beyond GEO.",
+          "summary": "Applies to: space operators, collision avoidance providers, primary data providers, international organizations. Excludes: defense/national security objects, objects launched before 2030-01-01 (proposed application date, subject to legislative adoption), radio spectrum management. Title IV Chapters I and V do not apply beyond GEO.",
           "applies_to": ["ALL"],
           "compliance_type": "scope_determination",
           "operator_action": "Determine if your activities fall within scope",
@@ -199,7 +199,7 @@
               },
               {
                 "id": "scope_q3",
-                "question": "Were your assets launched before January 1, 2030?",
+                "question": "Were your assets launched before January 1, 2030 (proposed application date, subject to legislative adoption)?",
                 "if_yes": "Pre-existing assets excluded (Art. 2(3)(d))",
                 "if_no": "Fully in scope"
               },
@@ -994,7 +994,7 @@
                     "id": "ef_q1",
                     "question": "Are you a small-sized enterprise or research institution?",
                     "if_yes": "EFD obligation delayed until January 1, 2032 (2-year additional transition)",
-                    "if_no": "EFD required from January 1, 2030"
+                    "if_no": "EFD required from January 1, 2030 (subject to legislative adoption)"
                   },
                   {
                     "id": "ef_q2",
@@ -1239,7 +1239,7 @@
         {
           "number": 119,
           "title": "Entry into Force and Application",
-          "summary": "Regulation applies from January 1, 2030. Two-year transitional period for substantive obligations. Small enterprises: additional 2-year transition for EFD (until 2032).",
+          "summary": "Regulation applies from January 1, 2030 (subject to legislative adoption — the application date is contested in the legislative process). Two-year transitional period for substantive obligations. Small enterprises: additional 2-year transition for EFD (until 2032).",
           "applies_to": ["ALL"],
           "compliance_type": "timeline",
           "key_dates": {
@@ -1265,7 +1265,7 @@
       "if_no": "Proceed to Step 3"
     },
     "step_3_pre2030_assets": {
-      "question": "Were all your assets launched before January 1, 2030?",
+      "question": "Were all your assets launched before January 1, 2030 (proposed application date, subject to legislative adoption)?",
       "if_yes": "Pre-existing assets excluded (Art. 2(3)(d)). New assets launched after 2030 ARE in scope.",
       "if_no": "Proceed to Step 4"
     },
@@ -1302,8 +1302,8 @@
         "options": {
           "2-9": "Standard requirements, simplified authorization if identical design",
           "10-99": "Additional debris mitigation requirements",
-          "100-999": "Large constellation: enhanced debris + pollution mitigation mandatory",
-          "1000+": "Mega constellation: full enhanced requirements"
+          "100-999": "Mega constellation: enhanced debris + pollution mitigation mandatory",
+          "1000+": "Giga constellation: full enhanced requirements"
         }
       }
     },

@@ -29,6 +29,8 @@ const {
   calculateCompliance,
   redactArticlesForClient,
   loadSpaceActDataFromDisk,
+  getConstellationTierLabel,
+  CONSTELLATION_TIER_LABEL_COMPAT,
 } = await import("@/lib/engine.server");
 
 // ═══════════════════════════════════════════
@@ -1162,52 +1164,55 @@ describe("EU Space Act Compliance Engine", () => {
       expect(result.constellationTier).toBe("small_constellation");
     });
 
-    it("size = 10 → medium_constellation (lower boundary)", () => {
+    // §7.1 #9 citation pass (2026-06-10): proposal-aligned tier names —
+    // 10–99 "constellation", 100–999 "mega_constellation", 1000+
+    // "giga_constellation". Numeric bands unchanged; keys/labels only.
+    it("size = 10 → constellation (lower boundary, proposal tier name)", () => {
       const result = calculateCompliance(
         makeAnswers({ operatesConstellation: true, constellationSize: 10 }),
         mockSpaceActData,
       );
-      expect(result.constellationTier).toBe("medium_constellation");
+      expect(result.constellationTier).toBe("constellation");
     });
 
-    it("size = 99 → medium_constellation (upper boundary)", () => {
+    it("size = 99 → constellation (upper boundary)", () => {
       const result = calculateCompliance(
         makeAnswers({ operatesConstellation: true, constellationSize: 99 }),
         mockSpaceActData,
       );
-      expect(result.constellationTier).toBe("medium_constellation");
+      expect(result.constellationTier).toBe("constellation");
     });
 
-    it("size = 100 → large_constellation (lower boundary)", () => {
+    it("size = 100 → mega_constellation (lower boundary, proposal tier name)", () => {
       const result = calculateCompliance(
         makeAnswers({ operatesConstellation: true, constellationSize: 100 }),
         mockSpaceActData,
       );
-      expect(result.constellationTier).toBe("large_constellation");
+      expect(result.constellationTier).toBe("mega_constellation");
     });
 
-    it("size = 999 → large_constellation (upper boundary)", () => {
+    it("size = 999 → mega_constellation (upper boundary)", () => {
       const result = calculateCompliance(
         makeAnswers({ operatesConstellation: true, constellationSize: 999 }),
         mockSpaceActData,
       );
-      expect(result.constellationTier).toBe("large_constellation");
+      expect(result.constellationTier).toBe("mega_constellation");
     });
 
-    it("size = 1000 → mega_constellation (lower boundary)", () => {
+    it("size = 1000 → giga_constellation (lower boundary, proposal tier name)", () => {
       const result = calculateCompliance(
         makeAnswers({ operatesConstellation: true, constellationSize: 1000 }),
         mockSpaceActData,
       );
-      expect(result.constellationTier).toBe("mega_constellation");
+      expect(result.constellationTier).toBe("giga_constellation");
     });
 
-    it("size = 5000 → mega_constellation with label containing satellite count", () => {
+    it("size = 5000 → giga_constellation with label containing satellite count", () => {
       const result = calculateCompliance(
         makeAnswers({ operatesConstellation: true, constellationSize: 5000 }),
         mockSpaceActData,
       );
-      expect(result.constellationTier).toBe("mega_constellation");
+      expect(result.constellationTier).toBe("giga_constellation");
       expect(result.constellationTierLabel).toContain("5000");
     });
 
@@ -1218,6 +1223,52 @@ describe("EU Space Act Compliance Engine", () => {
       );
       expect(result.constellationTier).toBeNull();
       expect(result.constellationTierLabel).toBeNull();
+    });
+  });
+
+  // ─────────────────────────────────────────
+  // 8b. Constellation tier label compat (legacy keys from stored results)
+  // ─────────────────────────────────────────
+
+  describe("Constellation tier label compat map", () => {
+    it("renders all CURRENT tier keys", () => {
+      expect(getConstellationTierLabel("single_satellite")).toBe(
+        "Single Satellite",
+      );
+      expect(getConstellationTierLabel("small_constellation")).toBe(
+        "Small Constellation",
+      );
+      expect(getConstellationTierLabel("constellation")).toBe("Constellation");
+      expect(getConstellationTierLabel("mega_constellation")).toBe(
+        "Mega Constellation",
+      );
+      expect(getConstellationTierLabel("giga_constellation")).toBe(
+        "Giga Constellation",
+      );
+    });
+
+    it("renders LEGACY tier keys from previously stored results (old keys still render)", () => {
+      expect(getConstellationTierLabel("medium_constellation")).toBe(
+        "Constellation",
+      );
+      expect(getConstellationTierLabel("large_constellation")).toBe(
+        "Mega Constellation",
+      );
+      // legacy mega (1000+) shares its key with the current 100–999 tier —
+      // both render "Mega Constellation"
+      expect(CONSTELLATION_TIER_LABEL_COMPAT["medium_constellation"]).toBe(
+        "Constellation",
+      );
+      expect(CONSTELLATION_TIER_LABEL_COMPAT["large_constellation"]).toBe(
+        "Mega Constellation",
+      );
+    });
+
+    it("null tier renders null; unknown keys fall through to the raw key (never undefined)", () => {
+      expect(getConstellationTierLabel(null)).toBeNull();
+      expect(getConstellationTierLabel("some_future_tier")).toBe(
+        "some_future_tier",
+      );
     });
   });
 

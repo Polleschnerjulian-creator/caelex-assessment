@@ -283,6 +283,11 @@ model User {
   /// Jeder Nutzer kann nur sein eigenes Feld schreiben.
   atlasAiInstructions String? @db.Text
 
+  // Ultimate Assessment Spine (2026-06-10 rebuild) — assessment profiles
+  // owned by this user. Anonymous quick-tier profiles carry null userId
+  // until claimed (claimedAt stamped on claim).
+  assessmentProfiles OperatorAssessmentProfile[]
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -15498,4 +15503,64 @@ model ScholarPlanspielBadge {
 
   @@unique([userId, badgeKey])
   @@index([userId, earnedAt])
+}
+
+// ─── Ultimate Assessment Spine (2026-06-10 rebuild) ─────────────────────
+// One branching operator assessment on a single profile spine. Answers are
+// stored tri-state (answered | unsure | not_asked — see
+// src/lib/assessment/answers.ts for the BINDING unsure-encoding convention);
+// verdicts are snapshots pinned to a rulebook semver. ADDITIVE ONLY.
+// NOTE: `OperatorProfile` (org-scoped Context-Omnipresence model above) is a
+// DIFFERENT, pre-existing model — do not confuse or rename.
+
+enum AssessmentTier {
+  QUICK
+  FULL
+}
+
+enum AssessmentProfileStatus {
+  IN_PROGRESS
+  COMPLETED
+}
+
+model OperatorAssessmentProfile {
+  id             String  @id @default(cuid())
+  userId         String?
+  user           User?   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  organizationId String? // plain scalar — no relation, keeps schema churn minimal
+  // Quick-tier carry-forward without an account: httpOnly-cookie token.
+  anonymousId    String? @unique
+
+  version Int                     @default(1) // bumped on every material answer change
+  tier    AssessmentTier          @default(QUICK)
+  status  AssessmentProfileStatus @default(IN_PROGRESS)
+
+  // Record<QuestionId, TriStateAnswer> — Zod-validated server-side on every write.
+  answers        Json     @default("{}")
+  currentSection String?
+  // Living-tier opt-in triggers (Q10.2): ["new_spacecraft","new_jurisdiction",...]
+  changeTriggers String[] @default([])
+
+  claimedAt DateTime? // anonymous → account claim timestamp
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  verdicts AssessmentVerdictSnapshot[]
+
+  @@index([userId])
+  @@index([updatedAt])
+}
+
+model AssessmentVerdictSnapshot {
+  id              String                    @id @default(cuid())
+  profileId       String
+  profile         OperatorAssessmentProfile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  profileVersion  Int // OperatorAssessmentProfile.version this was computed from
+  tier            AssessmentTier
+  rulebookVersion String // RULEBOOK.version at compute time
+  result          Json // ObligationMapResult (redacted shape)
+  unknownsCount   Int
+  createdAt       DateTime @default(now())
+
+  @@index([profileId, createdAt])
 }

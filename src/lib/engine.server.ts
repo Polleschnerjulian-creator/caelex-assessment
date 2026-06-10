@@ -379,6 +379,36 @@ function getEntitySizeLabel(size: string | null): string {
   return size ? labels[size] || "Unknown" : "Not specified";
 }
 
+/**
+ * Constellation tier naming — aligned to the proposal's tiers (§7.1 #9
+ * citation pass, 2026-06-10): 10–99 = "constellation", 100–999 =
+ * "mega_constellation", 1000+ = "giga_constellation". The numeric bands are
+ * unchanged; only keys/labels were renamed (previously medium/large/mega).
+ *
+ * `CONSTELLATION_TIER_LABEL_COMPAT` maps BOTH the current keys AND the
+ * legacy keys found in previously stored results to a renderable label, so
+ * old snapshots keep rendering. Note the legacy "mega_constellation"
+ * (formerly 1000+) is indistinguishable by key from the current
+ * "mega_constellation" (100–999); both render "Mega Constellation".
+ */
+export const CONSTELLATION_TIER_LABEL_COMPAT: Record<string, string> = {
+  // current (proposal-aligned) keys
+  single_satellite: "Single Satellite",
+  small_constellation: "Small Constellation",
+  constellation: "Constellation",
+  mega_constellation: "Mega Constellation",
+  giga_constellation: "Giga Constellation",
+  // legacy keys from previously stored results (pre-2026-06 naming)
+  medium_constellation: "Constellation",
+  large_constellation: "Mega Constellation",
+};
+
+/** Render a tier key (current OR legacy) to a human label. */
+export function getConstellationTierLabel(tier: string | null): string | null {
+  if (tier === null) return null;
+  return CONSTELLATION_TIER_LABEL_COMPAT[tier] ?? tier;
+}
+
 function getConstellationTier(
   operatesConstellation: boolean | null,
   size: number | null,
@@ -389,18 +419,18 @@ function getConstellationTier(
   if (size === null) return { tier: null, label: null };
   if (size >= 1000)
     return {
-      tier: "mega_constellation",
-      label: `Mega Constellation (${size}+ satellites)`,
+      tier: "giga_constellation",
+      label: `Giga Constellation (${size}+ satellites)`,
     };
   if (size >= 100)
     return {
-      tier: "large_constellation",
-      label: `Large Constellation (${size} satellites)`,
+      tier: "mega_constellation",
+      label: `Mega Constellation (${size} satellites)`,
     };
   if (size >= 10)
     return {
-      tier: "medium_constellation",
-      label: `Medium Constellation (${size} satellites)`,
+      tier: "constellation",
+      label: `Constellation (${size} satellites)`,
     };
   if (size >= 2)
     return {
@@ -535,7 +565,7 @@ export function calculateCompliance(
   if (answers.hasPostLaunchAssets === false) {
     return buildOutOfScopeResult(
       answers,
-      "Pre-existing assets are grandfathered under COM(2025) 335 Art. 2(3)(d): space objects launched before 1 January 2030 are excluded from the EU Space Act's scope. However, any new launches on or after that date will be fully in scope and will require compliance with the regulation.",
+      "Pre-existing assets are grandfathered under COM(2025) 335 Art. 2(3)(d): space objects launched before 1 January 2030 (proposed application date, subject to legislative adoption) are excluded from the EU Space Act's scope. However, any new launches on or after that date will be fully in scope and will require compliance with the regulation.",
       `${operatorTypeLabel} (Pre-2030 Assets — Grandfathered)`,
       operatorType,
       operatorAbbreviation,
