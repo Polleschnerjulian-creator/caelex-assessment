@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback, useRef } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
 import Logo from "@/components/ui/Logo";
 import { Menu, X, Search } from "lucide-react";
 
@@ -16,41 +16,32 @@ interface NavigationProps {
   ghost?: boolean;
 }
 
-// ─── Navigation Structure (Palantir-style multi-section) ────────────────────
+// ─── Navigation Structure (Palantir anatomy: ONE flagship family whose
+//     large ↳ children are the Our-Software product lineup, then flat
+//     secondary entries — mirrors "Generate Alpha → AIP/Foundry/…" +
+//     Offerings / Impact Studies / Documentation / Careers / Newsroom) ──────
 
 const navSections = {
   primary: [
-    { label: "Platform", href: "/platform" },
     {
-      label: "Modules",
-      href: "/modules",
+      label: "Platform",
+      href: "/platform",
+      // EXACTLY the SoftwareShowcase lineup (labels + hrefs in parity).
       children: [
-        { label: "Authorization", href: "/modules/authorization" },
-        { label: "Cybersecurity", href: "/modules/cybersecurity" },
-        { label: "Debris Mitigation", href: "/modules/debris" },
-        { label: "Environmental", href: "/modules/environmental" },
-        { label: "Insurance", href: "/modules/insurance" },
+        { label: "Comply", href: "/platform" },
+        { label: "Trade", href: "/trade-access" },
+        { label: "Atlas", href: "/atlas-access" },
+        { label: "Sentinel", href: "/sentinel" },
+        { label: "Ephemeris", href: "/systems/ephemeris" },
+        { label: "Verity", href: "/verity" },
       ],
     },
-    { label: "Atlas", href: "/atlas" },
-    { label: "Sentinel", href: "/platform" },
-    { label: "Ephemeris", href: "/systems/ephemeris" },
-    { label: "Verity", href: "/verity" },
+    { label: "Modules", href: "/modules" },
+    { label: "Assessment", href: "/assessment/quick" },
     { label: "Resources", href: "/resources" },
-  ],
-  solutions: [
-    {
-      label: "Regulatory Compliance",
-      href: "/solutions/regulatory-compliance",
-    },
-    {
-      label: "Authorization & Licensing",
-      href: "/solutions/authorization-licensing",
-    },
-    { label: "Cybersecurity & NIS2", href: "/solutions/cybersecurity-nis2" },
-    { label: "Debris Mitigation", href: "/solutions/debris-mitigation" },
-    { label: "Space Insurance", href: "/solutions/space-insurance" },
-    { label: "Legal Network", href: "/legal-network" },
+    { label: "Documentation", href: "/docs/api" },
+    { label: "Careers", href: "/careers" },
+    { label: "Newsroom", href: "/blog" },
   ],
   quickLinks: [
     { label: "About", href: "/about" },
@@ -227,8 +218,24 @@ export default function Navigation({
   const searchTriggerRef = useRef<HTMLButtonElement>(null);
   const router = useRouter();
   const pathname = usePathname();
+  const prefersReducedMotion = useReducedMotion();
   const isLight = theme === "light";
   const isLandingHero = pathname === "/";
+
+  // Palantir-style row cascade for the menu overlay: every row slides up
+  // with a running stagger. Reduced motion → rows render statically.
+  const rowAnim = (idx: number) =>
+    prefersReducedMotion
+      ? {}
+      : {
+          initial: { opacity: 0, y: 14 },
+          animate: { opacity: 1, y: 0 },
+          transition: {
+            duration: 0.35,
+            delay: 0.05 + idx * 0.04,
+            ease: "easeOut" as const,
+          },
+        };
 
   useEffect(() => {
     const handleScroll = () => {
@@ -596,34 +603,45 @@ export default function Navigation({
                     </div>
                     <nav aria-label="Primary navigation">
                       <div className="flex flex-col gap-0.5">
-                        {navSections.primary.map((link) => (
-                          <div key={link.label}>
-                            <Link
-                              href={link.href}
-                              onClick={closeMenu}
-                              className="block py-1.5 text-[32px] md:text-[38px] font-normal tracking-[-0.03em] text-white hover:text-white/60 transition-colors duration-200"
-                            >
-                              {link.label}
-                            </Link>
-                            {"children" in link &&
-                              link.children?.map((child) => (
+                        {(() => {
+                          // Running row index → one continuous cascade
+                          // across parents AND ↳ children (Palantir feel).
+                          let row = 0;
+                          return navSections.primary.map((link) => (
+                            <div key={link.label}>
+                              <motion.div {...rowAnim(row++)}>
                                 <Link
-                                  key={child.label}
-                                  href={child.href}
+                                  href={link.href}
                                   onClick={closeMenu}
-                                  className="flex items-baseline gap-3 py-1 pl-1 text-[22px] md:text-[26px] font-normal tracking-[-0.02em] text-white/90 hover:text-white/55 transition-colors duration-200"
+                                  className="block py-1.5 text-[32px] md:text-[38px] font-normal tracking-[-0.03em] text-white hover:text-white/60 transition-colors duration-200"
                                 >
-                                  <span
-                                    aria-hidden="true"
-                                    className="text-white/35 text-[20px]"
-                                  >
-                                    &#8627;
-                                  </span>
-                                  {child.label}
+                                  {link.label}
                                 </Link>
-                              ))}
-                          </div>
-                        ))}
+                              </motion.div>
+                              {"children" in link &&
+                                link.children?.map((child) => (
+                                  <motion.div
+                                    key={child.label}
+                                    {...rowAnim(row++)}
+                                  >
+                                    <Link
+                                      href={child.href}
+                                      onClick={closeMenu}
+                                      className="flex items-baseline gap-3 py-1 pl-1 text-[22px] md:text-[26px] font-normal tracking-[-0.02em] text-white/90 hover:text-white/55 transition-colors duration-200"
+                                    >
+                                      <span
+                                        aria-hidden="true"
+                                        className="text-white/35 text-[20px]"
+                                      >
+                                        &#8627;
+                                      </span>
+                                      {child.label}
+                                    </Link>
+                                  </motion.div>
+                                ))}
+                            </div>
+                          ));
+                        })()}
                       </div>
 
                       {/* Auth — prominent, above divider */}
@@ -668,35 +686,52 @@ export default function Navigation({
 
                     {/* News Cards — rotates bi-weekly */}
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                      {getCurrentNews().map((news) => (
-                        <Link
+                      {getCurrentNews().map((news, newsIdx) => (
+                        <motion.div
                           key={news.title}
-                          href={news.href}
-                          onClick={closeMenu}
-                          className="group block"
+                          {...(prefersReducedMotion
+                            ? {}
+                            : {
+                                initial: { opacity: 0, y: 14 },
+                                animate: { opacity: 1, y: 0 },
+                                transition: {
+                                  duration: 0.35,
+                                  delay: 0.18 + newsIdx * 0.08,
+                                  ease: "easeOut" as const,
+                                },
+                              })}
                         >
-                          <p className="text-[11px] mb-2 uppercase tracking-wider text-white/50">
-                            {news.category} &middot; {news.date}
-                          </p>
-                          <div className="relative aspect-[16/10] overflow-hidden mb-3 bg-white/[0.06]">
-                            <Image
-                              src={news.image}
-                              alt={news.title}
-                              fill
-                              sizes="(min-width: 768px) 360px, 90vw"
-                              className="object-cover opacity-85 group-hover:opacity-100 group-hover:scale-105 transition-all duration-500"
-                            />
-                          </div>
-                          <p className="text-[15px] font-medium leading-snug text-white group-hover:text-white/80 transition-colors">
-                            {news.title}
-                          </p>
-                          <span className="inline-flex items-baseline gap-2 mt-2 text-[13px] text-white/70 group-hover:text-white underline underline-offset-4 decoration-white/40 transition-colors">
-                            <span aria-hidden="true" className="text-white/40">
-                              &#8627;
+                          <Link
+                            href={news.href}
+                            onClick={closeMenu}
+                            className="group block"
+                          >
+                            <p className="text-[11px] mb-2 uppercase tracking-wider text-white/50">
+                              {news.category} &middot; {news.date}
+                            </p>
+                            <div className="relative aspect-[16/10] overflow-hidden mb-3 bg-white/[0.06]">
+                              <Image
+                                src={news.image}
+                                alt={news.title}
+                                fill
+                                sizes="(min-width: 768px) 360px, 90vw"
+                                className="object-cover opacity-85 group-hover:opacity-100 group-hover:scale-105 transition-all duration-500"
+                              />
+                            </div>
+                            <p className="text-[15px] font-medium leading-snug text-white group-hover:text-white/80 transition-colors">
+                              {news.title}
+                            </p>
+                            <span className="inline-flex items-baseline gap-2 mt-2 text-[13px] text-white/70 group-hover:text-white underline underline-offset-4 decoration-white/40 transition-colors">
+                              <span
+                                aria-hidden="true"
+                                className="text-white/40"
+                              >
+                                &#8627;
+                              </span>
+                              Read more
                             </span>
-                            Read more
-                          </span>
-                        </Link>
+                          </Link>
+                        </motion.div>
                       ))}
                     </div>
 
