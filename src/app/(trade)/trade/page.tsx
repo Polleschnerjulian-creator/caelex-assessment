@@ -8,7 +8,12 @@ import { getActivityFeed } from "@/lib/trade/welcome-feed/activity-feed-service"
 import { aggregateActionItems } from "@/lib/trade/action-inbox-aggregator";
 import { pickHeroAction } from "@/lib/trade/home-hero";
 import type { TradeSanctionsList } from "@prisma/client";
+import { hasDemoWorkspace } from "@/lib/trade/demo-workspace.server";
 import { ActionInboxPanel } from "./_components/ActionInboxPanel";
+import {
+  LoadDemoWorkspaceCard,
+  RemoveDemoWorkspaceRow,
+} from "./_components/DemoWorkspaceButton";
 import ListFreshnessStrip, {
   SANCTIONS_LIST_LABELS,
 } from "./_components/ListFreshnessStrip";
@@ -92,6 +97,8 @@ export default async function TradeDashboardPage() {
     // ── Hub trust signals (ILA review #6/#10) ──
     sanctionsFreshnessRows,
     activeSagRows,
+    // ── [DEMO] workspace marker (ILA review #1) ──
+    demoLoaded,
   ] = await Promise.all([
     prisma.organization.findUnique({
       where: { id: orgId },
@@ -275,6 +282,7 @@ export default async function TradeDashboardPage() {
         drawnDownValueEur: true,
       },
     }),
+    hasDemoWorkspace(orgId),
   ]);
 
   // Reshape group-by results into lookup maps.
@@ -508,6 +516,7 @@ export default async function TradeDashboardPage() {
             <ApplicabilityGateBanner />
           )}
           <HomeOnboarding />
+          <LoadDemoWorkspaceCard />
           <ListFreshnessStrip rows={listFreshness} now={now} />
         </div>
       ) : (
@@ -516,6 +525,7 @@ export default async function TradeDashboardPage() {
           <HomeHero state={heroState} />
           <ActionInboxPanel items={actionItems} />
           <ListFreshnessStrip rows={listFreshness} now={now} />
+          {demoLoaded ? <RemoveDemoWorkspaceRow /> : null}
         </div>
       )}
     </div>
