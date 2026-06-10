@@ -42,7 +42,8 @@ import { humanizeEnum } from "@/lib/trade/format";
 import { EmptyStateRich } from "../_components/EmptyStateRich";
 import { buildCsv, downloadCsv } from "@/lib/trade/csv-export";
 import { useToast } from "@/components/ui/Toast";
-import { Download } from "lucide-react";
+import { Download, Upload } from "lucide-react";
+import { CsvImportDialog } from "./_components/CsvImportDialog";
 import {
   DatasheetDropzone,
   type DatasheetApplyPayload,
@@ -370,6 +371,7 @@ export default function TradeItemsPage() {
   }, []);
   const clearStatusFilter = useCallback(() => setStatusFilter(new Set()), []);
   const [showNew, setShowNew] = useState(false);
+  const [showImport, setShowImport] = useState(false);
   const [error, setError] = useState("");
   // U-CRIT-5: bulk-select state. `selectedIds` is a Set for O(1)
   // membership checks during render. Cleared whenever the filter
@@ -577,15 +579,30 @@ export default function TradeItemsPage() {
         </div>
 
         {!showNew && (
-          <button
-            onClick={() => setShowNew(true)}
-            className="flex shrink-0 items-center gap-2 rounded-lg bg-trade-text-primary px-4 py-2 text-[13px] font-medium text-trade-bg-panel transition hover:opacity-90"
-          >
-            <Plus className="h-4 w-4" />
-            Neuer Artikel
-          </button>
+          <div className="flex shrink-0 items-center gap-2">
+            <button
+              onClick={() => setShowImport(true)}
+              className="flex items-center gap-2 rounded-lg border border-trade-border-strong px-4 py-2 text-[13px] font-medium text-trade-text-primary transition hover:bg-trade-hover"
+            >
+              <Upload className="h-4 w-4" />
+              CSV importieren
+            </button>
+            <button
+              onClick={() => setShowNew(true)}
+              className="flex items-center gap-2 rounded-lg bg-trade-text-primary px-4 py-2 text-[13px] font-medium text-trade-bg-panel transition hover:opacity-90"
+            >
+              <Plus className="h-4 w-4" />
+              Neuer Artikel
+            </button>
+          </div>
         )}
       </header>
+
+      <CsvImportDialog
+        open={showImport}
+        onClose={() => setShowImport(false)}
+        onImported={() => void fetchItems()}
+      />
 
       {/* New item form */}
       {showNew && (
