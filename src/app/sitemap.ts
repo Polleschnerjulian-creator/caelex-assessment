@@ -242,23 +242,12 @@ export default function sitemap(): MetadataRoute.Sitemap {
     },
   ];
 
-  // Assessment wizard pages
+  // Assessment pages — the legacy wizard URLs permanently redirect into the
+  // spine (Task 4.1), so the sitemap lists the canonical spine entry.
   const assessmentPages: MetadataRoute.Sitemap = [
     {
-      url: `${baseUrl}/assessment/eu-space-act`,
-      lastModified: new Date("2026-03-15"),
-      changeFrequency: "monthly" as const,
-      priority: 0.9,
-    },
-    {
-      url: `${baseUrl}/assessment/nis2`,
-      lastModified: new Date("2026-03-15"),
-      changeFrequency: "monthly" as const,
-      priority: 0.9,
-    },
-    {
-      url: `${baseUrl}/assessment/space-law`,
-      lastModified: new Date("2026-03-15"),
+      url: `${baseUrl}/assessment/quick`,
+      lastModified: new Date("2026-06-10"),
       changeFrequency: "monthly" as const,
       priority: 0.9,
     },

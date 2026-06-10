@@ -26,10 +26,11 @@ import { prisma } from "@/lib/prisma";
 import QuickResultPanel from "@/components/assessment/spine/QuickResultPanel";
 import { projectQuickResult } from "@/components/assessment/spine/quick-projection";
 import { ASSESSMENT_PROFILE_COOKIE } from "@/lib/assessment/assessment-profile";
+import { hasLivingTierEntitlement } from "@/lib/assessment/living-entitlement.server";
 
 export const dynamic = "force-dynamic";
 
-async function resolveProfileId(): Promise<string | null> {
+async function resolveProfileId(userId: string | null): Promise<string | null> {
   const cookieStore = await cookies();
   const anonymousId = cookieStore.get(ASSESSMENT_PROFILE_COOKIE)?.value;
   if (anonymousId) {
@@ -40,10 +41,9 @@ async function resolveProfileId(): Promise<string | null> {
     if (profile) return profile.id;
   }
 
-  const session = await auth().catch(() => null);
-  if (session?.user?.id) {
+  if (userId) {
     const profile = await prisma.operatorAssessmentProfile.findFirst({
-      where: { userId: session.user.id },
+      where: { userId },
       orderBy: { updatedAt: "desc" },
       select: { id: true },
     });
@@ -54,7 +54,10 @@ async function resolveProfileId(): Promise<string | null> {
 }
 
 export default async function QuickResultsPage() {
-  const profileId = await resolveProfileId();
+  const session = await auth().catch(() => null);
+  const userId = session?.user?.id ?? null;
+
+  const profileId = await resolveProfileId(userId);
   if (!profileId) {
     redirect("/assessment/quick");
   }
@@ -74,6 +77,12 @@ export default async function QuickResultsPage() {
     redirect("/assessment/quick");
   }
 
+  // Founder §11.2 — the living tier (re-run on rulebook change) is paid.
+  // Anonymous visitors are never entitled; the stamp shows the upgrade path.
+  const livingEntitled = userId
+    ? await hasLivingTierEntitlement(userId)
+    : false;
+
   return (
     <div className="landing-page min-h-screen bg-black text-white py-12 px-6">
       <div className="max-w-4xl mx-auto">
@@ -90,7 +99,11 @@ export default async function QuickResultsPage() {
           </span>
         </div>
 
-        <QuickResultPanel view={view} profileId={profileId} />
+        <QuickResultPanel
+          view={view}
+          profileId={profileId}
+          livingEntitled={livingEntitled}
+        />
       </div>
     </div>
   );

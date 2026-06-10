@@ -52,7 +52,6 @@ import Link from "next/link";
 import {
   ArrowLeft,
   Award,
-  BookOpen,
   CalendarClock,
   Scale,
   ShieldQuestion,
@@ -60,7 +59,8 @@ import {
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { logger } from "@/lib/logger";
-import { RULEBOOK } from "@/data/assessment/rulebook";
+import RulebookStamp from "@/components/assessment/spine/RulebookStamp";
+import { hasLivingTierEntitlement } from "@/lib/assessment/living-entitlement.server";
 import FindingCard, {
   FluxChip,
 } from "@/components/assessment/spine/FindingCard";
@@ -253,7 +253,9 @@ export default async function FullResultsPage() {
   const showJurisdictionMatrix = q45?.state === "answered";
 
   const answersDrifted = profile.version !== snapshot.profileVersion;
-  const rulebookDrifted = result.rulebookVersion !== RULEBOOK.version;
+  // Founder §11.2 — the stale-verdict re-run is a paid (living-tier) action;
+  // computed server-side and passed into the stamp (Task 4.4).
+  const livingEntitled = await hasLivingTierEntitlement(session.user.id);
 
   const computedDate = (() => {
     const d = new Date(result.computedAt);
@@ -348,32 +350,13 @@ export default async function FullResultsPage() {
             <FindingCard finding={result.nis2Gateway} />
           </section>
 
-          {/* Rulebook stamp — pinned to the SEMVER; sources as an appendix */}
-          <details className="rounded-xl bg-white/[0.02] border border-white/[0.08] p-4 group">
-            <summary className="flex items-center gap-2 text-small text-white/60 cursor-pointer list-none">
-              <BookOpen size={13} aria-hidden="true" />
-              Assessed against Caelex Rulebook v{result.rulebookVersion} ·
-              computed {computedDate} — sources
-            </summary>
-            <ul className="mt-3 space-y-1.5">
-              {RULEBOOK.sources.map((s) => (
-                <li
-                  key={s.id}
-                  className="text-small text-white/45 leading-relaxed"
-                >
-                  {s.label} — {s.citation} (as of {s.asOf})
-                </li>
-              ))}
-            </ul>
-            {rulebookDrifted ? (
-              <p className="mt-3 text-small text-amber-200/90 leading-relaxed">
-                This result was computed against rulebook v
-                {result.rulebookVersion}; the current rulebook is v
-                {RULEBOOK.version}. Re-run the assessment to compute against the
-                current sources.
-              </p>
-            ) : null}
-          </details>
+          {/* Rulebook stamp + entitlement-gated stale CTA (Task 4.4) */}
+          <RulebookStamp
+            rulebookVersion={result.rulebookVersion}
+            computedAtLabel={computedDate}
+            livingEntitled={livingEntitled}
+            profileId={profile.id}
+          />
 
           {/* Save to dashboard (Task 3.6 — the Task 3.5 snapshot import) */}
           <div className="mt-6 flex flex-wrap items-center justify-between gap-4 rounded-2xl bg-white/[0.02] border border-white/[0.08] p-5">

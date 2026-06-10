@@ -30,12 +30,11 @@
  *   - Empty lookups render "none identified" honestly — nothing fabricated.
  */
 
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import Link from "next/link";
 import {
   AlertCircle,
   ArrowRight,
-  BookOpen,
   ChevronDown,
   ChevronRight,
   FileDown,
@@ -44,7 +43,7 @@ import {
   ShieldQuestion,
 } from "lucide-react";
 import EmailGate from "@/components/results/EmailGate";
-import { RULEBOOK } from "@/data/assessment/rulebook";
+import RulebookStamp from "./RulebookStamp";
 import {
   isFindingComplete,
   type AssessmentFinding,
@@ -320,62 +319,21 @@ function ClusterCard({ cluster }: { cluster: QuickClusterView }) {
   );
 }
 
-// ─── Rulebook stamp ──────────────────────────────────────────────────────────
-
-function RulebookStamp({ view }: { view: QuickResultView }) {
-  const [open, setOpen] = useState(false);
-  const computedDate = useMemo(() => {
-    const d = new Date(view.computedAt);
-    return Number.isNaN(d.getTime()) ? view.computedAt : d.toUTCString();
-  }, [view.computedAt]);
-
-  return (
-    <div className="rounded-xl bg-white/[0.02] border border-white/[0.08] p-4">
-      <button
-        type="button"
-        onClick={() => setOpen((v) => !v)}
-        aria-expanded={open}
-        className="w-full flex items-center justify-between gap-2 text-left"
-      >
-        <span className="inline-flex items-center gap-2 text-small text-white/60">
-          <BookOpen size={13} aria-hidden="true" />
-          Assessed against Caelex Rulebook v{view.rulebookVersion} · computed{" "}
-          {computedDate}
-        </span>
-        {open ? (
-          <ChevronDown size={14} className="text-white/40" aria-hidden="true" />
-        ) : (
-          <ChevronRight
-            size={14}
-            className="text-white/40"
-            aria-hidden="true"
-          />
-        )}
-      </button>
-      {open ? (
-        <ul className="mt-3 space-y-1.5">
-          {RULEBOOK.sources.map((s) => (
-            <li key={s.id} className="text-small text-white/45 leading-relaxed">
-              {s.label} — {s.citation} (as of {s.asOf})
-            </li>
-          ))}
-        </ul>
-      ) : null}
-    </div>
-  );
-}
-
 // ─── Panel ───────────────────────────────────────────────────────────────────
 
 export interface QuickResultPanelProps {
   view: QuickResultView;
   /** The profile this verdict was computed from — required for the PDF route. */
   profileId: string;
+  /** Founder §11.2 (Task 4.4) — computed server-side; anonymous quick
+   *  visitors are never entitled, so the stale CTA shows the upgrade path. */
+  livingEntitled?: boolean;
 }
 
 export default function QuickResultPanel({
   view,
   profileId,
+  livingEntitled = false,
 }: QuickResultPanelProps) {
   const [gateOpen, setGateOpen] = useState(false);
   const [pdfError, setPdfError] = useState<string | null>(null);
@@ -387,6 +345,11 @@ export default function QuickResultPanel({
   const regimeValue =
     typeof view.regime?.value === "string" ? view.regime.value : "";
   const regimeDirection = REGIME_DIRECTION[regimeValue] ?? null;
+
+  const computedDate = new Date(view.computedAt);
+  const computedAtLabel = Number.isNaN(computedDate.getTime())
+    ? view.computedAt
+    : computedDate.toUTCString();
 
   const handleLeadSubmitted = async (
     email: string,
@@ -522,7 +485,12 @@ export default function QuickResultPanel({
           )}
         </section>
 
-        <RulebookStamp view={view} />
+        <RulebookStamp
+          rulebookVersion={view.rulebookVersion}
+          computedAtLabel={computedAtLabel}
+          livingEntitled={livingEntitled}
+          profileId={profileId}
+        />
       </header>
 
       {/* ── 2 · Obligation clusters ────────────────────────────────────── */}

@@ -76,6 +76,13 @@ async function getNIS2RequirementsModule() {
  *   6. Large + Annex I + digital infrastructure → essential
  *   7. Medium + Annex I → important (Art. 3(2)) — NEVER auto-essential
  *   8. Small/micro + Annex I → out_of_scope by default unless designated
+ *
+ * @deprecated Rebuild Task 4.2 — the gateway in
+ * `src/lib/assessment/nis2-gateway.server.ts` is the corrected source of
+ * truth (spec §7.1 #3: Rule 4 above encodes the Art 26 representative
+ * misreading — a non-EU space operator never becomes "important via Art 26").
+ * Kept ONLY for stored-result paths and the whatif/v1 bridges until those
+ * migrate; do not wire new callers.
  */
 export function classifyNIS2Entity(answers: NIS2AssessmentAnswers): {
   classification: NIS2EntityClassification;

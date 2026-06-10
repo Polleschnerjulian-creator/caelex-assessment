@@ -1,18 +1,20 @@
-import { Metadata } from "next";
-import UnifiedAssessmentWizard from "@/components/assessment/UnifiedAssessmentWizard";
+/**
+ * Legacy wizard URL — permanently redirected into the assessment spine
+ * (rebuild Task 4.1). The preset preselects a section FOCUS in the quick
+ * wizard's headline only; it never skips the always-on identity/defense
+ * gates and never changes question visibility. Metadata is kept so crawlers
+ * see the 308 with a canonical destination. Stored results keep rendering
+ * via their own saved snapshots — this page never owned them.
+ */
+import type { Metadata } from "next";
+import { permanentRedirect } from "next/navigation";
 
 export const metadata: Metadata = {
-  title: "Unified Compliance Assessment | CAELEX",
+  title: "Unified Compliance Assessment",
   description:
-    "Complete regulatory compliance assessment covering EU Space Act, NIS2 Directive, and National Space Laws. Get your full compliance profile in one assessment.",
-  openGraph: {
-    title: "Unified Compliance Assessment | CAELEX",
-    description:
-      "Complete regulatory compliance assessment covering EU Space Act, NIS2 Directive, and National Space Laws.",
-    type: "website",
-  },
+    "This assessment now runs on the unified Caelex operator assessment.",
 };
 
-export default function UnifiedAssessmentPage() {
-  return <UnifiedAssessmentWizard />;
+export default function LegacyAssessmentRedirect() {
+  permanentRedirect("/assessment/quick");
 }
