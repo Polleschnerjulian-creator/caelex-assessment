@@ -95,6 +95,20 @@ import {
   type MergedSpaceActResult,
 } from "@/lib/unified-engine-merger.server";
 import { calculateSpaceLawCompliance } from "@/lib/space-law-engine.server";
+// Task 3.2/3.7 wiring — full-tier readiness bands, credit map, dated roadmap.
+import {
+  computeReadiness,
+  readinessUnsureQuestionIds,
+  type ClusterReadiness,
+} from "@/lib/assessment/readiness.server";
+import {
+  computeCreditMap,
+  type CreditMapping,
+} from "@/lib/assessment/credit-map.server";
+import {
+  computeRoadmap,
+  type RoadmapItem,
+} from "@/lib/assessment/roadmap.server";
 import type {
   SpaceLawAssessmentAnswers,
   SpaceLawCountryCode,
@@ -145,6 +159,10 @@ export interface ObligationMapResult {
   unknowns: UnknownToResolve[];
   aggregationDisclosures: string[]; // heterogeneous-fleet most-restrictive notes
   contradictions: Contradiction[]; // non-empty blocks the verdict upstream
+  // ── Full tier only (Task 3.2 wiring) — per-cluster bands, never a score ──
+  readiness?: ClusterReadiness[];
+  creditMap?: CreditMapping[];
+  roadmap?: RoadmapItem[];
 }
 
 export class SubmissionInvalidError extends Error {
@@ -931,6 +949,33 @@ export async function runVerdictPipeline(
   // ── Stage 8: unknowns extraction ──────────────────────────────────────────
   const unknowns = extractUnknowns(answers, graph, nis2.clarificationsNeeded);
 
+  // ── Stage 9 (full tier only): readiness bands, credit map, roadmap ────────
+  // Per-cluster N-of-M bands — never a score (invariant 6). An unsure
+  // readiness input is a gap AND an unknown (§5 stage 5, rounds up).
+  let readiness: ClusterReadiness[] | undefined;
+  let creditMap: CreditMapping[] | undefined;
+  let roadmap: RoadmapItem[] | undefined;
+  if (tier === "full") {
+    readiness = computeReadiness(
+      answers,
+      clusters.map((c) => c.id),
+    );
+    creditMap = computeCreditMap(answers);
+    roadmap = computeRoadmap(answers, { computedAt });
+    const known = new Set(unknowns.map((u) => u.questionId));
+    for (const qid of readinessUnsureQuestionIds(answers)) {
+      if (known.has(qid)) continue;
+      const node = graph.find((n) => n.id === qid);
+      unknowns.push({
+        questionId: qid,
+        question: node?.title ?? qid,
+        whatAnsweringChanges:
+          "Turns an uncertain readiness gap into an evidenced or actionable item in the obligation map.",
+        priority: "medium",
+      });
+    }
+  }
+
   return finalize({
     rulebookVersion: RB,
     computedAt,
@@ -944,6 +989,9 @@ export async function runVerdictPipeline(
     unknowns,
     aggregationDisclosures,
     contradictions: [],
+    readiness,
+    creditMap,
+    roadmap,
   });
 }
 
@@ -2002,4 +2050,138 @@ function finalize(result: ObligationMapResult): ObligationMapResult {
     }
   }
   return result;
+}
+
+// ─── Quick-tier projection (plan Task 2.2 — §6b) ─────────────────────────────
+//
+// The PUBLIC quick tier shows COUNTS + HEADLINES, never full finding bodies:
+// scope verdicts + regime direction + NIS2 gateway badge ship as complete
+// envelopes (they ARE the quick verdict and the user must be able to read
+// why), while every CLUSTER is redacted to its counts and ONE headline.
+// The unknowns list is redacted to a COUNT (the full-tier CTA's "your N
+// unknowns"). Aggregation disclosures are NEVER dropped — a most-restrictive
+// merge must stay visible at every tier (honesty over conversion).
+//
+// The wire response of /api/assessment/v2/quick is ALWAYS this projection;
+// the stored AssessmentVerdictSnapshot keeps the full ObligationMapResult as
+// server-side substrate (email-gated quick PDF, Task 2.4).
+
+/** Redacted finding headline — keeps the citation + rulebook pin (invariant 5). */
+export interface QuickFindingHeadline {
+  what: string;
+  verdict: FindingVerdict;
+  confidence: FindingConfidence;
+  cluster: ClusterId;
+  sources: FindingSource[];
+  /** Founder §11.4: collapsed chip only — positions/scenario tables are
+   *  full-tier / PDF-appendix surfaces, never the public quick wire shape. */
+  contested: boolean;
+  fluxSummary?: string;
+  rulebookVersion: string;
+}
+
+export interface QuickClusterSummary {
+  id: ClusterId;
+  label: string;
+  counts: ObligationCluster["counts"];
+  findingsCount: number;
+  topFinding: QuickFindingHeadline | null;
+}
+
+export interface QuickVerdictProjection {
+  kind: "quick_projection";
+  rulebookVersion: string;
+  computedAt: string;
+  scope: AssessmentFinding[];
+  nis2Gateway: AssessmentFinding<NIS2GatewayClassification>;
+  regime: RegimeResult["finding"];
+  clusters: QuickClusterSummary[];
+  unknownsCount: number;
+  aggregationDisclosures: string[];
+}
+
+/** Most actionable first: hard obligations beat advisories; certainty beats doubt. */
+const QUICK_VERDICT_ORDER: Record<FindingVerdict, number> = {
+  applicable: 0,
+  contested: 1,
+  conditional: 2,
+  advisory: 3,
+  not_applicable: 4,
+};
+
+const QUICK_CONFIDENCE_ORDER: Record<FindingConfidence, number> = {
+  DETERMINED: 0,
+  PROBABLE: 1,
+  INDETERMINATE: 2,
+};
+
+/** Full-tier value (`evidenceExamples`, §6 (2)) never ships on the quick wire. */
+function stripEvidenceExamples<T>(
+  finding: AssessmentFinding<T>,
+): AssessmentFinding<T> {
+  const { evidenceExamples: _evidenceExamples, ...rest } = finding;
+  void _evidenceExamples;
+  return rest as AssessmentFinding<T>;
+}
+
+function toQuickHeadline(finding: AssessmentFinding): QuickFindingHeadline {
+  return {
+    what: finding.what,
+    verdict: finding.verdict,
+    confidence: finding.confidence,
+    cluster: finding.cluster,
+    sources: finding.sources.map((s) => ({ ...s })),
+    contested: finding.fluxFlag !== undefined,
+    ...(finding.fluxFlag !== undefined
+      ? { fluxSummary: finding.fluxFlag.summary }
+      : {}),
+    rulebookVersion: finding.rulebookVersion,
+  };
+}
+
+function topQuickFinding(
+  findings: readonly AssessmentFinding[],
+): QuickFindingHeadline | null {
+  if (findings.length === 0) return null;
+  let top = findings[0];
+  for (const f of findings.slice(1)) {
+    const byVerdict =
+      QUICK_VERDICT_ORDER[f.verdict] - QUICK_VERDICT_ORDER[top.verdict];
+    if (
+      byVerdict < 0 ||
+      (byVerdict === 0 &&
+        QUICK_CONFIDENCE_ORDER[f.confidence] <
+          QUICK_CONFIDENCE_ORDER[top.confidence])
+    ) {
+      top = f;
+    }
+  }
+  return toQuickHeadline(top);
+}
+
+/**
+ * Project a full ObligationMapResult onto the public quick-tier wire shape.
+ * Pure — recomputes nothing; redaction only. NO key in the projection
+ * matches /score/i (invariant 6) and the unknowns ship as a COUNT.
+ */
+export function buildQuickProjection(
+  result: ObligationMapResult,
+): QuickVerdictProjection {
+  return {
+    kind: "quick_projection",
+    rulebookVersion: result.rulebookVersion,
+    computedAt: result.computedAt,
+    scope: result.scope.map(stripEvidenceExamples),
+    nis2Gateway: stripEvidenceExamples(result.nis2Gateway),
+    regime: stripEvidenceExamples(result.regime),
+    clusters: result.clusters.map((cluster) => ({
+      id: cluster.id,
+      label: cluster.label,
+      counts: { ...cluster.counts },
+      findingsCount: cluster.findings.length,
+      topFinding: topQuickFinding(cluster.findings),
+    })),
+    unknownsCount: result.unknowns.length,
+    aggregationDisclosures: [...result.aggregationDisclosures],
+  };
 }

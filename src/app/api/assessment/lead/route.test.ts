@@ -149,6 +149,33 @@ describe("POST /api/assessment/lead — validation", () => {
     expect(leadCreateMock).not.toHaveBeenCalled();
   });
 
+  it('accepts the spine tier "quick-check" as assessmentType (plan Task 2.4)', async () => {
+    const { POST } = await loadRoute();
+    const res = await POST(
+      req({ email: "a@b.co", assessmentType: "quick-check" }) as never,
+    );
+
+    expect(res.status).toBe(200);
+    expect(leadCreateMock).toHaveBeenCalledTimes(1);
+    const arg = leadCreateMock.mock.calls[0][0] as {
+      data: Record<string, unknown>;
+    };
+    expect(arg.data.assessmentType).toBe("quick-check");
+  });
+
+  it('accepts the spine tier "full" as assessmentType (plan Task 2.4)', async () => {
+    const { POST } = await loadRoute();
+    const res = await POST(
+      req({ email: "a@b.co", assessmentType: "full" }) as never,
+    );
+
+    expect(res.status).toBe(200);
+    const arg = leadCreateMock.mock.calls[0][0] as {
+      data: Record<string, unknown>;
+    };
+    expect(arg.data.assessmentType).toBe("full");
+  });
+
   it("rejects an unknown assessmentType with 400", async () => {
     const { POST } = await loadRoute();
     const res = await POST(

@@ -10,6 +10,12 @@
  * handling. This route makes the lead capture real and the consent
  * record durable.
  *
+ * Plan Task 2.4 (ultimate-assessment rebuild): the persistence flow moved
+ * VERBATIM into `src/lib/assessment/lead-capture.server.ts` so the
+ * email-gated quick-PDF route reuses the exact same logic; this route's
+ * behavior is unchanged. The `assessmentType` enum gained the spine tiers
+ * ("quick-check", "full").
+ *
  * Public endpoint with rate limiting (contact tier: 5/hour per IP) and
  * honeypot bot protection.
  *
@@ -28,80 +34,34 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
-import { randomUUID } from "crypto";
-import { prisma } from "@/lib/prisma";
 import {
   checkRateLimit,
   getIdentifier,
   createRateLimitResponse,
 } from "@/lib/ratelimit";
-import { logger, maskEmail } from "@/lib/logger";
+import { logger } from "@/lib/logger";
 import { getSafeErrorMessage } from "@/lib/validations";
-import { sendNewsletterConfirmation } from "@/lib/email/templates/newsletter-confirmation";
+import { captureAssessmentLead } from "@/lib/assessment/lead-capture.server";
 
 const assessmentLeadSchema = z.object({
   email: z.string().email("Invalid email format").max(320),
   company: z.string().max(200).optional(),
   role: z.string().max(200).optional(),
+  // "quick-check" / "full" = the spine assessment tiers (plan Task 2.4).
   assessmentType: z
-    .enum(["eu-space-act", "nis2", "space-law", "unified"])
+    .enum([
+      "eu-space-act",
+      "nis2",
+      "space-law",
+      "unified",
+      "quick-check",
+      "full",
+    ])
     .optional()
     .default("eu-space-act"),
   consentNewsletter: z.boolean().optional().default(false),
   _hp: z.string().optional(),
 });
-
-/**
- * Start (or restart) the newsletter double-opt-in flow for an email.
- *
- * Mirrors the POST /api/newsletter behavior: never sets ACTIVE directly —
- * the subscription stays PENDING until the visitor confirms via the
- * emailed link (UWG §7, DSGVO Art. 7).
- */
-async function startNewsletterDoubleOptIn(email: string): Promise<void> {
-  const existing = await prisma.newsletterSubscription.findUnique({
-    where: { email },
-  });
-
-  if (existing?.status === "ACTIVE") {
-    // Already a confirmed subscriber — nothing to do.
-    return;
-  }
-
-  const confirmationToken = randomUUID();
-  const tokenExpiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
-
-  if (existing) {
-    // PENDING (re-send with fresh token) or UNSUBSCRIBED (re-subscribe
-    // with double opt-in).
-    await prisma.newsletterSubscription.update({
-      where: { id: existing.id },
-      data: {
-        status: "PENDING",
-        confirmationToken,
-        tokenExpiresAt,
-        confirmedAt: null,
-        unsubscribedAt: null,
-        source: "assessment-results",
-      },
-    });
-  } else {
-    await prisma.newsletterSubscription.create({
-      data: {
-        email,
-        source: "assessment-results",
-        status: "PENDING",
-        confirmationToken,
-        tokenExpiresAt,
-      },
-    });
-  }
-
-  // Send confirmation email (fire-and-forget, don't block the response)
-  sendNewsletterConfirmation(email, confirmationToken).catch((err) => {
-    logger.error("Failed to send newsletter confirmation email", err);
-  });
-}
 
 export async function POST(request: NextRequest) {
   try {
@@ -135,43 +95,20 @@ export async function POST(request: NextRequest) {
 
     const { email, company, role, assessmentType, consentNewsletter } =
       parsed.data;
-    const normalizedEmail = email.toLowerCase();
 
-    // ─── Persist to database FIRST — leads must never be lost ────────────
+    // Persist lead FIRST + (consent-only) newsletter double-opt-in — the
+    // shared capture logic (lead-capture.server.ts). Throws on lead-write
+    // failure → honest 500 below, never a fake success.
     const userAgent = request.headers.get("user-agent") || null;
-    const lead = await prisma.assessmentLead.create({
-      data: {
-        email: normalizedEmail,
-        company: company || null,
-        role: role || null,
-        assessmentType,
-        consentNewsletter,
-        source: "assessment-results",
-        ipAddress: identifier === "unknown" ? null : identifier,
-        userAgent: userAgent ? userAgent.slice(0, 500) : null,
-      },
-    });
-
-    logger.info("Assessment lead created", {
-      id: lead.id,
-      email: maskEmail(normalizedEmail),
+    await captureAssessmentLead({
+      email,
+      company,
+      role,
       assessmentType,
       consentNewsletter,
+      ipAddress: identifier === "unknown" ? null : identifier,
+      userAgent,
     });
-
-    // ─── Newsletter opt-in (explicit consent only) ────────────────────────
-    if (consentNewsletter) {
-      try {
-        await startNewsletterDoubleOptIn(normalizedEmail);
-      } catch (err) {
-        // The consent flag is already recorded on the lead row, so the
-        // opt-in can be processed manually — never lose the lead over it.
-        logger.error("Newsletter opt-in wiring failed (non-blocking)", {
-          error: err,
-          leadId: lead.id,
-        });
-      }
-    }
 
     return NextResponse.json({ success: true });
   } catch (error) {

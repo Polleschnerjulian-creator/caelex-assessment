@@ -14,8 +14,15 @@ interface EmailGateProps {
     role?: string,
     subscribe?: boolean,
   ) => void;
-  /** Which assessment wizard produced the report (for lead attribution). */
-  assessmentType?: "eu-space-act" | "nis2" | "space-law" | "unified";
+  /** Which assessment wizard produced the report (for lead attribution).
+   *  "quick-check" / "full" = the spine assessment tiers (plan Task 2.4). */
+  assessmentType?:
+    | "eu-space-act"
+    | "nis2"
+    | "space-law"
+    | "unified"
+    | "quick-check"
+    | "full";
 }
 
 export default function EmailGate({
