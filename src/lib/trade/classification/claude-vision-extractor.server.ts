@@ -530,6 +530,11 @@ export function guardValue(
  */
 export async function extractDatasheetViaVision(
   pdfBytes: Buffer | Uint8Array,
+  options: {
+    /** G4 eval harness only — overrides the configured model for A/B
+     *  accuracy runs. Production callers never pass this. */
+    modelOverride?: string;
+  } = {},
 ): Promise<VisionExtractionResult> {
   const startMs = Date.now();
   const setup = buildAnthropicClient();
@@ -541,18 +546,24 @@ export async function extractDatasheetViaVision(
     };
   }
 
+  const model = options.modelOverride ?? setup.model;
+
   // Content-hash cache: byte-identical PDF → return cached extraction with
   // no Claude call. Only ok:true results are cached; failures fall through
-  // so they remain retryable (see vision-cache.ts file header).
+  // so they remain retryable (see vision-cache.ts file header). Eval runs
+  // with a model override bypass the cache — a cached Sonnet result must
+  // never masquerade as a Haiku measurement.
   const cacheKey = visionCacheKey(Buffer.from(pdfBytes));
-  const cached = getCachedVision(cacheKey);
-  if (cached) return cached;
+  if (!options.modelOverride) {
+    const cached = getCachedVision(cacheKey);
+    if (cached) return cached;
+  }
 
   const pdfBase64 = Buffer.from(pdfBytes).toString("base64");
 
   try {
     const response = await setup.client.messages.create({
-      model: setup.model,
+      model,
       max_tokens: MAX_OUTPUT_TOKENS,
       system: [
         {
@@ -606,11 +617,14 @@ export async function extractDatasheetViaVision(
       ok: true,
       attributes,
       warnings,
-      modelUsed: setup.model,
+      modelUsed: model,
       latencyMs: Date.now() - startMs,
     };
-    // Cache only successful extractions — failures remain retryable.
-    setCachedVision(cacheKey, result);
+    // Cache only successful PRODUCTION extractions — failures remain
+    // retryable, and eval-override runs never pollute the cache.
+    if (!options.modelOverride) {
+      setCachedVision(cacheKey, result);
+    }
     return result;
   } catch (err) {
     const msg = err instanceof Error ? err.message : "Unknown Anthropic error";
