@@ -4,7 +4,7 @@ import Link from "next/link";
 import { BreadcrumbJsonLd } from "@/components/seo/JsonLd";
 import Image from "next/image";
 import { motion, useInView } from "framer-motion";
-import { useRef } from "react";
+import { useRef, useState } from "react";
 import {
   ArrowRight,
   Target,
@@ -19,6 +19,7 @@ import {
   MapPin,
   Calendar,
   Sparkles,
+  Linkedin,
 } from "lucide-react";
 import GlassCard from "@/components/ui/GlassCard";
 
@@ -76,6 +77,67 @@ const modules = [
   { name: "Debris Mitigation", icon: Rocket },
   { name: "Insurance Compliance", icon: Building2 },
 ];
+
+const founders = [
+  {
+    name: "Julian Polleschner",
+    role: "Co-Founder & CEO",
+    education: "B.Sc. Economics",
+    photo: "/images/team/julian-polleschner.jpg",
+    initials: "JP",
+    linkedin: null as string | null,
+    bio: "Julian leads product and the regulatory side of Caelex — translating the EU Space Act, NIS2 and ten national space-law regimes into the rulebook that powers the platform, and making sure every verdict an operator sees is honest, cited and current.",
+  },
+  {
+    name: "Niklas Wieczorek",
+    role: "Co-Founder & CTO",
+    education: "M.Sc. Information Systems",
+    photo: "/images/team/niklas-wieczorek.jpg",
+    initials: "NW",
+    linkedin: "https://www.linkedin.com/in/wieczorek-niklas/" as string | null,
+    bio: "Niklas leads engineering and architecture at Caelex — a multi-product platform spanning assessments, compliance operations and AI copilots, built on a security-first spine. He turns regulatory complexity into software operators can actually run on.",
+  },
+];
+
+function FounderPortrait({
+  photo,
+  name,
+  initials,
+}: {
+  photo: string;
+  name: string;
+  initials: string;
+}) {
+  const [failed, setFailed] = useState(false);
+
+  if (failed) {
+    // Graceful stand-in until the portrait file lands in /public/images/team.
+    return (
+      <div
+        className="aspect-[4/5] w-full bg-[#F1F3F5] flex items-center justify-center"
+        role="img"
+        aria-label={`Portrait of ${name}`}
+      >
+        <span className="text-[64px] font-light tracking-[-0.02em] text-[#9CA3AF]">
+          {initials}
+        </span>
+      </div>
+    );
+  }
+
+  return (
+    <div className="relative aspect-[4/5] w-full bg-[#F1F3F5]">
+      <Image
+        src={photo}
+        alt={`Portrait of ${name}`}
+        fill
+        sizes="(min-width: 768px) 420px, 100vw"
+        className="object-cover"
+        onError={() => setFailed(true)}
+      />
+    </div>
+  );
+}
 
 const timeline = [
   { year: "2025", event: "Caelex founded in Berlin", status: "completed" },
@@ -427,6 +489,64 @@ export default function AboutPage() {
                 </motion.div>
               ))}
             </motion.div>
+          </div>
+        </div>
+      </section>
+
+      {/* Founders Section */}
+      <section className="relative py-24 md:py-32">
+        <div className="max-w-[1400px] mx-auto px-6 md:px-12">
+          <SectionHeader
+            label="The Founders"
+            title="Two founders, one mission"
+            description="Caelex was founded in Berlin in 2025, when the EU Space Act proposal made one thing clear: European space companies would soon face comprehensive regulation — without tools built for it. We started Caelex to close the gap between regulatory text and operator reality."
+          />
+
+          <div className="grid md:grid-cols-2 gap-6 mt-16 max-w-[900px] mx-auto">
+            {founders.map((founder, i) => (
+              <motion.div
+                key={founder.name}
+                initial={false}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: i * 0.15 }}
+              >
+                <GlassCard className="h-full overflow-hidden" hover={false}>
+                  <FounderPortrait
+                    photo={founder.photo}
+                    name={founder.name}
+                    initials={founder.initials}
+                  />
+                  <div className="p-6 md:p-7">
+                    <div className="flex items-start justify-between gap-3 mb-1">
+                      <h3 className="text-heading font-medium text-[#111827]">
+                        {founder.name}
+                      </h3>
+                      {founder.linkedin && (
+                        <a
+                          href={founder.linkedin}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          aria-label={`${founder.name} on LinkedIn`}
+                          className="p-2 -mt-1 rounded-lg text-[#9CA3AF] hover:text-[#111827] hover:bg-[#F1F3F5] transition-colors"
+                        >
+                          <Linkedin size={18} />
+                        </a>
+                      )}
+                    </div>
+                    <p className="text-body-lg text-[#4B5563] mb-3">
+                      {founder.role}
+                    </p>
+                    <span className="inline-block px-3 py-1 rounded-full bg-[#F1F3F5] border border-[#E5E7EB] text-small text-[#4B5563] mb-4">
+                      {founder.education}
+                    </span>
+                    <p className="text-body-lg text-[#4B5563] leading-relaxed">
+                      {founder.bio}
+                    </p>
+                  </div>
+                </GlassCard>
+              </motion.div>
+            ))}
           </div>
         </div>
       </section>
