@@ -4,6 +4,10 @@
   "buildCommand": "npm run build:deploy",
   "crons": [
     {
+      "path": "/api/cron/trade-digest",
+      "schedule": "45 6 * * *"
+    },
+    {
       "path": "/api/cron/profile-enrichment/sync",
       "schedule": "15 3 * * *"
     },
