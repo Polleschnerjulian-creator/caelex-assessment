@@ -176,7 +176,7 @@ export default function JurisdictionMatrix({ codes }: JurisdictionMatrixProps) {
 
   if (laws.length === 0) {
     return (
-      <p className="text-body text-white/60 leading-relaxed">
+      <p className="text-body text-black/60 leading-relaxed">
         No comparison data is available for the selected jurisdictions — none of
         them matches the verified jurisdiction dataset.
       </p>
@@ -184,14 +184,14 @@ export default function JurisdictionMatrix({ codes }: JurisdictionMatrixProps) {
   }
 
   return (
-    <div className="rounded-2xl bg-white/[0.02] border border-white/[0.08] overflow-hidden">
+    <div className="rounded-2xl bg-white border border-black/[0.08] overflow-hidden">
       <div className="overflow-x-auto">
         <table className="w-full text-left border-collapse">
           <thead>
-            <tr className="border-b border-white/[0.08]">
+            <tr className="border-b border-black/[0.08]">
               <th
                 scope="col"
-                className="px-4 py-3 text-micro uppercase tracking-[0.15em] text-white/40 font-medium"
+                className="px-4 py-3 text-micro uppercase tracking-[0.15em] text-black/40 font-medium"
               >
                 Criterion
               </th>
@@ -199,7 +199,7 @@ export default function JurisdictionMatrix({ codes }: JurisdictionMatrixProps) {
                 <th
                   scope="col"
                   key={law.countryCode}
-                  className="px-4 py-3 text-body text-white font-medium whitespace-nowrap"
+                  className="px-4 py-3 text-body text-[#1d1d1f] font-medium whitespace-nowrap"
                 >
                   {law.flagEmoji} {law.countryName}
                 </th>
@@ -210,18 +210,18 @@ export default function JurisdictionMatrix({ codes }: JurisdictionMatrixProps) {
             {MATRIX_CRITERIA.map((criterion) => (
               <tr
                 key={criterion.label}
-                className="border-b border-white/[0.05] last:border-b-0 align-top"
+                className="border-b border-black/[0.08] last:border-b-0 align-top"
               >
                 <th
                   scope="row"
-                  className="px-4 py-3 text-small text-white/60 font-medium align-top w-52"
+                  className="px-4 py-3 text-small text-black/60 font-medium align-top w-52"
                 >
                   {criterion.label}
                 </th>
                 {laws.map((law) => (
                   <td
                     key={law.countryCode}
-                    className="px-4 py-3 text-small text-white/70 leading-relaxed align-top"
+                    className="px-4 py-3 text-small text-black/70 leading-relaxed align-top"
                   >
                     {criterion.render(law)}
                   </td>
@@ -231,7 +231,7 @@ export default function JurisdictionMatrix({ codes }: JurisdictionMatrixProps) {
           </tbody>
         </table>
       </div>
-      <p className="px-4 py-3 border-t border-white/[0.08] text-small text-white/45 leading-relaxed">
+      <p className="px-4 py-3 border-t border-black/[0.08] text-small text-black/45 leading-relaxed">
         Factual comparison as stated in each national law and the verified
         Caelex jurisdiction dataset. This table ranks nothing — the choice of
         jurisdiction depends on factors it does not capture.

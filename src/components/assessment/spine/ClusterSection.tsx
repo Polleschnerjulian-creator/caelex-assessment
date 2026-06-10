@@ -53,10 +53,10 @@ function ReadinessBand({ readiness }: { readiness: ClusterReadiness }) {
   return (
     <p
       data-testid="readiness-band"
-      className="mb-4 text-small text-white/55 leading-relaxed"
+      className="mb-4 text-small text-black/55 leading-relaxed"
     >
       Evidence readiness:{" "}
-      <span className="font-medium text-emerald-300">
+      <span className="font-medium text-[#1d1d1f]">
         {readiness.evidenced} of {readiness.total}
       </span>{" "}
       items evidenced
@@ -73,35 +73,35 @@ export default function ClusterSection({
     {
       label: "applicable",
       value: cluster.counts.applicable,
-      className: "text-red-300",
+      className: "text-red-600",
     },
     {
       label: "conditional",
       value: cluster.counts.conditional,
-      className: "text-amber-300",
+      className: "text-black/75",
     },
     {
       label: "contested",
       value: cluster.counts.contested,
-      className: "text-amber-300",
+      className: "text-black/75",
     },
     {
       label: "advisory",
       value: cluster.counts.advisory,
-      className: "text-white/60",
+      className: "text-black/60",
     },
   ].filter((c) => c.value > 0);
 
   return (
     <section
       aria-label={cluster.label}
-      className="rounded-2xl bg-white/[0.02] border border-white/[0.08] p-5"
+      className="rounded-2xl bg-white border border-black/[0.08] p-5"
     >
       <div className="flex flex-wrap items-baseline justify-between gap-2 mb-4">
-        <h3 className="text-title text-white">{cluster.label}</h3>
+        <h3 className="text-title text-[#1d1d1f]">{cluster.label}</h3>
         <div className="flex flex-wrap gap-3">
           {countChips.map((c) => (
-            <span key={c.label} className="text-small text-white/45">
+            <span key={c.label} className="text-small text-black/45">
               <span className={`font-medium ${c.className}`}>{c.value}</span>{" "}
               {c.label}
             </span>
@@ -118,7 +118,7 @@ export default function ClusterSection({
           ))}
         </div>
       ) : (
-        <p className="text-body text-white/55 leading-relaxed">
+        <p className="text-body text-black/55 leading-relaxed">
           No findings were recorded in this cluster — none identified on your
           answers.
         </p>

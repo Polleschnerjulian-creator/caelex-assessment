@@ -65,13 +65,13 @@ export default function CheckYourAnswers({
       className="w-full max-w-2xl mx-auto"
     >
       <div className="mb-10 text-center">
-        <span className="text-caption uppercase tracking-[0.2em] text-white/45 block mb-4">
+        <span className="text-caption uppercase tracking-[0.2em] text-black/45 block mb-4">
           Final step
         </span>
-        <h2 className="text-[clamp(1.5rem,3vw,2rem)] font-light tracking-[-0.02em] text-white mb-4">
+        <h2 className="text-[clamp(1.5rem,3vw,2rem)] font-light tracking-[-0.02em] text-[#1d1d1f] mb-4">
           Check your answers
         </h2>
-        <p className="text-subtitle text-white/70 leading-relaxed">
+        <p className="text-subtitle text-black/70 leading-relaxed">
           {
             "Your verdict is computed from exactly these answers — change anything that looks wrong before continuing."
           }
@@ -82,24 +82,24 @@ export default function CheckYourAnswers({
       {blocked && (
         <div
           role="alert"
-          className="mb-8 rounded-xl bg-red-500/[0.08] border border-red-500/25 p-5"
+          className="mb-8 rounded-xl bg-red-50 border border-red-200 p-5"
         >
           <div className="flex items-start gap-3">
             <AlertTriangle
               size={18}
-              className="text-red-400 flex-shrink-0 mt-0.5"
+              className="text-red-600 flex-shrink-0 mt-0.5"
               aria-hidden="true"
             />
             <div className="space-y-3">
-              <p className="text-body-lg text-red-400 font-medium">
+              <p className="text-body-lg text-red-600 font-medium">
                 Your answers contradict each other
               </p>
               {contradictions.map((contradiction, index) => (
                 <div key={index} className="space-y-1">
-                  <p className="text-body text-white/70 leading-relaxed">
+                  <p className="text-body text-black/70 leading-relaxed">
                     {contradiction.message}
                   </p>
-                  <p className="text-small text-white/45">
+                  <p className="text-small text-black/45">
                     Affected questions:{" "}
                     {contradiction.questionIds
                       .map((id) => questionTitles[id] ?? id)
@@ -107,7 +107,7 @@ export default function CheckYourAnswers({
                   </p>
                 </div>
               ))}
-              <p className="text-small text-white/45">
+              <p className="text-small text-black/45">
                 Resolve the contradiction with the Change links below to
                 continue.
               </p>
@@ -121,21 +121,21 @@ export default function CheckYourAnswers({
         {entries.map((entry) => (
           <div
             key={entry.questionId}
-            className="flex items-start gap-4 rounded-xl bg-white/[0.03] backdrop-blur-[10px] border border-white/[0.08] p-4"
+            className="flex items-start gap-4 rounded-xl bg-white backdrop-blur-[10px] border border-black/[0.08] p-4"
             style={{
               boxShadow:
                 "inset 0 1px 0 rgba(255,255,255,0.04), 0 4px 24px rgba(0,0,0,0.2)",
             }}
           >
             <div className="flex-1 min-w-0">
-              <dt className="text-small text-white/45 leading-relaxed mb-1">
+              <dt className="text-small text-black/45 leading-relaxed mb-1">
                 {entry.title}
               </dt>
               <dd
                 className={`text-body-lg ${
                   entry.state === "unsure"
-                    ? "text-amber-400/90 italic"
-                    : "text-white"
+                    ? "text-black/70 italic"
+                    : "text-[#1d1d1f]"
                 }`}
               >
                 {entry.answerLabel}
@@ -145,7 +145,7 @@ export default function CheckYourAnswers({
               type="button"
               onClick={() => onChange(entry.screenKey)}
               aria-label={`Change: ${entry.title}`}
-              className="flex items-center gap-1.5 text-small text-white/45 hover:text-emerald-400 transition-colors flex-shrink-0 mt-0.5"
+              className="flex items-center gap-1.5 text-small text-black/45 hover:text-[#1d1d1f] transition-colors flex-shrink-0 mt-0.5"
             >
               <Pencil size={12} aria-hidden="true" />
               <span>Change</span>
@@ -155,7 +155,7 @@ export default function CheckYourAnswers({
       </dl>
 
       {/* Accuracy-responsibility statement (also ships in the exportable record) */}
-      <p className="text-small text-white/45 leading-relaxed mb-8 rounded-xl border border-white/[0.06] bg-white/[0.02] p-4">
+      <p className="text-small text-black/45 leading-relaxed mb-8 rounded-xl border border-black/[0.08] bg-white p-4">
         {ACCURACY_STATEMENT}
       </p>
 
@@ -163,16 +163,16 @@ export default function CheckYourAnswers({
       {submitErrors.length > 0 && (
         <div
           role="alert"
-          className="mb-6 rounded-xl bg-red-500/[0.08] border border-red-500/25 p-4"
+          className="mb-6 rounded-xl bg-red-50 border border-red-200 p-4"
         >
-          <p className="text-body-lg text-red-400 font-medium mb-1">
+          <p className="text-body-lg text-red-600 font-medium mb-1">
             {"We couldn’t compute your verdict"}
           </p>
           <ul className="space-y-1">
             {submitErrors.map((message, index) => (
               <li
                 key={index}
-                className="text-body text-white/70 leading-relaxed"
+                className="text-body text-black/70 leading-relaxed"
               >
                 {message}
               </li>
@@ -188,8 +188,8 @@ export default function CheckYourAnswers({
           disabled={blocked || submitting}
           className={`flex items-center gap-2 px-8 py-3.5 rounded-full text-body-lg font-medium transition-all ${
             blocked || submitting
-              ? "bg-white/10 text-white/45 cursor-not-allowed"
-              : "bg-emerald-500 text-white hover:bg-emerald-400 hover:shadow-[0_0_30px_rgba(16,185,129,0.3)] cursor-pointer"
+              ? "bg-black/[0.06] text-black/45 cursor-not-allowed"
+              : "bg-[#1d1d1f] text-white hover:bg-black hover:shadow-[0_4px_14px_rgba(0,0,0,0.18)] cursor-pointer"
           }`}
         >
           {submitting ? "Computing your verdict…" : "See my results"}

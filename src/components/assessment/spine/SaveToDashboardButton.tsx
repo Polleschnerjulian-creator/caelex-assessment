@@ -94,7 +94,7 @@ export default function SaveToDashboardButton({
     return (
       <p
         role="status"
-        className="inline-flex items-center gap-2 px-4 py-2.5 rounded-full bg-emerald-500/[0.10] border border-emerald-500/25 text-body text-emerald-300"
+        className="inline-flex items-center gap-2 px-4 py-2.5 rounded-full bg-black/[0.04] border border-black/[0.18] text-body text-[#1d1d1f]"
       >
         <CheckCircle2 size={14} aria-hidden="true" />
         Saved to your dashboard — {state.articles} article{" "}
@@ -111,7 +111,7 @@ export default function SaveToDashboardButton({
         onClick={save}
         disabled={state.phase === "saving"}
         aria-busy={state.phase === "saving"}
-        className="inline-flex items-center gap-2 bg-emerald-500 hover:bg-emerald-600 disabled:opacity-60 disabled:cursor-not-allowed text-white text-body font-medium px-5 py-2.5 rounded-full transition-all"
+        className="inline-flex items-center gap-2 bg-[#1d1d1f] hover:bg-black disabled:opacity-60 disabled:cursor-not-allowed text-white text-body font-medium px-5 py-2.5 rounded-full transition-all"
       >
         {state.phase === "saving" ? (
           <Loader2 size={14} className="animate-spin" aria-hidden="true" />
@@ -121,7 +121,7 @@ export default function SaveToDashboardButton({
         {state.phase === "saving" ? "Saving…" : "Save to dashboard"}
       </button>
       {state.phase === "error" ? (
-        <p role="alert" className="mt-2 text-small text-red-400">
+        <p role="alert" className="mt-2 text-small text-red-600">
           {state.message}
         </p>
       ) : null}

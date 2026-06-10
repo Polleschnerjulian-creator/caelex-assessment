@@ -92,19 +92,19 @@ export const dynamic = "force-dynamic";
 const NIS2_BADGE: Record<string, { label: string; className: string }> = {
   essential: {
     label: "NIS2: essential entity",
-    className: "bg-red-500/[0.12] border-red-500/25 text-red-300",
+    className: "bg-red-50 border-red-200 text-red-600",
   },
   important: {
     label: "NIS2: important entity",
-    className: "bg-amber-500/[0.12] border-amber-500/25 text-amber-300",
+    className: "bg-black/[0.05] border-black/[0.18] text-black/75",
   },
   out_of_scope: {
     label: "NIS2: out of scope on your answers",
-    className: "bg-white/[0.06] border-white/[0.12] text-white/60",
+    className: "bg-black/[0.04] border-black/[0.12] text-black/60",
   },
   needs_clarification: {
     label: "NIS2: needs clarification",
-    className: "bg-amber-500/[0.12] border-amber-500/25 text-amber-300",
+    className: "bg-black/[0.05] border-black/[0.18] text-black/75",
   },
 };
 
@@ -263,32 +263,32 @@ export default async function FullResultsPage() {
   })();
 
   return (
-    <div className="landing-page min-h-screen bg-black text-white py-12 px-6">
+    <div className="landing-page min-h-screen bg-[#f5f5f7] text-[#1d1d1f] py-12 px-6">
       <div className="max-w-4xl mx-auto">
         <div className="flex items-center justify-between mb-12">
           <Link
             href="/assessment/full"
-            className="flex items-center gap-2 text-body text-white/45 hover:text-emerald-400 transition-colors"
+            className="flex items-center gap-2 text-body text-black/45 hover:text-[#1d1d1f] transition-colors"
           >
             <ArrowLeft size={14} aria-hidden="true" />
             Back to the full assessment
           </Link>
-          <span className="text-caption font-medium text-emerald-400/60 uppercase tracking-[0.2em]">
+          <span className="text-caption font-medium text-black/40 uppercase tracking-[0.2em]">
             Caelex
           </span>
         </div>
 
         {/* ── 1 · Verdict header ─────────────────────────────────────────── */}
         <header className="mb-10">
-          <p className="text-caption font-medium text-emerald-400/60 uppercase tracking-[0.2em] mb-3">
+          <p className="text-caption font-medium text-black/40 uppercase tracking-[0.2em] mb-3">
             Full assessment result
           </p>
-          <h1 className="text-display-sm font-medium tracking-[-0.02em] text-white mb-6">
+          <h1 className="text-display-sm font-medium tracking-[-0.02em] text-[#1d1d1f] mb-6">
             Your obligation map
           </h1>
 
           {answersDrifted ? (
-            <p className="mb-6 rounded-xl bg-amber-500/[0.06] border border-amber-500/20 px-4 py-3 text-small text-amber-200/90 leading-relaxed">
+            <p className="mb-6 rounded-xl bg-black/[0.03] border border-black/[0.15] px-4 py-3 text-small text-black/70 leading-relaxed">
               Your answers have changed since this result was computed.
               Recalculate from the full assessment to see the current picture —
               this page shows the stored verdict as computed.
@@ -297,7 +297,7 @@ export default async function FullResultsPage() {
 
           {/* Scope determination */}
           <section aria-label="Scope determination" className="mb-6">
-            <h2 className="text-micro uppercase tracking-[0.15em] text-white/40 mb-3">
+            <h2 className="text-micro uppercase tracking-[0.15em] text-black/40 mb-3">
               Scope determination
             </h2>
             {result.scope.length > 0 ? (
@@ -307,7 +307,7 @@ export default async function FullResultsPage() {
                 ))}
               </div>
             ) : (
-              <p className="text-body text-white/60 leading-relaxed">
+              <p className="text-body text-black/60 leading-relaxed">
                 No scope exclusions or caveats were raised by your answers — the
                 EU Space Act applicability gates passed.
               </p>
@@ -316,18 +316,20 @@ export default async function FullResultsPage() {
 
           {/* Regime — direction + the reasoning chain (the envelope's why) */}
           <section aria-label="Regime reasoning" className="mb-6">
-            <h2 className="text-micro uppercase tracking-[0.15em] text-white/40 mb-3">
+            <h2 className="text-micro uppercase tracking-[0.15em] text-black/40 mb-3">
               Regime
             </h2>
             {regimeDirection ? (
-              <p className="text-subtitle text-white mb-3">{regimeDirection}</p>
+              <p className="text-subtitle text-[#1d1d1f] mb-3">
+                {regimeDirection}
+              </p>
             ) : null}
             <FindingCard finding={result.regime} />
           </section>
 
           {/* NIS2 gateway — badge + the data-derived transposition suffix */}
           <section aria-label="NIS2 gateway" className="mb-6">
-            <h2 className="text-micro uppercase tracking-[0.15em] text-white/40 mb-3">
+            <h2 className="text-micro uppercase tracking-[0.15em] text-black/40 mb-3">
               NIS2 gateway
             </h2>
             {nis2Badge ? (
@@ -340,7 +342,7 @@ export default async function FullResultsPage() {
               </span>
             ) : null}
             {nis2Value === "needs_clarification" ? (
-              <p className="text-body text-amber-200/90 leading-relaxed mb-3">
+              <p className="text-body text-black/70 leading-relaxed mb-3">
                 Your NIS2 classification is an OPEN question, not a negative: it
                 turns on answers you have not given yet. It is listed in your
                 unknowns below — resolving it can add (never remove) an entire
@@ -359,8 +361,8 @@ export default async function FullResultsPage() {
           />
 
           {/* Save to dashboard (Task 3.6 — the Task 3.5 snapshot import) */}
-          <div className="mt-6 flex flex-wrap items-center justify-between gap-4 rounded-2xl bg-white/[0.02] border border-white/[0.08] p-5">
-            <p className="text-body text-white/70 leading-relaxed max-w-md">
+          <div className="mt-6 flex flex-wrap items-center justify-between gap-4 rounded-2xl bg-white border border-black/[0.08] p-5">
+            <p className="text-body text-black/70 leading-relaxed max-w-md">
               Save this result to your compliance dashboard — article statuses
               and roadmap deadlines flow into the tracker and timeline.
             </p>
@@ -370,8 +372,8 @@ export default async function FullResultsPage() {
 
         {/* ── 2 · Obligation map by cluster ──────────────────────────────── */}
         <section aria-label="Obligation map" className="mb-10">
-          <h2 className="text-heading text-white mb-2">Obligation map</h2>
-          <p className="text-body text-white/55 mb-6">
+          <h2 className="text-heading text-[#1d1d1f] mb-2">Obligation map</h2>
+          <p className="text-body text-black/55 mb-6">
             Every identified obligation, fully explained: legal basis with as-of
             date, the answers that triggered it, evidence a supervisor would
             accept, and contested points shown conservatively.
@@ -387,7 +389,7 @@ export default async function FullResultsPage() {
               ))}
             </div>
           ) : (
-            <p className="text-body text-white/60 leading-relaxed">
+            <p className="text-body text-black/60 leading-relaxed">
               No obligation clusters were assessed on this result
               {result.scope.some((f) => f.verdict === "not_applicable")
                 ? " — the assessment ended at the scope gate above."
@@ -396,9 +398,9 @@ export default async function FullResultsPage() {
           )}
 
           {result.aggregationDisclosures.length > 0 ? (
-            <div className="mt-4 rounded-xl bg-white/[0.02] border border-white/[0.08] p-4">
+            <div className="mt-4 rounded-xl bg-white border border-black/[0.08] p-4">
               {result.aggregationDisclosures.map((d, i) => (
-                <p key={i} className="text-small text-white/55 leading-relaxed">
+                <p key={i} className="text-small text-black/55 leading-relaxed">
                   {d}
                 </p>
               ))}
@@ -408,12 +410,12 @@ export default async function FullResultsPage() {
 
         {/* ── 3 · Unknowns ───────────────────────────────────────────────── */}
         <section aria-label="Unknowns to resolve" className="mb-10">
-          <h2 className="text-heading text-white mb-2">
+          <h2 className="text-heading text-[#1d1d1f] mb-2">
             {unknowns.length === 1
               ? "1 unknown to resolve"
               : `${unknowns.length} unknowns to resolve`}
           </h2>
-          <p className="text-body text-white/55 mb-6">
+          <p className="text-body text-black/55 mb-6">
             Every &quot;I&apos;m not sure&quot; you resolve narrows your
             obligation set and raises confidence — it never gets cleaner by
             staying unknown.
@@ -423,10 +425,10 @@ export default async function FullResultsPage() {
 
         {/* ── 4 · Credit map ─────────────────────────────────────────────── */}
         <section aria-label="Credit map" className="mb-10">
-          <h2 className="text-heading text-white mb-2">
+          <h2 className="text-heading text-[#1d1d1f] mb-2">
             What you already hold counts
           </h2>
-          <p className="text-body text-white/55 mb-6">
+          <p className="text-body text-black/55 mb-6">
             Held certifications and existing licences mapped onto the obligation
             areas they partially evidence — partial evidence, never proof of
             compliance.
@@ -436,24 +438,24 @@ export default async function FullResultsPage() {
               {creditMap.map((credit, i) => (
                 <div
                   key={i}
-                  className="rounded-xl bg-white/[0.03] border border-white/[0.08] p-4"
+                  className="rounded-xl bg-white border border-black/[0.08] p-4"
                 >
-                  <p className="inline-flex items-center gap-2 text-body font-medium text-white mb-1.5">
+                  <p className="inline-flex items-center gap-2 text-body font-medium text-[#1d1d1f] mb-1.5">
                     <Award
                       size={14}
-                      className="text-emerald-400"
+                      className="text-[#1d1d1f]"
                       aria-hidden="true"
                     />
                     {credit.source}
                   </p>
-                  <p className="text-small text-white/60 leading-relaxed mb-2">
+                  <p className="text-small text-black/60 leading-relaxed mb-2">
                     {credit.basis}
                   </p>
                   <div className="flex flex-wrap gap-1.5">
                     {credit.covers.map((area) => (
                       <span
                         key={area}
-                        className="inline-flex items-center px-2 py-0.5 rounded-full bg-emerald-500/[0.08] border border-emerald-500/15 text-micro text-emerald-300/90"
+                        className="inline-flex items-center px-2 py-0.5 rounded-full bg-black/[0.04] border border-black/[0.12] text-micro text-[#1d1d1f]"
                       >
                         {area.replace(/_/g, " ")}
                       </span>
@@ -463,7 +465,7 @@ export default async function FullResultsPage() {
               ))}
             </div>
           ) : (
-            <p className="text-body text-white/60 leading-relaxed">
+            <p className="text-body text-black/60 leading-relaxed">
               None identified — no held certifications or existing licences were
               credited on your answers.
             </p>
@@ -472,8 +474,8 @@ export default async function FullResultsPage() {
 
         {/* ── 5 · Roadmap ────────────────────────────────────────────────── */}
         <section aria-label="Roadmap" className="mb-10">
-          <h2 className="text-heading text-white mb-2">Roadmap</h2>
-          <p className="text-body text-white/55 mb-6">
+          <h2 className="text-heading text-[#1d1d1f] mb-2">Roadmap</h2>
+          <p className="text-body text-black/55 mb-6">
             Deadline-ordered actions from your own dates and already-in-force
             duties. Items whose timing depends on contested legislation carry no
             invented date — the conservative reading is shown collapsed.
@@ -483,20 +485,20 @@ export default async function FullResultsPage() {
               {roadmap.map((item, i) => (
                 <li
                   key={i}
-                  className="rounded-xl bg-white/[0.03] border border-white/[0.08] p-4"
+                  className="rounded-xl bg-white border border-black/[0.08] p-4"
                 >
                   <div className="flex items-start gap-3">
                     <span
                       className={`shrink-0 inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full border text-micro uppercase tracking-[0.12em] ${
                         item.due === "contested"
-                          ? "bg-amber-500/[0.12] border-amber-500/25 text-amber-300"
-                          : "bg-emerald-500/[0.10] border-emerald-500/25 text-emerald-300"
+                          ? "bg-black/[0.05] border-black/[0.18] text-black/75"
+                          : "bg-black/[0.04] border-black/[0.18] text-[#1d1d1f]"
                       }`}
                     >
                       <CalendarClock size={10} aria-hidden="true" />
                       {item.due === "contested" ? "timing contested" : item.due}
                     </span>
-                    <p className="text-body text-white/80 leading-relaxed">
+                    <p className="text-body text-black/80 leading-relaxed">
                       {item.action}
                     </p>
                   </div>
@@ -505,7 +507,7 @@ export default async function FullResultsPage() {
                       {item.basis.map((s, j) => (
                         <li
                           key={j}
-                          className="text-small text-white/45 leading-relaxed"
+                          className="text-small text-black/45 leading-relaxed"
                         >
                           <Scale
                             size={10}
@@ -522,13 +524,13 @@ export default async function FullResultsPage() {
               ))}
             </ol>
           ) : (
-            <p className="text-body text-white/60 leading-relaxed">
+            <p className="text-body text-black/60 leading-relaxed">
               No roadmap items were derived — none of your answers carried a
               date and no already-in-force duty applied.
             </p>
           )}
           {/* §7.3: pre-application engagement ships as roadmap COPY. */}
-          <p className="mt-4 rounded-xl bg-white/[0.02] border border-white/[0.08] p-4 text-small text-white/55 leading-relaxed">
+          <p className="mt-4 rounded-xl bg-white border border-black/[0.08] p-4 text-small text-black/55 leading-relaxed">
             {PRE_APPLICATION_ENGAGEMENT_NOTE}
           </p>
         </section>
@@ -536,10 +538,10 @@ export default async function FullResultsPage() {
         {/* ── 6 · Jurisdiction comparison (only when Q4.5 was answered) ──── */}
         {showJurisdictionMatrix ? (
           <section aria-label="Jurisdiction comparison" className="mb-10">
-            <h2 className="text-heading text-white mb-2">
+            <h2 className="text-heading text-[#1d1d1f] mb-2">
               Jurisdiction comparison
             </h2>
-            <p className="text-body text-white/55 mb-6">
+            <p className="text-body text-black/55 mb-6">
               A factual comparison of the jurisdictions you are considering —
               timelines, insurance requirements and fees as stated in each
               national law.
@@ -549,12 +551,12 @@ export default async function FullResultsPage() {
         ) : null}
 
         {/* ── 7 · Disclaimer (§6 (7) — at the point of action) ──────────── */}
-        <footer className="pt-6 border-t border-white/[0.08]">
-          <p className="text-small text-white/45 leading-relaxed">
+        <footer className="pt-6 border-t border-black/[0.08]">
+          <p className="text-small text-black/45 leading-relaxed">
             {SCOPE_DISCLAIMER}{" "}
             <Link
               href="/legal/terms"
-              className="underline hover:text-white/70 transition-colors"
+              className="underline hover:text-black/70 transition-colors"
             >
               Full terms
             </Link>

@@ -84,17 +84,17 @@ export default async function QuickResultsPage() {
     : false;
 
   return (
-    <div className="landing-page min-h-screen bg-black text-white py-12 px-6">
+    <div className="landing-page min-h-screen bg-[#f5f5f7] text-[#1d1d1f] py-12 px-6">
       <div className="max-w-4xl mx-auto">
         <div className="flex items-center justify-between mb-12">
           <Link
             href="/assessment/quick"
-            className="flex items-center gap-2 text-body text-white/45 hover:text-emerald-400 transition-colors"
+            className="flex items-center gap-2 text-body text-black/45 hover:text-[#1d1d1f] transition-colors"
           >
             <ArrowLeft size={14} aria-hidden="true" />
             Back to the quick check
           </Link>
-          <span className="text-caption font-medium text-emerald-400/60 uppercase tracking-[0.2em]">
+          <span className="text-caption font-medium text-black/40 uppercase tracking-[0.2em]">
             Caelex
           </span>
         </div>

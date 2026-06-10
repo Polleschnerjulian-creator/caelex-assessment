@@ -60,23 +60,23 @@ const VERDICT_BADGE: Record<
 > = {
   applicable: {
     label: "Applicable",
-    className: "bg-red-500/[0.12] border-red-500/25 text-red-300",
+    className: "bg-red-50 border-red-200 text-red-600",
   },
   conditional: {
     label: "Conditional",
-    className: "bg-amber-500/[0.12] border-amber-500/25 text-amber-300",
+    className: "bg-black/[0.05] border-black/[0.18] text-black/75",
   },
   contested: {
     label: "Contested",
-    className: "bg-amber-500/[0.12] border-amber-500/25 text-amber-300",
+    className: "bg-black/[0.05] border-black/[0.18] text-black/75",
   },
   advisory: {
     label: "Advisory",
-    className: "bg-white/[0.06] border-white/[0.12] text-white/60",
+    className: "bg-black/[0.04] border-black/[0.12] text-black/60",
   },
   not_applicable: {
     label: "Not applicable",
-    className: "bg-white/[0.06] border-white/[0.12] text-white/60",
+    className: "bg-black/[0.04] border-black/[0.12] text-black/60",
   },
 };
 
@@ -92,40 +92,36 @@ export function FluxChip({ flux }: { flux: FluxFlag }) {
   const [expanded, setExpanded] = useState(false);
 
   return (
-    <div className="mt-3 rounded-lg bg-amber-500/[0.06] border border-amber-500/20 overflow-hidden">
+    <div className="mt-3 rounded-lg bg-black/[0.03] border border-black/[0.15] overflow-hidden">
       <button
         type="button"
         onClick={() => setExpanded((v) => !v)}
         aria-expanded={expanded}
         className="w-full flex items-center justify-between gap-2 px-3 py-2 text-left"
       >
-        <span className="inline-flex items-center gap-2 text-small text-amber-300">
+        <span className="inline-flex items-center gap-2 text-small text-black/75">
           <AlertCircle size={12} aria-hidden="true" />
           {flux.summary}
         </span>
         {expanded ? (
-          <ChevronDown
-            size={14}
-            className="text-amber-300/70"
-            aria-hidden="true"
-          />
+          <ChevronDown size={14} className="text-black/55" aria-hidden="true" />
         ) : (
           <ChevronRight
             size={14}
-            className="text-amber-300/70"
+            className="text-black/55"
             aria-hidden="true"
           />
         )}
       </button>
       {expanded ? (
         <div className="px-3 pb-3">
-          <p className="text-small text-white/70 leading-relaxed mb-2">
+          <p className="text-small text-black/70 leading-relaxed mb-2">
             {flux.conservativeReading}
           </p>
           <ul className="space-y-1.5">
             {flux.positions.map((p, i) => (
-              <li key={i} className="text-small text-white/55 leading-relaxed">
-                <span className="text-white/40">{p.source}:</span> {p.position}
+              <li key={i} className="text-small text-black/55 leading-relaxed">
+                <span className="text-black/40">{p.source}:</span> {p.position}
               </li>
             ))}
           </ul>
@@ -147,23 +143,23 @@ function FindingWithheldBlock({ missing }: { missing: string[] }) {
     <div
       role="alert"
       data-testid="finding-withheld"
-      className="rounded-xl bg-red-500/[0.08] border border-red-500/25 p-4 text-left"
+      className="rounded-xl bg-red-50 border border-red-200 p-4 text-left"
     >
       <div className="flex items-start gap-3">
         <AlertTriangle
           size={16}
-          className="mt-0.5 shrink-0 text-red-300"
+          className="mt-0.5 shrink-0 text-red-600"
           aria-hidden="true"
         />
         <div className="min-w-0">
-          <p className="text-body font-medium text-red-300">
+          <p className="text-body font-medium text-red-600">
             Finding withheld — explanation incomplete
           </p>
-          <p className="mt-1 text-small text-white/70 leading-relaxed">
+          <p className="mt-1 text-small text-black/70 leading-relaxed">
             This finding cannot be shown because its explanation envelope is
             incomplete. A conclusion without its full reasoning and citation may
             not be surfaced. Missing field(s):{" "}
-            <span className="font-mono text-amber-300">
+            <span className="font-mono text-black/75">
               {missing.join(", ")}
             </span>
             .
@@ -190,9 +186,11 @@ export default function FindingCard({ finding }: FindingCardProps) {
   const badge = VERDICT_BADGE[finding.verdict];
 
   return (
-    <article className="rounded-xl bg-white/[0.03] backdrop-blur-[10px] border border-white/[0.08] p-5 text-left">
+    <article className="rounded-xl bg-white backdrop-blur-[10px] border border-black/[0.08] p-5 text-left">
       <div className="flex items-start justify-between gap-3 mb-2">
-        <p className="text-subtitle text-white leading-snug">{finding.what}</p>
+        <p className="text-subtitle text-[#1d1d1f] leading-snug">
+          {finding.what}
+        </p>
         <span
           className={`shrink-0 inline-flex items-center px-2.5 py-1 rounded-full border text-micro uppercase tracking-[0.12em] ${badge.className}`}
         >
@@ -200,15 +198,15 @@ export default function FindingCard({ finding }: FindingCardProps) {
         </span>
       </div>
 
-      <p className="text-body text-white/60 leading-relaxed mb-2">
+      <p className="text-body text-black/60 leading-relaxed mb-2">
         {finding.why}
       </p>
-      <p className="text-body text-white/70 leading-relaxed">
+      <p className="text-body text-black/70 leading-relaxed">
         {finding.wherefore}
       </p>
 
       {finding.whyTrace.length > 0 ? (
-        <p className="mt-3 text-small text-white/45">
+        <p className="mt-3 text-small text-black/45">
           Because you answered:{" "}
           {finding.whyTrace
             .map((t) => `${t.questionId} — ${t.answerLabel}`)
@@ -219,7 +217,7 @@ export default function FindingCard({ finding }: FindingCardProps) {
       {finding.sources.length > 0 ? (
         <ul className="mt-3 space-y-1">
           {finding.sources.map((s, i) => (
-            <li key={i} className="text-small text-white/45 leading-relaxed">
+            <li key={i} className="text-small text-black/45 leading-relaxed">
               <Scale
                 size={10}
                 className="inline mr-1.5 -mt-0.5"
@@ -227,7 +225,7 @@ export default function FindingCard({ finding }: FindingCardProps) {
               />
               {s.label} — {s.citation} (as of {s.asOf})
               {!s.verified ? (
-                <span className="text-amber-300/80">
+                <span className="text-black/60">
                   {" "}
                   · legal basis pending verification
                 </span>
@@ -238,14 +236,14 @@ export default function FindingCard({ finding }: FindingCardProps) {
       ) : null}
 
       {finding.evidenceExamples && finding.evidenceExamples.length > 0 ? (
-        <div className="mt-4 rounded-lg bg-emerald-500/[0.05] border border-emerald-500/15 p-3">
-          <p className="inline-flex items-center gap-2 text-small font-medium text-emerald-300 mb-2">
+        <div className="mt-4 rounded-lg bg-black/[0.03] border border-black/[0.12] p-3">
+          <p className="inline-flex items-center gap-2 text-small font-medium text-[#1d1d1f] mb-2">
             <ClipboardCheck size={12} aria-hidden="true" />
             Evidence a supervisor would accept
           </p>
           <ul className="space-y-1">
             {finding.evidenceExamples.map((e, i) => (
-              <li key={i} className="text-small text-white/60 leading-relaxed">
+              <li key={i} className="text-small text-black/60 leading-relaxed">
                 — {e}
               </li>
             ))}
@@ -253,7 +251,7 @@ export default function FindingCard({ finding }: FindingCardProps) {
         </div>
       ) : null}
 
-      <p className="mt-3 text-micro uppercase tracking-[0.15em] text-white/40">
+      <p className="mt-3 text-micro uppercase tracking-[0.15em] text-black/40">
         Confidence: {CONFIDENCE_LABEL[finding.confidence] ?? finding.confidence}
       </p>
 

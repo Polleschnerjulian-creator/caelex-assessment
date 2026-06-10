@@ -32,7 +32,7 @@ export default function WhyPanel({ why, citations }: WhyPanelProps) {
         aria-expanded={open}
         aria-controls={panelId}
         onClick={() => setOpen((prev) => !prev)}
-        className="inline-flex items-center gap-1.5 text-small text-white/45 hover:text-emerald-400 transition-colors"
+        className="inline-flex items-center gap-1.5 text-small text-black/45 hover:text-[#1d1d1f] transition-colors"
       >
         <HelpCircle size={13} aria-hidden="true" />
         <span>Why we ask this</span>
@@ -46,27 +46,27 @@ export default function WhyPanel({ why, citations }: WhyPanelProps) {
       {open && (
         <div
           id={panelId}
-          className="mt-3 rounded-xl bg-white/[0.03] backdrop-blur-[10px] border border-white/[0.08] p-4 text-left"
+          className="mt-3 rounded-xl bg-white backdrop-blur-[10px] border border-black/[0.08] p-4 text-left"
           style={{
             boxShadow:
               "inset 0 1px 0 rgba(255,255,255,0.04), 0 4px 24px rgba(0,0,0,0.2)",
           }}
         >
-          <p className="text-body text-white/70 leading-relaxed">{why}</p>
+          <p className="text-body text-black/70 leading-relaxed">{why}</p>
 
           {citations.length > 0 && (
-            <ul className="mt-3 space-y-1.5 border-t border-white/[0.06] pt-3">
+            <ul className="mt-3 space-y-1.5 border-t border-black/[0.08] pt-3">
               {citations.map((source, index) => (
                 <li
                   key={`${source.citation}-${index}`}
-                  className="text-small text-white/45 leading-relaxed"
+                  className="text-small text-black/45 leading-relaxed"
                 >
-                  <span className="text-white/60">{source.label}</span>
+                  <span className="text-black/60">{source.label}</span>
                   {" — "}
                   {source.citation}
-                  <span className="text-white/30"> (as of {source.asOf})</span>
+                  <span className="text-black/30"> (as of {source.asOf})</span>
                   {!source.verified && (
-                    <span className="text-amber-400/80">
+                    <span className="text-black/60">
                       {" "}
                       — legal basis pending verification
                     </span>

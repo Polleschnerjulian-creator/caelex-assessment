@@ -41,14 +41,14 @@ export default function OptionCard({
         w-full p-5 rounded-xl text-left transition-all duration-300 group backdrop-blur-[10px]
         ${
           isSelected
-            ? "bg-emerald-500/[0.12] border border-emerald-500/30"
-            : "bg-white/[0.03] border border-white/[0.08] hover:bg-white/[0.06] hover:border-white/[0.15]"
+            ? "bg-black/[0.05] border border-black"
+            : "bg-white border border-black/[0.08] hover:bg-black/[0.04] hover:border-black/[0.15]"
         }
       `}
       style={{
         boxShadow: isSelected
-          ? "inset 0 1px 0 rgba(16,185,129,0.1), 0 4px 24px rgba(0,0,0,0.2)"
-          : "inset 0 1px 0 rgba(255,255,255,0.04), 0 4px 24px rgba(0,0,0,0.2)",
+          ? "0 4px 16px rgba(0,0,0,0.10)"
+          : "0 2px 12px rgba(0,0,0,0.05)",
       }}
     >
       <div className="flex items-start gap-4">
@@ -59,15 +59,15 @@ export default function OptionCard({
               p-2.5 rounded-lg transition-colors
               ${
                 isSelected
-                  ? "bg-emerald-500/20"
-                  : "bg-white/[0.06] group-hover:bg-white/[0.10]"
+                  ? "bg-black/[0.08]"
+                  : "bg-black/[0.04] group-hover:bg-black/[0.06]"
               }
             `}
           >
             <IconComponent
               size={20}
               aria-hidden="true"
-              className={isSelected ? "text-emerald-400" : "text-white/70"}
+              className={isSelected ? "text-[#1d1d1f]" : "text-black/70"}
             />
           </div>
         )}
@@ -76,12 +76,12 @@ export default function OptionCard({
         <div className="flex-1 min-w-0">
           <h3
             className={`text-subtitle font-medium mb-1 ${
-              isSelected ? "text-emerald-400" : "text-white"
+              isSelected ? "text-[#1d1d1f]" : "text-[#1d1d1f]"
             }`}
           >
             {label}
           </h3>
-          <p className="text-body-lg text-white/45 leading-relaxed">
+          <p className="text-body-lg text-black/45 leading-relaxed">
             {description}
           </p>
         </div>
@@ -90,7 +90,7 @@ export default function OptionCard({
         <div
           className={`
             w-5 h-5 rounded-full flex-shrink-0 flex items-center justify-center transition-all
-            ${isSelected ? "bg-emerald-500" : "border border-white/[0.25]"}
+            ${isSelected ? "bg-[#1d1d1f]" : "border border-black/[0.30]"}
           `}
         >
           {isSelected && (

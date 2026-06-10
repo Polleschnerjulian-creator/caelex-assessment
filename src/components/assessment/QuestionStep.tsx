@@ -50,12 +50,12 @@ export default function QuestionStep({
         {/* Question header */}
         <div className="mb-10 text-center max-w-2xl mx-auto">
           {/* Question Number */}
-          <span className="text-caption uppercase tracking-[0.2em] text-white/45 block mb-4">
+          <span className="text-caption uppercase tracking-[0.2em] text-black/45 block mb-4">
             Question {String(questionNumber).padStart(2, "0")}
           </span>
 
           {/* Title */}
-          <h2 className="text-[clamp(1.5rem,3vw,2rem)] font-light tracking-[-0.02em] text-white mb-4">
+          <h2 className="text-[clamp(1.5rem,3vw,2rem)] font-light tracking-[-0.02em] text-[#1d1d1f] mb-4">
             {question.title}
           </h2>
 
@@ -63,7 +63,7 @@ export default function QuestionStep({
           {question.subtitle && (
             <p
               id="question-subtitle"
-              className="text-subtitle text-white/70 leading-relaxed"
+              className="text-subtitle text-black/70 leading-relaxed"
             >
               {question.subtitle}
             </p>

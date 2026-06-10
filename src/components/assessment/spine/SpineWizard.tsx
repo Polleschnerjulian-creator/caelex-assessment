@@ -303,7 +303,7 @@ function GroupOptionBlock({
   const selected = selectedValueFor(answer);
   return (
     <div className="mb-10">
-      <h3 className="text-title font-medium text-white text-center mb-2">
+      <h3 className="text-title font-medium text-[#1d1d1f] text-center mb-2">
         {node.title}
       </h3>
       <WhyPanel why={node.why} citations={node.citation} />
@@ -371,7 +371,7 @@ function TextEntryBlock({
 
   return (
     <div className="mb-10 max-w-2xl mx-auto">
-      <h3 className="text-title font-medium text-white text-center mb-2">
+      <h3 className="text-title font-medium text-[#1d1d1f] text-center mb-2">
         {node.title}
       </h3>
       <WhyPanel why={node.why} citations={node.citation} />
@@ -385,13 +385,13 @@ function TextEntryBlock({
             ? "Country codes, comma-separated (e.g. de, fr, lu)"
             : "Type your answer"
         }
-        className="mt-4 w-full rounded-xl bg-white/[0.03] border border-white/[0.08] px-4 py-3 text-body-lg text-white placeholder:text-white/30 focus:border-emerald-500/40 focus:outline-none"
+        className="mt-4 w-full rounded-xl bg-white border border-black/[0.08] px-4 py-3 text-body-lg text-[#1d1d1f] placeholder:text-black/30 focus:border-black/[0.35] focus:outline-none"
       />
       <div className="mt-6 flex justify-center gap-3">
         <button
           type="button"
           onClick={commit}
-          className="flex items-center gap-2 px-8 py-3 rounded-full text-body-lg font-medium bg-emerald-500 text-white hover:bg-emerald-400 transition-all"
+          className="flex items-center gap-2 px-8 py-3 rounded-full text-body-lg font-medium bg-[#1d1d1f] text-white hover:bg-black transition-all"
         >
           Continue
           <ArrowRight size={16} aria-hidden="true" />
@@ -400,7 +400,7 @@ function TextEntryBlock({
           <button
             type="button"
             onClick={() => onCommit({ state: "unsure" })}
-            className="px-6 py-3 rounded-full text-body-lg bg-white/[0.06] border border-white/[0.10] text-white/70 hover:bg-white/[0.10] hover:text-white transition-all"
+            className="px-6 py-3 rounded-full text-body-lg bg-black/[0.04] border border-black/[0.12] text-black/70 hover:bg-black/[0.05] hover:text-[#1d1d1f] transition-all"
           >
             {UNSURE_LABEL}
           </button>
@@ -450,7 +450,7 @@ function BatteryBlock({
 
   return (
     <div className="mb-10 max-w-2xl mx-auto">
-      <h3 className="text-title font-medium text-white text-center mb-2">
+      <h3 className="text-title font-medium text-[#1d1d1f] text-center mb-2">
         {node.title}
       </h3>
       <WhyPanel why={node.why} citations={node.citation} />
@@ -458,9 +458,9 @@ function BatteryBlock({
         {items.map((item) => (
           <div
             key={item.id}
-            className="rounded-xl bg-white/[0.03] border border-white/[0.08] p-4"
+            className="rounded-xl bg-white border border-black/[0.08] p-4"
           >
-            <p className="text-body-lg text-white mb-3">{item.label}</p>
+            <p className="text-body-lg text-[#1d1d1f] mb-3">{item.label}</p>
             <div
               role="radiogroup"
               aria-label={item.label}
@@ -477,8 +477,8 @@ function BatteryBlock({
                   }
                   className={`px-3 py-1.5 rounded-full text-small transition-all ${
                     statuses[item.id] === status
-                      ? "bg-emerald-500/[0.15] border border-emerald-500/40 text-emerald-400"
-                      : "bg-white/[0.04] border border-white/[0.08] text-white/60 hover:text-white"
+                      ? "bg-black/[0.06] border border-black text-[#1d1d1f]"
+                      : "bg-black/[0.03] border border-black/[0.08] text-black/60 hover:text-[#1d1d1f]"
                   }`}
                 >
                   {BATTERY_STATUS_LABELS[status]}
@@ -500,8 +500,8 @@ function BatteryBlock({
           disabled={!complete}
           className={`flex items-center gap-2 px-8 py-3 rounded-full text-body-lg font-medium transition-all ${
             complete
-              ? "bg-emerald-500 text-white hover:bg-emerald-400"
-              : "bg-white/10 text-white/45 cursor-not-allowed"
+              ? "bg-[#1d1d1f] text-white hover:bg-black"
+              : "bg-black/[0.06] text-black/45 cursor-not-allowed"
           }`}
         >
           Continue
@@ -868,16 +868,16 @@ export default function SpineWizard({
   if (phase === "loading") {
     return (
       <div
-        className="landing-page min-h-screen bg-black text-white flex items-center justify-center"
+        className="landing-page min-h-screen bg-[#f5f5f7] text-[#1d1d1f] flex items-center justify-center"
         role="status"
         aria-live="polite"
       >
         <div className="text-center">
           <div
-            className="w-10 h-10 border-2 border-emerald-500/30 border-t-emerald-500 rounded-full animate-spin mx-auto mb-4"
+            className="w-10 h-10 border-2 border-black/[0.15] border-t-[#1d1d1f] rounded-full animate-spin mx-auto mb-4"
             aria-hidden="true"
           />
-          <p className="text-body text-white/45">Preparing your assessment…</p>
+          <p className="text-body text-black/45">Preparing your assessment…</p>
         </div>
       </div>
     );
@@ -891,7 +891,7 @@ export default function SpineWizard({
         : "";
 
   return (
-    <div className="landing-page min-h-screen bg-black text-white py-12 px-6">
+    <div className="landing-page min-h-screen bg-[#f5f5f7] text-[#1d1d1f] py-12 px-6">
       <div className="max-w-4xl mx-auto">
         {/* Header */}
         <div className="flex items-center justify-between mb-12">
@@ -899,7 +899,7 @@ export default function SpineWizard({
             <button
               type="button"
               onClick={handleBack}
-              className="flex items-center gap-2 text-body text-white/45 hover:text-emerald-400 transition-colors"
+              className="flex items-center gap-2 text-body text-black/45 hover:text-[#1d1d1f] transition-colors"
             >
               <ArrowLeft size={14} aria-hidden="true" />
               <span>Back</span>
@@ -907,13 +907,13 @@ export default function SpineWizard({
           ) : (
             <Link
               href="/"
-              className="flex items-center gap-2 text-body text-white/45 hover:text-emerald-400 transition-colors"
+              className="flex items-center gap-2 text-body text-black/45 hover:text-[#1d1d1f] transition-colors"
             >
               <Home size={14} aria-hidden="true" />
               <span>Home</span>
             </Link>
           )}
-          <span className="text-caption font-medium text-emerald-400/60 uppercase tracking-[0.2em]">
+          <span className="text-caption font-medium text-black/40 uppercase tracking-[0.2em]">
             {headline}
           </span>
         </div>
@@ -921,14 +921,14 @@ export default function SpineWizard({
         {/* Legal disclaimer on the first screen */}
         {phase === "wizard" && resolvedIndex === 0 && (
           <div className="mb-6">
-            <DisclaimerBanner variant="banner" />
+            <DisclaimerBanner variant="banner" theme="light" />
           </div>
         )}
 
         {/* Progress (screens + the review step) + section label */}
         <div className="mb-6">
           <div className="max-w-2xl mx-auto mb-2 flex items-center justify-between">
-            <span className="text-caption uppercase tracking-[0.15em] text-white/45">
+            <span className="text-caption uppercase tracking-[0.15em] text-black/45">
               {sectionLabel}
             </span>
             <FormingCounter count={formingCount} />
@@ -941,7 +941,7 @@ export default function SpineWizard({
           <div className="max-w-2xl mx-auto mb-6">
             <p
               role="alert"
-              className="text-small text-amber-400/90 bg-amber-500/[0.08] border border-amber-500/20 rounded-lg px-4 py-2.5"
+              className="text-small text-black/70 bg-black/[0.04] border border-black/[0.15] rounded-lg px-4 py-2.5"
             >
               {saveError}
             </p>
@@ -1036,7 +1036,7 @@ function SoloScreen({
             <button
               type="button"
               onClick={() => onCommit({ state: "unsure" })}
-              className="text-small text-white/45 hover:text-emerald-400 transition-colors underline underline-offset-4"
+              className="text-small text-black/45 hover:text-[#1d1d1f] transition-colors underline underline-offset-4"
             >
               {UNSURE_LABEL}
             </button>
@@ -1118,8 +1118,8 @@ function GroupScreen({
             disabled={!complete}
             className={`flex items-center gap-2 px-8 py-3.5 rounded-full text-body-lg font-medium transition-all ${
               complete
-                ? "bg-emerald-500 text-white hover:bg-emerald-400 hover:shadow-[0_0_30px_rgba(16,185,129,0.3)] cursor-pointer"
-                : "bg-white/10 text-white/45 cursor-not-allowed"
+                ? "bg-[#1d1d1f] text-white hover:bg-black hover:shadow-[0_4px_14px_rgba(0,0,0,0.18)] cursor-pointer"
+                : "bg-black/[0.06] text-black/45 cursor-not-allowed"
             }`}
           >
             Continue

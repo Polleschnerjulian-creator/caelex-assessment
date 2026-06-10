@@ -34,11 +34,11 @@ const PRIORITY_CHIP: Record<
 > = {
   high: {
     label: "High priority",
-    className: "bg-amber-500/[0.12] border-amber-500/25 text-amber-300",
+    className: "bg-black/[0.05] border-black/[0.18] text-black/75",
   },
   medium: {
     label: "Medium priority",
-    className: "bg-white/[0.06] border-white/[0.12] text-white/60",
+    className: "bg-black/[0.04] border-black/[0.12] text-black/60",
   },
 };
 
@@ -49,7 +49,7 @@ export default function UnknownsList({
 }) {
   if (unknowns.length === 0) {
     return (
-      <p className="text-body text-white/60 leading-relaxed">
+      <p className="text-body text-black/60 leading-relaxed">
         No unknowns to resolve — every question in your tier was answered.
       </p>
     );
@@ -68,13 +68,13 @@ export default function UnknownsList({
         return (
           <li
             key={u.questionId}
-            className="rounded-xl bg-white/[0.03] border border-white/[0.08] p-4"
+            className="rounded-xl bg-white border border-black/[0.08] p-4"
           >
             <div className="flex items-start justify-between gap-3 mb-1.5">
-              <p className="inline-flex items-start gap-2 text-body text-white leading-snug">
+              <p className="inline-flex items-start gap-2 text-body text-[#1d1d1f] leading-snug">
                 <HelpCircle
                   size={14}
-                  className="mt-0.5 shrink-0 text-emerald-400"
+                  className="mt-0.5 shrink-0 text-[#1d1d1f]"
                   aria-hidden="true"
                 />
                 {u.question}
@@ -85,8 +85,8 @@ export default function UnknownsList({
                 {chip.label}
               </span>
             </div>
-            <p className="text-small text-white/55 leading-relaxed pl-6">
-              <span className="text-white/40">
+            <p className="text-small text-black/55 leading-relaxed pl-6">
+              <span className="text-black/40">
                 What answering it would change:
               </span>{" "}
               {u.whatAnsweringChanges}

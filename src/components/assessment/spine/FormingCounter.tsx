@@ -74,16 +74,16 @@ export default function FormingCounter({ count }: FormingCounterProps) {
       animate={{ opacity: 1, y: 0 }}
       role="status"
       aria-live="polite"
-      className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-500/[0.08] backdrop-blur-[10px] border border-emerald-500/20"
+      className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-black/[0.04] backdrop-blur-[10px] border border-black/[0.15]"
       style={{ boxShadow: "0 4px 24px rgba(0,0,0,0.2)" }}
     >
       <span
-        className="w-1.5 h-1.5 rounded-full bg-emerald-400"
+        className="w-1.5 h-1.5 rounded-full bg-[#1d1d1f]"
         aria-hidden="true"
       />
-      <span className="text-small text-white/70">
+      <span className="text-small text-black/70">
         Obligations identified so far:{" "}
-        <span className="text-emerald-400 font-medium">{count}</span>
+        <span className="text-[#1d1d1f] font-medium">{count}</span>
       </span>
     </motion.div>
   );
