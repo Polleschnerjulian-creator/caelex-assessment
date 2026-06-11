@@ -23,6 +23,7 @@ import { buildAnthropicClient } from "@/lib/atlas/anthropic-client";
 import { decryptAtlasField } from "@/lib/atlas/atlas-encryption";
 import { maskId } from "@/lib/atlas/log-masking";
 import { logger } from "@/lib/logger";
+import { berlinDayString, endOfDayBerlin } from "@/lib/atlas/deadline-date";
 
 /* ── Constants (mirrored from the extract-deadlines route) ─────────────── */
 
@@ -61,7 +62,13 @@ Regeln:
 - NIEMALS Fristen erfinden. Wenn das Dokument keine eindeutige Frist enthält: {"deadlines":[]}
 - Output IMMER valides JSON, kein Prosa-Text, keine Markdown-Fences
 - MAX 20 Fristen pro Dokument (truncate wenn mehr)
-- Heute ist ${new Date().toISOString().slice(0, 10)} — nutze das als Referenz für relative Angaben`;
+- Heute ist ${
+    /* AUDIT-FIX L-e (2026-06-11): Berliner Kalendertag statt UTC-Datum —
+       zwischen 00:00 und 01:00/02:00 Berliner Zeit lag das UTC-Datum
+       sonst einen Tag zurück und verschob alle relativ berechneten
+       Fristen ("4 Wochen ab Zustellung") um einen Tag. */
+    berlinDayString()
+  } — nutze das als Referenz für relative Angaben`;
 }
 
 /* ── Public API ─────────────────────────────────────────────────────────── */
@@ -179,13 +186,18 @@ export async function extractDeadlineSuggestionsForFile(params: {
     return { created: 0, deadlines: [] };
   }
 
-  /* 5. Persist — skipDuplicates handles re-uploads gracefully. */
+  /* 5. Persist — skipDuplicates handles re-uploads gracefully.
+
+     AUDIT-FIX M-g (2026-06-11): `new Date("YYYY-MM-DD")` parst als
+     00:00 UTC — eine Frist "am 15.06." galt damit ab 02:00 Berliner
+     Zeit des Fristtags als abgelaufen. Datumsfristen sind bis zum
+     ENDE des Tages wahrbar → 23:59:59 Europe/Berlin (DST-korrekt). */
   const rows = extracted.deadlines.map((d) => ({
     mandateId,
     sourceFileId: fileId,
     organizationId,
     title: d.title,
-    dueAt: new Date(d.dueAt),
+    dueAt: endOfDayBerlin(d.dueAt),
     description: d.description ?? null,
     confidence: d.confidence,
     status: "pending" as const,

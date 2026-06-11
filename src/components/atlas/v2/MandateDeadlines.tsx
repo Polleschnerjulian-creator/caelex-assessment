@@ -9,9 +9,10 @@
  * dueAt + warnDays + status toggle + remove. Add-form at the bottom
  * with a quick-set ("in 7d / in 14d / in 30d / custom").
  *
- * Warning state computed client-side: rows whose dueAt is within
- * warnDays of now AND still status==="open" get an amber pill.
- * Past-due rows get red.
+ * Warning state computed client-side in KALENDERTAGEN (Europe/Berlin,
+ * via @/lib/atlas/deadline-date): open rows due within warnDays get an
+ * amber pill ("morgen" / "in N Tagen"); rows due today or past-due get
+ * red ("heute fällig" / "überfällig (N Tage)").
  *
  * SPDX-License-Identifier: LicenseRef-Caelex-Proprietary
  */
@@ -21,6 +22,7 @@ import {
   CalendarClock,
   CheckCircle2,
   Circle,
+  Download,
   Loader2,
   Plus,
   Trash2,
@@ -28,6 +30,7 @@ import {
   ExternalLink,
   X,
 } from "lucide-react";
+import { calendarDaysUntil, deadlineDayLabel } from "@/lib/atlas/deadline-date";
 
 interface DeadlineRecord {
   id: string;
@@ -163,21 +166,50 @@ export function MandateDeadlines({ mandateId, disabled, initialData }: Props) {
      The button reads this set to disable itself during the request. */
   const [togglingIds, setTogglingIds] = useState<Set<string>>(new Set());
   const toggleStatus = async (d: DeadlineRecord) => {
-    if (togglingIds.has(d.id)) return;
+    if (togglingIds.has(d.id) || disabled) return;
     const nextStatus = d.status === "open" ? "done" : "open";
     /* Optimistic update — flip locally first, server-confirms. */
     setDeadlines((list) =>
       list.map((x) => (x.id === d.id ? { ...x, status: nextStatus } : x)),
     );
     setTogglingIds((prev) => new Set(prev).add(d.id));
+    /* AUDIT-FIX M-b (2026-06-11): bei !ok / Netzwerk-Fehler den
+       optimistischen Flip zurückrollen UND einen Fehlertext zeigen —
+       vorher blieb ein server-seitig abgelehnter Toggle (403/500)
+       kommentarlos als "erledigt" auf dem Bildschirm stehen. Muster
+       wie MandateParties (res.ok prüfen, body.error anzeigen). */
+    const rollback = () =>
+      setDeadlines((list) =>
+        list.map((x) => (x.id === d.id ? { ...x, status: d.status } : x)),
+      );
     try {
-      await fetch(`/api/atlas/mandate/${mandateId}/deadlines/${d.id}`, {
-        method: "PATCH",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify({ status: nextStatus }),
-      });
-    } catch {
-      void reload();
+      const res = await fetch(
+        `/api/atlas/mandate/${mandateId}/deadlines/${d.id}`,
+        {
+          method: "PATCH",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({ status: nextStatus }),
+        },
+      );
+      if (!res.ok) {
+        const body = (await res.json().catch(() => ({}))) as {
+          error?: string;
+        };
+        rollback();
+        setError(
+          body.error ||
+            `Status konnte nicht geändert werden (HTTP ${res.status}).`,
+        );
+      } else {
+        setError(null);
+      }
+    } catch (e) {
+      rollback();
+      setError(
+        e instanceof Error
+          ? `Netzwerk-Fehler beim Ändern der Frist: ${e.message}`
+          : "Netzwerk-Fehler beim Ändern der Frist.",
+      );
     } finally {
       setTogglingIds((prev) => {
         const next = new Set(prev);
@@ -188,30 +220,87 @@ export function MandateDeadlines({ mandateId, disabled, initialData }: Props) {
   };
 
   const handleDelete = async (d: DeadlineRecord) => {
+    if (disabled) return;
     if (!confirm(`Frist „${d.title}" wirklich löschen?`)) return;
+    /* AUDIT-FIX M-b (2026-06-11): optimistisch entfernen, aber bei
+       !ok / Netzwerk-Fehler die Liste wiederherstellen + Fehlertext
+       zeigen — eine Frist, deren Löschung der Server ablehnt, darf
+       nicht stillschweigend aus der Ansicht verschwinden. */
+    const prevList = deadlines;
     setDeadlines((list) => list.filter((x) => x.id !== d.id));
     try {
-      await fetch(`/api/atlas/mandate/${mandateId}/deadlines/${d.id}`, {
-        method: "DELETE",
-      });
-    } catch {
-      void reload();
+      const res = await fetch(
+        `/api/atlas/mandate/${mandateId}/deadlines/${d.id}`,
+        { method: "DELETE" },
+      );
+      if (!res.ok) {
+        const body = (await res.json().catch(() => ({}))) as {
+          error?: string;
+        };
+        setDeadlines(prevList);
+        setError(
+          body.error ||
+            `Frist konnte nicht gelöscht werden (HTTP ${res.status}).`,
+        );
+      } else {
+        setError(null);
+      }
+    } catch (e) {
+      setDeadlines(prevList);
+      setError(
+        e instanceof Error
+          ? `Netzwerk-Fehler beim Löschen der Frist: ${e.message}`
+          : "Netzwerk-Fehler beim Löschen der Frist.",
+      );
     }
   };
 
-  /* Compute per-row status — needed both for sort + per-row pill. */
+  /* Compute per-row status — needed both for sort + per-row pill.
+
+     AUDIT-FIX H-1 (2026-06-11): Kalendertag-Differenz in Europe/Berlin
+     statt Math.ceil über 24h-Blöcke. Die alte Rechnung zeigte eine
+     seit gestern Abend abgelaufene Frist bis zu 23h lang als
+     "in 0 Tagen" (amber) statt rot/überfällig, und "heute fällig"
+     existierte nicht. Semantik jetzt: <0 überfällig (rot), 0 heute
+     fällig (rot), 1 morgen, sonst "in N Tagen" (amber ≤ warnDays). */
   const rows = deadlines.map((d) => {
-    const due = new Date(d.dueAt).getTime();
-    const now = Date.now();
-    const daysToGo = Math.ceil((due - now) / (24 * 60 * 60 * 1000));
+    const daysToGo = calendarDaysUntil(d.dueAt);
     const isPast = d.status === "open" && daysToGo < 0;
+    const isDueToday = d.status === "open" && daysToGo === 0;
     const isWarning =
-      d.status === "open" && daysToGo >= 0 && daysToGo <= d.warnDays;
-    return { ...d, daysToGo, isPast, isWarning };
+      d.status === "open" && daysToGo > 0 && daysToGo <= d.warnDays;
+    return { ...d, daysToGo, isPast, isDueToday, isWarning };
   });
+  const hasOpenDeadlines = deadlines.some((d) => d.status === "open");
 
   return (
     <div className="rounded-lg border border-slate-200 bg-white p-3 dark:border-slate-700/60 dark:bg-slate-900/40">
+      {/* Kopfzeile: dezenter ICS-Export — offene Fristen als
+          Kalender-Datei (Outlook/Apple/Google), nur sichtbar wenn es
+          etwas zu exportieren gibt. */}
+      {hasOpenDeadlines && (
+        <div className="mb-1.5 flex justify-end">
+          <a
+            href={`/api/atlas/mandate/${mandateId}/deadlines/ics`}
+            download
+            title="Offene Fristen als Kalender-Datei (.ics) exportieren"
+            className="inline-flex items-center gap-1 text-[10.5px] text-slate-400 transition-colors hover:text-slate-700 dark:text-slate-500 dark:hover:text-slate-300"
+          >
+            <Download size={9} />
+            ICS
+          </a>
+        </div>
+      )}
+
+      {/* AUDIT-FIX M-b (2026-06-11): Fehler aus Toggle/Delete/Reload
+          auch bei geschlossenem Add-Formular anzeigen — vorher wurde
+          der error-State nur innerhalb des Formulars gerendert. */}
+      {error && !formOpen && (
+        <p className="mb-2 rounded-md border border-red-200 bg-red-50 px-2 py-1 text-[11px] text-red-700 dark:border-red-500/30 dark:bg-red-500/10 dark:text-red-300">
+          {error}
+        </p>
+      )}
+
       {/* AUDIT-FIX M11 (2026-05-17): align with sibling sections
           (MandateFilesList, MandateTimeEntries) — use Loader2 spinner
           instead of plain text. */}
@@ -234,7 +323,10 @@ export function MandateDeadlines({ mandateId, disabled, initialData }: Props) {
               <button
                 type="button"
                 onClick={() => toggleStatus(d)}
-                disabled={togglingIds.has(d.id)}
+                /* AUDIT-FIX L-g (2026-06-11): Status-Toggle respektiert
+                   die disabled-Prop (read-only-Mandate), wie Delete +
+                   Add es bereits tun. */
+                disabled={togglingIds.has(d.id) || disabled}
                 title={d.status === "done" ? "Wieder öffnen" : "Erledigt"}
                 aria-label={d.status === "done" ? "Wieder öffnen" : "Erledigt"}
                 className="mt-0.5 shrink-0 disabled:opacity-50"
@@ -272,15 +364,17 @@ export function MandateDeadlines({ mandateId, disabled, initialData }: Props) {
                       minute: "2-digit",
                     })}
                   </span>
-                  {d.status === "open" && d.isPast && (
+                  {/* H-1: rot für überfällig UND "heute fällig" —
+                      Label-Semantik zentral in deadlineDayLabel. */}
+                  {(d.isPast || d.isDueToday) && (
                     <span className="inline-flex items-center gap-1 rounded-full bg-red-50 px-1.5 py-0 text-red-700 dark:bg-red-500/10 dark:text-red-300">
                       <AlertTriangle size={9} />
-                      {Math.abs(d.daysToGo)} Tage überfällig
+                      {deadlineDayLabel(d.daysToGo)}
                     </span>
                   )}
-                  {d.status === "open" && d.isWarning && (
+                  {d.isWarning && (
                     <span className="rounded-full bg-amber-50 px-1.5 py-0 text-amber-800 dark:bg-amber-500/10 dark:text-amber-300">
-                      in {d.daysToGo} Tag{d.daysToGo === 1 ? "" : "en"}
+                      {deadlineDayLabel(d.daysToGo)}
                     </span>
                   )}
                   {d.url && (

@@ -20,6 +20,7 @@ import { timingSafeEqual } from "crypto";
 import { prisma } from "@/lib/prisma";
 import { logger } from "@/lib/logger";
 import { dispatchDeadlineWarnings } from "@/lib/atlas/notify";
+import { calendarDaysUntil } from "@/lib/atlas/deadline-date";
 
 export const runtime = "nodejs";
 export const maxDuration = 120;
@@ -79,7 +80,7 @@ export async function GET(request: Request) {
       },
     });
 
-    const now = Date.now();
+    const now = new Date();
     const targets: Array<{
       deadlineId: string;
       mandateId: string;
@@ -92,8 +93,14 @@ export async function GET(request: Request) {
     }> = [];
 
     for (const d of open) {
-      const due = d.dueAt.getTime();
-      const daysToGo = Math.ceil((due - now) / (24 * 60 * 60 * 1000));
+      /* AUDIT-FIX H-1 (2026-06-11): Kalendertag-Differenz in
+         Europe/Berlin (gleiche Helper-Logik wie die Mandats-UI) statt
+         Math.ceil über 24h-Blöcke — eine seit gestern Abend offene
+         Frist meldet damit "überfällig seit 1 Tag" statt fälschlich
+         "fällig heute". Nur die Tages-Berechnung ist geändert; der
+         Cron schreibt weiterhin ausschließlich In-App-
+         AtlasNotification-Zeilen (keine E-Mails). */
+      const daysToGo = calendarDaysUntil(d.dueAt, now);
       const inWarnWindow = daysToGo <= d.warnDays;
       if (!inWarnWindow) continue;
       const userIds = new Set<string>([d.mandate.ownerUserId]);

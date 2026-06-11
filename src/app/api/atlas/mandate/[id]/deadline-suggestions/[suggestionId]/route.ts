@@ -27,6 +27,7 @@ import { getAtlasAuth } from "@/lib/atlas-auth";
 import { checkRateLimit, getIdentifier } from "@/lib/ratelimit";
 import { prisma } from "@/lib/prisma";
 import { logger } from "@/lib/logger";
+import { normalizeDateOnlyDueAt } from "@/lib/atlas/deadline-date";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -123,7 +124,14 @@ export async function PATCH(
           mandateId,
           title: suggestion.title,
           description: suggestion.description,
-          dueAt: suggestion.dueAt,
+          /* AUDIT-FIX M-g (2026-06-11): Übernahmepunkt Suggestion →
+             echte Frist. Vor diesem Fix extrahierte Suggestions tragen
+             dueAt = 00:00 UTC (Datums-only-Marker) — die Frist wäre ab
+             02:00 Berliner Zeit des Fristtags "überfällig". Der Helper
+             hebt exakt diesen Marker auf 23:59:59 Europe/Berlin an;
+             neue Extraktionen (bereits end-of-day) passieren
+             unverändert. */
+          dueAt: normalizeDateOnlyDueAt(suggestion.dueAt),
           warnDays: parsed.data.warnDays ?? 7,
           createdByUserId: atlas.userId,
         },

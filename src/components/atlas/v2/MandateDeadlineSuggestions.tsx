@@ -185,6 +185,16 @@ export function MandateDeadlineSuggestions({
         window.dispatchEvent(new Event("atlas:mandate-deadlines-refresh"));
         onAccepted?.();
       }
+    } catch (e) {
+      /* AUDIT-FIX L-c (2026-06-11): Netzwerk-Fehler (fetch wirft) wurde
+         vorher als unhandled rejection verschluckt — der Anwalt sah
+         keinerlei Rückmeldung, der Vorschlag blieb scheinbar "hängen".
+         Jetzt: Fehlertext im bestehenden error-Banner. */
+      setError(
+        e instanceof Error
+          ? `Netzwerk-Fehler beim Verarbeiten des Vorschlags: ${e.message}`
+          : "Netzwerk-Fehler beim Verarbeiten des Vorschlags.",
+      );
     } finally {
       setResolvingId(null);
     }
