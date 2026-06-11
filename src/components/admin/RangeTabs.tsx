@@ -45,10 +45,10 @@ export interface RangeTabsProps {
 // const record's keys ARE the AdminRange union.
 const RANGES = Object.keys(ADMIN_RANGE_DAYS) as AdminRange[];
 
-/** Humanised label for a range, derived from its day count ("7d" → "7 days"). */
+/** Humanised label for a range, derived from its day count ("7d" → "7 Tage"). */
 function rangeLabel(r: AdminRange): string {
   const days = ADMIN_RANGE_DAYS[r];
-  return `${days} ${days === 1 ? "day" : "days"}`;
+  return `${days} ${days === 1 ? "Tag" : "Tage"}`;
 }
 
 export default function RangeTabs({ value, onChange }: RangeTabsProps) {
@@ -105,7 +105,7 @@ export default function RangeTabs({ value, onChange }: RangeTabsProps) {
   return (
     <div
       role="tablist"
-      aria-label="Time range"
+      aria-label="Zeitraum"
       aria-orientation="horizontal"
       onKeyDown={onKeyDown}
       className="inline-flex items-center gap-0.5 rounded-lg p-0.5 glass-surface"

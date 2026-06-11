@@ -303,10 +303,11 @@ export function detectAnomalies(
 // ─────────────────────────────────────────────────────────────────────────────
 
 /**
- * A short, honest sentence for an anomaly flag, e.g.
- *   "DAU down 38% vs the trailing 7-day average"
- *   "Signups up 120% vs the trailing 7-day average"
- *   "DAU spiked to 1.2k vs a flat baseline"   (when pctChange is null)
+ * A short, honest GERMAN sentence for an anomaly flag (the admin surface is
+ * German), e.g.
+ *   "DAU 38% unter dem Schnitt der letzten 7 Tage"
+ *   "Signups 120% über dem Schnitt der letzten 7 Tage"
+ *   "DAU sprang auf 1,2k (Basis war zuvor konstant)"   (when pctChange is null)
  *
  * `windowDays` is the baseline length the caller used (default 7), so the copy
  * matches the math. Pure: no locale dependence, deterministic. The `format` fn
@@ -320,11 +321,11 @@ export function describeAnomaly(
   windowDays: number = DEFAULTS.window,
   format: (n: number) => string = (n) => String(Math.round(n)),
 ): string {
-  const verb = flag.direction === "spike" ? "up" : "down";
+  const verb = flag.direction === "spike" ? "über" : "unter";
   if (flag.pctChange === null) {
-    const moved = flag.direction === "spike" ? "spiked" : "dropped";
-    return `${flag.metric} ${moved} to ${format(flag.latest)} vs a flat baseline`;
+    const moved = flag.direction === "spike" ? "sprang auf" : "fiel auf";
+    return `${flag.metric} ${moved} ${format(flag.latest)} (Basis war zuvor konstant)`;
   }
   const pct = Math.round(Math.abs(flag.pctChange) * 100);
-  return `${flag.metric} ${verb} ${pct}% vs the trailing ${windowDays}-day average`;
+  return `${flag.metric} ${pct}% ${verb} dem Schnitt der letzten ${windowDays} Tage`;
 }

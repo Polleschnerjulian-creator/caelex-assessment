@@ -53,7 +53,7 @@ const NAV: NavLink[] = [
     // Founder home — sits above the Cockpit. Its own prefix so it stays
     // distinct from the exact-matched Cockpit root.
     href: "/admin/steering",
-    label: "Steering",
+    label: "Steuerung",
     icon: <Compass size={18} strokeWidth={1.5} />,
   },
   {
@@ -65,19 +65,19 @@ const NAV: NavLink[] = [
   {
     // Per-product deep-dive — usage, AI spend, by-org breakdown (aggregate only).
     href: "/admin/products",
-    label: "Products",
+    label: "Produkte",
     icon: <Boxes size={18} strokeWidth={1.5} />,
   },
   {
     // Board-grade revenue — MRR/ARR, movement waterfall, 90-day forecast + benchmarks.
     href: "/admin/revenue",
-    label: "Revenue",
+    label: "Umsatz",
     icon: <CircleDollarSign size={18} strokeWidth={1.5} />,
   },
   {
     // Growth / PMF — sits right after the Cockpit (acquisition + activation lens).
     href: "/admin/growth",
-    label: "Growth",
+    label: "Wachstum",
     icon: <TrendingUp size={18} strokeWidth={1.5} />,
   },
   {
@@ -97,28 +97,28 @@ const NAV: NavLink[] = [
   {
     // Customers — account-level depth; precedes Retention in the IA.
     href: "/admin/customers",
-    label: "Customers",
+    label: "Kunden",
     icon: <Building2 size={18} strokeWidth={1.5} />,
   },
   {
     // Efficiency — unit economics: viral coefficient + AI cost margin.
     href: "/admin/efficiency",
-    label: "Efficiency",
+    label: "Effizienz",
     icon: <Gauge size={18} strokeWidth={1.5} />,
   },
   {
     href: "/admin/retention",
-    label: "Retention",
+    label: "Kundenbindung",
     icon: <Users size={18} strokeWidth={1.5} />,
   },
   {
     href: "/admin/funnels",
-    label: "Funnels",
+    label: "Conversion-Trichter",
     icon: <Filter size={18} strokeWidth={1.5} />,
   },
   {
     href: "/admin/paths",
-    label: "Paths",
+    label: "Nutzerpfade",
     icon: <GitBranch size={18} strokeWidth={1.5} />,
   },
 ];
@@ -165,7 +165,7 @@ export default function AdminSidebar() {
       </div>
 
       {/* Nav */}
-      <nav aria-label="Admin navigation" className="flex-1 space-y-0.5 p-3">
+      <nav aria-label="Admin-Navigation" className="flex-1 space-y-0.5 p-3">
         {NAV.map((item) => {
           const active = isActive(item);
           return (
@@ -233,7 +233,7 @@ export default function AdminSidebar() {
           }
         >
           <ArrowLeft size={15} strokeWidth={1.5} />
-          <span>Back to app</span>
+          <span>Zurück zur App</span>
         </Link>
       </div>
     </aside>

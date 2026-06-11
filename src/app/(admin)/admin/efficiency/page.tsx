@@ -37,9 +37,15 @@ import AdminCard from "@/components/admin/AdminCard";
 import KpiTile from "@/components/admin/KpiTile";
 import RangeTabs from "@/components/admin/RangeTabs";
 import ExportButton from "@/components/admin/ExportButton";
+import { CardSkeleton } from "@/components/admin/Skeleton";
 import type { CsvRow } from "@/components/admin/export-utils";
 import { useAdminData } from "@/components/admin/useAdminData";
-import { compactNumber, eur, pctLabel } from "@/components/admin/format";
+import {
+  compactNumber,
+  dateDe,
+  eur,
+  pctLabel,
+} from "@/components/admin/format";
 
 /**
  * The efficiency payload shape this page consumes. Mirrors the route's exported
@@ -60,7 +66,8 @@ export default function EfficiencyPage() {
   // The page owns the selected range; RangeTabs reports changes and the URL is
   // re-derived (useAdminData aborts the prior fetch on a fast toggle).
   const [range, setRange] = useState<AdminRange>("30d");
-  const { data, loading, error } = useAdminData<EfficiencyResponse>(
+  // Stale-while-revalidate: bekannte Zeiträume erscheinen sofort aus dem Cache.
+  const { data, error } = useAdminData<EfficiencyResponse>(
     `/api/admin/v2/efficiency?range=${range}`,
   );
 
@@ -76,7 +83,7 @@ export default function EfficiencyPage() {
     if (!data.aiCost.isEmpty) {
       for (const line of data.aiCost.perProduct) {
         rows.push({
-          section: "AI cost",
+          section: "KI-Kosten",
           item: line.label,
           messages: line.messages,
           tokens: line.tokens === null ? "" : line.tokens,
@@ -89,14 +96,14 @@ export default function EfficiencyPage() {
     if (!data.virality.isEmpty) {
       const f = data.virality.funnel;
       const legs: Array<[string, number]> = [
-        ["Sent", f.sent],
-        ["Accepted", f.accepted],
-        ["Pending", f.pending],
-        ["Expired", f.expired],
+        ["Gesendet", f.sent],
+        ["Angenommen", f.accepted],
+        ["Ausstehend", f.pending],
+        ["Abgelaufen", f.expired],
       ];
       for (const [item, value] of legs) {
         rows.push({
-          section: "Invite funnel",
+          section: "Einladungs-Trichter",
           item,
           messages: value,
           tokens: "",
@@ -112,31 +119,32 @@ export default function EfficiencyPage() {
   return (
     <div>
       <AdminPageHeader
-        title="Efficiency"
-        subtitle="Virality and AI unit economics — how the product spreads and what it costs"
+        title="Effizienz"
+        subtitle="Viralität und KI-Stückkosten — wie sich das Produkt verbreitet und was es kostet"
         right={
           <div className="flex items-center gap-3">
-            {data && !loading && !error && (
+            {data && (
               <span
                 className="hidden text-[11px] tabular-nums sm:inline"
                 style={{ color: "var(--text-tertiary)" }}
               >
-                as of {data.generatedAt.slice(0, 10)}
+                Stand{" "}
+                {dateDe(data.generatedAt) ?? data.generatedAt.slice(0, 10)}
               </span>
             )}
-            {data && !loading && !error && !isEfficiencyEmpty(data) && (
+            {data && !isEfficiencyEmpty(data) && (
               <ExportButton
                 rows={exportRows}
-                filename={`caelex-efficiency-${range}`}
+                filename={`caelex-effizienz-${range}`}
                 columns={[
-                  { key: "section", header: "Section" },
-                  { key: "item", header: "Item" },
-                  { key: "messages", header: "Messages / Count" },
+                  { key: "section", header: "Bereich" },
+                  { key: "item", header: "Posten" },
+                  { key: "messages", header: "Nachrichten / Anzahl" },
                   { key: "tokens", header: "Tokens" },
-                  { key: "cost_usd", header: "Cost (USD)" },
-                  { key: "is_estimate", header: "Estimate?" },
+                  { key: "cost_usd", header: "Kosten (USD)" },
+                  { key: "is_estimate", header: "Schätzung?" },
                 ]}
-                label="Export"
+                label="Export (CSV)"
               />
             )}
             <RangeTabs value={range} onChange={setRange} />
@@ -144,28 +152,26 @@ export default function EfficiencyPage() {
         }
       />
 
-      {loading && <EfficiencySkeleton />}
-
-      {!loading && error && (
+      {!data && error && (
         <AdminCard>
           <p
             className="text-[13px] leading-snug"
             style={{ color: "var(--accent-danger)" }}
           >
-            Could not load efficiency: {error}
+            Effizienz konnte nicht geladen werden: {error}
           </p>
         </AdminCard>
       )}
 
-      {!loading && !error && data && isEfficiencyEmpty(data) && (
+      {!data && !error && <EfficiencySkeleton />}
+
+      {data && isEfficiencyEmpty(data) && (
         <AdminCard>
           <EmptyState />
         </AdminCard>
       )}
 
-      {!loading && !error && data && !isEfficiencyEmpty(data) && (
-        <EfficiencyBody data={data} />
-      )}
+      {data && !isEfficiencyEmpty(data) && <EfficiencyBody data={data} />}
     </div>
   );
 }
@@ -187,22 +193,22 @@ function EfficiencyBody({ data }: { data: EfficiencyResponse }) {
   return (
     <div className="flex flex-col gap-5">
       <AdminCard
-        title="Virality"
-        subtitle="Viral coefficient k and the invite funnel — read from team invitations"
+        title="Viralität"
+        subtitle="Viraler Koeffizient k und der Einladungs-Trichter — gelesen aus den Team-Einladungen"
       >
         {virality.isEmpty ? (
-          <NoSeries label="No team invitations were sent in this window yet." />
+          <NoSeries label="In diesem Zeitraum wurden noch keine Team-Einladungen gesendet." />
         ) : (
           <ViralitySection virality={virality} />
         )}
       </AdminCard>
 
       <AdminCard
-        title="AI unit economics"
-        subtitle="Assistant cost per active account and as a share of MRR, by product"
+        title="KI-Stückkosten"
+        subtitle="Assistenten-Kosten je aktivem Konto und als Anteil am monatlich wiederkehrenden Umsatz (MRR), nach Produkt"
       >
         {aiCost.isEmpty ? (
-          <NoSeries label="No AI assistant activity in this window yet." />
+          <NoSeries label="In diesem Zeitraum gab es noch keine KI-Assistenten-Aktivität." />
         ) : (
           <AiCostSection aiCost={aiCost} />
         )}
@@ -226,29 +232,29 @@ function ViralitySection({ virality }: { virality: Virality }) {
       {/* Headline tiles. */}
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
         <KpiTile
-          label="Viral coefficient k"
-          value={k === null ? "—" : k.toFixed(2)}
-          sub="accepts / inviting org"
+          label="Viraler Koeffizient k"
+          value={k === null ? "—" : k.toFixed(2).replace(".", ",")}
+          sub="Annahmen je einladender Org — ab 1 trägt sich das Wachstum selbst"
           tone={kTone}
         />
         <KpiTile
-          label="Inviting orgs"
+          label="Einladende Orgs"
           value={compactNumber(invitingOrgs)}
-          sub="sent ≥1 invite"
+          sub="haben ≥ 1 Einladung gesendet"
         />
         <KpiTile
-          label="Invites sent"
+          label="Einladungen gesendet"
           value={compactNumber(funnel.sent)}
-          sub="this window"
+          sub="in diesem Zeitraum"
         />
         <KpiTile
-          label="Acceptance"
+          label="Annahmequote"
           value={
             funnel.acceptanceRate === null
               ? "—"
               : pctLabel(funnel.acceptanceRate)
           }
-          sub={`${compactNumber(funnel.accepted)} accepted`}
+          sub={`${compactNumber(funnel.accepted)} angenommen`}
           tone={
             funnel.acceptanceRate === null
               ? "default"
@@ -265,7 +271,7 @@ function ViralitySection({ virality }: { virality: Virality }) {
           className="mb-2.5 text-[11px] font-medium uppercase tracking-[0.06em]"
           style={{ color: "var(--text-secondary)" }}
         >
-          Invite funnel
+          Einladungs-Trichter
         </p>
         <InviteFunnelBars funnel={funnel} />
       </div>
@@ -274,10 +280,10 @@ function ViralitySection({ virality }: { virality: Virality }) {
         className="text-[11px] leading-snug"
         style={{ color: "var(--text-tertiary)" }}
       >
-        k counts accepted invitations per organisation that invited someone this
-        window. The funnel stops at &ldquo;accepted&rdquo; — whether an accepted
-        invitee became an active user is not tracked on the invitation, so no
-        activation rate is shown here.
+        k zählt angenommene Einladungen je Organisation, die in diesem Zeitraum
+        jemanden eingeladen hat. Der Trichter endet bei „angenommen" — ob aus
+        der angenommenen Einladung ein aktiver Nutzer wurde, wird an der
+        Einladung nicht erfasst, daher gibt es hier keine Aktivierungsquote.
       </p>
     </div>
   );
@@ -287,14 +293,22 @@ function InviteFunnelBars({ funnel }: { funnel: InviteFunnel }) {
   // Each leg is a share of the total sent, so the bars read as a breakdown of
   // the funnel mouth. Guard the (already non-empty) sent against 0.
   const rows: Array<{ label: string; value: number; color: string }> = [
-    { label: "Sent", value: funnel.sent, color: "var(--accent-primary)" },
+    { label: "Gesendet", value: funnel.sent, color: "var(--accent-primary)" },
     {
-      label: "Accepted",
+      label: "Angenommen",
       value: funnel.accepted,
       color: "var(--accent-success)",
     },
-    { label: "Pending", value: funnel.pending, color: "var(--text-tertiary)" },
-    { label: "Expired", value: funnel.expired, color: "var(--accent-danger)" },
+    {
+      label: "Ausstehend",
+      value: funnel.pending,
+      color: "var(--text-tertiary)",
+    },
+    {
+      label: "Abgelaufen",
+      value: funnel.expired,
+      color: "var(--accent-danger)",
+    },
   ];
   const max = funnel.sent > 0 ? funnel.sent : 1;
 
@@ -316,7 +330,7 @@ function InviteFunnelBars({ funnel }: { funnel: InviteFunnel }) {
               {compactNumber(row.value)}
               <span style={{ color: "var(--text-tertiary)" }}>
                 {" · "}
-                {pctLabel(row.value / max)} of sent
+                {pctLabel(row.value / max)} der gesendeten
               </span>
             </span>
           </div>
@@ -370,33 +384,33 @@ function AiCostSection({ aiCost }: { aiCost: AiCost }) {
       {/* Headline tiles. */}
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
         <KpiTile
-          label="Total AI cost"
+          label="KI-Kosten gesamt"
           value={eur(totalCostUsd)}
-          sub={totalIncludesEstimate ? "incl. estimate" : "this window"}
+          sub={totalIncludesEstimate ? "inkl. Schätzung" : "in diesem Zeitraum"}
         />
         <KpiTile
-          label="Per active account"
+          label="Je aktivem Konto"
           value={
             costPerActiveAccount === null ? "—" : eur(costPerActiveAccount)
           }
-          sub={`${compactNumber(activeAccounts)} active account${activeAccounts === 1 ? "" : "s"}`}
+          sub={`${compactNumber(activeAccounts)} aktive${activeAccounts === 1 ? "s Konto" : " Konten"}`}
         />
         <KpiTile
-          label="Cost vs MRR"
+          label="Kosten vs. MRR"
           value={
             marginCostPctOfMrr === null ? "—" : pctLabel(marginCostPctOfMrr)
           }
-          sub="AI as % of MRR"
+          sub="KI-Kosten als Anteil am Monats-Umsatz (MRR)"
           tone={marginTone}
         />
         <KpiTile
-          label="Margin headroom"
+          label="Margen-Puffer"
           value={
             marginCostPctOfMrr === null
               ? "—"
               : pctLabel(Math.max(0, 1 - marginCostPctOfMrr))
           }
-          sub="MRR net of AI"
+          sub="MRR nach Abzug der KI-Kosten"
           tone={marginCostPctOfMrr === null ? "default" : "positive"}
         />
       </div>
@@ -407,7 +421,7 @@ function AiCostSection({ aiCost }: { aiCost: AiCost }) {
           className="mb-2.5 text-[11px] font-medium uppercase tracking-[0.06em]"
           style={{ color: "var(--text-secondary)" }}
         >
-          Cost by product
+          Kosten nach Produkt
         </p>
         <AiCostByProduct rows={perProduct} totalCostUsd={totalCostUsd} />
       </div>
@@ -416,11 +430,12 @@ function AiCostSection({ aiCost }: { aiCost: AiCost }) {
         className="text-[11px] leading-snug"
         style={{ color: "var(--text-tertiary)" }}
       >
-        Atlas cost is the real summed per-message spend. Astra has no stored
-        dollar figure, so its cost is estimated from token usage at the
-        published Sonnet input rate — shown with an &ldquo;est.&rdquo; badge and
-        its raw token count. The cost-vs-MRR ratio compares USD spend to EUR
-        revenue as a cost-intensity proxy.
+        Atlas-Kosten sind echte, pro Nachricht summierte Ausgaben. Für Astra
+        gibt es keinen gespeicherten Dollar-Betrag — die Kosten werden aus der
+        Token-Nutzung zum veröffentlichten Sonnet-Eingabepreis geschätzt
+        (Kennzeichen „geschätzt" samt Token-Zahl). Das Verhältnis Kosten vs. MRR
+        vergleicht USD-Ausgaben mit EUR-Umsatz als Näherung für die
+        Kostenintensität.
       </p>
     </div>
   );
@@ -462,12 +477,12 @@ function AiCostByProduct({
                 {cost === null ? "—" : eur(cost)}
                 <span style={{ color: "var(--text-tertiary)" }}>
                   {" · "}
-                  {compactNumber(row.messages)} message
-                  {row.messages === 1 ? "" : "s"}
+                  {compactNumber(row.messages)} Nachricht
+                  {row.messages === 1 ? "" : "en"}
                   {row.tokens !== null && (
                     <>
                       {" · "}
-                      {compactNumber(row.tokens)} tokens
+                      {compactNumber(row.tokens)} Tokens
                     </>
                   )}
                 </span>
@@ -494,7 +509,7 @@ function AiCostByProduct({
         className="mt-1 text-[11px] tabular-nums"
         style={{ color: "var(--text-tertiary)" }}
       >
-        Total {eur(totalCostUsd)} across all assistants this window.
+        Gesamt {eur(totalCostUsd)} über alle Assistenten in diesem Zeitraum.
       </li>
     </ul>
   );
@@ -509,9 +524,9 @@ function EstimateBadge() {
         color: "var(--text-tertiary)",
         background: "var(--separator-strong)",
       }}
-      title="Estimated from token usage at the published Sonnet input rate — not a stored dollar figure."
+      title="Aus der Token-Nutzung zum veröffentlichten Sonnet-Eingabepreis geschätzt — kein gespeicherter Dollar-Betrag."
     >
-      est.
+      geschätzt
     </span>
   );
 }
@@ -520,16 +535,19 @@ function EstimateBadge() {
  * Small helpers + states.
  * ────────────────────────────────────────────────────────────────────────── */
 
+/** Erststart: echte Karten mit deutschen Titeln, Inhalte pulsieren dezent. */
 function EfficiencySkeleton() {
   return (
     <div className="flex flex-col gap-5" aria-busy="true">
-      <div
-        className="glass-elevated h-[280px] animate-pulse rounded-2xl"
-        style={{ border: "1px solid var(--border-default)" }}
+      <CardSkeleton
+        title="Viralität"
+        subtitle="Viraler Koeffizient k und der Einladungs-Trichter"
+        rows={5}
       />
-      <div
-        className="glass-elevated h-[280px] animate-pulse rounded-2xl"
-        style={{ border: "1px solid var(--border-default)" }}
+      <CardSkeleton
+        title="KI-Stückkosten"
+        subtitle="Assistenten-Kosten je aktivem Konto und als Anteil am MRR"
+        rows={5}
       />
     </div>
   );
@@ -548,16 +566,16 @@ function EmptyState() {
         className="text-[14px] font-medium"
         style={{ color: "var(--text-primary)" }}
       >
-        No efficiency signal this window
+        Kein Effizienz-Signal in diesem Zeitraum
       </p>
       <p
         className="max-w-sm text-[12px] leading-snug"
         style={{ color: "var(--text-secondary)" }}
       >
-        This view tracks real virality — team invitations and how many are
-        accepted — and the cost of the AI assistants per active account. As soon
-        as an invite is sent or an assistant turn is produced in this window, it
-        appears here.
+        Diese Ansicht misst echte Viralität — Team-Einladungen und wie viele
+        davon angenommen werden — sowie die Kosten der KI-Assistenten je aktivem
+        Konto. Sobald in diesem Zeitraum eine Einladung gesendet oder eine
+        Assistenten-Antwort erzeugt wird, erscheint sie hier.
       </p>
     </div>
   );

@@ -43,9 +43,33 @@ import AdminCard from "@/components/admin/AdminCard";
 import KpiTile from "@/components/admin/KpiTile";
 import RangeTabs from "@/components/admin/RangeTabs";
 import ExportButton from "@/components/admin/ExportButton";
+import { CardSkeleton, KpiTileSkeleton } from "@/components/admin/Skeleton";
 import type { CsvRow } from "@/components/admin/export-utils";
 import { useAdminData } from "@/components/admin/useAdminData";
-import { compactNumber, eur, pctLabel } from "@/components/admin/format";
+import {
+  compactNumber,
+  dateDe,
+  eur,
+  pctLabel,
+} from "@/components/admin/format";
+
+/**
+ * Deutsche Labels für die Ergebnis-Arten aus dem WACO-Katalog (value-events.ts).
+ * Über die stabile outcomeId gemappt; unbekannte IDs fallen auf das vom
+ * Server gelieferte (englische) Label zurück, damit nie etwas verschwindet.
+ */
+const OUTCOME_LABEL_DE: Record<string, string> = {
+  comply_assessment_completed: "Abgeschlossene Assessments",
+  trade_item_classified: "Klassifizierte Güter",
+  trade_screening_decided: "Entschiedene Screenings",
+  trade_license_issued: "Erteilte Lizenzen",
+  atlas_draft_produced: "Erstellte KI-Entwürfe",
+  scholar_planspiel_run: "Simulationsläufe",
+  scholar_bookmark_saved: "Gemerkte Quellen",
+  nca_submission_filed: "Eingereichte NCA-Anträge",
+  document_generated: "Erzeugte Dokumente",
+  deadline_met: "Eingehaltene Fristen",
+};
 
 export default function ProductExplorerPage() {
   // The page owns the two query params; the fetch URL is derived from them so a
@@ -53,13 +77,15 @@ export default function ProductExplorerPage() {
   const [product, setProduct] = useState<ExplorerProduct>("atlas");
   const [range, setRange] = useState<AdminRange>("30d");
 
-  const { data, loading, error } = useAdminData<ProductExplorerResponse>(
+  // Stale-while-revalidate: Produkt-/Zeitraum-Wechsel, die schon einmal geladen
+  // wurden, erscheinen sofort aus dem Cache — kein Skelett-Blitzen mehr.
+  const { data, error } = useAdminData<ProductExplorerResponse>(
     `/api/admin/v2/products?product=${product}&range=${range}`,
   );
 
   // Offer the by-org export only once there are real org rows in hand.
   const orgRows = data?.view.orgRows ?? [];
-  const canExport = !loading && !error && orgRows.length > 0;
+  const canExport = orgRows.length > 0;
   const exportRows = useMemo<CsvRow[]>(
     () => (data ? buildOrgExport(data.view) : []),
     [data],
@@ -68,25 +94,26 @@ export default function ProductExplorerPage() {
   return (
     <div>
       <AdminPageHeader
-        title="Product Explorer"
-        subtitle="Per-product usage, AI spend, outcomes, and adoption — to decide which product to double down on. Aggregate and organization-level only."
+        title="Produkt-Explorer"
+        subtitle="Nutzung, KI-Kosten, Ergebnisse und Verbreitung je Produkt — als Entscheidungsgrundlage, wo investiert wird. Nur aggregiert und auf Organisations-Ebene."
         right={
           <div className="flex flex-wrap items-center gap-3">
-            {data && !loading && !error && (
+            {data && (
               <span
                 className="text-[11px] tabular-nums"
                 style={{ color: "var(--text-tertiary)" }}
               >
-                as of {data.generatedAt.slice(0, 10)} · last{" "}
-                {data.view.rangeDays} days
+                Stand{" "}
+                {dateDe(data.generatedAt) ?? data.generatedAt.slice(0, 10)} ·
+                letzte {data.view.rangeDays} Tage
               </span>
             )}
             {canExport && (
               <ExportButton
                 rows={exportRows}
                 columns={ORG_EXPORT_COLUMNS}
-                filename={`product-${product}-by-org-${range}`}
-                label="Export by-org"
+                filename={`produkt-${product}-nach-org-${range}`}
+                label="Export (CSV)"
               />
             )}
             <RangeTabs value={range} onChange={setRange} />
@@ -95,28 +122,26 @@ export default function ProductExplorerPage() {
         }
       />
 
-      {loading && <ExplorerSkeleton />}
-
-      {!loading && error && (
+      {!data && error && (
         <AdminCard>
           <p
             className="text-[13px] leading-snug"
             style={{ color: "var(--accent-danger)" }}
           >
-            Could not load product explorer: {error}
+            Der Produkt-Explorer konnte nicht geladen werden: {error}
           </p>
         </AdminCard>
       )}
 
-      {!loading && !error && data && data.view.isEmpty && (
+      {!data && !error && <ExplorerSkeleton />}
+
+      {data && data.view.isEmpty && (
         <AdminCard>
           <EmptyState label={data.view.label} />
         </AdminCard>
       )}
 
-      {!loading && !error && data && !data.view.isEmpty && (
-        <ExplorerBody view={data.view} />
-      )}
+      {data && !data.view.isEmpty && <ExplorerBody view={data.view} />}
     </div>
   );
 }
@@ -133,23 +158,23 @@ function ExplorerBody({ view }: { view: ProductExplorerView }) {
 
       <div className="grid gap-5 lg:grid-cols-2">
         <AdminCard
-          title="Value outcomes"
-          subtitle="Real regulatory outcomes produced this window, product-weighted."
+          title="Wertschöpfung (Ergebnisse)"
+          subtitle="Echte regulatorische Ergebnisse in diesem Zeitraum, nach Produkt gewichtet."
         >
           <OutcomesBlock view={view} />
         </AdminCard>
 
         <AdminCard
-          title="AI / token spend"
-          subtitle="Model spend attributable to this product this window."
+          title="KI-/Token-Kosten"
+          subtitle="Modell-Kosten, die diesem Produkt in diesem Zeitraum zuzuordnen sind."
         >
           <AiSpendBlock view={view} />
         </AdminCard>
       </div>
 
       <AdminCard
-        title="By organization"
-        subtitle="Top organizations for this product — active users, AI spend, and outcomes. Organization-level aggregates only."
+        title="Nach Organisation"
+        subtitle="Top-Organisationen für dieses Produkt — aktive Nutzer, KI-Kosten und Ergebnisse. Nur Aggregate auf Organisations-Ebene."
         right={<ProductBadge label={view.label} />}
       >
         <OrgBreakdown view={view} />
@@ -179,34 +204,36 @@ function UsageKpis({ view }: { view: ProductExplorerView }) {
     <div
       className="grid grid-cols-2 gap-3 md:grid-cols-4"
       role="group"
-      aria-label="Usage headline"
+      aria-label="Nutzungs-Überblick"
     >
       <KpiTile
-        label="Active users"
+        label="Aktive Nutzer"
         value={compactNumber(usage.activeUsers)}
         sub={trendSub(usage.activeUsersTrend, usage.activeUsersPrior)}
         tone={trendTone}
       />
       <KpiTile
-        label="Logins"
+        label="Anmeldungen (Logins)"
         value={usage.logins === null ? "—" : compactNumber(usage.logins)}
         sub={
-          usage.logins === null ? "no per-product login signal" : "this window"
+          usage.logins === null
+            ? "kein Login-Signal je Produkt"
+            : "in diesem Zeitraum"
         }
       />
       <KpiTile
-        label="Entitled orgs"
+        label="Freigeschaltete Orgs"
         value={compactNumber(entitlement.entitledOrgs)}
         sub={
           entitlement.entitledOrgs === 0
-            ? "no access grants yet"
-            : `${compactNumber(entitlement.activeOrgs)} active · ${compactNumber(
+            ? "noch keine Freischaltungen"
+            : `${compactNumber(entitlement.activeOrgs)} aktiv · ${compactNumber(
                 entitlement.idleOrgs,
-              )} idle`
+              )} ungenutzt`
         }
       />
       <KpiTile
-        label="Org activation"
+        label="Aktivierungsquote"
         value={
           entitlement.activationRate === null
             ? "—"
@@ -214,8 +241,8 @@ function UsageKpis({ view }: { view: ProductExplorerView }) {
         }
         sub={
           entitlement.activationRate === null
-            ? "no entitled base"
-            : "of entitled orgs active"
+            ? "keine freigeschaltete Basis"
+            : "Anteil der freigeschalteten Orgs, die aktiv sind"
         }
         tone={activationTone(entitlement.activationRate)}
       />
@@ -226,10 +253,10 @@ function UsageKpis({ view }: { view: ProductExplorerView }) {
 /** Sub-line for the active-users tile: the signed trend + the prior baseline. */
 function trendSub(trend: number | null, prior: number | null): string {
   if (trend === null) {
-    return prior === null ? "no prior window" : "new vs prior window";
+    return prior === null ? "kein Vergleichszeitraum" : "neu ggü. Vorzeitraum";
   }
   const arrow = trend > 0 ? "+" : "";
-  return `${arrow}${pctLabel(trend)} vs prior ${
+  return `${arrow}${pctLabel(trend)} ggü. Vorzeitraum ${
     prior === null ? "" : `(${compactNumber(prior)})`
   }`.trim();
 }
@@ -253,7 +280,7 @@ function OutcomesBlock({ view }: { view: ProductExplorerView }) {
 
   if (outcomes.rawTotal === 0 && outcomes.lines.every((l) => l.count === 0)) {
     return (
-      <NoSeries label="No value outcomes produced for this product this window." />
+      <NoSeries label="Dieses Produkt hat in diesem Zeitraum keine Ergebnisse erzeugt." />
     );
   }
 
@@ -261,11 +288,14 @@ function OutcomesBlock({ view }: { view: ProductExplorerView }) {
     <div className="flex flex-col gap-4">
       <div className="flex items-end gap-6">
         <Stat
-          label="Weighted outcomes"
+          label="Gewichtete Ergebnisse"
           value={compactNumber(outcomes.weightedTotal)}
           accent
         />
-        <Stat label="Raw outcomes" value={compactNumber(outcomes.rawTotal)} />
+        <Stat
+          label="Ergebnisse (ungewichtet)"
+          value={compactNumber(outcomes.rawTotal)}
+        />
       </div>
       <OutcomeBars lines={outcomes.lines} />
     </div>
@@ -281,7 +311,9 @@ function OutcomeBars({ lines }: { lines: ProductOutcomeLine[] }) {
   );
 
   if (shown.length === 0) {
-    return <NoSeries label="No outcome kinds recorded this window." />;
+    return (
+      <NoSeries label="In diesem Zeitraum wurden keine Ergebnis-Arten erfasst." />
+    );
   }
 
   return (
@@ -293,7 +325,7 @@ function OutcomeBars({ lines }: { lines: ProductOutcomeLine[] }) {
               className="text-[12px] font-medium"
               style={{ color: "var(--text-primary)" }}
             >
-              {line.label}
+              {OUTCOME_LABEL_DE[line.outcomeId] ?? line.label}
             </span>
             <span
               className="flex-shrink-0 text-[12px] tabular-nums"
@@ -302,7 +334,7 @@ function OutcomeBars({ lines }: { lines: ProductOutcomeLine[] }) {
               {compactNumber(line.count)}
               <span style={{ color: "var(--text-tertiary)" }}>
                 {" · "}
-                {compactNumber(line.weighted)} wtd
+                {compactNumber(line.weighted)} gewichtet
               </span>
             </span>
           </div>
@@ -336,7 +368,7 @@ function AiSpendBlock({ view }: { view: ProductExplorerView }) {
   if (!aiSpend.applicable) {
     return (
       <NoSeries
-        label={`${view.label} has no AI spend lane — not applicable.`}
+        label={`${view.label} hat keine KI-Kostenspur — nicht anwendbar.`}
       />
     );
   }
@@ -344,7 +376,7 @@ function AiSpendBlock({ view }: { view: ProductExplorerView }) {
   return (
     <div className="flex flex-col gap-4">
       <div className="flex items-end gap-3">
-        <Stat label="Total spend" value={eur(aiSpend.totalCostUsd)} accent />
+        <Stat label="Kosten gesamt" value={eur(aiSpend.totalCostUsd)} accent />
         {aiSpend.includesEstimate && <EstimateBadge />}
       </div>
       <ul className="flex flex-col gap-2.5">
@@ -356,8 +388,8 @@ function AiSpendBlock({ view }: { view: ProductExplorerView }) {
         className="text-[11px] leading-snug"
         style={{ color: "var(--text-tertiary)" }}
       >
-        Atlas cost is summed per-message spend (real). Astra cost is estimated
-        from its token total at the canonical Sonnet input rate.
+        Atlas-Kosten sind echte, pro Nachricht summierte Ausgaben. Astra-Kosten
+        werden aus der Token-Summe zum Sonnet-Eingaberate-Preis geschätzt.
       </p>
     </div>
   );
@@ -380,8 +412,10 @@ function AiSpendRow({ line }: { line: ProductAiSpendLine }) {
         {line.costUsd === null ? "—" : eur(line.costUsd)}
         <span style={{ color: "var(--text-tertiary)" }}>
           {" · "}
-          {compactNumber(line.messages)} msg
-          {line.tokens !== null ? ` · ${compactNumber(line.tokens)} tok` : ""}
+          {compactNumber(line.messages)} Nachr.
+          {line.tokens !== null
+            ? ` · ${compactNumber(line.tokens)} Tokens`
+            : ""}
         </span>
       </span>
     </li>
@@ -401,9 +435,10 @@ function OrgBreakdown({ view }: { view: ProductExplorerView }) {
           className="max-w-md text-[12px] leading-snug"
           style={{ color: "var(--text-secondary)" }}
         >
-          {view.label} activity is recorded per student, not per organization,
-          so a by-organization breakdown isn&apos;t available for this product.
-          The active-user count above is still an aggregate distinct-user total.
+          {view.label}-Aktivität wird pro Studierendem erfasst, nicht pro
+          Organisation — eine Aufschlüsselung nach Organisation gibt es für
+          dieses Produkt daher nicht. Die Zahl der aktiven Nutzer oben bleibt
+          eine aggregierte Gesamtzahl.
         </p>
       </div>
     );
@@ -411,7 +446,7 @@ function OrgBreakdown({ view }: { view: ProductExplorerView }) {
 
   if (view.orgRows.length === 0) {
     return (
-      <NoSeries label="No organizations produced activity for this product this window." />
+      <NoSeries label="In diesem Zeitraum hat keine Organisation Aktivität für dieses Produkt erzeugt." />
     );
   }
 
@@ -420,10 +455,10 @@ function OrgBreakdown({ view }: { view: ProductExplorerView }) {
       <table className="w-full border-collapse text-[12px]">
         <thead>
           <tr>
-            <Th align="left">Organization</Th>
-            <Th align="right">Active users</Th>
-            <Th align="right">AI spend</Th>
-            <Th align="right">Outcomes</Th>
+            <Th align="left">Organisation</Th>
+            <Th align="right">Aktive Nutzer</Th>
+            <Th align="right">KI-Kosten</Th>
+            <Th align="right">Ergebnisse</Th>
           </tr>
         </thead>
         <tbody>
@@ -503,10 +538,10 @@ function buildOrgExport(view: ProductExplorerView): CsvRow[] {
 }
 
 const ORG_EXPORT_COLUMNS = [
-  { key: "organization", header: "Organization" },
-  { key: "active_users", header: "Active users" },
-  { key: "ai_spend_usd", header: "AI spend (USD)" },
-  { key: "outcomes", header: "Outcomes" },
+  { key: "organization", header: "Organisation" },
+  { key: "active_users", header: "Aktive Nutzer" },
+  { key: "ai_spend_usd", header: "KI-Kosten (USD)" },
+  { key: "outcomes", header: "Ergebnisse" },
 ] as const;
 
 /* ─────────────────────────────────────────────────────────────────────────────
@@ -554,9 +589,9 @@ function EstimateBadge({ compact = false }: { compact?: boolean }) {
         background: "var(--separator-strong)",
         color: "var(--text-tertiary)",
       }}
-      title="Estimated from token total at the canonical Sonnet input rate (no per-message USD persisted)."
+      title="Aus der Token-Summe zum Sonnet-Eingaberate-Preis geschätzt (kein gespeicherter USD-Betrag pro Nachricht)."
     >
-      est.
+      geschätzt
     </span>
   );
 }
@@ -592,7 +627,7 @@ function ProductSwitcher({
   return (
     <div
       role="tablist"
-      aria-label="Product"
+      aria-label="Produkt"
       className="inline-flex flex-wrap items-center gap-0.5 rounded-lg p-0.5 glass-surface"
       style={{ border: "1px solid var(--border-default)" }}
     >
@@ -628,32 +663,20 @@ function ProductSwitcher({
   );
 }
 
+/** Erststart: echte Karten mit deutschen Titeln, Inhalte pulsieren dezent. */
 function ExplorerSkeleton() {
   return (
     <div className="flex flex-col gap-5" aria-busy="true">
       <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
         {Array.from({ length: 4 }).map((_, i) => (
-          <div
-            key={i}
-            className="glass-surface h-[88px] animate-pulse rounded-xl"
-            style={{ border: "1px solid var(--border-default)" }}
-          />
+          <KpiTileSkeleton key={i} />
         ))}
       </div>
       <div className="grid gap-5 lg:grid-cols-2">
-        <div
-          className="glass-elevated h-[240px] animate-pulse rounded-2xl"
-          style={{ border: "1px solid var(--border-default)" }}
-        />
-        <div
-          className="glass-elevated h-[240px] animate-pulse rounded-2xl"
-          style={{ border: "1px solid var(--border-default)" }}
-        />
+        <CardSkeleton title="Wertschöpfung (Ergebnisse)" rows={5} />
+        <CardSkeleton title="KI-/Token-Kosten" rows={5} />
       </div>
-      <div
-        className="glass-elevated h-[220px] animate-pulse rounded-2xl"
-        style={{ border: "1px solid var(--border-default)" }}
-      />
+      <CardSkeleton title="Nach Organisation" rows={4} />
     </div>
   );
 }
@@ -671,15 +694,16 @@ function EmptyState({ label }: { label: string }) {
         className="text-[14px] font-medium"
         style={{ color: "var(--text-primary)" }}
       >
-        No activity for {label} this window
+        Keine Aktivität für {label} in diesem Zeitraum
       </p>
       <p
         className="max-w-sm text-[12px] leading-snug"
         style={{ color: "var(--text-secondary)" }}
       >
-        This view counts real outcomes, active users, AI spend, and entitled
-        organizations for the selected product. As soon as {label} produces any
-        this window — or an organization is granted access — it appears here.
+        Diese Ansicht zählt echte Ergebnisse, aktive Nutzer, KI-Kosten und
+        freigeschaltete Organisationen für das gewählte Produkt. Sobald {label}{" "}
+        in diesem Zeitraum etwas davon erzeugt — oder eine Organisation
+        freigeschaltet wird — erscheint es hier.
       </p>
     </div>
   );

@@ -37,7 +37,7 @@ export interface DateRangePickerProps {
   /** Optional inclusive ISO bounds the picker clamps selections into. */
   min?: string;
   max?: string;
-  /** Accessible group label (default "Custom date range"). */
+  /** Accessible group label (default "Eigener Zeitraum"). */
   label?: string;
   className?: string;
 }
@@ -51,7 +51,7 @@ export default function DateRangePicker({
   onChange,
   min,
   max,
-  label = "Custom date range",
+  label = "Eigener Zeitraum",
   className = "",
 }: DateRangePickerProps) {
   // Local mirror of the two inputs so a mid-edit (transiently invalid) value can
@@ -103,7 +103,7 @@ export default function DateRangePicker({
           className="text-[11px] font-medium uppercase tracking-[0.04em]"
           style={{ color: "var(--text-secondary)" }}
         >
-          From
+          Von
         </label>
         <input
           id={fromId}
@@ -111,7 +111,7 @@ export default function DateRangePicker({
           value={fromDraft}
           min={min}
           max={max}
-          aria-label="Start date"
+          aria-label="Startdatum"
           onChange={(e) => applyEdit({ from: e.target.value })}
           className={INPUT_CLASS}
           style={{
@@ -143,7 +143,7 @@ export default function DateRangePicker({
           className="text-[11px] font-medium uppercase tracking-[0.04em]"
           style={{ color: "var(--text-secondary)" }}
         >
-          To
+          Bis
         </label>
         <input
           id={toId}
@@ -151,7 +151,7 @@ export default function DateRangePicker({
           value={toDraft}
           min={min}
           max={max}
-          aria-label="End date"
+          aria-label="Enddatum"
           onChange={(e) => applyEdit({ to: e.target.value })}
           className={INPUT_CLASS}
           style={{
@@ -173,9 +173,9 @@ export default function DateRangePicker({
         <span
           className="text-[11px] tabular-nums"
           style={{ color: "var(--text-tertiary)" }}
-          aria-label={`${days} day${days === 1 ? "" : "s"} selected`}
+          aria-label={`${days} ${days === 1 ? "Tag" : "Tage"} ausgewählt`}
         >
-          {days}d
+          {days} {days === 1 ? "Tag" : "Tage"}
         </span>
       )}
     </div>

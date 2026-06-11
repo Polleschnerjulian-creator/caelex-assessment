@@ -100,20 +100,21 @@ export default function UserTable({ users, onRefresh }: Props) {
       });
 
       if (res.ok) {
-        toast.success("Role updated", `Set to ${role}.`);
+        toast.success("Rolle aktualisiert", `Neue Rolle: ${role}.`);
         onRefresh();
       } else {
         const data = await res.json().catch(() => ({}));
         toast.error(
-          "Could not update role",
-          data.error || "The change was not saved. Please try again.",
+          "Rolle konnte nicht aktualisiert werden",
+          data.error ||
+            "Die Änderung wurde nicht gespeichert. Bitte erneut versuchen.",
         );
       }
     } catch (error) {
       console.error("Error updating role:", error);
       toast.error(
-        "Could not update role",
-        "A network error occurred. Please try again.",
+        "Rolle konnte nicht aktualisiert werden",
+        "Netzwerkfehler. Bitte erneut versuchen.",
       );
     } finally {
       setLoadingId(null);
@@ -132,21 +133,22 @@ export default function UserTable({ users, onRefresh }: Props) {
 
       if (res.ok) {
         setSuccessId(orgId);
-        toast.success("Plan updated", `Set to ${plan}.`);
+        toast.success("Plan aktualisiert", `Neuer Plan: ${plan}.`);
         onRefresh();
         setTimeout(() => setSuccessId(null), 2000);
       } else {
         const data = await res.json().catch(() => ({}));
         toast.error(
-          "Could not update plan",
-          data.error || "The change was not saved. Please try again.",
+          "Plan konnte nicht aktualisiert werden",
+          data.error ||
+            "Die Änderung wurde nicht gespeichert. Bitte erneut versuchen.",
         );
       }
     } catch (error) {
       console.error("Error updating plan:", error);
       toast.error(
-        "Could not update plan",
-        "A network error occurred. Please try again.",
+        "Plan konnte nicht aktualisiert werden",
+        "Netzwerkfehler. Bitte erneut versuchen.",
       );
     } finally {
       setLoadingId(null);
@@ -165,24 +167,25 @@ export default function UserTable({ users, onRefresh }: Props) {
 
       if (res.ok) {
         toast.success(
-          nextActive ? "User activated" : "User deactivated",
+          nextActive ? "Nutzer aktiviert" : "Nutzer deaktiviert",
           nextActive
-            ? "They can sign in again."
-            : "They can no longer sign in.",
+            ? "Die Person kann sich wieder anmelden."
+            : "Die Person kann sich nicht mehr anmelden.",
         );
         onRefresh();
       } else {
         const data = await res.json().catch(() => ({}));
         toast.error(
-          "Could not update status",
-          data.error || "The change was not saved. Please try again.",
+          "Status konnte nicht aktualisiert werden",
+          data.error ||
+            "Die Änderung wurde nicht gespeichert. Bitte erneut versuchen.",
         );
       }
     } catch (error) {
       console.error("Error updating status:", error);
       toast.error(
-        "Could not update status",
-        "A network error occurred. Please try again.",
+        "Status konnte nicht aktualisiert werden",
+        "Netzwerkfehler. Bitte erneut versuchen.",
       );
     } finally {
       setLoadingId(null);
@@ -196,7 +199,7 @@ export default function UserTable({ users, onRefresh }: Props) {
         role="status"
       >
         <p className="text-body-lg text-slate-500 dark:text-[var(--text-secondary)]">
-          No users found matching your filters.
+          Keine Nutzer gefunden, die zu den Filtern passen.
         </p>
       </div>
     );
@@ -205,26 +208,26 @@ export default function UserTable({ users, onRefresh }: Props) {
   return (
     <div className="glass-surface bg-white dark:bg-[var(--surface-raised)] border border-slate-200 dark:border-[var(--border-default)] rounded-xl overflow-hidden">
       <div className="overflow-x-auto">
-        <table className="w-full" aria-label="Users">
+        <table className="w-full" aria-label="Nutzer">
           <thead>
             <tr className="border-b border-slate-200 dark:border-[var(--border-default)] bg-slate-50 dark:bg-[var(--surface-sunken)]">
               <th scope="col" className={`text-left ${TH_CLASS}`}>
-                User
+                Nutzer
               </th>
               <th scope="col" className={`text-left ${TH_CLASS}`}>
-                Organization
+                Organisation
               </th>
               <th scope="col" className={`text-left ${TH_CLASS}`}>
                 Plan
               </th>
               <th scope="col" className={`text-left ${TH_CLASS}`}>
-                Role
+                Rolle
               </th>
               <th scope="col" className={`text-left ${TH_CLASS}`}>
                 Status
               </th>
               <th scope="col" className={`text-right ${TH_CLASS}`}>
-                Actions
+                Aktionen
               </th>
             </tr>
           </thead>
@@ -260,7 +263,7 @@ export default function UserTable({ users, onRefresh }: Props) {
                       </div>
                       <div className="min-w-0">
                         <p className="text-body font-medium text-slate-900 dark:text-[var(--text-primary)] truncate">
-                          {user.name || "Unnamed User"}
+                          {user.name || "Unbenannter Nutzer"}
                         </p>
                         <p className="text-small text-slate-500 dark:text-[var(--text-secondary)] truncate">
                           {user.email}
@@ -281,7 +284,7 @@ export default function UserTable({ users, onRefresh }: Props) {
                     {orgId && orgPlan ? (
                       <div className="flex items-center gap-1.5">
                         <select
-                          aria-label={`Plan for ${orgName}`}
+                          aria-label={`Plan für ${orgName}`}
                           value={orgPlan}
                           onChange={(e) => updateOrgPlan(orgId, e.target.value)}
                           disabled={loadingId === orgId}
@@ -310,15 +313,15 @@ export default function UserTable({ users, onRefresh }: Props) {
                   {/* Role */}
                   <td className="px-4 py-3.5">
                     <select
-                      aria-label={`Role for ${user.name || user.email}`}
+                      aria-label={`Rolle für ${user.name || user.email}`}
                       value={user.role}
                       onChange={(e) => updateUserRole(user.id, e.target.value)}
                       disabled={isBusy}
                       className={`px-2 py-1 border rounded-lg text-small font-medium cursor-pointer focus:outline-none focus:ring-2 focus:ring-emerald-500/50 disabled:opacity-50 ${ROLE_STYLES[user.role] || ROLE_STYLES.user}`}
                     >
-                      <option value="user">User</option>
+                      <option value="user">Nutzer</option>
                       <option value="admin">Admin</option>
-                      <option value="auditor">Auditor</option>
+                      <option value="auditor">Prüfer (Auditor)</option>
                     </select>
                   </td>
 
@@ -327,12 +330,12 @@ export default function UserTable({ users, onRefresh }: Props) {
                     {user.isActive ? (
                       <span className="inline-flex items-center gap-1.5 px-2 py-1 bg-emerald-50 dark:bg-emerald-500/10 border border-emerald-200 dark:border-emerald-500/20 text-emerald-700 dark:text-emerald-400 rounded-full text-caption font-medium">
                         <User size={11} aria-hidden="true" />
-                        Active
+                        Aktiv
                       </span>
                     ) : (
                       <span className="inline-flex items-center gap-1.5 px-2 py-1 bg-slate-100 dark:bg-[var(--surface-sunken)] border border-slate-200 dark:border-[var(--border-subtle)] text-slate-500 dark:text-[var(--text-secondary)] rounded-full text-caption font-medium">
                         <UserX size={11} aria-hidden="true" />
-                        Inactive
+                        Inaktiv
                       </span>
                     )}
                   </td>
@@ -345,33 +348,33 @@ export default function UserTable({ users, onRefresh }: Props) {
                         className="inline-block text-small text-slate-400 dark:text-[var(--text-tertiary)] px-3 py-1.5"
                         role="status"
                       >
-                        Saving…
+                        Speichert…
                       </span>
                     ) : !user.isActive ? (
                       <button
                         onClick={() => setUserActive(user.id, true)}
                         className="text-small font-medium px-3 py-1.5 rounded-lg transition-colors text-emerald-600 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-500/10"
                       >
-                        Activate
+                        Aktivieren
                       </button>
                     ) : isConfirming ? (
                       <div className="inline-flex items-center justify-end gap-1.5">
                         <span className="text-caption text-slate-500 dark:text-[var(--text-secondary)]">
-                          Deactivate?
+                          Wirklich deaktivieren?
                         </span>
                         <button
                           onClick={() => setUserActive(user.id, false)}
                           className="text-small font-medium px-2.5 py-1.5 rounded-lg transition-colors text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-500/10"
-                          aria-label={`Confirm deactivate ${user.name || user.email}`}
+                          aria-label={`Deaktivieren von ${user.name || user.email} bestätigen`}
                         >
-                          Confirm
+                          Bestätigen
                         </button>
                         <button
                           onClick={() => setConfirmingId(null)}
                           className="text-small font-medium px-2.5 py-1.5 rounded-lg transition-colors text-slate-500 dark:text-[var(--text-secondary)] hover:bg-slate-100 dark:hover:bg-[var(--surface-sunken)]"
-                          aria-label="Cancel deactivate"
+                          aria-label="Deaktivieren abbrechen"
                         >
-                          Cancel
+                          Abbrechen
                         </button>
                       </div>
                     ) : (
@@ -379,7 +382,7 @@ export default function UserTable({ users, onRefresh }: Props) {
                         onClick={() => setConfirmingId(user.id)}
                         className="text-small font-medium px-3 py-1.5 rounded-lg transition-colors text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-500/10"
                       >
-                        Deactivate
+                        Deaktivieren
                       </button>
                     )}
                   </td>

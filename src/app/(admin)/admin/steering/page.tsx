@@ -37,9 +37,21 @@ import { isSteeringEmpty } from "@/lib/admin/steering-data";
 import AdminPageHeader from "@/components/admin/AdminPageHeader";
 import AdminCard from "@/components/admin/AdminCard";
 import ExportButton from "@/components/admin/ExportButton";
+import { CardSkeleton } from "@/components/admin/Skeleton";
 import type { CsvRow } from "@/components/admin/export-utils";
 import { useAdminData } from "@/components/admin/useAdminData";
-import { compactNumber, pctLabel } from "@/components/admin/format";
+import { compactNumber, dateDe, pctLabel } from "@/components/admin/format";
+
+/**
+ * Deutsche Labels für die Reibungs-Flows (stabile Literale aus der
+ * steering-Route). Unbekannte Werte fallen auf das Server-Label zurück.
+ */
+const FLOW_LABEL_DE: Record<string, string> = {
+  "Cybersecurity assessment → framework generated":
+    "Cybersecurity-Assessment → Framework erstellt",
+  "Export item → classified": "Exportgut → klassifiziert",
+  "Trade operation → licensed": "Handelsvorgang → lizenziert",
+};
 
 /** The platform accent (emerald #10b981) as an "r,g,b" triple — CSS custom
  * properties can't be interpolated into an rgba() alpha, so the heatmap keeps
@@ -71,43 +83,44 @@ function pmfExportRows(data: SteeringResponse): CsvRow[] {
 
 /** Stable column order + friendly headers for the PMF export. */
 const PMF_EXPORT_COLUMNS = [
-  { key: "product", header: "Product" },
-  { key: "jurisdiction", header: "Jurisdiction" },
-  { key: "weighted_outcomes", header: "Weighted outcomes" },
-  { key: "raw_outcomes", header: "Raw outcomes" },
-  { key: "tenants", header: "Tenants" },
-  { key: "wow_growth_pct", header: "WoW growth %" },
+  { key: "product", header: "Produkt" },
+  { key: "jurisdiction", header: "Rechtsraum" },
+  { key: "weighted_outcomes", header: "Gewichtete Ergebnisse" },
+  { key: "raw_outcomes", header: "Ergebnisse (ungewichtet)" },
+  { key: "tenants", header: "Kunden" },
+  { key: "wow_growth_pct", header: "Wachstum ggü. Vorwoche %" },
 ] as const;
 
 export default function SteeringPage() {
-  const { data, loading, error } = useAdminData<SteeringResponse>(
+  // Stale-while-revalidate: Folgebesuche kommen sofort aus dem Cache.
+  const { data, error } = useAdminData<SteeringResponse>(
     "/api/admin/v2/steering",
   );
 
   // Only offer the export once real PMF cells are in hand (the button no-ops on
   // an empty dataset anyway, but gating keeps the header clean pre-go-live).
-  const canExport = !!data && !loading && !error && data.pmf.cells.length > 0;
+  const canExport = !!data && data.pmf.cells.length > 0;
 
   return (
     <div>
       <AdminPageHeader
-        title="Steering"
-        subtitle="North-Star outcomes, product-market fit, and where users drop off"
+        title="Steuerung"
+        subtitle="North-Star-Ergebnisse, Produkt-Markt-Passung und wo Nutzer abspringen"
         right={
-          data && !loading && !error ? (
+          data ? (
             <div className="flex items-center gap-3">
               <span
                 className="text-[11px] tabular-nums"
                 style={{ color: "var(--text-tertiary)" }}
               >
-                as of {data.asOf} · trailing 7 days
+                Stand {dateDe(data.asOf) ?? data.asOf} · letzte 7 Tage
               </span>
               {canExport && (
                 <ExportButton
                   rows={pmfExportRows(data)}
                   columns={PMF_EXPORT_COLUMNS}
-                  filename={`steering-pmf-${data.asOf}`}
-                  label="Export PMF"
+                  filename={`steuerung-pmf-${data.asOf}`}
+                  label="PMF-Export"
                 />
               )}
             </div>
@@ -115,28 +128,26 @@ export default function SteeringPage() {
         }
       />
 
-      {loading && <SteeringSkeleton />}
-
-      {!loading && error && (
+      {!data && error && (
         <AdminCard>
           <p
             className="text-[13px] leading-snug"
             style={{ color: "var(--accent-danger)" }}
           >
-            Could not load steering: {error}
+            Steuerung konnte nicht geladen werden: {error}
           </p>
         </AdminCard>
       )}
 
-      {!loading && !error && data && isSteeringEmpty(data) && (
+      {!data && !error && <SteeringSkeleton />}
+
+      {data && isSteeringEmpty(data) && (
         <AdminCard>
           <EmptyState />
         </AdminCard>
       )}
 
-      {!loading && !error && data && !isSteeringEmpty(data) && (
-        <SteeringBody data={data} />
-      )}
+      {data && !isSteeringEmpty(data) && <SteeringBody data={data} />}
     </div>
   );
 }
@@ -154,24 +165,24 @@ function SteeringBody({ data }: { data: SteeringResponse }) {
       <NorthStarHero data={northStar} />
 
       <AdminCard
-        title="Product-market fit"
-        subtitle="Weighted compliance outcomes by product × jurisdiction (this week)"
+        title="Produkt-Markt-Passung (PMF)"
+        subtitle="Gewichtete Compliance-Ergebnisse je Produkt × Rechtsraum (diese Woche)"
       >
         {pmf.cells.length > 0 ? (
           <PmfHeatmap matrix={pmf} />
         ) : (
-          <NoSeries label="No product × jurisdiction outcomes recorded this week." />
+          <NoSeries label="Diese Woche wurden keine Ergebnisse je Produkt × Rechtsraum erfasst." />
         )}
       </AdminCard>
 
       <AdminCard
-        title="Friction map"
-        subtitle="Core-flow completion by product — worst-leaking flow first"
+        title="Reibungs-Karte"
+        subtitle="Abschlussquote der Kern-Abläufe je Produkt — der undichteste Ablauf zuerst"
       >
         {friction.length > 0 ? (
           <FrictionList rows={friction} />
         ) : (
-          <NoSeries label="No core-flow activity to measure this week." />
+          <NoSeries label="Diese Woche gab es keine messbare Aktivität in den Kern-Abläufen." />
         )}
       </AdminCard>
     </div>
@@ -199,7 +210,7 @@ function NorthStarHero({ data }: { data: SteeringResponse["northStar"] }) {
               style={{ color: "var(--text-secondary)" }}
             >
               <Compass size={13} style={{ color: "var(--accent-primary)" }} />
-              North Star · Weekly Active Compliance Outcomes
+              North Star · Wöchentliche aktive Compliance-Ergebnisse (WACO)
             </p>
             <div className="mt-2 flex items-end gap-3">
               <span
@@ -217,21 +228,22 @@ function NorthStarHero({ data }: { data: SteeringResponse["northStar"] }) {
               className="mt-2 text-[12px] leading-snug"
               style={{ color: "var(--text-secondary)" }}
             >
-              {compactNumber(data.wacoRawOutcomes)} regulatory outcome
-              {data.wacoRawOutcomes === 1 ? "" : "s"} ·{" "}
-              {compactNumber(data.activeTenants)} active tenant
-              {data.activeTenants === 1 ? "" : "s"} · product-weighted
+              {compactNumber(data.wacoRawOutcomes)} regulatorische
+              {data.wacoRawOutcomes === 1 ? "s Ergebnis" : " Ergebnisse"} ·{" "}
+              {compactNumber(data.activeTenants)} aktive
+              {data.activeTenants === 1 ? "r Kunde" : " Kunden"} · nach Produkt
+              gewichtet
             </p>
           </div>
 
           {/* Secondary stats, right-aligned. */}
           <div className="flex gap-6">
             <HeroStat
-              label="Raw outcomes"
+              label="Ergebnisse (ungewichtet)"
               value={compactNumber(data.wacoRawOutcomes)}
             />
             <HeroStat
-              label="Active tenants"
+              label="Aktive Kunden"
               value={compactNumber(data.activeTenants)}
             />
           </div>
@@ -244,7 +256,7 @@ function NorthStarHero({ data }: { data: SteeringResponse["northStar"] }) {
               className="mb-2.5 text-[11px] font-medium uppercase tracking-[0.06em]"
               style={{ color: "var(--text-secondary)" }}
             >
-              Contribution by product
+              Beitrag nach Produkt
             </p>
             <ProductContributions rows={contributing} />
           </div>
@@ -290,9 +302,9 @@ function TrendChip({
           color: "var(--text-tertiary)",
           background: "var(--separator-strong)",
         }}
-        title={`No prior-week baseline (${suffix})`}
+        title={`Keine Vorwochen-Basis (${suffix})`}
       >
-        new
+        neu
       </span>
     );
   }
@@ -351,10 +363,10 @@ function ProductContributions({ rows }: { rows: ProductContribution[] }) {
               {compactNumber(row.weighted)}
               <span style={{ color: "var(--text-tertiary)" }}>
                 {" · "}
-                {compactNumber(row.rawOutcomes)} outcome
-                {row.rawOutcomes === 1 ? "" : "s"} ·{" "}
-                {compactNumber(row.tenants)} tenant
-                {row.tenants === 1 ? "" : "s"}
+                {compactNumber(row.rawOutcomes)} Ergebnis
+                {row.rawOutcomes === 1 ? "" : "se"} ·{" "}
+                {compactNumber(row.tenants)} Kunde
+                {row.tenants === 1 ? "" : "n"}
               </span>
             </span>
           </div>
@@ -450,8 +462,9 @@ function PmfHeatmap({ matrix }: { matrix: PmfMatrix }) {
         className="mt-3 text-[11px] leading-snug"
         style={{ color: "var(--text-tertiary)" }}
       >
-        Cell intensity = share of the busiest cell&apos;s weighted outcomes.
-        Hover a cell for outcomes, tenants, and week-over-week growth.
+        Zell-Intensität = Anteil an den gewichteten Ergebnissen der stärksten
+        Zelle. Beim Überfahren zeigt jede Zelle Ergebnisse, Kunden und das
+        Wachstum gegenüber der Vorwoche.
       </p>
     </div>
   );
@@ -481,8 +494,8 @@ function HeatCell({
   const alpha = occupied ? Math.max(MIN_CELL_ALPHA, Math.min(1, share)) : 0;
   const growthLabel =
     wowGrowth === null
-      ? "new"
-      : `${wowGrowth > 0 ? "+" : ""}${pctLabel(wowGrowth)} WoW`;
+      ? "neu"
+      : `${wowGrowth > 0 ? "+" : ""}${pctLabel(wowGrowth)} ggü. Vorwoche`;
 
   return (
     <div
@@ -495,8 +508,8 @@ function HeatCell({
       }}
       title={
         occupied
-          ? `${product} · ${jurisdiction}: ${compactNumber(rawOutcomes)} outcomes, ${compactNumber(tenants)} tenants, ${growthLabel}`
-          : `${product} · ${jurisdiction}: no outcomes this week`
+          ? `${product} · ${jurisdiction}: ${compactNumber(rawOutcomes)} Ergebnisse, ${compactNumber(tenants)} Kunden, ${growthLabel}`
+          : `${product} · ${jurisdiction}: diese Woche keine Ergebnisse`
       }
     >
       {occupied ? (
@@ -516,7 +529,7 @@ function HeatCell({
                 alpha > 0.45 ? "rgba(255,255,255,0.8)" : "var(--text-tertiary)",
             }}
           >
-            {compactNumber(tenants)}t
+            {compactNumber(tenants)} Kd.
           </span>
         </>
       ) : (
@@ -555,7 +568,7 @@ function FrictionList({ rows }: { rows: FrictionRow[] }) {
                   className="ml-2 font-normal"
                   style={{ color: "var(--text-tertiary)" }}
                 >
-                  {row.flowLabel}
+                  {FLOW_LABEL_DE[row.flowLabel] ?? row.flowLabel}
                 </span>
               </span>
               <span
@@ -566,11 +579,11 @@ function FrictionList({ rows }: { rows: FrictionRow[] }) {
                     : "var(--text-secondary)",
                 }}
               >
-                {pctLabel(row.completionRate)} completed
+                {pctLabel(row.completionRate)} abgeschlossen
                 <span style={{ color: "var(--text-tertiary)" }}>
                   {" · "}
                   {compactNumber(row.completed)}/{compactNumber(row.started)} ·{" "}
-                  {compactNumber(row.dropped)} dropped
+                  {compactNumber(row.dropped)} abgesprungen
                 </span>
               </span>
             </div>
@@ -608,20 +621,24 @@ function productLabel(product: string): string {
   return product.charAt(0).toUpperCase() + product.slice(1);
 }
 
+/** Erststart: echte Karten mit deutschen Titeln, Inhalte pulsieren dezent. */
 function SteeringSkeleton() {
   return (
     <div className="flex flex-col gap-5" aria-busy="true">
-      <div
-        className="glass-elevated h-[180px] animate-pulse rounded-2xl"
-        style={{ border: "1px solid var(--border-default)" }}
+      <CardSkeleton
+        title="North Star · Wöchentliche aktive Compliance-Ergebnisse (WACO)"
+        rows={3}
+        rowHeight={18}
       />
-      <div
-        className="glass-elevated h-[260px] animate-pulse rounded-2xl"
-        style={{ border: "1px solid var(--border-default)" }}
+      <CardSkeleton
+        title="Produkt-Markt-Passung (PMF)"
+        subtitle="Gewichtete Compliance-Ergebnisse je Produkt × Rechtsraum"
+        rows={5}
       />
-      <div
-        className="glass-elevated h-[200px] animate-pulse rounded-2xl"
-        style={{ border: "1px solid var(--border-default)" }}
+      <CardSkeleton
+        title="Reibungs-Karte"
+        subtitle="Abschlussquote der Kern-Abläufe je Produkt"
+        rows={3}
       />
     </div>
   );
@@ -640,15 +657,16 @@ function EmptyState() {
         className="text-[14px] font-medium"
         style={{ color: "var(--text-primary)" }}
       >
-        No compliance outcomes this week
+        Diese Woche keine Compliance-Ergebnisse
       </p>
       <p
         className="max-w-sm text-[12px] leading-snug"
         style={{ color: "var(--text-secondary)" }}
       >
-        WACO counts real regulatory outcomes — assessments completed, items
-        classified, licences issued, drafts produced, submissions filed. As soon
-        as a tenant produces one this week, it appears here.
+        WACO zählt echte regulatorische Ergebnisse — abgeschlossene Assessments,
+        klassifizierte Güter, erteilte Lizenzen, erstellte Entwürfe,
+        eingereichte Anträge. Sobald ein Kunde diese Woche eines erzeugt,
+        erscheint es hier.
       </p>
     </div>
   );

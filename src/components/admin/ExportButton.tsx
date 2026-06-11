@@ -42,7 +42,7 @@ export interface ExportButtonProps {
    * the union of row keys in first-seen order.
    */
   columns?: ReadonlyArray<string | { key: string; header: string }>;
-  /** Button label (default "Export CSV"). */
+  /** Button label (default "CSV exportieren"). */
   label?: string;
   /**
    * A ref to the DOM node a future PNG export would capture. When provided, a
@@ -63,7 +63,7 @@ export default function ExportButton({
   rows,
   filename,
   columns,
-  label = "Export CSV",
+  label = "CSV exportieren",
   pngTargetRef,
   enablePng = false,
   className = "",
@@ -119,9 +119,11 @@ export default function ExportButton({
         onClick={handleCsv}
         disabled={busy || !hasRows}
         aria-label={
-          hasRows ? `${label} (downloads a CSV file)` : "Nothing to export"
+          hasRows
+            ? `${label} (lädt eine CSV-Datei herunter)`
+            : "Nichts zu exportieren"
         }
-        title={hasRows ? undefined : "No data to export yet"}
+        title={hasRows ? undefined : "Noch keine Daten zum Exportieren"}
         className={PILL_CLASS}
         style={{
           background: "var(--glass-bg-surface, transparent)",
@@ -150,8 +152,8 @@ export default function ExportButton({
           aria-disabled={!enablePng}
           title={
             enablePng
-              ? "Export the panel as a PNG image"
-              : "PNG export is coming soon"
+              ? "Das Panel als PNG-Bild exportieren"
+              : "PNG-Export kommt bald"
           }
           className={PILL_CLASS}
           style={{
@@ -169,7 +171,7 @@ export default function ExportButton({
                 color: "var(--text-tertiary)",
               }}
             >
-              soon
+              bald
             </span>
           )}
         </button>

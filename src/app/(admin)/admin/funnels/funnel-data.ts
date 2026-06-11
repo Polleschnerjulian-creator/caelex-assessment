@@ -140,7 +140,7 @@ export function buildFunnelRows(steps: FunnelStepView[]): FunnelStepRow[] {
 /**
  * A human title for a funnel card. The cross-product north-star funnel
  * (product === null, conventionally funnelId "growth") is labelled
- * "Growth (cross-product)"; a product-scoped funnel reads "<product> · <id>".
+ * "Wachstum (produktübergreifend)"; a product-scoped funnel reads "<product> · <id>".
  * Pure string shaping so the heading is testable and consistent.
  */
 export function funnelTitle(
@@ -150,8 +150,8 @@ export function funnelTitle(
     // The growth funnel is THE cross-product one; other null-product funnels
     // (if any are ever added) still read as cross-product, which is correct.
     return view.funnelId === "growth"
-      ? "Growth (cross-product)"
-      : `${view.funnelId} (cross-product)`;
+      ? "Wachstum (produktübergreifend)"
+      : `${view.funnelId} (produktübergreifend)`;
   }
   return `${view.product} · ${view.funnelId}`;
 }
@@ -177,13 +177,13 @@ export const FUNNEL_EXPORT_COLUMNS: ReadonlyArray<{
   key: string;
   header: string;
 }> = [
-  { key: "funnel", header: "Funnel" },
-  { key: "step", header: "Step" },
-  { key: "stepKey", header: "Step name" },
-  { key: "usersEntered", header: "Users entered" },
-  { key: "usersCompleted", header: "Users completed" },
-  { key: "conversionPct", header: "Conversion %" },
-  { key: "medianToNext", header: "Median to next" },
+  { key: "funnel", header: "Trichter" },
+  { key: "step", header: "Schritt" },
+  { key: "stepKey", header: "Schritt-Name" },
+  { key: "usersEntered", header: "Nutzer gestartet" },
+  { key: "usersCompleted", header: "Nutzer abgeschlossen" },
+  { key: "conversionPct", header: "Konversion %" },
+  { key: "medianToNext", header: "Median bis zum nächsten" },
 ];
 
 /**

@@ -31,7 +31,7 @@ import AdminPageHeader from "@/components/admin/AdminPageHeader";
 import AdminCard from "@/components/admin/AdminCard";
 import ExportButton from "@/components/admin/ExportButton";
 import { useAdminData } from "@/components/admin/useAdminData";
-import { compactNumber } from "@/components/admin/format";
+import { compactNumber, dateDe } from "@/components/admin/format";
 import type { CsvRow } from "@/components/admin/export-utils";
 import type { RetentionResponse } from "@/lib/admin/analytics-types";
 import {
@@ -47,6 +47,11 @@ import {
 // never momentarily drops the selected pill mid-fetch.
 // ─────────────────────────────────────────────────────────────────────────────
 
+/** Anzeigename eines Scopes: "all" → "Alle", Produkt-Slugs bleiben (capitalize per CSS). */
+function scopeLabel(s: string): string {
+  return s === "all" ? "Alle" : s;
+}
+
 function ScopeTabs({
   scopes,
   value,
@@ -59,7 +64,7 @@ function ScopeTabs({
   return (
     <div
       role="tablist"
-      aria-label="Retention scope"
+      aria-label="Bereich"
       className="inline-flex items-center gap-0.5 rounded-lg p-0.5 glass-surface"
       style={{ border: "1px solid var(--border-default)" }}
     >
@@ -85,7 +90,7 @@ function ScopeTabs({
                 e.currentTarget.style.color = "var(--text-secondary)";
             }}
           >
-            {s}
+            {scopeLabel(s)}
           </button>
         );
       })}
@@ -124,9 +129,9 @@ function HeatCell({ cell }: { cell: RetentionGridCell }) {
           border: "1px solid var(--border-default)",
           color: strong ? "#ffffff" : "var(--text-primary)",
         }}
-        title={`${cell.pctLabel} retained · week ${cell.weeksSince} · ${compactNumber(
+        title={`${cell.pctLabel} kehren zurück · Woche ${cell.weeksSince} · ${compactNumber(
           cell.returnedUsers,
-        )} users`}
+        )} Nutzer`}
       >
         {cell.pctLabel}
       </div>
@@ -140,7 +145,7 @@ function ToneLegend() {
   return (
     <div className="flex items-center gap-2">
       <span className="text-[11px]" style={{ color: "var(--text-secondary)" }}>
-        Less
+        Wenig
       </span>
       <div className="flex items-center gap-1">
         {stops.map((a) => (
@@ -155,7 +160,7 @@ function ToneLegend() {
         ))}
       </div>
       <span className="text-[11px]" style={{ color: "var(--text-secondary)" }}>
-        More retained
+        Viel Bindung
       </span>
     </div>
   );
@@ -166,7 +171,10 @@ export default function RetentionPage() {
   // swaps it, useAdminData re-fetches + aborts the prior request.
   const [scope, setScope] = useState<string>("all");
   const url = `/api/admin/v2/retention?scope=${encodeURIComponent(scope)}`;
-  const { data, loading, error, reload } = useAdminData<RetentionResponse>(url);
+  // Stale-while-revalidate: ein schon besuchter Scope erscheint sofort aus dem
+  // Cache; `refreshing` treibt nur das Aktualisieren-Icon an, nie ein Skelett.
+  const { data, loading, refreshing, error, reload } =
+    useAdminData<RetentionResponse>(url);
 
   // Pivot the response into a dense, column-aligned matrix (pure + tested).
   const grid = useMemo(() => (data ? buildRetentionGrid(data) : null), [data]);
@@ -200,16 +208,16 @@ export default function RetentionPage() {
   return (
     <div>
       <AdminPageHeader
-        title="Retention"
-        subtitle="Weekly signup cohorts — share of each cohort returning in the weeks after signup. Counts only; no personal data."
+        title="Kundenbindung (Retention)"
+        subtitle="Wöchentliche Anmelde-Kohorten — welcher Anteil jeder Kohorte in den Wochen nach der Registrierung zurückkehrt. Nur Zählwerte, keine personenbezogenen Daten."
         right={
           <div className="flex items-center gap-3">
             {grid && !grid.isEmpty && (
               <ExportButton
                 rows={csv.rows}
                 columns={csv.columns}
-                filename={`caelex-retention-${scope}`}
-                label="Export"
+                filename={`caelex-kundenbindung-${scope}`}
+                label="Export (CSV)"
               />
             )}
             <ScopeTabs
@@ -220,13 +228,13 @@ export default function RetentionPage() {
             <button
               type="button"
               onClick={reload}
-              disabled={loading}
-              aria-label="Refresh"
+              disabled={loading || refreshing}
+              aria-label="Aktualisieren"
               className="flex h-8 w-8 items-center justify-center rounded-lg glass-surface transition-colors disabled:opacity-50"
               style={{ border: "1px solid var(--border-default)" }}
             >
               <RefreshCw
-                className={loading ? "animate-spin" : ""}
+                className={loading || refreshing ? "animate-spin" : ""}
                 size={14}
                 style={{ color: "var(--text-secondary)" }}
               />
@@ -236,18 +244,18 @@ export default function RetentionPage() {
       />
 
       <AdminCard
-        title="Cohort retention"
+        title="Kohorten-Bindung"
         subtitle={
           grid && !grid.isEmpty
-            ? `${grid.rows.length} cohort${grid.rows.length === 1 ? "" : "s"} · up to week ${
+            ? `${grid.rows.length} Kohorte${grid.rows.length === 1 ? "" : "n"} · bis Woche ${
                 grid.columns[grid.columns.length - 1]
               }`
-            : undefined
+            : "Anteil der zurückkehrenden Nutzer je Anmelde-Woche"
         }
         right={grid && !grid.isEmpty ? <ToneLegend /> : undefined}
       >
-        {/* ── Loading ─────────────────────────────────────────────── */}
-        {loading && (
+        {/* ── Erststart: dezente Inline-Zeilen, Karte + Titel stehen schon ── */}
+        {!data && !error && (
           <div className="space-y-2" aria-busy="true">
             {Array.from({ length: 6 }).map((_, i) => (
               <div
@@ -258,8 +266,8 @@ export default function RetentionPage() {
           </div>
         )}
 
-        {/* ── Error ───────────────────────────────────────────────── */}
-        {!loading && error && (
+        {/* ── Fehler (nur wenn nichts zu zeigen ist) ───────────────── */}
+        {!data && error && (
           <div
             className="rounded-lg px-4 py-6 text-center text-[13px]"
             style={{
@@ -267,12 +275,12 @@ export default function RetentionPage() {
               color: "var(--accent-danger)",
             }}
           >
-            Could not load retention: {error}
+            Kundenbindung konnte nicht geladen werden: {error}
           </div>
         )}
 
-        {/* ── Empty ───────────────────────────────────────────────── */}
-        {!loading && !error && grid && grid.isEmpty && (
+        {/* ── Leer ─────────────────────────────────────────────────── */}
+        {grid && grid.isEmpty && (
           <div
             className="flex flex-col items-center justify-center gap-2 rounded-lg px-4 py-12 text-center"
             style={{ border: "1px dashed var(--border-default)" }}
@@ -282,20 +290,20 @@ export default function RetentionPage() {
               className="text-[13px] font-medium"
               style={{ color: "var(--text-primary)" }}
             >
-              No retention data yet
+              Noch keine Bindungs-Daten
             </p>
             <p
               className="text-[12px]"
               style={{ color: "var(--text-secondary)" }}
             >
-              Cohorts appear here once the weekly retention rollup has run for
-              this scope.
+              Kohorten erscheinen hier, sobald die wöchentliche Auswertung für
+              diesen Bereich gelaufen ist.
             </p>
           </div>
         )}
 
-        {/* ── Data: the heatmap ───────────────────────────────────── */}
-        {!loading && !error && grid && !grid.isEmpty && (
+        {/* ── Daten: die Heatmap ───────────────────────────────────── */}
+        {grid && !grid.isEmpty && (
           <div className="overflow-x-auto">
             <table className="w-full border-separate border-spacing-0">
               <thead>
@@ -305,14 +313,14 @@ export default function RetentionPage() {
                     className="pb-2 pr-3 text-left align-bottom text-[10px] font-semibold uppercase tracking-[0.06em]"
                     style={{ color: "var(--text-secondary)" }}
                   >
-                    Cohort
+                    Kohorte
                   </th>
                   {grid.columns.map((w) => (
                     <th
                       key={w}
                       className="px-0.5 pb-2 text-center align-bottom text-[10px] font-semibold uppercase tracking-[0.04em]"
                       style={{ color: "var(--text-secondary)" }}
-                      title={`Week ${w} after signup`}
+                      title={`Woche ${w} nach der Registrierung`}
                     >
                       W{w}
                     </th>
@@ -327,13 +335,13 @@ export default function RetentionPage() {
                         className="text-[12px] font-medium tabular-nums"
                         style={{ color: "var(--text-primary)" }}
                       >
-                        {row.cohortWeek}
+                        {dateDe(row.cohortWeek) ?? row.cohortWeek}
                       </div>
                       <div
                         className="text-[10px] tabular-nums"
                         style={{ color: "var(--text-secondary)" }}
                       >
-                        {compactNumber(row.cohortSize)} signups
+                        {compactNumber(row.cohortSize)} Anmeldungen
                       </div>
                     </td>
                     {row.cells.map((cell) => (

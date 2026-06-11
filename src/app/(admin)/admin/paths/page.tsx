@@ -42,7 +42,7 @@ import AdminPageHeader from "@/components/admin/AdminPageHeader";
 import AdminCard from "@/components/admin/AdminCard";
 import ExportButton from "@/components/admin/ExportButton";
 import { useAdminData } from "@/components/admin/useAdminData";
-import { compactNumber, pctLabel } from "@/components/admin/format";
+import { compactNumber, dateDe, pctLabel } from "@/components/admin/format";
 import type { CsvRow } from "@/components/admin/export-utils";
 import type { PathsResponse } from "@/lib/admin/analytics-types";
 import {
@@ -64,7 +64,9 @@ export default function PathsPage() {
   // The page owns the selected product; the fetch URL is derived from it so a
   // switch re-fetches (the hook aborts the prior request — last-write-wins).
   const [product, setProduct] = useState<PathProduct>("comply");
-  const { data, loading, error } = useAdminData<PathsResponse>(
+  // Stale-while-revalidate: ein schon besuchtes Produkt erscheint sofort aus
+  // dem Cache — kein Skelett-Blitzen beim Umschalten.
+  const { data, error } = useAdminData<PathsResponse>(
     `/api/admin/v2/paths?product=${product}`,
   );
 
@@ -75,23 +77,23 @@ export default function PathsPage() {
     [data],
   );
 
-  const hasEdges = !loading && !error && !!data && data.edges.length > 0;
+  const hasEdges = !!data && data.edges.length > 0;
 
   return (
     <>
       <AdminPageHeader
-        title="Paths"
-        subtitle="How users move through a product — entry pages, where they go next, and where they drop off — on its most recent active day."
+        title="Nutzerpfade"
+        subtitle="Wie sich Nutzer durch ein Produkt bewegen — Einstiegsseiten, nächste Schritte und Absprünge — am letzten aktiven Tag."
         right={
           <div className="flex items-center gap-3">
             {hasEdges && (
               <ExportButton
                 rows={exportRows}
                 columns={PATH_EXPORT_COLUMNS}
-                filename={`caelex-paths-${product}${
+                filename={`caelex-nutzerpfade-${product}${
                   data?.date ? `-${data.date}` : ""
                 }`}
-                label="Export"
+                label="Export (CSV)"
               />
             )}
             <ProductSwitcher value={product} onChange={setProduct} />
@@ -99,29 +101,27 @@ export default function PathsPage() {
         }
       />
 
-      {loading && <PathsSkeleton />}
-
-      {!loading && error && (
+      {!data && error && (
         <AdminCard>
           <InlineMessage
             tone="danger"
-            text={`Could not load paths — ${error}.`}
+            text={`Nutzerpfade konnten nicht geladen werden — ${error}.`}
           />
         </AdminCard>
       )}
 
-      {!loading && !error && data && data.edges.length === 0 && (
+      {!data && !error && <PathsSkeleton />}
+
+      {data && data.edges.length === 0 && (
         <AdminCard>
           <EmptyState
-            title="No path data yet"
-            hint="Page-to-page flows appear here once the analytics rollups have captured a day of activity for this product."
+            title="Noch keine Pfad-Daten"
+            hint="Seiten-zu-Seiten-Bewegungen erscheinen hier, sobald die Analytik-Auswertungen einen Tag Aktivität für dieses Produkt erfasst haben."
           />
         </AdminCard>
       )}
 
-      {!loading && !error && data && data.edges.length > 0 && (
-        <PathFlow data={data} />
-      )}
+      {data && data.edges.length > 0 && <PathFlow data={data} />}
     </>
   );
 }
@@ -138,19 +138,19 @@ function PathFlow({ data }: { data: PathsResponse }) {
   const entries = topEntries(data.edges);
   const groups = groupOutflows(data.edges);
 
-  const dayLabel = data.date ? ` · ${data.date}` : "";
+  const dayLabel = data.date ? ` · ${dateDe(data.date) ?? data.date}` : "";
 
   return (
     <div className="space-y-4">
       {/* Headline panels: the two questions an operator actually asks. */}
       <div className="grid gap-4 lg:grid-cols-2">
         <AdminCard
-          title="Worst drop-offs"
-          subtitle="Real pages where sessions most often end. The rate is each page's drop-off across all the traffic leaving it."
+          title="Größte Absprünge"
+          subtitle="Echte Seiten, auf denen Sitzungen am häufigsten enden. Die Quote ist der Absprung-Anteil am gesamten Verkehr, der die Seite verlässt."
           right={<ProductBadge product={data.product} />}
         >
           {exits.length === 0 ? (
-            <MiniEmpty text="No sessions ended on a tracked page this day." />
+            <MiniEmpty text="An diesem Tag endete keine Sitzung auf einer erfassten Seite." />
           ) : (
             <ul className="space-y-1.5">
               {exits.map((row) => (
@@ -161,11 +161,11 @@ function PathFlow({ data }: { data: PathsResponse }) {
         </AdminCard>
 
         <AdminCard
-          title="Top entry pages"
-          subtitle="Where sessions begin — the landing pages for this product."
+          title="Häufigste Einstiegsseiten"
+          subtitle="Wo Sitzungen beginnen — die Startseiten dieses Produkts."
         >
           {entries.length === 0 ? (
-            <MiniEmpty text="No session-start pages were recorded this day." />
+            <MiniEmpty text="An diesem Tag wurden keine Sitzungs-Startseiten erfasst." />
           ) : (
             <ul className="space-y-1.5">
               {entries.map((row) => (
@@ -178,8 +178,8 @@ function PathFlow({ data }: { data: PathsResponse }) {
 
       {/* The source→target flow body. */}
       <AdminCard
-        title="Flow by source page"
-        subtitle={`Where users go from each page${dayLabel} — each destination sized by its share of that page's outflow.`}
+        title="Fluss nach Ausgangsseite"
+        subtitle={`Wohin Nutzer von jeder Seite aus weitergehen${dayLabel} — jedes Ziel skaliert nach seinem Anteil am Abfluss dieser Seite.`}
         right={<ProductBadge product={data.product} />}
       >
         <div className="space-y-3">
@@ -226,9 +226,9 @@ function SourceGroupView({ group }: { group: SourceGroup }) {
           <span
             className="flex-shrink-0 text-[11px] tabular-nums"
             style={{ color: "var(--text-secondary)" }}
-            title="Total transitions leaving this page"
+            title="Alle Wechsel, die diese Seite verlassen"
           >
-            {compactNumber(group.totalOut)} out
+            {compactNumber(group.totalOut)} Abgänge
           </span>
         </div>
       </header>
@@ -284,7 +284,7 @@ function OutEdgeView({ edge }: { edge: OutEdge }) {
           <span
             className="w-9 text-right text-[10px] tabular-nums"
             style={{ color: "var(--text-secondary)" }}
-            title="Share of this page's outflow"
+            title="Anteil am Abfluss dieser Seite"
           >
             {pctLabel(edge.shareOfSource)}
           </span>
@@ -333,17 +333,17 @@ function ExitRowView({ row }: { row: ExitRow }) {
           <span
             className="text-[12px] font-semibold tabular-nums"
             style={{ color: "var(--text-primary)" }}
-            title="Sessions that ended on this page"
+            title="Sitzungen, die auf dieser Seite endeten"
           >
             {compactNumber(row.transitions)}
           </span>
           <span
             className="w-12 text-right text-[10px] tabular-nums"
             style={{ color: "var(--text-secondary)" }}
-            title="Drop-off rate — share of this page's traffic that left the product"
+            title="Absprungquote — Anteil des Verkehrs dieser Seite, der das Produkt verlassen hat"
           >
             {/* null rate (unknowable) → em-dash, never a misleading number. */}
-            {row.exitRate == null ? "—" : `${pctLabel(row.exitRate)} exit`}
+            {row.exitRate == null ? "—" : `${pctLabel(row.exitRate)} Absprung`}
           </span>
         </div>
       </div>
@@ -386,14 +386,14 @@ function EntryRowView({ row }: { row: EntryRow }) {
           <span
             className="text-[12px] font-semibold tabular-nums"
             style={{ color: "var(--text-primary)" }}
-            title="Sessions that began on this page"
+            title="Sitzungen, die auf dieser Seite begannen"
           >
             {compactNumber(row.transitions)}
           </span>
           <span
             className="w-9 text-right text-[10px] tabular-nums"
             style={{ color: "var(--text-secondary)" }}
-            title="Share of all session starts"
+            title="Anteil an allen Sitzungs-Starts"
           >
             {pctLabel(row.share)}
           </span>
@@ -441,7 +441,7 @@ function PathToken({
         }}
       >
         <Icon size={11} aria-hidden />
-        {kind}
+        {kind === "entry" ? "Einstieg" : "Ausstieg"}
       </span>
     );
   }
@@ -490,7 +490,7 @@ function ProductSwitcher({
   return (
     <div
       role="tablist"
-      aria-label="Product"
+      aria-label="Produkt"
       className="inline-flex flex-wrap items-center gap-0.5 rounded-lg p-0.5 glass-surface"
       style={{ border: "1px solid var(--border-default)" }}
     >
@@ -528,34 +528,44 @@ function ProductSwitcher({
 // Local state primitives (shared shape with the other admin pages).
 // ─────────────────────────────────────────────────────────────────────────────
 
+/** Erststart: echte Karten mit deutschen Titeln, Inhalte pulsieren dezent. */
 function PathsSkeleton() {
   return (
-    <div className="space-y-4">
+    <div className="space-y-4" aria-busy="true">
       <div className="grid gap-4 lg:grid-cols-2">
-        {[0, 1].map((panel) => (
-          <AdminCard key={panel}>
-            <div className="space-y-1.5">
-              {[0, 1, 2, 3].map((bar) => (
-                <div
-                  key={bar}
-                  className="h-9 animate-pulse rounded-lg"
-                  style={{
-                    background: "var(--border-default)",
-                    width: `${100 - bar * 14}%`,
-                  }}
-                />
-              ))}
-            </div>
-          </AdminCard>
-        ))}
+        {(["Größte Absprünge", "Häufigste Einstiegsseiten"] as const).map(
+          (title) => (
+            <AdminCard key={title} title={title}>
+              <div
+                className="space-y-1.5"
+                role="status"
+                aria-label="Wird geladen"
+              >
+                {[0, 1, 2, 3].map((bar) => (
+                  <div
+                    key={bar}
+                    className="h-9 animate-pulse rounded-lg"
+                    style={{
+                      background:
+                        "var(--separator-strong, rgba(148,163,184,0.14))",
+                      width: `${100 - bar * 14}%`,
+                    }}
+                  />
+                ))}
+              </div>
+            </AdminCard>
+          ),
+        )}
       </div>
-      <AdminCard>
-        <div className="space-y-3">
+      <AdminCard title="Fluss nach Ausgangsseite">
+        <div className="space-y-3" role="status" aria-label="Wird geladen">
           {[0, 1, 2].map((grp) => (
             <div
               key={grp}
               className="h-20 animate-pulse rounded-xl"
-              style={{ background: "var(--border-default)" }}
+              style={{
+                background: "var(--separator-strong, rgba(148,163,184,0.14))",
+              }}
             />
           ))}
         </div>

@@ -74,16 +74,20 @@ const ROWS = [
 describe("ExportButton — CSV download wiring", () => {
   it("renders an enabled labelled button when there is data", () => {
     render(<ExportButton rows={ROWS} filename="cockpit" />);
-    const btn = screen.getByRole("button", { name: /Export CSV/i });
+    const btn = screen.getByRole("button", { name: /CSV exportieren/i });
     expect(btn).toBeTruthy();
     expect((btn as HTMLButtonElement).disabled).toBe(false);
   });
 
   it("creates a Blob URL and triggers a download with a sanitised name", () => {
     render(
-      <ExportButton rows={ROWS} filename="Cockpit Export" label="Export CSV" />,
+      <ExportButton
+        rows={ROWS}
+        filename="Cockpit Export"
+        label="CSV exportieren"
+      />,
     );
-    fireEvent.click(screen.getByRole("button", { name: /Export CSV/i }));
+    fireEvent.click(screen.getByRole("button", { name: /CSV exportieren/i }));
 
     expect(createdUrls.length).toBe(1);
     expect(lastDownloadName).toBe("cockpit-export.csv");
@@ -95,7 +99,7 @@ describe("ExportButton — CSV download wiring", () => {
 
   it("emits a text/csv Blob (the content rules are tested in export-utils)", () => {
     render(<ExportButton rows={ROWS} filename="cockpit" />);
-    fireEvent.click(screen.getByRole("button", { name: /Export CSV/i }));
+    fireEvent.click(screen.getByRole("button", { name: /CSV exportieren/i }));
     expect(createdUrls[0].type).toContain("text/csv");
   });
 
@@ -107,7 +111,7 @@ describe("ExportButton — CSV download wiring", () => {
         columns={[{ key: "product", header: "Product" }]}
       />,
     );
-    fireEvent.click(screen.getByRole("button", { name: /Export CSV/i }));
+    fireEvent.click(screen.getByRole("button", { name: /CSV exportieren/i }));
     expect(createdUrls.length).toBe(1);
     expect(lastDownloadName).toBe("depth.csv");
   });
@@ -116,20 +120,22 @@ describe("ExportButton — CSV download wiring", () => {
 describe("ExportButton — empty dataset", () => {
   it("disables the button and announces nothing to export", () => {
     render(<ExportButton rows={[]} filename="cockpit" />);
-    const btn = screen.getByRole("button", { name: /Nothing to export/i });
+    const btn = screen.getByRole("button", { name: /Nichts zu exportieren/i });
     expect((btn as HTMLButtonElement).disabled).toBe(true);
   });
 
   it("does not create a URL when clicked while empty", () => {
     render(<ExportButton rows={[]} filename="cockpit" />);
     // Clicking a disabled button is a no-op, but assert the latch holds anyway.
-    fireEvent.click(screen.getByRole("button", { name: /Nothing to export/i }));
+    fireEvent.click(
+      screen.getByRole("button", { name: /Nichts zu exportieren/i }),
+    );
     expect(createdUrls.length).toBe(0);
   });
 
   it("treats explicit columns as exportable even with zero rows", () => {
     render(<ExportButton rows={[]} filename="schema" columns={["a", "b"]} />);
-    const btn = screen.getByRole("button", { name: /Export CSV/i });
+    const btn = screen.getByRole("button", { name: /CSV exportieren/i });
     expect((btn as HTMLButtonElement).disabled).toBe(false);
     fireEvent.click(btn);
     expect(createdUrls.length).toBe(1);
@@ -147,7 +153,7 @@ describe("ExportButton — PNG affordance", () => {
     render(<ExportButton rows={ROWS} filename="cockpit" pngTargetRef={ref} />);
     const png = screen.getByRole("button", { name: /PNG/i });
     expect((png as HTMLButtonElement).disabled).toBe(true);
-    expect(screen.getByText(/soon/i)).toBeTruthy();
+    expect(screen.getByText(/bald/i)).toBeTruthy();
   });
 
   it("enables the PNG control when enablePng is set", () => {

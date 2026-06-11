@@ -46,8 +46,9 @@ import {
 export default function FunnelsPage() {
   // The page owns the range; the fetch URL is derived from it so a tab toggle
   // re-fetches (and the hook aborts the prior request — last-write-wins).
+  // Stale-while-revalidate: bekannte Zeiträume erscheinen sofort aus dem Cache.
   const [range, setRange] = useState<AdminRange>("30d");
-  const { data, loading, error } = useAdminData<FunnelsResponse>(
+  const { data, error } = useAdminData<FunnelsResponse>(
     `/api/admin/v2/funnels?range=${range}`,
   );
 
@@ -58,21 +59,21 @@ export default function FunnelsPage() {
     [data],
   );
 
-  const hasFunnels = !loading && !error && !!data && data.funnels.length > 0;
+  const hasFunnels = !!data && data.funnels.length > 0;
 
   return (
     <>
       <AdminPageHeader
-        title="Funnels"
-        subtitle="Step-by-step conversion across each product flow, summed over the selected window."
+        title="Conversion-Trichter (Funnels)"
+        subtitle="Schritt-für-Schritt-Konversion in jedem Produkt-Ablauf, summiert über den gewählten Zeitraum."
         right={
           <div className="flex items-center gap-3">
             {hasFunnels && (
               <ExportButton
                 rows={exportRows}
                 columns={FUNNEL_EXPORT_COLUMNS}
-                filename={`caelex-funnels-${range}`}
-                label="Export"
+                filename={`caelex-trichter-${range}`}
+                label="Export (CSV)"
               />
             )}
             <RangeTabs value={range} onChange={setRange} />
@@ -80,27 +81,27 @@ export default function FunnelsPage() {
         }
       />
 
-      {loading && <FunnelsSkeleton />}
-
-      {!loading && error && (
+      {!data && error && (
         <AdminCard>
           <InlineMessage
             tone="danger"
-            text={`Could not load funnels — ${error}.`}
+            text={`Conversion-Trichter konnten nicht geladen werden — ${error}.`}
           />
         </AdminCard>
       )}
 
-      {!loading && !error && data && data.funnels.length === 0 && (
+      {!data && !error && <FunnelsSkeleton />}
+
+      {data && data.funnels.length === 0 && (
         <AdminCard>
           <EmptyState
-            title="No funnel data yet"
-            hint="Funnels appear here once the analytics rollups have been computed for this range."
+            title="Noch keine Trichter-Daten"
+            hint="Trichter erscheinen hier, sobald die Analytik-Auswertungen für diesen Zeitraum berechnet wurden."
           />
         </AdminCard>
       )}
 
-      {!loading && !error && data && data.funnels.length > 0 && (
+      {data && data.funnels.length > 0 && (
         <div className="space-y-5">
           {data.funnels.map((funnel) => (
             <FunnelCard key={funnel.funnelId} funnel={funnel} />
@@ -121,9 +122,9 @@ function FunnelCard({ funnel }: { funnel: FunnelView }) {
   return (
     <AdminCard
       title={funnelTitle(funnel)}
-      subtitle={`${rows.length} step${rows.length === 1 ? "" : "s"} · ${compactNumber(
+      subtitle={`${rows.length} Schritt${rows.length === 1 ? "" : "e"} · ${compactNumber(
         entered0,
-      )} entered step 1`}
+      )} haben Schritt 1 gestartet`}
       right={
         <span
           className="inline-flex items-center gap-1.5 rounded-md px-2 py-1 text-[11px] font-medium"
@@ -133,7 +134,7 @@ function FunnelCard({ funnel }: { funnel: FunnelView }) {
           }}
         >
           <Filter size={12} aria-hidden />
-          {funnel.product ?? "cross-product"}
+          {funnel.product ?? "produktübergreifend"}
         </span>
       }
     >
@@ -197,7 +198,7 @@ function FunnelStep({
         <span
           className="flex-shrink-0 text-[12px] font-semibold tabular-nums"
           style={{ color: convColor }}
-          title="Share of this step's entrants who advanced"
+          title="Anteil der Nutzer dieses Schritts, die weitergekommen sind"
         >
           {conv === null ? "—" : pctLabel(conv)}
         </span>
@@ -208,9 +209,9 @@ function FunnelStep({
         className="mt-1 h-7 w-full overflow-hidden rounded-md"
         style={{ background: "var(--bg-base, rgba(255,255,255,0.03))" }}
         role="img"
-        aria-label={`${compactNumber(row.usersEntered)} entered, ${
-          row.conversionPct === null ? "no" : pctLabel(row.conversionPct)
-        } conversion`}
+        aria-label={`${compactNumber(row.usersEntered)} gestartet, ${
+          row.conversionPct === null ? "keine" : pctLabel(row.conversionPct)
+        } Konversion`}
       >
         <div
           className="flex h-full items-center rounded-md px-2 transition-[width] duration-300"
@@ -241,7 +242,7 @@ function FunnelStep({
         >
           <ArrowDownRight size={11} aria-hidden />
           <span className="tabular-nums">{row.msToNextLabel}</span>
-          <span>median to next</span>
+          <span>Median bis zum nächsten Schritt</span>
         </div>
       )}
     </li>
@@ -252,22 +253,23 @@ function FunnelStep({
 // Local state primitives (shared shape with the other admin pages).
 // ─────────────────────────────────────────────────────────────────────────────
 
+/** Erststart: echte Karten, Trichter-Balken pulsieren dezent (kein Vollflächen-Loader). */
 function FunnelsSkeleton() {
   return (
-    <div className="space-y-5">
+    <div className="space-y-5" aria-busy="true">
       {[0, 1].map((card) => (
-        <AdminCard key={card}>
-          <div className="space-y-3">
-            <div
-              className="h-4 w-40 animate-pulse rounded"
-              style={{ background: "var(--border-default)" }}
-            />
+        <AdminCard
+          key={card}
+          title={card === 0 ? "Wachstums-Trichter" : "Produkt-Trichter"}
+          subtitle="Schritt-für-Schritt-Konversion"
+        >
+          <div className="space-y-3" role="status" aria-label="Wird geladen">
             {[0, 1, 2].map((bar) => (
               <div
                 key={bar}
                 className="h-7 animate-pulse rounded-md"
                 style={{
-                  background: "var(--border-default)",
+                  background: "var(--separator-strong, rgba(148,163,184,0.14))",
                   width: `${100 - bar * 25}%`,
                 }}
               />

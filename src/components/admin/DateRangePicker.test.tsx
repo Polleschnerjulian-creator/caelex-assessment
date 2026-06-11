@@ -22,10 +22,10 @@ import type { DateRange } from "./export-utils";
 const RANGE: DateRange = { fromISO: "2026-06-01", toISO: "2026-06-09" };
 
 function startInput(): HTMLInputElement {
-  return screen.getByLabelText("Start date") as HTMLInputElement;
+  return screen.getByLabelText("Startdatum") as HTMLInputElement;
 }
 function endInput(): HTMLInputElement {
-  return screen.getByLabelText("End date") as HTMLInputElement;
+  return screen.getByLabelText("Enddatum") as HTMLInputElement;
 }
 
 describe("DateRangePicker — controlled rendering", () => {
@@ -38,16 +38,16 @@ describe("DateRangePicker — controlled rendering", () => {
   it("exposes an accessible group + labelled inputs", () => {
     render(<DateRangePicker value={RANGE} onChange={vi.fn()} />);
     expect(
-      screen.getByRole("group", { name: /Custom date range/i }),
+      screen.getByRole("group", { name: /Eigener Zeitraum/i }),
     ).toBeTruthy();
-    expect(screen.getByLabelText("Start date")).toBeTruthy();
-    expect(screen.getByLabelText("End date")).toBeTruthy();
+    expect(screen.getByLabelText("Startdatum")).toBeTruthy();
+    expect(screen.getByLabelText("Enddatum")).toBeTruthy();
   });
 
   it("renders the inclusive day-count for the selected window", () => {
     render(<DateRangePicker value={RANGE} onChange={vi.fn()} />);
     // 2026-06-01 .. 2026-06-09 inclusive = 9 days.
-    expect(screen.getByText("9d")).toBeTruthy();
+    expect(screen.getByText(/9 Tage/)).toBeTruthy();
   });
 
   it("re-syncs the inputs when the parent value changes", () => {
@@ -62,7 +62,7 @@ describe("DateRangePicker — controlled rendering", () => {
     );
     expect(startInput().value).toBe("2026-01-01");
     expect(endInput().value).toBe("2026-01-31");
-    expect(screen.getByText("31d")).toBeTruthy();
+    expect(screen.getByText(/31 Tage/)).toBeTruthy();
   });
 });
 

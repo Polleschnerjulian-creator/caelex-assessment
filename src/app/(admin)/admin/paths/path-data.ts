@@ -425,11 +425,11 @@ export const PATH_EXPORT_COLUMNS: ReadonlyArray<{
   key: string;
   header: string;
 }> = [
-  { key: "fromPath", header: "From page" },
-  { key: "sourceOutflow", header: "Source outflow" },
-  { key: "toPath", header: "To page" },
-  { key: "transitions", header: "Transitions" },
-  { key: "shareOfSource", header: "Share of source %" },
+  { key: "fromPath", header: "Von Seite" },
+  { key: "sourceOutflow", header: "Abgänge der Quellseite" },
+  { key: "toPath", header: "Zu Seite" },
+  { key: "transitions", header: "Wechsel" },
+  { key: "shareOfSource", header: "Anteil an der Quellseite %" },
 ];
 
 /**

@@ -43,16 +43,17 @@ function topBarTitle(pathname: string): string {
   if (exact[pathname]) return exact[pathname];
 
   const prefixes: { prefix: string; label: string }[] = [
-    { prefix: "/admin/steering", label: "Steering" },
-    { prefix: "/admin/products", label: "Products" },
-    { prefix: "/admin/revenue", label: "Revenue" },
-    { prefix: "/admin/growth", label: "Growth" },
-    { prefix: "/admin/customers", label: "Customers" },
-    { prefix: "/admin/efficiency", label: "Efficiency" },
+    { prefix: "/admin/steering", label: "Steuerung" },
+    { prefix: "/admin/products", label: "Produkte" },
+    { prefix: "/admin/revenue", label: "Umsatz" },
+    { prefix: "/admin/growth", label: "Wachstum" },
+    { prefix: "/admin/customers", label: "Kunden" },
+    { prefix: "/admin/efficiency", label: "Effizienz" },
     { prefix: "/admin/crm", label: "CRM" },
-    { prefix: "/admin/retention", label: "Retention" },
-    { prefix: "/admin/funnels", label: "Funnels" },
-    { prefix: "/admin/paths", label: "Paths" },
+    { prefix: "/admin/leads", label: "Leads" },
+    { prefix: "/admin/retention", label: "Kundenbindung" },
+    { prefix: "/admin/funnels", label: "Conversion-Trichter" },
+    { prefix: "/admin/paths", label: "Nutzerpfade" },
   ];
   const match = prefixes.find(
     (p) => pathname === p.prefix || pathname.startsWith(p.prefix + "/"),

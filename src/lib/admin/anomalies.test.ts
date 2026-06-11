@@ -284,22 +284,22 @@ describe("describeAnomaly — honest copy", () => {
     severity: "warning",
   };
 
-  it("phrases a drop as 'down X% vs the trailing N-day average'", () => {
+  it("phrases a drop as 'X% unter dem Schnitt der letzten N Tage'", () => {
     expect(describeAnomaly(drop)).toBe(
-      "DAU down 38% vs the trailing 7-day average",
+      "DAU 38% unter dem Schnitt der letzten 7 Tage",
     );
   });
 
   it("honours a custom window length in the copy", () => {
     expect(describeAnomaly(drop, 14)).toBe(
-      "DAU down 38% vs the trailing 14-day average",
+      "DAU 38% unter dem Schnitt der letzten 14 Tage",
     );
   });
 
-  it("phrases a spike as 'up X%'", () => {
+  it("phrases a spike as 'X% über'", () => {
     const spike: AnomalyFlag = { ...drop, direction: "spike", pctChange: 1.2 };
     expect(describeAnomaly(spike)).toBe(
-      "DAU up 120% vs the trailing 7-day average",
+      "DAU 120% über dem Schnitt der letzten 7 Tage",
     );
   });
 
@@ -311,7 +311,9 @@ describe("describeAnomaly — honest copy", () => {
       baseline: 0,
       pctChange: null,
     };
-    expect(describeAnomaly(flat)).toBe("DAU spiked to 50 vs a flat baseline");
+    expect(describeAnomaly(flat)).toBe(
+      "DAU sprang auf 50 (Basis war zuvor konstant)",
+    );
   });
 
   it("uses the supplied formatter for the fallback figure", () => {
@@ -323,7 +325,7 @@ describe("describeAnomaly — honest copy", () => {
       pctChange: null,
     };
     expect(describeAnomaly(flat, 7, (n) => `${n / 1000}k`)).toBe(
-      "DAU spiked to 1.2k vs a flat baseline",
+      "DAU sprang auf 1.2k (Basis war zuvor konstant)",
     );
   });
 });

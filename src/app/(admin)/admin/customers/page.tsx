@@ -42,6 +42,7 @@ import {
 import AdminPageHeader from "@/components/admin/AdminPageHeader";
 import AdminCard from "@/components/admin/AdminCard";
 import ExportButton from "@/components/admin/ExportButton";
+import { CardSkeleton } from "@/components/admin/Skeleton";
 import type { CsvRow } from "@/components/admin/export-utils";
 import { useAdminData } from "@/components/admin/useAdminData";
 import { compactNumber, pctLabel } from "@/components/admin/format";
@@ -57,19 +58,19 @@ const RISK_REASON_META: Record<
   RiskReasonCode,
   { label: string; tone: "danger" | "warning" }
 > = {
-  CANCELLING: { label: "Cancelling", tone: "danger" },
-  PAYMENT_FAILED: { label: "Payment failed", tone: "danger" },
-  TRIAL_ENDING: { label: "Trial ending", tone: "warning" },
-  LOW_HEALTH: { label: "Low health", tone: "warning" },
-  ACTIVITY_DROP: { label: "Activity drop", tone: "warning" },
-  GONE_QUIET: { label: "Gone quiet", tone: "warning" },
+  CANCELLING: { label: "Kündigt", tone: "danger" },
+  PAYMENT_FAILED: { label: "Zahlung fehlgeschlagen", tone: "danger" },
+  TRIAL_ENDING: { label: "Testphase endet", tone: "warning" },
+  LOW_HEALTH: { label: "Niedriger Gesundheitswert", tone: "warning" },
+  ACTIVITY_DROP: { label: "Aktivität eingebrochen", tone: "warning" },
+  GONE_QUIET: { label: "Still geworden", tone: "warning" },
 };
 
 /** Human label for each expansion reason code. */
 const EXPANSION_REASON_LABEL: Record<ExpansionReasonCode, string> = {
-  NEAR_SEAT_LIMIT: "Near seat limit",
-  NEAR_SPACECRAFT_LIMIT: "Near spacecraft limit",
-  RISING_USAGE: "Rising usage",
+  NEAR_SEAT_LIMIT: "Nahe am Nutzerplatz-Limit",
+  NEAR_SPACECRAFT_LIMIT: "Nahe am Raumfahrzeug-Limit",
+  RISING_USAGE: "Steigende Nutzung",
 };
 
 /* ─────────────────────────────────────────────────────────────────────────────
@@ -98,16 +99,16 @@ function watchlistCsvRows(rows: WatchlistEntry[]): CsvRow[] {
 }
 
 const WATCHLIST_COLUMNS = [
-  { key: "tenant", header: "Tenant" },
+  { key: "tenant", header: "Kunde" },
   { key: "plan", header: "Plan" },
-  { key: "health", header: "Health" },
+  { key: "health", header: "Gesundheitswert" },
   { key: "trend", header: "Trend" },
-  { key: "risk", header: "Risk" },
-  { key: "riskScore", header: "Risk score" },
-  { key: "reasons", header: "Reasons" },
-  { key: "recentActivity", header: "Recent activity" },
-  { key: "priorActivity", header: "Prior activity" },
-  { key: "lastActivity", header: "Last activity" },
+  { key: "risk", header: "Risiko" },
+  { key: "riskScore", header: "Risiko-Wert" },
+  { key: "reasons", header: "Gründe" },
+  { key: "recentActivity", header: "Aktivität zuletzt" },
+  { key: "priorActivity", header: "Aktivität davor" },
+  { key: "lastActivity", header: "Letzte Aktivität" },
 ];
 
 /** Expansion candidates → one CSV line per tenant, highest pressure first. */
@@ -126,51 +127,53 @@ function expansionCsvRows(rows: ExpansionEntry[]): CsvRow[] {
 }
 
 const EXPANSION_COLUMNS = [
-  { key: "tenant", header: "Tenant" },
+  { key: "tenant", header: "Kunde" },
   { key: "plan", header: "Plan" },
-  { key: "health", header: "Health" },
-  { key: "seatsUsed", header: "Seats used" },
-  { key: "seatCap", header: "Seat cap" },
-  { key: "spacecraftUsed", header: "Spacecraft used" },
-  { key: "spacecraftCap", header: "Spacecraft cap" },
-  { key: "topUtilisation", header: "Top utilisation" },
-  { key: "signals", header: "Signals" },
+  { key: "health", header: "Gesundheitswert" },
+  { key: "seatsUsed", header: "Nutzerplätze belegt" },
+  { key: "seatCap", header: "Nutzerplatz-Limit" },
+  { key: "spacecraftUsed", header: "Raumfahrzeuge belegt" },
+  { key: "spacecraftCap", header: "Raumfahrzeug-Limit" },
+  { key: "topUtilisation", header: "Höchste Auslastung" },
+  { key: "signals", header: "Signale" },
 ];
 
 export default function CustomersPage() {
-  const { data, loading, error } = useAdminData<CustomersResponse>(
+  // Stale-while-revalidate: Folgebesuche zeigen sofort die gecachten Daten;
+  // das Struktur-Skelett unten erscheint nur beim allerersten Laden.
+  const { data, error } = useAdminData<CustomersResponse>(
     "/api/admin/v2/customers",
   );
 
   return (
     <div>
       <AdminPageHeader
-        title="Customers"
-        subtitle="Health watchlist, expansion candidates, and portfolio status"
+        title="Kunden"
+        subtitle="Abwanderungs-Watchlist, Upsell-Kandidaten und Portfolio-Status"
         right={
-          data && !loading && !error ? (
+          data ? (
             <div className="flex items-center gap-3">
               <span
                 className="hidden text-[11px] tabular-nums sm:inline"
                 style={{ color: "var(--text-tertiary)" }}
               >
-                {compactNumber(data.totalTenants)} tenant
-                {data.totalTenants === 1 ? "" : "s"}
+                {compactNumber(data.totalTenants)} Kunde
+                {data.totalTenants === 1 ? "" : "n"}
               </span>
               {data.atRisk.length > 0 && (
                 <ExportButton
                   rows={watchlistCsvRows(data.atRisk)}
                   columns={WATCHLIST_COLUMNS}
-                  filename="caelex-customers-at-risk-watchlist"
-                  label="At-risk CSV"
+                  filename="caelex-kunden-risiko-watchlist"
+                  label="Risiko-CSV"
                 />
               )}
               {data.expansion.length > 0 && (
                 <ExportButton
                   rows={expansionCsvRows(data.expansion)}
                   columns={EXPANSION_COLUMNS}
-                  filename="caelex-customers-expansion"
-                  label="Expansion"
+                  filename="caelex-kunden-upsell"
+                  label="Upsell-CSV"
                 />
               )}
             </div>
@@ -178,28 +181,26 @@ export default function CustomersPage() {
         }
       />
 
-      {loading && <CustomersSkeleton />}
-
-      {!loading && error && (
+      {!data && error && (
         <AdminCard>
           <p
             className="text-[13px] leading-snug"
             style={{ color: "var(--accent-danger)" }}
           >
-            Could not load customers: {error}
+            Kunden konnten nicht geladen werden: {error}
           </p>
         </AdminCard>
       )}
 
-      {!loading && !error && data && isCustomersEmpty(data) && (
+      {!data && !error && <CustomersSkeleton />}
+
+      {data && isCustomersEmpty(data) && (
         <AdminCard>
           <EmptyState />
         </AdminCard>
       )}
 
-      {!loading && !error && data && !isCustomersEmpty(data) && (
-        <CustomersBody data={data} />
-      )}
+      {data && !isCustomersEmpty(data) && <CustomersBody data={data} />}
     </div>
   );
 }
@@ -215,46 +216,46 @@ function CustomersBody({ data }: { data: CustomersResponse }) {
   return (
     <div className="flex flex-col gap-5">
       <AdminCard
-        title="At-risk watchlist"
-        subtitle="Tenants showing churn signals — most urgent first"
+        title="Abwanderungs-Risiko (Churn-Watchlist)"
+        subtitle="Kunden mit Abwanderungs-Signalen — die dringendsten zuerst"
         right={<CountBadge n={atRisk.length} tone="danger" />}
       >
         {atRisk.length > 0 ? (
           <WatchlistTable rows={atRisk} />
         ) : (
-          <NoSeries label="No tenant is currently showing churn signals." />
+          <NoSeries label="Derzeit zeigt kein Kunde Abwanderungs-Signale." />
         )}
       </AdminCard>
 
       <AdminCard
-        title="Expansion candidates"
-        subtitle="Healthy tenants approaching a plan limit — upsell-ready"
+        title="Upsell-Kandidaten (Expansion)"
+        subtitle="Gesunde Kunden nahe an einem Plan-Limit — reif für ein Upgrade"
         right={<CountBadge n={expansion.length} tone="positive" />}
       >
         {expansion.length > 0 ? (
           <ExpansionTable rows={expansion} />
         ) : (
-          <NoSeries label="No healthy tenant is near a plan limit yet." />
+          <NoSeries label="Noch kein gesunder Kunde nahe an einem Plan-Limit." />
         )}
       </AdminCard>
 
       <div className="grid gap-5 lg:grid-cols-2">
         <AdminCard
-          title="Product status"
-          subtitle="Paid · trial · lapsed access per product"
+          title="Produkt-Status"
+          subtitle="Bezahlt · Testphase · ausgelaufen — Zugänge je Produkt"
         >
           {productStatus.length > 0 ? (
             <ProductStatusTable rows={productStatus} />
           ) : (
-            <NoSeries label="No product access on record yet." />
+            <NoSeries label="Noch keine Produkt-Zugänge erfasst." />
           )}
         </AdminCard>
 
-        <AdminCard title="Plan mix" subtitle="Active subscriptions by plan">
+        <AdminCard title="Plan-Verteilung" subtitle="Aktive Abos nach Plan">
           {planMix.length > 0 ? (
             <PlanMixList rows={planMix} />
           ) : (
-            <NoSeries label="No active subscriptions yet." />
+            <NoSeries label="Noch keine aktiven Abos." />
           )}
         </AdminCard>
       </div>
@@ -272,12 +273,12 @@ function WatchlistTable({ rows }: { rows: WatchlistEntry[] }) {
       <table className="w-full border-collapse text-[13px]">
         <thead>
           <tr>
-            <Th>Tenant</Th>
+            <Th>Kunde</Th>
             <Th>Plan</Th>
-            <Th align="right">Health</Th>
+            <Th align="right">Gesundheit</Th>
             <Th>Trend</Th>
-            <Th>Reasons</Th>
-            <Th align="right">Activity</Th>
+            <Th>Gründe</Th>
+            <Th align="right">Aktivität</Th>
           </tr>
         </thead>
         <tbody>
@@ -338,12 +339,12 @@ function ExpansionTable({ rows }: { rows: ExpansionEntry[] }) {
       <table className="w-full border-collapse text-[13px]">
         <thead>
           <tr>
-            <Th>Tenant</Th>
+            <Th>Kunde</Th>
             <Th>Plan</Th>
-            <Th align="right">Health</Th>
-            <Th align="right">Seats</Th>
-            <Th align="right">Spacecraft</Th>
-            <Th>Signals</Th>
+            <Th align="right">Gesundheit</Th>
+            <Th align="right">Nutzerplätze</Th>
+            <Th align="right">Raumfahrzeuge</Th>
+            <Th>Signale</Th>
           </tr>
         </thead>
         <tbody>
@@ -412,10 +413,10 @@ function ProductStatusTable({ rows }: { rows: ProductStatusCounts[] }) {
     <table className="w-full border-collapse text-[13px]">
       <thead>
         <tr>
-          <Th>Product</Th>
-          <Th align="right">Paid</Th>
-          <Th align="right">Trial</Th>
-          <Th align="right">Lapsed</Th>
+          <Th>Produkt</Th>
+          <Th align="right">Bezahlt</Th>
+          <Th align="right">Testphase</Th>
+          <Th align="right">Ausgelaufen</Th>
         </tr>
       </thead>
       <tbody>
@@ -553,7 +554,7 @@ function HealthScore({
       <span
         className="text-[13px] tabular-nums"
         style={{ color: "var(--text-tertiary)" }}
-        title="No health score computed yet"
+        title="Noch kein Gesundheitswert berechnet"
       >
         —
       </span>
@@ -569,7 +570,7 @@ function HealthScore({
     <span
       className="text-[13px] font-semibold tabular-nums"
       style={{ color }}
-      title={`Risk: ${risk}`}
+      title={`Risiko: ${risk}`}
     >
       {compactNumber(score)}
     </span>
@@ -586,19 +587,19 @@ function TrendPill({ trend }: { trend: HealthTrend }) {
       color: "var(--accent-success)",
       bg: "var(--accent-success-soft)",
       Icon: ArrowUpRight,
-      label: "Improving",
+      label: "Verbessert sich",
     },
     declining: {
       color: "var(--accent-danger)",
       bg: "var(--accent-danger-soft)",
       Icon: ArrowDownRight,
-      label: "Declining",
+      label: "Verschlechtert sich",
     },
     stable: {
       color: "var(--text-tertiary)",
       bg: "var(--separator-strong)",
       Icon: Minus,
-      label: "Stable",
+      label: "Stabil",
     },
   };
   const { color, bg, Icon, label } = map[trend];
@@ -654,7 +655,7 @@ function ActivityDelta({ recent, prior }: { recent: number; prior: number }) {
       {compactNumber(recent)}
       <span style={{ color: "var(--text-tertiary)" }}>
         {" "}
-        vs {compactNumber(prior)}
+        vorher {compactNumber(prior)}
       </span>
     </span>
   );
@@ -734,26 +735,23 @@ function CountBadge({ n, tone }: { n: number; tone: "danger" | "positive" }) {
  * States.
  * ────────────────────────────────────────────────────────────────────────── */
 
+/** Erststart: echte Karten mit deutschen Titeln, Inhalte pulsieren dezent. */
 function CustomersSkeleton() {
   return (
     <div className="flex flex-col gap-5" aria-busy="true">
-      <div
-        className="glass-elevated h-[240px] animate-pulse rounded-2xl"
-        style={{ border: "1px solid var(--border-default)" }}
+      <CardSkeleton
+        title="Abwanderungs-Risiko (Churn-Watchlist)"
+        subtitle="Kunden mit Abwanderungs-Signalen — die dringendsten zuerst"
+        rows={5}
       />
-      <div
-        className="glass-elevated h-[200px] animate-pulse rounded-2xl"
-        style={{ border: "1px solid var(--border-default)" }}
+      <CardSkeleton
+        title="Upsell-Kandidaten (Expansion)"
+        subtitle="Gesunde Kunden nahe an einem Plan-Limit"
+        rows={4}
       />
       <div className="grid gap-5 lg:grid-cols-2">
-        <div
-          className="glass-elevated h-[180px] animate-pulse rounded-2xl"
-          style={{ border: "1px solid var(--border-default)" }}
-        />
-        <div
-          className="glass-elevated h-[180px] animate-pulse rounded-2xl"
-          style={{ border: "1px solid var(--border-default)" }}
-        />
+        <CardSkeleton title="Produkt-Status" rows={4} />
+        <CardSkeleton title="Plan-Verteilung" rows={4} />
       </div>
     </div>
   );
@@ -772,15 +770,15 @@ function EmptyState() {
         className="text-[14px] font-medium"
         style={{ color: "var(--text-primary)" }}
       >
-        No customer signals yet
+        Noch keine Kunden-Signale
       </p>
       <p
         className="max-w-sm text-[12px] leading-snug"
         style={{ color: "var(--text-secondary)" }}
       >
-        The watchlist surfaces churn risk and expansion candidates from real
-        tenant health, billing, and product activity. As soon as there are
-        active tenants with subscriptions and usage, they appear here.
+        Die Watchlist zeigt Abwanderungs-Risiken und Upsell-Kandidaten aus
+        echten Daten zu Kundengesundheit, Abrechnung und Produkt-Aktivität.
+        Sobald es aktive Kunden mit Abos und Nutzung gibt, erscheinen sie hier.
       </p>
     </div>
   );

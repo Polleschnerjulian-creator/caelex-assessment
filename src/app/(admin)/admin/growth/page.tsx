@@ -50,9 +50,22 @@ import AdminCard from "@/components/admin/AdminCard";
 import KpiTile from "@/components/admin/KpiTile";
 import RangeTabs from "@/components/admin/RangeTabs";
 import ExportButton from "@/components/admin/ExportButton";
+import { CardSkeleton, KpiTileSkeleton } from "@/components/admin/Skeleton";
 import type { CsvRow } from "@/components/admin/export-utils";
 import { useAdminData } from "@/components/admin/useAdminData";
-import { compactNumber, eur, pctLabel } from "@/components/admin/format";
+import {
+  compactNumber,
+  dateDe,
+  eur,
+  pctLabel,
+} from "@/components/admin/format";
+
+/** Deutsche Labels für die Demo-Trichter-Stufen (stabile Keys aus growth-data). */
+const DEMO_STAGE_LABEL_DE: Record<string, string> = {
+  requested: "Angefragt",
+  booked: "Gebucht",
+  completed: "Durchgeführt",
+};
 
 /* ─────────────────────────────────────────────────────────────────────────────
  * CSV row projections — flatten the already-fetched, PII-free view-model arrays
@@ -73,10 +86,10 @@ function channelMixCsvRows(data: GrowthResponse): CsvRow[] {
 }
 
 const CHANNEL_MIX_COLUMNS = [
-  { key: "source", header: "Source" },
+  { key: "source", header: "Quelle" },
   { key: "medium", header: "Medium" },
-  { key: "touches", header: "Touches" },
-  { key: "share", header: "Share" },
+  { key: "touches", header: "Kontakte" },
+  { key: "share", header: "Anteil" },
 ];
 
 /** CRM pipeline rows → one CSV line per deal stage (canonical order). */
@@ -89,50 +102,48 @@ function pipelineCsvRows(data: GrowthResponse): CsvRow[] {
 }
 
 const PIPELINE_COLUMNS = [
-  { key: "stage", header: "Stage" },
+  { key: "stage", header: "Phase" },
   { key: "deals", header: "Deals" },
-  { key: "valueEur", header: "Value (EUR)" },
+  { key: "valueEur", header: "Wert (EUR)" },
 ];
 
 export default function GrowthPage() {
   // The page owns the selected range; RangeTabs reports changes and the URL is
   // re-derived (useAdminData aborts the prior fetch on a fast toggle).
   const [range, setRange] = useState<AdminRange>("30d");
-  const { data, loading, error } = useAdminData<GrowthResponse>(
+  // Stale-while-revalidate: bekannte Zeiträume erscheinen sofort aus dem Cache.
+  const { data, error } = useAdminData<GrowthResponse>(
     `/api/admin/v2/growth?range=${range}`,
   );
 
   return (
     <div>
       <AdminPageHeader
-        title="Growth"
-        subtitle="Top-of-funnel demand, channel mix, and the deal pipeline"
+        title="Wachstum"
+        subtitle="Eingehende Nachfrage, Kanal-Mix und die Deal-Pipeline"
         right={
           <div className="flex items-center gap-3">
-            {data && !loading && !error && (
+            {data && (
               <span
                 className="hidden text-[11px] tabular-nums sm:inline"
                 style={{ color: "var(--text-tertiary)" }}
               >
-                as of {data.asOf}
+                Stand {dateDe(data.asOf) ?? data.asOf}
               </span>
             )}
-            {data &&
-              !loading &&
-              !error &&
-              !isChannelMixEmpty(data.channelMix) && (
-                <ExportButton
-                  rows={channelMixCsvRows(data)}
-                  columns={CHANNEL_MIX_COLUMNS}
-                  filename={`caelex-growth-channel-mix-${range}`}
-                  label="Channel mix"
-                />
-              )}
-            {data && !loading && !error && !isPipelineEmpty(data.pipeline) && (
+            {data && !isChannelMixEmpty(data.channelMix) && (
+              <ExportButton
+                rows={channelMixCsvRows(data)}
+                columns={CHANNEL_MIX_COLUMNS}
+                filename={`caelex-wachstum-kanal-mix-${range}`}
+                label="Kanal-Mix"
+              />
+            )}
+            {data && !isPipelineEmpty(data.pipeline) && (
               <ExportButton
                 rows={pipelineCsvRows(data)}
                 columns={PIPELINE_COLUMNS}
-                filename={`caelex-growth-pipeline-${range}`}
+                filename={`caelex-wachstum-pipeline-${range}`}
                 label="Pipeline"
               />
             )}
@@ -141,28 +152,26 @@ export default function GrowthPage() {
         }
       />
 
-      {loading && <GrowthSkeleton />}
-
-      {!loading && error && (
+      {!data && error && (
         <AdminCard>
           <p
             className="text-[13px] leading-snug"
             style={{ color: "var(--accent-danger)" }}
           >
-            Could not load growth: {error}
+            Wachstum konnte nicht geladen werden: {error}
           </p>
         </AdminCard>
       )}
 
-      {!loading && !error && data && isGrowthEmpty(data) && (
+      {!data && !error && <GrowthSkeleton />}
+
+      {data && isGrowthEmpty(data) && (
         <AdminCard>
           <EmptyState />
         </AdminCard>
       )}
 
-      {!loading && !error && data && !isGrowthEmpty(data) && (
-        <GrowthBody data={data} />
-      )}
+      {data && !isGrowthEmpty(data) && <GrowthBody data={data} />}
     </div>
   );
 }
@@ -182,11 +191,11 @@ function GrowthBody({ data }: { data: GrowthResponse }) {
 
       {/* Channel mix — inbound touches by source × medium. */}
       <AdminCard
-        title="Channel mix"
-        subtitle="Inbound touches by source × medium — site visits with UTM + /pulse leads"
+        title="Kanal-Mix"
+        subtitle="Eingehende Kontakte nach Quelle × Medium — Website-Besuche mit UTM-Parametern + /pulse-Leads"
       >
         {isChannelMixEmpty(channelMix) ? (
-          <NoSeries label="No attributed inbound touches for this range yet." />
+          <NoSeries label="In diesem Zeitraum noch keine zugeordneten eingehenden Kontakte." />
         ) : (
           <ChannelMixTable mix={channelMix} />
         )}
@@ -194,23 +203,23 @@ function GrowthBody({ data }: { data: GrowthResponse }) {
 
       {/* Demo funnel — requested → booked → completed. */}
       <AdminCard
-        title="Demo funnel"
-        subtitle="Requested → booked → completed, with stage-to-stage conversion"
+        title="Demo-Trichter"
+        subtitle="Angefragt → gebucht → durchgeführt, mit Konversion je Stufe"
       >
         {demand.demoFunnel.some((s) => s.count > 0) ? (
           <DemoFunnel stages={demand.demoFunnel} />
         ) : (
-          <NoSeries label="No demo activity for this range yet." />
+          <NoSeries label="In diesem Zeitraum noch keine Demo-Aktivität." />
         )}
       </AdminCard>
 
       {/* CRM pipeline — open value, forecast, won/lost, per-stage. */}
       <AdminCard
-        title="CRM pipeline"
-        subtitle="Open deal value, probability-weighted forecast, and stage breakdown"
+        title="CRM-Pipeline"
+        subtitle="Offener Deal-Wert, wahrscheinlichkeits-gewichtete Prognose und Aufschlüsselung nach Phase"
       >
         {isPipelineEmpty(pipeline) ? (
-          <NoSeries label="No deals in the pipeline yet." />
+          <NoSeries label="Noch keine Deals in der Pipeline." />
         ) : (
           <Pipeline pipeline={pipeline} />
         )}
@@ -218,8 +227,8 @@ function GrowthBody({ data }: { data: GrowthResponse }) {
 
       {/* Lead → customer — public /pulse conversion. */}
       <AdminCard
-        title="Lead → customer"
-        subtitle="Public verification leads that became a paying organisation"
+        title="Lead → Kunde"
+        subtitle="Öffentliche Prüf-Leads (/pulse), die zu einer zahlenden Organisation wurden"
       >
         <LeadConversion leads={leads} />
       </AdminCard>
@@ -241,35 +250,35 @@ function DemandTiles({
   return (
     <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
       <KpiTile
-        label="Demos requested"
+        label="Demo-Anfragen"
         value={compactNumber(demand.demosRequested)}
-        sub="this range"
+        sub="in diesem Zeitraum"
         tone={demand.demosRequested > 0 ? "positive" : "default"}
       />
       <KpiTile
-        label="Demos booked"
+        label="Demos gebucht"
         value={compactNumber(demand.demosBooked)}
-        sub="meetings set"
+        sub="Termine vereinbart"
       />
       <KpiTile
-        label="Contact requests"
+        label="Kontaktanfragen"
         value={compactNumber(demand.contactRequests)}
-        sub="this range"
+        sub="in diesem Zeitraum"
       />
       <KpiTile
         label="Newsletter"
         value={compactNumber(demand.newsletterActive)}
-        sub={`+${compactNumber(demand.newsletterNew)} new`}
+        sub={`+${compactNumber(demand.newsletterNew)} neu dazu`}
       />
       <KpiTile
-        label="Invites sent"
+        label="Einladungen gesendet"
         value={compactNumber(demand.invitesSent)}
-        sub="team virality"
+        sub="Team-Viralität"
       />
       <KpiTile
-        label="Pulse leads"
+        label="Pulse-Leads"
         value={compactNumber(leads.total)}
-        sub="this range"
+        sub="in diesem Zeitraum"
       />
     </div>
   );
@@ -287,10 +296,10 @@ function ChannelMixTable({ mix }: { mix: ChannelMix }) {
       <table className="w-full border-collapse text-[13px]">
         <thead>
           <tr className="text-left" style={{ color: "var(--text-secondary)" }}>
-            <Th className="text-left">Source</Th>
+            <Th className="text-left">Quelle</Th>
             <Th className="text-left">Medium</Th>
-            <Th className="text-right">Touches</Th>
-            <Th className="text-left">Share</Th>
+            <Th className="text-right">Kontakte</Th>
+            <Th className="text-left">Anteil</Th>
           </tr>
         </thead>
         <tbody>
@@ -345,9 +354,9 @@ function ChannelMixTable({ mix }: { mix: ChannelMix }) {
         className="mt-3 text-[11px] leading-snug"
         style={{ color: "var(--text-tertiary)" }}
       >
-        Of {compactNumber(mix.totalTouches)} attributed inbound touch
-        {mix.totalTouches === 1 ? "" : "es"} this range. Untracked visits are
-        bucketed as direct / unknown.
+        Von {compactNumber(mix.totalTouches)} zugeordneten eingehenden Kontakt
+        {mix.totalTouches === 1 ? "" : "en"} in diesem Zeitraum. Besuche ohne
+        Zuordnung zählen als direkt / unbekannt.
       </p>
     </div>
   );
@@ -373,7 +382,7 @@ function DemoFunnel({ stages }: { stages: DemoFunnelStage[] }) {
               className="text-[12px] font-medium"
               style={{ color: "var(--text-primary)" }}
             >
-              {stage.label}
+              {DEMO_STAGE_LABEL_DE[stage.key] ?? stage.label}
             </span>
             <span
               className="flex-shrink-0 text-[12px] tabular-nums"
@@ -383,7 +392,7 @@ function DemoFunnel({ stages }: { stages: DemoFunnelStage[] }) {
               {stage.conversionFromPrev !== null && (
                 <span style={{ color: "var(--text-tertiary)" }}>
                   {" · "}
-                  {pctLabel(stage.conversionFromPrev)} from prev
+                  {pctLabel(stage.conversionFromPrev)} der vorigen Stufe
                 </span>
               )}
             </span>
@@ -427,26 +436,26 @@ function Pipeline({ pipeline }: { pipeline: GrowthPipeline }) {
       {/* Headline tiles. */}
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
         <KpiTile
-          label="Open value"
+          label="Offener Wert"
           value={eur(pipeline.openValueEur)}
-          sub={`${compactNumber(pipeline.openCount)} open deal${pipeline.openCount === 1 ? "" : "s"}`}
+          sub={`${compactNumber(pipeline.openCount)} offene${pipeline.openCount === 1 ? "r Deal" : " Deals"}`}
           tone={pipeline.openValueEur > 0 ? "positive" : "default"}
         />
         <KpiTile
-          label="Weighted"
+          label="Gewichtete Prognose"
           value={eur(pipeline.weightedValueEur)}
-          sub="forecast"
+          sub="Wert × Abschluss-Wahrscheinlichkeit"
         />
         <KpiTile
-          label="Won"
+          label="Gewonnen"
           value={eur(pipeline.wonValueEur)}
-          sub={`${compactNumber(pipeline.wonCount)} deal${pipeline.wonCount === 1 ? "" : "s"}`}
+          sub={`${compactNumber(pipeline.wonCount)} Deal${pipeline.wonCount === 1 ? "" : "s"}`}
           tone={pipeline.wonCount > 0 ? "positive" : "default"}
         />
         <KpiTile
-          label="Lost"
+          label="Verloren"
           value={compactNumber(pipeline.lostCount)}
-          sub="closed lost"
+          sub="abgesagt / verloren"
           tone={pipeline.lostCount > 0 ? "warning" : "default"}
         />
       </div>
@@ -458,7 +467,7 @@ function Pipeline({ pipeline }: { pipeline: GrowthPipeline }) {
             className="mb-2.5 text-[11px] font-medium uppercase tracking-[0.06em]"
             style={{ color: "var(--text-secondary)" }}
           >
-            Value by stage
+            Wert nach Phase
           </p>
           <ul className="flex flex-col gap-2.5">
             {occupied.map((stage) => (
@@ -498,7 +507,7 @@ function PipelineStageBar({
           {eur(stage.valueEur)}
           <span style={{ color: "var(--text-tertiary)" }}>
             {" · "}
-            {compactNumber(stage.count)} deal{stage.count === 1 ? "" : "s"}
+            {compactNumber(stage.count)} Deal{stage.count === 1 ? "" : "s"}
           </span>
         </span>
       </div>
@@ -531,20 +540,20 @@ function LeadConversion({ leads }: { leads: GrowthLeadConversion }) {
       <KpiTile
         label="Leads"
         value={compactNumber(leads.total)}
-        sub="captured"
+        sub="erfasste Interessenten"
       />
       <KpiTile
-        label="Converted"
+        label="Konvertiert"
         value={compactNumber(leads.converted)}
-        sub="to paying org"
+        sub="zu zahlender Organisation"
         tone={leads.converted > 0 ? "positive" : "default"}
       />
       <KpiTile
-        label="Conversion"
+        label="Konversionsquote"
         value={
           leads.conversionRate === null ? "—" : pctLabel(leads.conversionRate)
         }
-        sub="lead → customer"
+        sub="Lead → Kunde"
         tone={
           leads.conversionRate === null
             ? "default"
@@ -561,8 +570,23 @@ function LeadConversion({ leads }: { leads: GrowthLeadConversion }) {
  * Small helpers + states.
  * ────────────────────────────────────────────────────────────────────────── */
 
-/** Humanise a CrmDealStage enum value ("CLOSED_WON" → "Closed won"). */
+/** Deutsche Labels für die CRM-Deal-Phasen (CrmDealStage-Enum-Werte). */
+const STAGE_LABEL_DE: Record<string, string> = {
+  IDENTIFIED: "Identifiziert",
+  ENGAGED: "Im Gespräch",
+  ASSESSED: "Geprüft",
+  PROPOSAL: "Angebot",
+  PROCUREMENT: "Einkaufsprozess",
+  CLOSED_WON: "Gewonnen",
+  CLOSED_LOST: "Verloren",
+  ONBOARDING: "Onboarding",
+  ACTIVE: "Aktiver Kunde",
+};
+
+/** Humanise a CrmDealStage enum value ("CLOSED_WON" → "Gewonnen"). */
 function stageLabel(stage: string): string {
+  const known = STAGE_LABEL_DE[stage];
+  if (known) return known;
   const lower = stage.replace(/_/g, " ").toLowerCase();
   return lower.charAt(0).toUpperCase() + lower.slice(1);
 }
@@ -600,25 +624,29 @@ function Td({
   );
 }
 
+/** Erststart: echte Karten mit deutschen Titeln, Inhalte pulsieren dezent. */
 function GrowthSkeleton() {
   return (
     <div className="flex flex-col gap-5" aria-busy="true">
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
         {Array.from({ length: 6 }).map((_, i) => (
-          <div
-            key={i}
-            className="glass-surface h-[84px] animate-pulse rounded-xl"
-            style={{ border: "1px solid var(--border-default)" }}
-          />
+          <KpiTileSkeleton key={i} />
         ))}
       </div>
-      <div
-        className="glass-elevated h-[240px] animate-pulse rounded-2xl"
-        style={{ border: "1px solid var(--border-default)" }}
+      <CardSkeleton
+        title="Kanal-Mix"
+        subtitle="Eingehende Kontakte nach Quelle × Medium"
+        rows={4}
       />
-      <div
-        className="glass-elevated h-[220px] animate-pulse rounded-2xl"
-        style={{ border: "1px solid var(--border-default)" }}
+      <CardSkeleton
+        title="Demo-Trichter"
+        subtitle="Angefragt → gebucht → durchgeführt"
+        rows={3}
+      />
+      <CardSkeleton
+        title="CRM-Pipeline"
+        subtitle="Offener Deal-Wert und Phasen"
+        rows={4}
       />
     </div>
   );
@@ -637,15 +665,16 @@ function EmptyState() {
         className="text-[14px] font-medium"
         style={{ color: "var(--text-primary)" }}
       >
-        No demand recorded this range
+        In diesem Zeitraum keine Nachfrage erfasst
       </p>
       <p
         className="max-w-sm text-[12px] leading-snug"
         style={{ color: "var(--text-secondary)" }}
       >
-        This view tracks real inbound demand — demo requests, bookings, contact
-        forms, newsletter sign-ups, public /pulse leads, and the CRM pipeline.
-        As soon as one is captured in this window, it appears here.
+        Diese Ansicht verfolgt echte eingehende Nachfrage — Demo-Anfragen,
+        Buchungen, Kontaktformulare, Newsletter-Anmeldungen, öffentliche
+        /pulse-Leads und die CRM-Pipeline. Sobald etwas davon in diesem Zeitraum
+        eingeht, erscheint es hier.
       </p>
     </div>
   );

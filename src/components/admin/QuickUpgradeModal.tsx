@@ -40,7 +40,7 @@ export default function QuickUpgradeModal({ onClose, onSuccess }: Props) {
       const data = await res.json();
 
       if (!res.ok) {
-        throw new Error(data.error || "Failed to upgrade plan");
+        throw new Error(data.error || "Plan-Upgrade fehlgeschlagen");
       }
 
       setSuccess({
@@ -53,7 +53,8 @@ export default function QuickUpgradeModal({ onClose, onSuccess }: Props) {
         onSuccess?.();
       }, 2500);
     } catch (err: unknown) {
-      const errMsg = err instanceof Error ? err.message : "An error occurred";
+      const errMsg =
+        err instanceof Error ? err.message : "Ein Fehler ist aufgetreten";
       setError(errMsg);
     } finally {
       setLoading(false);
@@ -74,10 +75,10 @@ export default function QuickUpgradeModal({ onClose, onSuccess }: Props) {
             </div>
             <div>
               <h2 className="text-subtitle font-semibold text-slate-900 dark:text-white">
-                Quick Plan Upgrade
+                Schnelles Plan-Upgrade
               </h2>
               <p className="text-small text-slate-500 dark:text-white/45">
-                Upgrade a user&apos;s organization plan by email
+                Organisations-Plan eines Nutzers per E-Mail-Adresse hochstufen
               </p>
             </div>
           </div>
@@ -97,14 +98,14 @@ export default function QuickUpgradeModal({ onClose, onSuccess }: Props) {
                 <CheckCircle size={28} className="text-emerald-500" />
               </div>
               <p className="text-subtitle font-medium text-slate-900 dark:text-white mb-2">
-                Upgrade Successful
+                Upgrade erfolgreich
               </p>
               <p className="text-body text-slate-600 dark:text-white/45">
-                {success.orgName} upgraded from{" "}
+                {success.orgName} hochgestuft von{" "}
                 <span className="text-small text-slate-500 dark:text-white/45">
                   {success.previousPlan}
                 </span>{" "}
-                to{" "}
+                auf{" "}
                 <span className="text-small font-medium text-emerald-600 dark:text-emerald-400">
                   {plan}
                 </span>
@@ -115,13 +116,13 @@ export default function QuickUpgradeModal({ onClose, onSuccess }: Props) {
               {/* Email */}
               <div>
                 <label className="block text-body font-medium text-slate-700 dark:text-white/70 mb-1.5">
-                  User Email
+                  E-Mail des Nutzers
                 </label>
                 <input
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  placeholder="user@example.com"
+                  placeholder="nutzer@beispiel.de"
                   autoFocus
                   className="w-full px-3 py-2.5 bg-white dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-[--glass-border-subtle] rounded-lg text-body text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-white/45 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500/50"
                   required
@@ -131,7 +132,7 @@ export default function QuickUpgradeModal({ onClose, onSuccess }: Props) {
               {/* Plan Selection */}
               <div>
                 <label className="block text-body font-medium text-slate-700 dark:text-white/70 mb-1.5">
-                  Target Plan
+                  Ziel-Plan
                 </label>
                 <div className="grid grid-cols-2 gap-2">
                   {(
@@ -178,7 +179,7 @@ export default function QuickUpgradeModal({ onClose, onSuccess }: Props) {
               {/* Reason */}
               <div>
                 <label className="block text-body font-medium text-slate-700 dark:text-white/70 mb-1.5">
-                  Reason{" "}
+                  Grund{" "}
                   <span className="font-normal text-slate-500 dark:text-white/45">
                     (optional)
                   </span>
@@ -186,7 +187,7 @@ export default function QuickUpgradeModal({ onClose, onSuccess }: Props) {
                 <textarea
                   value={reason}
                   onChange={(e) => setReason(e.target.value)}
-                  placeholder="e.g., Customer request, partnership, trial extension"
+                  placeholder="z. B. Kundenwunsch, Partnerschaft, Test-Verlängerung"
                   className="w-full px-3 py-2.5 bg-white dark:bg-[--glass-bg-surface] border border-slate-200 dark:border-[--glass-border-subtle] rounded-lg text-body text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-white/45 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500/50 resize-none"
                   rows={2}
                 />
@@ -212,7 +213,7 @@ export default function QuickUpgradeModal({ onClose, onSuccess }: Props) {
                   onClick={onClose}
                   className="flex-1 px-4 py-2.5 bg-slate-100 dark:bg-[--glass-bg-elevated] hover:bg-slate-200 dark:hover:bg-[--glass-bg-elevated] text-slate-700 dark:text-white/70 text-body font-medium rounded-lg transition-colors"
                 >
-                  Cancel
+                  Abbrechen
                 </button>
                 <button
                   type="submit"
@@ -222,10 +223,10 @@ export default function QuickUpgradeModal({ onClose, onSuccess }: Props) {
                   {loading ? (
                     <span className="flex items-center justify-center gap-2">
                       <div className="w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                      Upgrading...
+                      Wird hochgestuft…
                     </span>
                   ) : (
-                    "Upgrade Plan"
+                    "Plan hochstufen"
                   )}
                 </button>
               </div>

@@ -52,9 +52,15 @@ import AdminCard from "@/components/admin/AdminCard";
 import KpiTile from "@/components/admin/KpiTile";
 import RangeTabs from "@/components/admin/RangeTabs";
 import ExportButton from "@/components/admin/ExportButton";
+import { CardSkeleton, KpiTileSkeleton } from "@/components/admin/Skeleton";
 import type { CsvRow } from "@/components/admin/export-utils";
 import { useAdminData } from "@/components/admin/useAdminData";
-import { compactNumber, eur, pctLabel } from "@/components/admin/format";
+import {
+  compactNumber,
+  dateDe,
+  eur,
+  pctLabel,
+} from "@/components/admin/format";
 import {
   detectAnomalies,
   describeAnomaly,
@@ -96,23 +102,26 @@ function depthExportRows(rows: readonly ProductDepthVM[]): CsvRow[] {
 
 /** Stable column order + friendly headers for the depth export. */
 const DEPTH_EXPORT_COLUMNS = [
-  { key: "product", header: "Product" },
+  { key: "product", header: "Produkt" },
   { key: "assessments", header: "Assessments" },
-  { key: "classifications", header: "Classifications" },
-  { key: "screening_hit_rate_pct", header: "Screening hit-rate %" },
-  { key: "screenings_total", header: "Screenings total" },
-  { key: "licenses_issued", header: "Licenses issued" },
-  { key: "ai_messages", header: "AI messages" },
-  { key: "documents_generated", header: "Documents generated" },
-  { key: "ai_cost_usd", header: "AI cost (USD)" },
-  { key: "outcomes", header: "Outcomes" },
+  { key: "classifications", header: "Klassifizierungen" },
+  { key: "screening_hit_rate_pct", header: "Screening-Trefferquote %" },
+  { key: "screenings_total", header: "Screenings gesamt" },
+  { key: "licenses_issued", header: "Erteilte Lizenzen" },
+  { key: "ai_messages", header: "KI-Nachrichten" },
+  { key: "documents_generated", header: "Erzeugte Dokumente" },
+  { key: "ai_cost_usd", header: "KI-Kosten (USD)" },
+  { key: "outcomes", header: "Ergebnisse" },
 ] as const;
 
 export default function CockpitPage() {
   // The page owns the selected range; RangeTabs only reports changes and the
   // URL below is re-derived from it (the hook aborts the prior fetch on toggle).
   const [range, setRange] = useState<AdminRange>("30d");
-  const { data, loading, error } = useAdminData<CockpitResponseV2>(
+  // Stale-while-revalidate: `data` is served instantly from the session cache
+  // on revisits — the structured skeleton below appears only on the FIRST
+  // visit of a range, never again as a full-page loader.
+  const { data, error } = useAdminData<CockpitResponseV2>(
     `/api/admin/v2/cockpit?range=${range}`,
   );
 
@@ -122,8 +131,7 @@ export default function CockpitPage() {
 
   // Offer a depth export only once there are real value-event rows in hand
   // (an empty dataset would just be a header line).
-  const canExportDepth =
-    !!data && !loading && !error && !isDepthEmpty(data.perProductDepth);
+  const canExportDepth = !!data && !isDepthEmpty(data.perProductDepth);
 
   return (
     <div>
@@ -131,8 +139,8 @@ export default function CockpitPage() {
         title="Cockpit"
         subtitle={
           asOf
-            ? `Cross-product platform overview · as of ${asOf}`
-            : "Cross-product platform overview"
+            ? `Plattform-Überblick über alle Produkte · Stand ${dateDe(asOf) ?? asOf}`
+            : "Plattform-Überblick über alle Produkte"
         }
         right={
           <div className="flex items-center gap-3">
@@ -140,8 +148,8 @@ export default function CockpitPage() {
               <ExportButton
                 rows={depthExportRows(data.perProductDepth)}
                 columns={DEPTH_EXPORT_COLUMNS}
-                filename={`cockpit-depth-${range}${asOf ? `-${asOf}` : ""}`}
-                label="Export depth"
+                filename={`cockpit-wertschoepfung-${range}${asOf ? `-${asOf}` : ""}`}
+                label="Export (CSV)"
               />
             )}
             <RangeTabs value={range} onChange={setRange} />
@@ -149,28 +157,28 @@ export default function CockpitPage() {
         }
       />
 
-      {loading && <CockpitSkeleton />}
-
-      {!loading && error && (
+      {/* Fehler nur, wenn es nichts zu zeigen gibt — gecachte Daten bleiben stehen. */}
+      {!data && error && (
         <AdminCard>
           <p
             className="text-[13px] leading-snug"
             style={{ color: "var(--accent-danger)" }}
           >
-            Could not load the cockpit: {error}
+            Das Cockpit konnte nicht geladen werden: {error}
           </p>
         </AdminCard>
       )}
 
-      {!loading && !error && data && isCockpitEmpty(data) && (
+      {/* Erststart dieses Zeitraums: Struktur steht sofort, Karten laden inline. */}
+      {!data && !error && <CockpitSkeleton />}
+
+      {data && isCockpitEmpty(data) && (
         <AdminCard>
           <EmptyState />
         </AdminCard>
       )}
 
-      {!loading && !error && data && !isCockpitEmpty(data) && (
-        <CockpitBody data={data} />
-      )}
+      {data && !isCockpitEmpty(data) && <CockpitBody data={data} />}
     </div>
   );
 }
@@ -202,72 +210,87 @@ function CockpitBody({ data }: { data: CockpitResponseV2 }) {
 
       {/* KPI row — 3 point-in-time + 3 range-summed stats. */}
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
-        <KpiTile label="DAU" value={compactNumber(kpis.dau)} sub="latest day" />
-        <KpiTile label="WAU" value={compactNumber(kpis.wau)} sub="latest day" />
-        <KpiTile label="MAU" value={compactNumber(kpis.mau)} sub="latest day" />
         <KpiTile
-          label="Signups"
+          label="Täglich aktiv (DAU)"
+          value={compactNumber(kpis.dau)}
+          sub="Nutzer am letzten Tag"
+        />
+        <KpiTile
+          label="Wöchentlich aktiv (WAU)"
+          value={compactNumber(kpis.wau)}
+          sub="Nutzer der letzten 7 Tage"
+        />
+        <KpiTile
+          label="Monatlich aktiv (MAU)"
+          value={compactNumber(kpis.mau)}
+          sub="Nutzer der letzten 30 Tage"
+        />
+        <KpiTile
+          label="Registrierungen"
           value={compactNumber(kpis.signups)}
-          sub="this range"
+          sub="neue Konten im Zeitraum"
         />
         <KpiTile
-          label="Page views"
+          label="Seitenaufrufe"
           value={compactNumber(kpis.pageViews)}
-          sub="this range"
+          sub="im Zeitraum"
         />
         <KpiTile
-          label="Revenue"
+          label="Umsatz (gebucht)"
           value={eur(kpis.revenue)}
           // Booked financial-entry revenue for the range — distinct from the
           // plan-priced MRR headline above. Neutral tone on a true €0 so an empty
           // FinancialEntry table never reads as a green "success".
-          sub="booked this range"
+          sub="im Zeitraum verbuchte Einnahmen"
           tone={kpis.revenue > 0 ? "positive" : "default"}
         />
       </div>
 
       {/* Depth by product — REAL value-events from authoritative domain tables. */}
       <AdminCard
-        title="Depth by product"
-        subtitle="Value-events produced this range — from authoritative domain tables, not page events"
+        title="Wertschöpfung pro Produkt"
+        subtitle="Echte Ergebnis-Ereignisse in diesem Zeitraum — aus den Fachdaten der Produkte, nicht aus Seitenaufrufen"
       >
         {isDepthEmpty(perProductDepth) ? (
-          <NoSeries label="No value-events recorded for this range yet." />
+          <NoSeries label="In diesem Zeitraum wurden noch keine Ergebnis-Ereignisse erfasst." />
         ) : (
           <ProductDepthTable rows={perProductDepth} />
         )}
       </AdminCard>
 
       {/* DAU trend sparkline. */}
-      <AdminCard title="DAU trend" subtitle="Daily active users over the range">
+      <AdminCard
+        title="Verlauf: Täglich aktive Nutzer"
+        subtitle="Aktive Nutzer pro Tag im gewählten Zeitraum"
+      >
         {dauTrend.length > 0 ? (
           <DauTrendChart points={dauTrend} />
         ) : (
-          <NoSeries label="No daily-active data for this range yet." />
+          <NoSeries label="Für diesen Zeitraum liegen noch keine Tagesdaten vor." />
         )}
       </AdminCard>
 
       {/* Usage by product — order preserved from the API. */}
       <AdminCard
-        title="Usage by product"
-        subtitle="Activity across the six product surfaces"
+        title="Nutzung pro Produkt"
+        subtitle="Aktivität in den sechs Produktbereichen"
       >
         {perProduct.length > 0 ? (
           <ProductUsageTable rows={perProduct} />
         ) : (
-          <NoSeries label="No per-product usage recorded for this range yet." />
+          <NoSeries label="Für diesen Zeitraum wurde noch keine Produkt-Nutzung erfasst." />
         )}
       </AdminCard>
 
       {/* Growth funnel — entrants per step + step-to-step conversion. */}
       <AdminCard
-        title="Growth funnel"
-        subtitle="Latest cross-product onboarding funnel"
+        title="Wachstums-Trichter"
+        subtitle="Aktuellster produktübergreifender Einstiegs-Trichter (Onboarding)"
       >
         {funnel.length > 0 ? (
           <GrowthFunnel steps={funnel} />
         ) : (
-          <NoSeries label="No funnel snapshot computed yet." />
+          <NoSeries label="Noch kein Trichter-Schnappschuss berechnet." />
         )}
       </AdminCard>
     </div>
@@ -319,7 +342,7 @@ function AnomalyStrip({ flags }: { flags: AnomalyFlag[] }) {
       // A live region so a screen reader announces a newly-surfaced anomaly.
       role="status"
       aria-live="polite"
-      aria-label={`${flags.length} metric ${flags.length === 1 ? "anomaly" : "anomalies"} detected`}
+      aria-label={`${flags.length} ${flags.length === 1 ? "Auffälligkeit" : "Auffälligkeiten"} erkannt`}
     >
       <div className="mb-2 flex items-center gap-2">
         <AlertTriangle
@@ -332,8 +355,8 @@ function AnomalyStrip({ flags }: { flags: AnomalyFlag[] }) {
           style={{ color: "var(--text-primary)" }}
         >
           {flags.length === 1
-            ? "Anomaly detected"
-            : `${flags.length} anomalies detected`}
+            ? "Auffälligkeit erkannt"
+            : `${flags.length} Auffälligkeiten erkannt`}
         </h2>
       </div>
       <ul className="flex flex-col gap-1.5">
@@ -357,7 +380,7 @@ function AnomalyStrip({ flags }: { flags: AnomalyFlag[] }) {
                 className="tabular-nums text-[11px]"
                 style={{ color: "var(--text-tertiary)" }}
               >
-                · {flag.date}
+                · {dateDe(flag.date) ?? flag.date}
               </span>
             </li>
           );
@@ -381,19 +404,19 @@ function RevenueHeadline({
   if (revenue.isEmpty) {
     return (
       <AdminCard
-        title="Revenue"
+        title="Umsatz"
         subtitle={
           revenue.asOf
-            ? `Plan-priced recurring revenue · as of ${revenue.asOf}`
-            : "Plan-priced recurring revenue"
+            ? `Wiederkehrender Umsatz zu Plan-Preisen · Stand ${dateDe(revenue.asOf) ?? revenue.asOf}`
+            : "Wiederkehrender Umsatz zu Plan-Preisen"
         }
       >
         <p
           className="py-6 text-center text-[12px] leading-snug"
           style={{ color: "var(--text-tertiary)" }}
         >
-          No recurring revenue recorded yet. Once billing data is in place, MRR
-          and NRR appear here.
+          Noch kein wiederkehrender Umsatz erfasst. Sobald Abrechnungsdaten
+          vorliegen, erscheinen hier MRR und NRR.
         </p>
       </AdminCard>
     );
@@ -401,24 +424,24 @@ function RevenueHeadline({
 
   return (
     <AdminCard
-      title="Revenue"
+      title="Umsatz"
       subtitle={
         revenue.asOf
-          ? `Plan-priced recurring revenue · as of ${revenue.asOf}`
-          : "Plan-priced recurring revenue"
+          ? `Wiederkehrender Umsatz zu Plan-Preisen · Stand ${dateDe(revenue.asOf) ?? revenue.asOf}`
+          : "Wiederkehrender Umsatz zu Plan-Preisen"
       }
     >
       <div className="grid grid-cols-2 gap-3">
         <KpiTile
-          label="MRR"
+          label="Monatl. wiederkehrender Umsatz (MRR)"
           value={eur(revenue.mrr)}
-          sub="monthly recurring"
+          sub="Summe aller aktiven Abos pro Monat"
           tone="positive"
         />
         <KpiTile
-          label="NRR"
+          label="Netto-Umsatzbindung (NRR)"
           value={revenue.nrr === null ? "—" : pctLabel(revenue.nrr)}
-          sub="net revenue retention"
+          sub="Umsatz aus Bestandskunden vs. Vorperiode — ab 100% wächst der Bestand"
           tone={
             revenue.nrr === null
               ? "default"
@@ -453,14 +476,14 @@ function ProductDepthTable({ rows }: { rows: ProductDepthVM[] }) {
       <table className="w-full border-collapse text-[13px]">
         <thead>
           <tr className="text-left" style={{ color: "var(--text-secondary)" }}>
-            <Th className="text-left">Product</Th>
+            <Th className="text-left">Produkt</Th>
             <Th className="text-right">Assessments</Th>
-            <Th className="text-right">Classifications</Th>
-            <Th className="text-right">Screen hit-rate</Th>
-            <Th className="text-right">Licenses</Th>
-            <Th className="text-right">AI msgs</Th>
-            <Th className="text-right">Docs</Th>
-            <Th className="text-right">AI cost</Th>
+            <Th className="text-right">Klassifizierungen</Th>
+            <Th className="text-right">Screening-Treffer</Th>
+            <Th className="text-right">Lizenzen</Th>
+            <Th className="text-right">KI-Nachrichten</Th>
+            <Th className="text-right">Dokumente</Th>
+            <Th className="text-right">KI-Kosten</Th>
           </tr>
         </thead>
         <tbody>
@@ -494,7 +517,7 @@ function ProductDepthTable({ rows }: { rows: ProductDepthVM[] }) {
                       className="ml-1 text-[11px]"
                       style={{ color: "var(--text-tertiary)" }}
                     >
-                      of {compactNumber(row.screeningsTotal)}
+                      von {compactNumber(row.screeningsTotal)}
                     </span>
                   </>
                 )}
@@ -609,11 +632,11 @@ function ProductUsageTable({
       <table className="w-full border-collapse text-[13px]">
         <thead>
           <tr className="text-left" style={{ color: "var(--text-secondary)" }}>
-            <Th className="text-left">Product</Th>
-            <Th className="text-right">Features</Th>
-            <Th className="text-right">Peak users</Th>
-            <Th className="text-right">Actions</Th>
-            <Th className="text-right">Avg dwell</Th>
+            <Th className="text-left">Produkt</Th>
+            <Th className="text-right">Funktionen</Th>
+            <Th className="text-right">Max. Nutzer/Tag</Th>
+            <Th className="text-right">Aktionen</Th>
+            <Th className="text-right">Ø Verweildauer</Th>
           </tr>
         </thead>
         <tbody>
@@ -642,7 +665,7 @@ function ProductUsageTable({
               <Td className="text-right tabular-nums">
                 {row.avgDwellSecs === null
                   ? "—"
-                  : `${row.avgDwellSecs.toFixed(1)}s`}
+                  : `${row.avgDwellSecs.toFixed(1).replace(".", ",")} s`}
               </Td>
             </tr>
           ))}
@@ -713,10 +736,10 @@ function GrowthFunnel({
               className="flex-shrink-0 text-[12px] tabular-nums"
               style={{ color: "var(--text-secondary)" }}
             >
-              {compactNumber(step.usersEntered)} entered
+              {compactNumber(step.usersEntered)} gestartet
               <span style={{ color: "var(--text-tertiary)" }}>
                 {" · "}
-                {pctLabel(step.conversion)} completed
+                {pctLabel(step.conversion)} abgeschlossen
               </span>
             </span>
           </div>
@@ -747,25 +770,39 @@ function GrowthFunnel({
  * note (a populated cockpit can still have one rollup not yet computed).
  * ────────────────────────────────────────────────────────────────────────── */
 
+/**
+ * Erststart-Zustand: die ECHTE Seitenstruktur (KPI-Raster + Karten mit
+ * deutschen Titeln) steht sofort — nur die Datenflächen pulsieren dezent.
+ * Kein Vollflächen-Loader; Folgebesuche kommen ohnehin sofort aus dem Cache.
+ */
 function CockpitSkeleton() {
   return (
     <div className="flex flex-col gap-5" aria-busy="true">
+      <CardSkeleton
+        title="Umsatz"
+        subtitle="Wiederkehrender Umsatz zu Plan-Preisen"
+        rows={2}
+        rowHeight={20}
+      />
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
         {Array.from({ length: 6 }).map((_, i) => (
-          <div
-            key={i}
-            className="glass-surface h-[84px] animate-pulse rounded-xl"
-            style={{ border: "1px solid var(--border-default)" }}
-          />
+          <KpiTileSkeleton key={i} />
         ))}
       </div>
-      <div
-        className="glass-elevated h-[300px] animate-pulse rounded-2xl"
-        style={{ border: "1px solid var(--border-default)" }}
+      <CardSkeleton
+        title="Wertschöpfung pro Produkt"
+        subtitle="Echte Ergebnis-Ereignisse in diesem Zeitraum"
+        rows={4}
       />
-      <div
-        className="glass-elevated h-[220px] animate-pulse rounded-2xl"
-        style={{ border: "1px solid var(--border-default)" }}
+      <CardSkeleton
+        title="Verlauf: Täglich aktive Nutzer"
+        subtitle="Aktive Nutzer pro Tag im gewählten Zeitraum"
+        rows={5}
+      />
+      <CardSkeleton
+        title="Nutzung pro Produkt"
+        subtitle="Aktivität in den sechs Produktbereichen"
+        rows={4}
       />
     </div>
   );
@@ -784,14 +821,14 @@ function EmptyState() {
         className="text-[14px] font-medium"
         style={{ color: "var(--text-primary)" }}
       >
-        No analytics yet
+        Noch keine Analytik-Daten
       </p>
       <p
         className="max-w-sm text-[12px] leading-snug"
         style={{ color: "var(--text-secondary)" }}
       >
-        The nightly rollups populate this once tracking is live. Check back
-        after the first aggregation run.
+        Die nächtlichen Auswertungen füllen diese Ansicht, sobald das Tracking
+        live ist. Nach dem ersten Auswertungslauf einfach wieder vorbeischauen.
       </p>
     </div>
   );

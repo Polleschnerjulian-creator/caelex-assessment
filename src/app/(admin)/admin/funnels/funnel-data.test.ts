@@ -193,13 +193,13 @@ describe("buildFunnelRows", () => {
 describe("funnelTitle", () => {
   it("labels the cross-product growth funnel distinctly", () => {
     expect(funnelTitle({ funnelId: "growth", product: null })).toBe(
-      "Growth (cross-product)",
+      "Wachstum (produktübergreifend)",
     );
   });
 
   it("labels other null-product funnels as cross-product", () => {
     expect(funnelTitle({ funnelId: "onboarding", product: null })).toBe(
-      "onboarding (cross-product)",
+      "onboarding (produktübergreifend)",
     );
   });
 
@@ -251,7 +251,7 @@ describe("buildFunnelExport (CSV flatten)", () => {
     const rows = buildFunnelExport(funnels);
     // 2 steps in the first funnel + 1 in the second.
     expect(rows).toHaveLength(3);
-    expect(rows[0].funnel).toBe("Growth (cross-product)");
+    expect(rows[0].funnel).toBe("Wachstum (produktübergreifend)");
     expect(rows[2].funnel).toBe("trade · checkout");
   });
 

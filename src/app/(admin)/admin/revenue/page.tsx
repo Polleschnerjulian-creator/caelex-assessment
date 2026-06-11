@@ -47,9 +47,10 @@ import AdminCard from "@/components/admin/AdminCard";
 import KpiTile from "@/components/admin/KpiTile";
 import RangeTabs from "@/components/admin/RangeTabs";
 import ExportButton from "@/components/admin/ExportButton";
+import { CardSkeleton, KpiTileSkeleton } from "@/components/admin/Skeleton";
 import type { CsvRow } from "@/components/admin/export-utils";
 import { useAdminData } from "@/components/admin/useAdminData";
-import { eur, pctLabel } from "@/components/admin/format";
+import { dateDe, eur, pctLabel } from "@/components/admin/format";
 
 /**
  * The page's view of the revenue route payload. Re-declared here (composed from
@@ -72,34 +73,59 @@ function planLabel(plan: string): string {
 }
 
 /**
- * Exact-Euro formatter with deterministic thousands separators — for the precise
- * captions under the compact KPI values. We DON'T use `toLocaleString` so the
- * server (RSC) and client render the identical string (no hydration mismatch,
- * no locale dependence). Cents are shown only when non-zero.
+ * Exakter Euro-Betrag in deutscher Schreibweise (Tausenderpunkt, Dezimalkomma,
+ * € hinter dem Betrag: "1.234,56 €") — für die präzisen Untertitel unter den
+ * kompakten KPI-Werten. Bewusst OHNE `toLocaleString`, damit Server (RSC) und
+ * Client exakt denselben String rendern (kein Hydration-Mismatch, keine
+ * Locale-Abhängigkeit der Laufzeit). Cents erscheinen nur, wenn vorhanden.
  */
 function exactEur(n: number): string {
-  if (!Number.isFinite(n)) return "€0";
+  if (!Number.isFinite(n)) return "0 €";
   const neg = n < 0;
   const abs = Math.abs(n);
   const whole = Math.floor(abs);
   const cents = Math.round((abs - whole) * 100);
-  const grouped = String(whole).replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+  const grouped = String(whole).replace(/\B(?=(\d{3})+(?!\d))/g, ".");
   const body =
-    cents > 0 ? `${grouped}.${String(cents).padStart(2, "0")}` : grouped;
-  return `${neg ? "-" : ""}€${body}`;
+    cents > 0 ? `${grouped},${String(cents).padStart(2, "0")}` : grouped;
+  return `${neg ? "-" : ""}${body} €`;
 }
 
 /** Format an NRR/quick-ratio benchmark value per its key (NRR → %, others → ×). */
 function formatBenchmarkValue(b: Benchmark): string {
   if (b.key === "nrr") return pctLabel(b.value);
   if (b.key === "ruleOf40") return `${Math.round(b.value)}%`;
-  // quickRatio + magicNumber read as multiples.
-  return `${b.value.toFixed(b.value >= 10 ? 0 : 2)}×`;
+  // quickRatio + magicNumber read as multiples (German decimal comma).
+  return `${b.value.toFixed(b.value >= 10 ? 0 : 2).replace(".", ",")}×`;
 }
+
+/**
+ * Deutsche, erklärende Labels + Hinweise für die Benchmark-Karten — über den
+ * stabilen Key gemappt; unbekannte Keys fallen auf das Server-Label zurück.
+ */
+const BENCHMARK_DE: Record<string, { label: string; note: string }> = {
+  nrr: {
+    label: "Netto-Umsatzbindung (NRR)",
+    note: "Umsatz aus Bestandskunden im Vergleich zur Vorperiode — ab 100% wächst der Bestand von allein.",
+  },
+  quickRatio: {
+    label: "Quick Ratio",
+    note: "Neu gewonnener Umsatz geteilt durch verlorenen Umsatz — je höher, desto effizienter das Wachstum.",
+  },
+  ruleOf40: {
+    label: "Rule of 40",
+    note: "Wachstumsrate + Gewinnmarge sollten zusammen über 40% liegen.",
+  },
+  magicNumber: {
+    label: "Magic Number",
+    note: "Neu gewonnener Jahresumsatz (ARR) je 1 € Vertriebs- und Marketing-Ausgaben der Vorperiode.",
+  },
+};
 
 export default function RevenuePage() {
   const [range, setRange] = useState<AdminRange>("30d");
-  const { data, loading, error } = useAdminData<RevenueBoardResponse>(
+  // Stale-while-revalidate: bekannte Zeiträume erscheinen sofort aus dem Cache.
+  const { data, error } = useAdminData<RevenueBoardResponse>(
     `/api/admin/v2/revenue?range=${range}`,
   );
 
@@ -119,25 +145,25 @@ export default function RevenuePage() {
     const m = data.movement;
     const movementRows: CsvRow[] = [
       {
-        plan: "Movement · New",
+        plan: "Bewegung · Neu",
         accounts: "",
         mrr_eur: m.newMrr,
         share_of_mrr: "",
       },
       {
-        plan: "Movement · Expansion",
+        plan: "Bewegung · Erweiterung",
         accounts: "",
         mrr_eur: m.expansionMrr,
         share_of_mrr: "",
       },
       {
-        plan: "Movement · Contraction",
+        plan: "Bewegung · Verkleinerung",
         accounts: "",
         mrr_eur: -m.contractionMrr,
         share_of_mrr: "",
       },
       {
-        plan: "Movement · Churned",
+        plan: "Bewegung · Abgewandert",
         accounts: "",
         mrr_eur: -m.churnedMrr,
         share_of_mrr: "",
@@ -149,29 +175,29 @@ export default function RevenuePage() {
   return (
     <div>
       <AdminPageHeader
-        title="Revenue"
-        subtitle="Plan-priced MRR, movement, retention benchmarks, and the 90-day forecast"
+        title="Umsatz"
+        subtitle="Monatlich wiederkehrender Umsatz (MRR) zu Plan-Preisen, Bewegung, Bindungs-Benchmarks und die 90-Tage-Prognose"
         right={
           <div className="flex items-center gap-3">
-            {data && !loading && !error && !data.isEmpty && (
+            {data && !data.isEmpty && (
               <span
                 className="hidden text-[11px] tabular-nums sm:inline"
                 style={{ color: "var(--text-tertiary)" }}
               >
-                as of {data.asOf.slice(0, 10)}
+                Stand {dateDe(data.asOf) ?? data.asOf.slice(0, 10)}
               </span>
             )}
-            {data && !loading && !error && !data.isEmpty && (
+            {data && !data.isEmpty && (
               <ExportButton
                 rows={exportRows}
-                filename={`caelex-revenue-${range}`}
+                filename={`caelex-umsatz-${range}`}
                 columns={[
-                  { key: "plan", header: "Plan / Movement" },
-                  { key: "accounts", header: "Accounts" },
-                  { key: "mrr_eur", header: "MRR (EUR/mo)" },
-                  { key: "share_of_mrr", header: "Share of MRR" },
+                  { key: "plan", header: "Plan / Bewegung" },
+                  { key: "accounts", header: "Konten" },
+                  { key: "mrr_eur", header: "MRR (EUR/Monat)" },
+                  { key: "share_of_mrr", header: "Anteil am MRR" },
                 ]}
-                label="Export"
+                label="Export (CSV)"
               />
             )}
             <RangeTabs value={range} onChange={setRange} />
@@ -179,28 +205,26 @@ export default function RevenuePage() {
         }
       />
 
-      {loading && <RevenueSkeleton />}
-
-      {!loading && error && (
+      {!data && error && (
         <AdminCard>
           <p
             className="text-[13px] leading-snug"
             style={{ color: "var(--accent-danger)" }}
           >
-            Could not load revenue: {error}
+            Umsatz konnte nicht geladen werden: {error}
           </p>
         </AdminCard>
       )}
 
-      {!loading && !error && data && data.isEmpty && (
+      {!data && !error && <RevenueSkeleton />}
+
+      {data && data.isEmpty && (
         <AdminCard>
           <EmptyState />
         </AdminCard>
       )}
 
-      {!loading && !error && data && !data.isEmpty && (
-        <RevenueBody data={data} />
-      )}
+      {data && !data.isEmpty && <RevenueBody data={data} />}
     </div>
   );
 }
@@ -215,28 +239,31 @@ function RevenueBody({ data }: { data: RevenueBoardResponse }) {
       <HeadlineKpis data={data} />
 
       <AdminCard
-        title="Retention & efficiency benchmarks"
-        subtitle="Against the canonical SaaS rules of thumb — only what the data supports"
+        title="Bindungs- & Effizienz-Benchmarks"
+        subtitle="Gemessen an den gängigen SaaS-Faustregeln — nur was die Daten hergeben"
       >
         <BenchmarkRow benchmarks={data.benchmarks} />
       </AdminCard>
 
       <div className="grid grid-cols-1 gap-5 lg:grid-cols-2">
         <AdminCard
-          title="MRR movement"
-          subtitle="Net change since the prior snapshot"
+          title="MRR-Bewegung"
+          subtitle="Netto-Veränderung seit dem letzten Schnappschuss"
         >
           <MovementWaterfall data={data} />
         </AdminCard>
 
-        <AdminCard title="Plan mix" subtitle="Active base and MRR by plan">
+        <AdminCard
+          title="Plan-Verteilung"
+          subtitle="Aktive Konten und MRR nach Plan"
+        >
           <PlanMixTable rows={data.planMix} mrrTotal={data.mrr} />
         </AdminCard>
       </div>
 
       <AdminCard
-        title="90-day forecast"
-        subtitle="Linear projection of MRR from the snapshot history, plus cash runway"
+        title="90-Tage-Prognose"
+        subtitle="Lineare MRR-Hochrechnung aus der Schnappschuss-Historie, plus Liquiditäts-Reichweite"
       >
         <ForecastSection forecast={data.forecast} currentMrr={data.mrr} />
       </AdminCard>
@@ -251,18 +278,28 @@ function RevenueBody({ data }: { data: RevenueBoardResponse }) {
 function HeadlineKpis({ data }: { data: RevenueBoardResponse }) {
   return (
     <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-      <KpiTile label="MRR" value={eur(data.mrr)} sub={exactEur(data.mrr)} />
-      <KpiTile label="ARR" value={eur(data.arr)} sub={exactEur(data.arr)} />
       <KpiTile
-        label="ARPA"
-        value={eur(data.arpa)}
-        sub="per paying account / mo"
+        label="Monatl. Umsatz (MRR)"
+        value={eur(data.mrr)}
+        sub={`genau ${exactEur(data.mrr)} pro Monat`}
       />
       <KpiTile
-        label="Logo churn"
+        label="Jahres-Umsatz (ARR)"
+        value={eur(data.arr)}
+        sub={`genau ${exactEur(data.arr)} pro Jahr`}
+      />
+      <KpiTile
+        label="Ø Umsatz je Konto (ARPA)"
+        value={eur(data.arpa)}
+        sub="je zahlendem Konto / Monat"
+      />
+      <KpiTile
+        label="Kunden-Abwanderung (Logo-Churn)"
         value={data.logoChurnRate === null ? "—" : pctLabel(data.logoChurnRate)}
         sub={
-          data.logoChurnRate === null ? "no base in range" : "of the logo base"
+          data.logoChurnRate === null
+            ? "keine Basis im Zeitraum"
+            : "Anteil der verlorenen zahlenden Kunden"
         }
         tone={
           data.logoChurnRate === null
@@ -288,18 +325,22 @@ const VERDICT_STYLE: Record<
   strong: {
     color: "var(--accent-success)",
     bg: "var(--accent-success-soft)",
-    label: "Strong",
+    label: "Stark",
   },
   healthy: {
     color: "var(--accent-success)",
     bg: "var(--accent-success-soft)",
-    label: "Healthy",
+    label: "Gesund",
   },
-  watch: { color: "#f59e0b", bg: "rgba(245,158,11,0.14)", label: "Watch" },
+  watch: {
+    color: "#f59e0b",
+    bg: "rgba(245,158,11,0.14)",
+    label: "Beobachten",
+  },
   weak: {
     color: "var(--accent-danger)",
     bg: "var(--accent-danger-soft)",
-    label: "Weak",
+    label: "Schwach",
   },
 };
 
@@ -310,8 +351,9 @@ function BenchmarkRow({ benchmarks }: { benchmarks: Benchmark[] }) {
         className="py-6 text-center text-[12px] leading-snug"
         style={{ color: "var(--text-tertiary)" }}
       >
-        Not enough revenue history to benchmark yet. NRR and Quick-Ratio appear
-        once there are at least two recurring-revenue snapshots to compare.
+        Noch nicht genug Umsatz-Historie für Benchmarks. NRR und Quick Ratio
+        erscheinen, sobald mindestens zwei Umsatz-Schnappschüsse zum Vergleich
+        vorliegen.
       </p>
     );
   }
@@ -326,12 +368,13 @@ function BenchmarkRow({ benchmarks }: { benchmarks: Benchmark[] }) {
 
 function BenchmarkCard({ benchmark }: { benchmark: Benchmark }) {
   const style = VERDICT_STYLE[benchmark.verdict];
+  const de = BENCHMARK_DE[benchmark.key];
   const thresholdLabel =
     benchmark.key === "nrr"
-      ? `target ≥ ${pctLabel(benchmark.threshold)}`
+      ? `Ziel ≥ ${pctLabel(benchmark.threshold)}`
       : benchmark.key === "ruleOf40"
-        ? `target ≥ ${benchmark.threshold}%`
-        : `target ≥ ${benchmark.threshold}×`;
+        ? `Ziel ≥ ${benchmark.threshold}%`
+        : `Ziel ≥ ${benchmark.threshold}×`;
   return (
     <div
       className="glass-surface rounded-xl p-4"
@@ -343,7 +386,7 @@ function BenchmarkCard({ benchmark }: { benchmark: Benchmark }) {
             className="text-[11px] font-medium uppercase tracking-[0.06em]"
             style={{ color: "var(--text-secondary)" }}
           >
-            {benchmark.label}
+            {de?.label ?? benchmark.label}
           </p>
           <p
             className="mt-1.5 text-[24px] font-semibold leading-none tabular-nums"
@@ -363,7 +406,7 @@ function BenchmarkCard({ benchmark }: { benchmark: Benchmark }) {
         className="mt-2 text-[11px] leading-snug"
         style={{ color: "var(--text-tertiary)" }}
       >
-        {benchmark.note}{" "}
+        {de?.note ?? benchmark.note}{" "}
         <span style={{ color: "var(--text-secondary)" }}>{thresholdLabel}</span>
       </p>
     </div>
@@ -379,10 +422,14 @@ function BenchmarkCard({ benchmark }: { benchmark: Benchmark }) {
 function MovementWaterfall({ data }: { data: RevenueBoardResponse }) {
   const m = data.movement;
   const rows = [
-    { label: "New", value: m.newMrr, positive: true },
-    { label: "Expansion", value: m.expansionMrr, positive: true },
-    { label: "Contraction", value: m.contractionMrr, positive: false },
-    { label: "Churned", value: m.churnedMrr, positive: false },
+    { label: "Neu gewonnen", value: m.newMrr, positive: true },
+    { label: "Erweiterung (Upgrade)", value: m.expansionMrr, positive: true },
+    {
+      label: "Verkleinerung (Downgrade)",
+      value: m.contractionMrr,
+      positive: false,
+    },
+    { label: "Abgewandert (Churn)", value: m.churnedMrr, positive: false },
   ];
   const maxAbs = rows.reduce((mx, r) => (r.value > mx ? r.value : mx), 0);
   const net = m.newMrr + m.expansionMrr - m.contractionMrr - m.churnedMrr;
@@ -393,8 +440,9 @@ function MovementWaterfall({ data }: { data: RevenueBoardResponse }) {
         className="py-6 text-center text-[12px] leading-snug"
         style={{ color: "var(--text-tertiary)" }}
       >
-        No MRR movement since the prior snapshot. The waterfall fills in as
-        plans change between daily snapshots.
+        Keine MRR-Bewegung seit dem letzten Schnappschuss. Das Wasserfall-
+        Diagramm füllt sich, sobald sich Pläne zwischen den täglichen
+        Schnappschüssen ändern.
       </p>
     );
   }
@@ -451,7 +499,7 @@ function MovementWaterfall({ data }: { data: RevenueBoardResponse }) {
           className="text-[12px] font-semibold"
           style={{ color: "var(--text-primary)" }}
         >
-          Net change
+          Netto-Veränderung
         </span>
         <span
           className="text-[14px] font-semibold tabular-nums"
@@ -489,7 +537,7 @@ function PlanMixTable({
         className="py-6 text-center text-[12px]"
         style={{ color: "var(--text-tertiary)" }}
       >
-        No active subscriptions to break down yet.
+        Noch keine aktiven Abos zum Aufschlüsseln.
       </p>
     );
   }
@@ -501,12 +549,10 @@ function PlanMixTable({
         <thead>
           <tr className="text-left" style={{ color: "var(--text-secondary)" }}>
             <th className="pb-2 font-medium">Plan</th>
-            <th className="pb-2 text-right font-medium tabular-nums">
-              Accounts
-            </th>
+            <th className="pb-2 text-right font-medium tabular-nums">Konten</th>
             <th className="pb-2 text-right font-medium tabular-nums">MRR</th>
             <th className="hidden pb-2 pl-4 font-medium sm:table-cell">
-              Share
+              Anteil
             </th>
           </tr>
         </thead>
@@ -590,9 +636,10 @@ function ForecastSection({
           className="py-2 text-[12px] leading-snug"
           style={{ color: "var(--text-tertiary)" }}
         >
-          Not enough history to forecast yet — a trend needs at least three
-          daily revenue snapshots. The projection appears automatically once
-          they accrue (one is written each time this page loads).
+          Noch nicht genug Historie für eine Prognose — ein Trend braucht
+          mindestens drei tägliche Umsatz-Schnappschüsse. Die Hochrechnung
+          erscheint automatisch, sobald sie vorliegen (bei jedem Aufruf dieser
+          Seite wird einer geschrieben).
         </p>
         <RunwayLine runway={forecast.runway} />
       </div>
@@ -606,18 +653,18 @@ function ForecastSection({
       {/* Projection headline. */}
       <div className="flex flex-wrap items-end gap-x-8 gap-y-3">
         <ForecastStat
-          label="MRR in 90 days"
+          label="MRR in 90 Tagen"
           value={eur(forecast.projectedMrr90d)}
           delta={forecast.monthlyMrrSlope}
-          deltaSuffix="/mo trend"
+          deltaSuffix="/Monat Trend"
         />
         <ForecastStat
-          label="ARR in 90 days"
+          label="ARR in 90 Tagen"
           value={eur(forecast.projectedArr90d)}
         />
         <ForecastStat
-          label="Based on"
-          value={`${forecast.basis} day${forecast.basis === 1 ? "" : "s"}`}
+          label="Datenbasis"
+          value={`${forecast.basis} Tag${forecast.basis === 1 ? "" : "e"}`}
         />
       </div>
 
@@ -748,7 +795,7 @@ function ForecastChart({
         className="py-4 text-center text-[12px]"
         style={{ color: "var(--text-tertiary)" }}
       >
-        Projection unavailable.
+        Hochrechnung nicht verfügbar.
       </p>
     );
   }
@@ -760,9 +807,9 @@ function ForecastChart({
         className="h-40 w-full"
         preserveAspectRatio="none"
         role="img"
-        aria-label={`Ninety-day MRR projection, ${
-          trendUp ? "trending up" : "trending down"
-        } to ${eur(forecast.projectedMrr90d)} per month.`}
+        aria-label={`90-Tage-MRR-Prognose, Tendenz ${
+          trendUp ? "steigend" : "fallend"
+        } auf ${eur(forecast.projectedMrr90d)} pro Monat.`}
       >
         <defs>
           <linearGradient id="revFcGrad" x1="0" y1="0" x2="0" y2="1">
@@ -787,9 +834,11 @@ function ForecastChart({
         className="mt-1.5 flex items-center justify-between text-[11px] tabular-nums"
         style={{ color: "var(--text-tertiary)" }}
       >
-        <span>today · {eur(currentMrr)}</span>
+        <span>heute · {eur(currentMrr)}</span>
         <span>
-          +90 days · {forecast.points[forecast.points.length - 1]?.date}
+          +90 Tage ·{" "}
+          {dateDe(forecast.points[forecast.points.length - 1]?.date) ??
+            forecast.points[forecast.points.length - 1]?.date}
         </span>
       </div>
     </div>
@@ -811,8 +860,9 @@ function RunwayLine({ runway }: { runway: RevenueForecast["runway"] }) {
           size={14}
           style={{ color: "var(--text-secondary)" }}
         />
-        Cash runway is unset — add a cash balance and monthly burn to a revenue
-        snapshot to see months of runway here.
+        Liquiditäts-Reichweite ist nicht gesetzt — Kassenbestand und monatliche
+        Ausgaben (Burn) in einem Umsatz-Schnappschuss hinterlegen, um hier die
+        Reichweite in Monaten zu sehen.
       </div>
     );
   }
@@ -821,7 +871,7 @@ function RunwayLine({ runway }: { runway: RevenueForecast["runway"] }) {
     ? "∞"
     : runway.runwayMonths === null
       ? "—"
-      : `${runway.runwayMonths.toFixed(1)} mo`;
+      : `${runway.runwayMonths.toFixed(1).replace(".", ",")} Monate`;
   const tone =
     runway.isInfinite || runway.runwayMonths === null
       ? "var(--text-primary)"
@@ -845,7 +895,7 @@ function RunwayLine({ runway }: { runway: RevenueForecast["runway"] }) {
           className="text-[12px] font-medium uppercase tracking-[0.05em]"
           style={{ color: "var(--text-secondary)" }}
         >
-          Cash runway
+          Liquiditäts-Reichweite
         </span>
         <span
           className="text-[16px] font-semibold tabular-nums"
@@ -859,12 +909,16 @@ function RunwayLine({ runway }: { runway: RevenueForecast["runway"] }) {
         style={{ color: "var(--text-tertiary)" }}
       >
         {runway.cashBalance !== null && (
-          <span>cash {eur(runway.cashBalance)}</span>
+          <span>Kasse {eur(runway.cashBalance)}</span>
         )}
         {runway.burnRate !== null && (
-          <span>burn {eur(runway.burnRate)}/mo</span>
+          <span>Ausgaben {eur(runway.burnRate)}/Monat</span>
         )}
-        {runway.zeroCashDate && <span>zero · {runway.zeroCashDate}</span>}
+        {runway.zeroCashDate && (
+          <span>
+            Kasse leer · {dateDe(runway.zeroCashDate) ?? runway.zeroCashDate}
+          </span>
+        )}
       </div>
     </div>
   );
@@ -874,35 +928,28 @@ function RunwayLine({ runway }: { runway: RevenueForecast["runway"] }) {
  * States.
  * ────────────────────────────────────────────────────────────────────────── */
 
+/** Erststart: echte Karten mit deutschen Titeln, Inhalte pulsieren dezent. */
 function RevenueSkeleton() {
   return (
     <div className="flex flex-col gap-5" aria-busy="true">
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
         {[0, 1, 2, 3].map((i) => (
-          <div
-            key={i}
-            className="glass-surface h-[86px] animate-pulse rounded-xl"
-            style={{ border: "1px solid var(--border-default)" }}
-          />
+          <KpiTileSkeleton key={i} />
         ))}
       </div>
-      <div
-        className="glass-elevated h-[140px] animate-pulse rounded-2xl"
-        style={{ border: "1px solid var(--border-default)" }}
+      <CardSkeleton
+        title="Bindungs- & Effizienz-Benchmarks"
+        rows={2}
+        rowHeight={20}
       />
       <div className="grid grid-cols-1 gap-5 lg:grid-cols-2">
-        <div
-          className="glass-elevated h-[240px] animate-pulse rounded-2xl"
-          style={{ border: "1px solid var(--border-default)" }}
-        />
-        <div
-          className="glass-elevated h-[240px] animate-pulse rounded-2xl"
-          style={{ border: "1px solid var(--border-default)" }}
-        />
+        <CardSkeleton title="MRR-Bewegung" rows={4} />
+        <CardSkeleton title="Plan-Verteilung" rows={4} />
       </div>
-      <div
-        className="glass-elevated h-[260px] animate-pulse rounded-2xl"
-        style={{ border: "1px solid var(--border-default)" }}
+      <CardSkeleton
+        title="90-Tage-Prognose"
+        subtitle="Lineare MRR-Hochrechnung plus Liquiditäts-Reichweite"
+        rows={5}
       />
     </div>
   );
@@ -921,16 +968,16 @@ function EmptyState() {
         className="text-[14px] font-medium"
         style={{ color: "var(--text-primary)" }}
       >
-        No recurring revenue recorded yet
+        Noch kein wiederkehrender Umsatz erfasst
       </p>
       <p
         className="max-w-sm text-[12px] leading-snug"
         style={{ color: "var(--text-secondary)" }}
       >
-        MRR is the sum of every active subscription&apos;s plan price. As soon
-        as an organization is on a paid plan — or a second revenue snapshot
-        exists to diff — the headline, movement waterfall, benchmarks, and
-        forecast fill in.
+        MRR ist die Summe der Plan-Preise aller aktiven Abos. Sobald eine
+        Organisation auf einem Bezahl-Plan ist — oder ein zweiter
+        Umsatz-Schnappschuss zum Vergleichen existiert — füllen sich Kennzahlen,
+        Bewegungs-Wasserfall, Benchmarks und Prognose.
       </p>
     </div>
   );

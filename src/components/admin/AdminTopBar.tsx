@@ -53,7 +53,7 @@ export default function AdminTopBar({ userEmail, children }: AdminTopBarProps) {
             border: "1px solid var(--accent-line)",
           }}
         >
-          Super-admin
+          Super-Admin
         </span>
       </div>
     </header>

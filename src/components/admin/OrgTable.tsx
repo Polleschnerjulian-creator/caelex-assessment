@@ -106,21 +106,22 @@ export default function OrgTable({ organizations, onRefresh }: Props) {
 
       if (res.ok) {
         setSuccessId(orgId);
-        toast.success("Plan updated", `Set to ${plan}.`);
+        toast.success("Plan aktualisiert", `Neuer Plan: ${plan}.`);
         onRefresh();
         setTimeout(() => setSuccessId(null), 2000);
       } else {
         const data = await res.json().catch(() => ({}));
         toast.error(
-          "Could not update plan",
-          data.error || "The change was not saved. Please try again.",
+          "Plan konnte nicht aktualisiert werden",
+          data.error ||
+            "Die Änderung wurde nicht gespeichert. Bitte erneut versuchen.",
         );
       }
     } catch (error) {
       console.error("Error updating plan:", error);
       toast.error(
-        "Could not update plan",
-        "A network error occurred. Please try again.",
+        "Plan konnte nicht aktualisiert werden",
+        "Netzwerkfehler. Bitte erneut versuchen.",
       );
     } finally {
       setLoadingId(null);
@@ -134,7 +135,7 @@ export default function OrgTable({ organizations, onRefresh }: Props) {
         role="status"
       >
         <p className="text-body-lg text-slate-500 dark:text-[var(--text-secondary)]">
-          No organizations found matching your filters.
+          Keine Organisationen gefunden, die zu den Filtern passen.
         </p>
       </div>
     );
@@ -143,26 +144,26 @@ export default function OrgTable({ organizations, onRefresh }: Props) {
   return (
     <div className="glass-surface bg-white dark:bg-[var(--surface-raised)] border border-slate-200 dark:border-[var(--border-default)] rounded-xl overflow-hidden">
       <div className="overflow-x-auto">
-        <table className="w-full" aria-label="Organizations">
+        <table className="w-full" aria-label="Organisationen">
           <thead>
             <tr className="border-b border-slate-200 dark:border-[var(--border-default)] bg-slate-50 dark:bg-[var(--surface-sunken)]">
               <th scope="col" className={`text-left ${TH_CLASS}`}>
-                Organization
+                Organisation
               </th>
               <th scope="col" className={`text-left ${TH_CLASS}`}>
-                Owner
+                Inhaber
               </th>
               <th scope="col" className={`text-left ${TH_CLASS}`}>
                 Plan
               </th>
               <th scope="col" className={`text-center ${TH_CLASS}`}>
-                Members
+                Mitglieder
               </th>
               <th scope="col" className={`text-center ${TH_CLASS}`}>
-                Spacecraft
+                Raumfahrzeuge
               </th>
               <th scope="col" className={`text-left ${TH_CLASS}`}>
-                Created
+                Erstellt
               </th>
             </tr>
           </thead>
@@ -219,7 +220,7 @@ export default function OrgTable({ organizations, onRefresh }: Props) {
                   <td className="px-4 py-3.5">
                     <div className="flex items-center gap-2">
                       <select
-                        aria-label={`Plan for ${org.name}`}
+                        aria-label={`Plan für ${org.name}`}
                         value={org.plan}
                         onChange={(e) =>
                           updateOrgPlan(
@@ -286,9 +287,9 @@ export default function OrgTable({ organizations, onRefresh }: Props) {
                       dateTime={org.createdAt}
                       className="text-small tabular-nums text-slate-500 dark:text-[var(--text-secondary)]"
                     >
-                      {new Date(org.createdAt).toLocaleDateString("en-US", {
-                        month: "short",
-                        day: "numeric",
+                      {new Date(org.createdAt).toLocaleDateString("de-DE", {
+                        day: "2-digit",
+                        month: "2-digit",
                         year: "numeric",
                       })}
                     </time>
