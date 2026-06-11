@@ -298,8 +298,15 @@ export const ATTRIBUTE_SANITY_RANGES: Record<
   gnssMaxVelocityMPerS: { min: 1, max: 50_000 },
   // Spectral peak wavelength in nm: deep UV (100) to far IR (100 000).
   peakWavelengthNm: { min: 100, max: 100_000 },
-  // Thrust in Newtons: nanosat cold-gas (0.0001 N) to large rocket engine.
-  thrustNewtons: { min: 0.0001, max: 100_000 },
+  // Thrust in Newtons: nanosat cold-gas (0.0001 N) to chemical launch
+  // propulsion. The attribute is shared by EP thrusters AND chemical
+  // engines (9A005/9A105 cross-walk): Merlin-1D ≈ 845 kN, F-1 ≈ 7.77 MN,
+  // and a stage datasheet may quote the aggregate (Super Heavy ≈ 75 MN).
+  // 1e8 N keeps every real engine/stage value in-range while still
+  // flagging gross unit errors (e.g. kN entered as mN) above it.
+  // The previous 100 kN cap was calibrated on EP only and silently
+  // degraded real chemical engines to UNKNOWN — a false-negative.
+  thrustNewtons: { min: 0.0001, max: 100_000_000 },
   // Specific impulse in vacuum seconds: cold-gas (50) to ion (20 000).
   specificImpulseSecondsVacuum: { min: 10, max: 20_000 },
   // Peak power in Watts: milliwatt to gigawatt (nuclear / MEO EP).
