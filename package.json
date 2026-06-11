@@ -85,7 +85,7 @@
     "@sentry/nextjs": "^10.38.0",
     "@sereneinserenade/tiptap-search-and-replace": "^0.1.1",
     "@simplewebauthn/browser": "^13.2.2",
-    "@simplewebauthn/server": "^13.2.2",
+    "@simplewebauthn/server": "^13.3.0",
     "@stripe/stripe-js": "^8.7.0",
     "@tanstack/react-virtual": "^3.13.24",
     "@tiptap/extension-character-count": "^3.23.4",
