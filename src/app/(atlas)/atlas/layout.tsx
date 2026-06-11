@@ -41,10 +41,13 @@ import { AtlasThemeProvider } from "./_components/AtlasThemeProvider";
    standart". */
 const flashGuardScript = `(function(){try{var t=localStorage.getItem('atlas-theme')||localStorage.getItem('atlas.theme');var r=t==='dark'?'dark':'light';var h=document.documentElement;if(r==='dark'){h.classList.add('dark');}else{h.classList.remove('dark');}h.setAttribute('data-atlas-preload',r);}catch(e){}})();`;
 
+/* 2026-06-11 — Titel an das reale Produkt angeglichen: Atlas ist die
+   deutschsprachige Kanzlei-Arbeitsfläche (Mandate, Fristen, Recherche),
+   nicht nur eine Gesetzes-Datenbank. */
 export const metadata = {
-  title: "ATLAS — Space Law Database",
+  title: "Caelex Atlas — Mandate, Fristen & Recherche",
   description:
-    "Space law reference covering UN treaties, EU instruments, and national space legislation with deep-links to official sources.",
+    "Arbeitsoberfläche für Kanzleien: Mandate, Fristen, Dokumente und juristische Recherche — von UN-Weltraumverträgen über EU-Recht bis zu nationalen Weltraumgesetzen, mit Deep-Links zu amtlichen Quellen.",
 };
 
 export default async function AtlasLayout({

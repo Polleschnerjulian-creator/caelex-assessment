@@ -31,13 +31,17 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import Image from "next/image";
 import {
+  Bell,
+  Bot,
   Briefcase,
+  EyeOff,
+  FileDiff,
+  FileOutput,
   Folder as FolderIcon,
   StickyNote,
-  Brain,
-  Database,
   MessageSquare,
-  Library,
+  PenSquare,
+  Scale,
   Settings,
   Search,
   HelpCircle,
@@ -61,6 +65,8 @@ const MAX_CHATS_PER_BUCKET = 30;
 /* Hard cap on rendered mandates in sidebar — full list lives on
    /atlas/mandate page. */
 const MAX_MANDATES_INLINE = 5;
+/* localStorage key for the collapsed-state of the "Werkzeuge" section. */
+const TOOLS_COLLAPSED_KEY = "atlas-v2-sidebar-tools-collapsed";
 
 type ChatBucket = "Heute" | "Gestern" | "Letzte 7 Tage" | "Älter";
 
@@ -134,6 +140,55 @@ export function AtlasSidebar({ activeChatId, activeMandateId }: Props) {
      post-mount from /api/atlas/auth/me so SSR doesn't have to wait. */
   const [meName, setMeName] = useState<string>("");
   const [meTier, setMeTier] = useState<string | undefined>(undefined);
+
+  /* 2026-06-11 — unread-badge for the Benachrichtigungen footer link.
+     ONE lightweight fetch on mount (limit=1 — the endpoint computes
+     unreadCount independently of limit), NO polling. Best-effort: a
+     failed fetch simply renders the link without a counter. */
+  const [alertsUnread, setAlertsUnread] = useState(0);
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const res = await fetch("/api/atlas/alerts/notifications?limit=1", {
+          cache: "no-store",
+        });
+        if (!res.ok || cancelled) return;
+        const data = (await res.json()) as { unreadCount?: number };
+        if (!cancelled) setAlertsUnread(data.unreadCount ?? 0);
+      } catch {
+        /* swallow — badge is a nicety, never an error surface */
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  /* 2026-06-11 — "Werkzeuge" collapse-state, persisted per browser so
+     a lawyer who tucks the section away keeps it tucked. Read post-
+     mount (not in the useState initializer) to stay hydration-safe. */
+  const [toolsCollapsed, setToolsCollapsed] = useState(false);
+  useEffect(() => {
+    try {
+      if (window.localStorage.getItem(TOOLS_COLLAPSED_KEY) === "1") {
+        setToolsCollapsed(true);
+      }
+    } catch {
+      /* localStorage unavailable (private mode) — default expanded */
+    }
+  }, []);
+  const toggleToolsCollapsed = () => {
+    setToolsCollapsed((prev) => {
+      const next = !prev;
+      try {
+        window.localStorage.setItem(TOOLS_COLLAPSED_KEY, next ? "1" : "0");
+      } catch {
+        /* non-fatal */
+      }
+      return next;
+    });
+  };
 
   useEffect(() => {
     let cancelled = false;
@@ -421,11 +476,82 @@ export function AtlasSidebar({ activeChatId, activeMandateId }: Props) {
             streichen als punkte". Die routen /atlas/workflows und
             /atlas/clauses bleiben erreichbar (direkter URL-aufruf,
             command-palette, etc.) — nur die sidebar-einträge sind weg
-            um die menü-fläche aufgeräumter zu halten. */}
+            um die menü-fläche aufgeräumter zu halten.
+
+            2026-06-11 — "Werkzeuge" als KOLLABIERBARE Sektion ergänzt:
+            sechs bislang nur per Direkt-URL erreichbare Produktflächen
+            (Drafting, Agent, Redline, Anonymisieren, Rechtsprechung,
+            DATEV) werden sichtbar. Workflows + Klauseln bleiben bewusst
+            draußen (siehe 19d oben) und leben weiter in der Command-
+            Palette. Collapse-State persistiert via localStorage, damit
+            die aufgeräumte Menü-Fläche eine User-Entscheidung bleibt. */}
+        <SidebarSection
+          label="Werkzeuge"
+          collapsible
+          collapsed={toolsCollapsed}
+          onToggleCollapsed={toggleToolsCollapsed}
+        >
+          <SidebarItem
+            href="/atlas/drafting"
+            icon={<PenSquare size={13} />}
+            label="Drafting Studio"
+            active={pathname?.startsWith("/atlas/drafting") ?? false}
+          />
+          <SidebarItem
+            href="/atlas/agent"
+            icon={<Bot size={13} />}
+            label="Agent"
+            active={pathname?.startsWith("/atlas/agent") ?? false}
+          />
+          <SidebarItem
+            href="/atlas/tools/redline"
+            icon={<FileDiff size={13} />}
+            label="Redline"
+            active={pathname?.startsWith("/atlas/tools/redline") ?? false}
+          />
+          <SidebarItem
+            href="/atlas/tools/anonymize"
+            icon={<EyeOff size={13} />}
+            label="Anonymisieren"
+            active={pathname?.startsWith("/atlas/tools/anonymize") ?? false}
+          />
+          <SidebarItem
+            href="/atlas/cases"
+            icon={<Scale size={13} />}
+            label="Rechtsprechung"
+            active={pathname?.startsWith("/atlas/cases") ?? false}
+          />
+          <SidebarItem
+            href="/atlas/exports/datev"
+            icon={<FileOutput size={13} />}
+            label="DATEV-Export"
+            active={pathname?.startsWith("/atlas/exports/datev") ?? false}
+          />
+        </SidebarSection>
       </div>
 
-      {/* ── Bottom: Tour-Trigger + Settings link + UserPill ─────── */}
+      {/* ── Bottom: Alerts + Tour-Trigger + Settings link + UserPill ── */}
       <div className="border-t border-atlas-border-subtle px-3 pt-2 pb-3">
+        {/* 2026-06-11 — Glocke → /atlas/alerts. Die Alerts-Seite war
+            bislang nur per Direkt-URL erreichbar. Unread-Count kommt
+            aus EINEM fetch beim Mount (kein Polling, siehe oben). */}
+        <SidebarItem
+          href="/atlas/alerts"
+          icon={<Bell size={13} />}
+          label="Benachrichtigungen"
+          active={pathname?.startsWith("/atlas/alerts") ?? false}
+          rightAction={
+            alertsUnread > 0 ? (
+              <span
+                aria-label={`${alertsUnread} ungelesene Benachrichtigungen`}
+                className="inline-flex h-4 min-w-[16px] items-center justify-center rounded-full bg-amber-500/15 px-1 text-[10px] font-medium tabular-nums text-amber-600 dark:text-amber-400"
+              >
+                {alertsUnread > 99 ? "99+" : alertsUnread}
+              </span>
+            ) : undefined
+          }
+          alwaysVisibleRightAction
+        />
         {/* Sprint 19 (2026-05-19) — "Tour öffnen" trigger.
             User-request: "Wir brauchen ein supergutes Onboarding, was
             auch immer wieder aufrufbar sein soll. Einfach so 'n

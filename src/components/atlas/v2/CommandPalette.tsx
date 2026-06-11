@@ -29,11 +29,22 @@ import {
   FileText,
   LogOut,
   HelpCircle,
+  Bell,
+  Bot,
+  EyeOff,
+  FileDiff,
+  FileOutput,
+  GitCompare,
+  Library,
+  PenSquare,
+  Scale,
+  ScrollText,
+  Workflow,
 } from "lucide-react";
 
 interface Item {
   id: string;
-  category: "Aktion" | "Chat" | "Mandat" | "Einstellung";
+  category: "Aktion" | "Chat" | "Mandat" | "Einstellung" | "Werkzeug";
   label: string;
   description?: string;
   icon: typeof FileText;
@@ -137,8 +148,20 @@ export function CommandPalette() {
         label: "Vault öffnen",
         description: "Alle Mandate-Dokumente durchsuchen",
         icon: FolderOpen,
-        href: "/atlas/sources",
-        searchText: "vault dokumente files datenbank sources",
+        /* 2026-06-11 — zeigte fälschlich auf /atlas/sources (den
+           öffentlichen Gesetzes-Korpus). /atlas/vault ist die echte
+           Dokumenten-Ansicht über alle Mandate. */
+        href: "/atlas/vault",
+        searchText: "vault dokumente files akten dateien",
+      },
+      {
+        id: "alerts",
+        category: "Aktion",
+        label: "Benachrichtigungen",
+        description: "Alerts & Abonnements verwalten",
+        icon: Bell,
+        href: "/atlas/alerts",
+        searchText: "alerts benachrichtigungen glocke abos subscriptions",
       },
       {
         id: "settings",
@@ -186,6 +209,104 @@ export function CommandPalette() {
       },
     ];
 
+    /* 2026-06-11 — Werkzeug-Flächen, die sonst nur per Direkt-URL
+       erreichbar sind. Alle Routen existieren als page.tsx (verifiziert);
+       Workflows + Klauseln leben bewusst NUR hier und nicht in der
+       Sidebar (User-Request Sprint 19d). */
+    const toolActions: Item[] = [
+      {
+        id: "tool-drafting",
+        category: "Werkzeug",
+        label: "Drafting Studio",
+        description: "Schriftsätze & Verträge aus Vorlagen entwerfen",
+        icon: PenSquare,
+        href: "/atlas/drafting",
+        searchText: "drafting studio entwurf schriftsatz vorlage template",
+      },
+      {
+        id: "tool-agent",
+        category: "Werkzeug",
+        label: "Agent",
+        description: "Auftrag formulieren — Atlas plant & arbeitet Schritte ab",
+        icon: Bot,
+        href: "/atlas/agent",
+        searchText: "agent auftrag recherche autonom steps mitarbeiter",
+      },
+      {
+        id: "tool-redline",
+        category: "Werkzeug",
+        label: "Redline",
+        description: "Zwei Vertragsversionen vergleichen (Diff)",
+        icon: FileDiff,
+        href: "/atlas/tools/redline",
+        searchText: "redline diff vergleich vertragsversionen änderungen",
+      },
+      {
+        id: "tool-anonymize",
+        category: "Werkzeug",
+        label: "Anonymisieren",
+        description: "Personenbezogene Daten in Texten schwärzen",
+        icon: EyeOff,
+        href: "/atlas/tools/anonymize",
+        searchText: "anonymisieren pii schwärzen redact datenschutz dsgvo",
+      },
+      {
+        id: "tool-cases",
+        category: "Werkzeug",
+        label: "Rechtsprechung",
+        description: "Urteilsdatenbank durchsuchen",
+        icon: Scale,
+        href: "/atlas/cases",
+        searchText: "rechtsprechung urteile cases case law entscheidungen",
+      },
+      {
+        id: "tool-datev",
+        category: "Werkzeug",
+        label: "DATEV-Export",
+        description: "Stundenabrechnung als CSV exportieren",
+        icon: FileOutput,
+        href: "/atlas/exports/datev",
+        searchText: "datev export abrechnung stunden csv timetracking",
+      },
+      {
+        id: "tool-workflows",
+        category: "Werkzeug",
+        label: "Workflows",
+        description: "Kuratierte Arbeitsabläufe mit Start-Prompt",
+        icon: Workflow,
+        href: "/atlas/workflows",
+        searchText: "workflows abläufe playbooks prompts katalog",
+      },
+      {
+        id: "tool-clauses",
+        category: "Werkzeug",
+        label: "Klausel-Bibliothek",
+        description: "Kanzleiweite Klauseln durchsuchen",
+        icon: ScrollText,
+        href: "/atlas/clauses",
+        searchText: "klauseln clauses bibliothek bausteine vertragsklauseln",
+      },
+      {
+        id: "tool-comparator",
+        category: "Werkzeug",
+        label: "Rechtsvergleich",
+        description: "Jurisdiktionen nebeneinander vergleichen",
+        icon: GitCompare,
+        href: "/atlas/comparator",
+        searchText:
+          "rechtsvergleich comparator jurisdiktionen länder vergleich",
+      },
+      {
+        id: "tool-library",
+        category: "Werkzeug",
+        label: "Bibliothek",
+        description: "Gespeicherte Atlas-Antworten & Recherchen",
+        icon: Library,
+        href: "/atlas/library",
+        searchText: "bibliothek library gespeichert recherche antworten",
+      },
+    ];
+
     const chatItems: Item[] = chats.map((c) => ({
       id: `chat-${c.id}`,
       category: "Chat",
@@ -211,7 +332,7 @@ export function CommandPalette() {
         `${m.name} ${m.clientName ?? ""} ${m.jurisdiction ?? ""}`.toLowerCase(),
     }));
 
-    return [...staticActions, ...mandateItems, ...chatItems];
+    return [...staticActions, ...toolActions, ...mandateItems, ...chatItems];
   }, [chats, mandates, router]);
 
   const filtered = useMemo(() => {

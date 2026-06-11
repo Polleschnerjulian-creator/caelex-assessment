@@ -33,22 +33,15 @@ import {
   X,
   ChevronLeft,
   ChevronRight,
-  Plus,
   Briefcase,
-  ArrowUp,
   FileText,
   Search,
   MessageSquare,
   Quote,
   GitPullRequest,
-  Sparkles,
   Hash,
-  Link2,
   BookMarked,
-  Image as ImageIcon,
   Building,
-  Mail,
-  Command,
 } from "lucide-react";
 import { AtlasGlyph } from "./AtlasGlyph";
 
@@ -111,7 +104,7 @@ const SLIDES: Slide[] = [
   {
     id: "vault",
     title: "Frag deine Akten direkt",
-    body: "PDFs / DOCX in den Vault → Atlas indexiert automatisch (OCR + Embeddings). Frag z.B. 'Was steht im Bescheid vom 12.3.?' — Atlas liefert die exakte Stelle mit Link auf die Quelldatei.",
+    body: "PDFs / DOCX in den Vault → Atlas indexiert Text-Dokumente automatisch für die Suche. Gescannte Bild-PDFs ohne Textebene werden noch nicht ausgelesen. Frag z.B. 'Was steht im Bescheid vom 12.3.?' — Atlas liefert die exakte Stelle mit Link auf die Quelldatei.",
     visual: VisualVault,
   },
   {
@@ -135,13 +128,13 @@ const SLIDES: Slide[] = [
   {
     id: "review",
     title: "Kommentare & Änderungsvorschläge",
-    body: "Markier Text → 'Kommentar' für Diskussion mit Mandant (threaded, resolvable). Oder 'Vorschlag: Löschen/Einfügen' für Track-Changes-style Review. Accept/Reject im rechten Panel.",
+    body: "Markier Text → 'Kommentar' für eigene Anmerkungen am Entwurf (lokal im Editor, ohne Mandanten-Zugang). Oder 'Vorschlag: Löschen/Einfügen' für Track-Changes-style Review. Accept/Reject im rechten Panel.",
     visual: VisualReview,
   },
   {
     id: "pdf-letterhead",
     title: "PDF-Export mit Briefkopf",
-    body: "Jeder Schriftsatz/Brief wird als DIN 5008-konformes PDF exportiert. Settings → Firm → Letterhead: Logo + Kanzlei-Adresse einmal hochladen → erscheint auto auf jeder PDF. Direct sendable.",
+    body: "Jeder Schriftsatz/Brief wird als DIN 5008-konformes PDF exportiert. Settings → Firm → Letterhead: Logo + Kanzlei-Adresse einmal hochladen → erscheint automatisch auf jeder PDF. Direkt versandfertig.",
     visual: VisualLetterhead,
   },
   {
@@ -153,7 +146,7 @@ const SLIDES: Slide[] = [
   {
     id: "shortcuts",
     title: "Power-User Shortcuts",
-    body: "⌘K = Command-Palette (jeder Chat, Mandat, Setting). ⌘\\ = Sidebar toggle. ⌘S = Save im Editor. ⌘F = Find/Replace. Die Tour startest du jederzeit neu via Help-Icon links unten in der Sidebar.",
+    body: "⌘K = Command-Palette (jeder Chat, Mandat, Setting). ⌘S = überarbeiteten Entwurf zur Prüfung in den Chat übergeben. ⌘F = Suchen & Ersetzen im Editor. Die Tour startest du jederzeit neu via Help-Icon links unten in der Sidebar.",
     visual: VisualShortcuts,
   },
 ];
@@ -381,9 +374,10 @@ export function OnboardingTour() {
    variants (VisualWelcomeV2, VisualMandateAttach below) in Sprint 19
    when the tour was expanded from 5 to 12 slides. The old visuals
    were never deleted — ~95 LOC of dead code that no SLIDES entry
-   references. Removed for clarity + bundle. The Briefcase / Plus /
-   ArrowUp / X icon imports they used are still used by VisualMandateAttach
-   below, so the lucide-react imports stay. */
+   references. Removed for clarity + bundle. 2026-06-11: the leftover
+   icon imports from that era (Plus, ArrowUp, Sparkles, Link2, Image,
+   Mail, Command) were pruned too — Briefcase / X stay (used by
+   VisualMandateAttach + the skip button). */
 
 function VisualVault() {
   return (
@@ -416,9 +410,13 @@ function VisualVault() {
 }
 
 function VisualShortcuts() {
+  /* 2026-06-11 — nur real existierende Bindings zeigen: ⌘K öffnet die
+     Command-Palette (CommandPalette.tsx), "?" das Shortcut-Overlay
+     (useAtlasKeyboardShortcuts). Das frühere ⌘\-Versprechen hatte
+     keinen Listener mehr und wurde entfernt. */
   const shortcuts: Array<[string, string]> = [
-    ["⌘ K", "Composer fokussieren"],
-    ["⌘ \\", "Sidebar ein/ausklappen"],
+    ["⌘ K", "Command-Palette öffnen"],
+    ["?", "Shortcut-Übersicht"],
     ["⏎", "Nachricht senden"],
   ];
   return (

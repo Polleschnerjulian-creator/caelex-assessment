@@ -6,14 +6,18 @@
  * useAtlasKeyboardShortcuts — global hotkeys for Atlas V2.
  *
  * Bindings (mac uses ⌘, others Ctrl):
- *   ⌘\           Toggle sidebar (dispatches `atlas-v2-sidebar-toggle`)
- *   ⌘K           Focus the chat composer (dispatches
+ *   ⌘L           Focus the chat composer (dispatches
  *                `atlas-v2-focus-composer`); if not on a chat-input
  *                surface, navigates to /atlas first.
  *   ⌘⇧O          New chat (navigate to /atlas). ChatGPT-aligned.
  *   ?            Open the keyboard-help overlay
  *   Esc          Close any open overlay (best-effort — dispatches
  *                `atlas-v2-escape` so consumers can respond)
+ *
+ * ⌘K is owned by CommandPalette.tsx (palette toggle), not this hook.
+ * 2026-06-11 — the former ⌘\ sidebar-toggle binding was removed: it
+ * dispatched `atlas-v2-sidebar-toggle`, but no listener has existed
+ * since the sidebar redesign made the sidebar always-open.
  *
  * Why custom events: state lives in the components that own it
  * (AtlasSidebar owns `collapsed`, ChatInput owns the textarea ref).
@@ -30,7 +34,6 @@ import { useEffect, useState } from "react";
 import { useRouter, usePathname } from "next/navigation";
 
 export type AtlasShortcut =
-  | "toggle-sidebar"
   | "focus-composer"
   | "new-chat"
   | "show-help"
@@ -85,13 +88,6 @@ export function useAtlasKeyboardShortcuts(): UseAtlasKeyboardShortcuts {
       /* ⌘ (mac) or Ctrl (everyone else) chord. */
       const mod = e.metaKey || e.ctrlKey;
       if (!mod) return;
-
-      /* ⌘\ — toggle sidebar. */
-      if (e.key === "\\") {
-        e.preventDefault();
-        window.dispatchEvent(new Event("atlas-v2-sidebar-toggle"));
-        return;
-      }
 
       /* ⌘K — Sprint 5b (2026-05-18): now opens the Command Palette
          (Linear/Notion convention). The previous "focus composer"

@@ -5,9 +5,10 @@
  *
  * Atlas V2 — Create-Mandate form (UI refresh 2026-05-12, theme-aware).
  *
- * Submit → POST /api/atlas/mandate → redirect to homepage with the
- * mandate visible in the sidebar. Form fields are editable later from
- * the mandate-detail view.
+ * Submit → POST /api/atlas/mandate → redirect straight to the new
+ * mandate's detail page (the POST response carries the created mandate;
+ * fallback /atlas if the id is missing). Form fields are editable later
+ * from the mandate-detail view.
  *
  * SPDX-License-Identifier: LicenseRef-Caelex-Proprietary
  */
@@ -116,8 +117,18 @@ export function CreateMandateForm() {
         const body = await res.json().catch(() => ({}));
         throw new Error(body.error || `HTTP ${res.status}`);
       }
+      /* 2026-06-11 — direkt ins neue Mandat statt auf die Startseite.
+         Die POST-Response liefert `{ mandate: { id, … }, conflicts }`
+         (siehe api/atlas/mandate/route.ts); ohne id → fallback /atlas. */
+      const data = (await res.json().catch(() => ({}))) as {
+        mandate?: { id?: string };
+      };
       window.dispatchEvent(new Event("atlas-v2-sidebar-refresh"));
-      router.push("/atlas");
+      router.push(
+        data.mandate?.id
+          ? `/atlas/mandate/${encodeURIComponent(data.mandate.id)}`
+          : "/atlas",
+      );
     } catch (err) {
       setError(err instanceof Error ? err.message : String(err));
       setSubmitting(false);
@@ -303,7 +314,7 @@ export function CreateMandateForm() {
           />
 
           <Field
-            label="Primary Jurisdiction"
+            label="Primäre Jurisdiktion"
             input={
               <select
                 value={jurisdiction}
@@ -335,7 +346,7 @@ export function CreateMandateForm() {
           />
 
           <Field
-            label="Primary Authority"
+            label="Zuständige Behörde"
             input={
               <input
                 type="text"
@@ -350,7 +361,7 @@ export function CreateMandateForm() {
         </div>
 
         <Field
-          label="Custom Instructions"
+          label="Eigene Hinweise"
           hint="Werden bei jedem Chat in diesem Mandat als System-Prompt-Suffix injiziert. Max. ~4000 Zeichen empfohlen."
           input={
             <textarea

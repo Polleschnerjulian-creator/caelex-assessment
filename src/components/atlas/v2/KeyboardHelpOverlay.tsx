@@ -116,10 +116,15 @@ export function KeyboardHelpOverlay({ open, onClose }: Props) {
 
   const mod = isMac ? "⌘" : "Ctrl";
 
+  /* 2026-06-11 — Liste an die realen Bindings angeglichen: ⌘K öffnet
+     seit Sprint 5b die Command-Palette (nicht mehr das Eingabefeld;
+     das macht ⌘L, siehe useAtlasKeyboardShortcuts). Der ⌘\-Eintrag
+     ist raus — der Sidebar-Toggle existiert seit dem Redesign
+     (always-open Sidebar) nicht mehr. */
   const bindings: Binding[] = [
-    { keys: [mod, "K"], description: "Eingabefeld fokussieren" },
+    { keys: [mod, "K"], description: "Command-Palette öffnen" },
+    { keys: [mod, "L"], description: "Eingabefeld fokussieren" },
     { keys: [mod, "⇧", "O"], description: "Neuen Chat starten" },
-    { keys: [mod, "\\"], description: "Sidebar ein-/ausblenden" },
     { keys: ["?"], description: "Diese Hilfe öffnen / schließen" },
     { keys: ["Esc"], description: "Overlay / Popover schließen" },
     { keys: ["Enter"], description: "Nachricht senden (im Eingabefeld)" },
