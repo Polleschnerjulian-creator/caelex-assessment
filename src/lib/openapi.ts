@@ -810,7 +810,7 @@ The API uses standard HTTP status codes. Error responses include:
           "deep annexes, plus headline sets of US CCL/USML XV/MTCR/Wassenaar/" +
           "DE Ausfuhrliste). INDICATION ONLY — every response carries a " +
           "disclaimer: keyword hints are not a classification, and zero " +
-          "matches is not a clearance. Rate limited to 30 requests/hour per " +
+          "matches is not a clearance. Rate limited to 60 requests/hour per " +
           "IP. No API key required; nothing is stored.",
         operationId: "passageCheck",
         requestBody: {

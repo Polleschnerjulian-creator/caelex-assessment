@@ -30,6 +30,7 @@ import {
   buildApiCspHeader,
   CSP_NONCE_HEADER,
 } from "@/lib/csp-nonce";
+import { getUpstashCredentials } from "@/lib/upstash-env";
 
 // ─── Rate Limiting (Edge-compatible) ───
 
@@ -101,14 +102,13 @@ function inMemoryLimit(
 
 function getApiRateLimiter(): Ratelimit | null {
   if (apiRateLimiter) return apiRateLimiter;
-  const url = process.env.UPSTASH_REDIS_REST_URL;
-  const token = process.env.UPSTASH_REDIS_REST_TOKEN;
-  if (!url || !token) {
+  const credentials = getUpstashCredentials();
+  if (!credentials) {
     logRedisWarningOnce();
     return null;
   }
   apiRateLimiter = new Ratelimit({
-    redis: new Redis({ url, token }),
+    redis: new Redis(credentials),
     limiter: Ratelimit.slidingWindow(100, "1 m"),
     analytics: true,
     prefix: "ratelimit:mw:api",
@@ -118,14 +118,13 @@ function getApiRateLimiter(): Ratelimit | null {
 
 function getAuthRateLimiter(): Ratelimit | null {
   if (authRateLimiter) return authRateLimiter;
-  const url = process.env.UPSTASH_REDIS_REST_URL;
-  const token = process.env.UPSTASH_REDIS_REST_TOKEN;
-  if (!url || !token) {
+  const credentials = getUpstashCredentials();
+  if (!credentials) {
     logRedisWarningOnce();
     return null;
   }
   authRateLimiter = new Ratelimit({
-    redis: new Redis({ url, token }),
+    redis: new Redis(credentials),
     limiter: Ratelimit.slidingWindow(10, "1 m"),
     analytics: true,
     prefix: "ratelimit:mw:auth",

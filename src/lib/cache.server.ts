@@ -13,20 +13,14 @@
 
 import "server-only";
 import { Redis } from "@upstash/redis";
+import { getUpstashCredentials } from "@/lib/upstash-env";
 
 // ─── Configuration ───
 
-const REDIS_URL = process.env.UPSTASH_REDIS_REST_URL;
-const REDIS_TOKEN = process.env.UPSTASH_REDIS_REST_TOKEN;
-
-// Initialize Redis client (null if not configured)
-const redis =
-  REDIS_URL && REDIS_TOKEN
-    ? new Redis({
-        url: REDIS_URL,
-        token: REDIS_TOKEN,
-      })
-    : null;
+// Credentials resolve via upstash-env.ts (accepts UPSTASH_* and the
+// Marketplace integration's KV_* names). Null if not configured.
+const cacheCredentials = getUpstashCredentials();
+const redis = cacheCredentials ? new Redis(cacheCredentials) : null;
 
 // Log warning if Redis not configured
 if (!redis && process.env.NODE_ENV === "production") {

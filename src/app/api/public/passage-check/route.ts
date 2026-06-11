@@ -10,7 +10,7 @@
  *     covered lists, so silence is never read as green;
  *   - LOW confidence is hard-coded by the matcher (suggestion-only).
  *
- * Public + rate-limited ("widget", 30/hr/IP — booth-friendly), no auth,
+ * Public + rate-limited ("widget", 60/hr/IP — booth-friendly), no auth,
  * no persistence — nothing the visitor types is stored.
  */
 

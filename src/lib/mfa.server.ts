@@ -13,6 +13,7 @@ import crypto from "crypto";
 import { Redis } from "@upstash/redis";
 import { prisma } from "@/lib/prisma";
 import { encrypt, decrypt, isEncrypted } from "@/lib/encryption";
+import { getUpstashCredentials } from "@/lib/upstash-env";
 
 const ISSUER = "Caelex";
 // SHA256 for new enrollments (OWASP recommended). Existing users enrolled with SHA1
@@ -27,13 +28,10 @@ const PERIOD = 30; // seconds
 const REPLAY_TTL_SECONDS = 60; // Codes expire after 60s (2x TOTP period)
 const REPLAY_PREFIX = "totp:replay:";
 
-const replayRedis =
-  process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN
-    ? new Redis({
-        url: process.env.UPSTASH_REDIS_REST_URL,
-        token: process.env.UPSTASH_REDIS_REST_TOKEN,
-      })
-    : null;
+const replayRedisCredentials = getUpstashCredentials();
+const replayRedis = replayRedisCredentials
+  ? new Redis(replayRedisCredentials)
+  : null;
 
 // In-memory fallback for development (not safe for multi-instance production)
 const usedTotpCodes = new Map<string, number>();

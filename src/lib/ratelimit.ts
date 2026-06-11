@@ -15,6 +15,7 @@
 import { Ratelimit } from "@upstash/ratelimit";
 import { Redis } from "@upstash/redis";
 import { NextResponse } from "next/server";
+import { getUpstashCredentials } from "./upstash-env";
 
 // ─── Types ───
 
@@ -27,17 +28,10 @@ export interface RateLimitResult {
 
 // ─── Configuration ───
 
-const REDIS_URL = process.env.UPSTASH_REDIS_REST_URL;
-const REDIS_TOKEN = process.env.UPSTASH_REDIS_REST_TOKEN;
-
-// Initialize Redis client (null if not configured)
-const redis =
-  REDIS_URL && REDIS_TOKEN
-    ? new Redis({
-        url: REDIS_URL,
-        token: REDIS_TOKEN,
-      })
-    : null;
+// Credentials resolve via upstash-env.ts (accepts UPSTASH_* and the
+// Marketplace integration's KV_* names). Null if not configured.
+const upstashCredentials = getUpstashCredentials();
+const redis = upstashCredentials ? new Redis(upstashCredentials) : null;
 
 // Enforce Redis in production — in-memory fallback is not safe for multi-instance
 if (!redis && process.env.NODE_ENV === "production") {
@@ -89,13 +83,16 @@ export const rateLimiters = redis
         prefix: "ratelimit:assessment",
       }),
 
-      // Quick-check calculate: 60 per hour per IP. One wizard run makes
+      // Quick-check calculate: 120 per hour per IP. One wizard run makes
       // ~6 interim forming-counter calls + 1 final submit, so the 10/hr
       // assessment tier was exhausted by a SINGLE legitimate run-through.
       // The compute is pure server logic (no AI) behind the bot check.
+      // 120/h because the IP is often SHARED (trade-fair/office NAT,
+      // carrier CGNAT): ~17 full runs per hour per shared IP instead of
+      // ~8 — still a trivial CPU ceiling for an abuser.
       assessment_calculate: new Ratelimit({
         redis,
-        limiter: Ratelimit.slidingWindow(60, "1 h"),
+        limiter: Ratelimit.slidingWindow(120, "1 h"),
         analytics: true,
         prefix: "ratelimit:assessment_calculate",
       }),
@@ -156,10 +153,13 @@ export const rateLimiters = redis
         prefix: "ratelimit:public_api",
       }),
 
-      // Widget analytics tracking: 30 per hour per IP
+      // Widget analytics tracking + public /passage/check teaser: 60 per
+      // hour per IP. Both are cheap pure-server endpoints (no AI, no
+      // writes beyond analytics); 60/h keeps a shared NAT/booth IP usable
+      // while still shedding scripted abuse.
       widget: new Ratelimit({
         redis,
-        limiter: Ratelimit.slidingWindow(30, "1 h"),
+        limiter: Ratelimit.slidingWindow(60, "1 h"),
         analytics: true,
         prefix: "ratelimit:widget",
       }),
@@ -494,7 +494,7 @@ const fallbackLimiters = {
   auth: new InMemoryRateLimiter(3, 60000), // 3/min vs 5/min (Redis)
   registration: new InMemoryRateLimiter(1, 3600000), // 1/hr vs 3/hr (Redis)
   assessment: new InMemoryRateLimiter(5, 3600000), // 5/hr vs 10/hr (Redis)
-  assessment_calculate: new InMemoryRateLimiter(30, 3600000), // 30/hr vs 60/hr (Redis)
+  assessment_calculate: new InMemoryRateLimiter(60, 3600000), // 60/hr vs 120/hr (Redis) — ~8 wizard runs/hr per instance on a shared IP
   export: new InMemoryRateLimiter(5, 3600000), // 5/hr vs 20/hr (Redis)
   sensitive: new InMemoryRateLimiter(2, 3600000), // 2/hr vs 5/hr (Redis)
   supplier: new InMemoryRateLimiter(10, 3600000), // 10/hr vs 30/hr (Redis)
@@ -502,7 +502,7 @@ const fallbackLimiters = {
   nca_portal: new InMemoryRateLimiter(10, 3600000), // 10/hr vs 30/hr (Redis)
   nca_package: new InMemoryRateLimiter(3, 3600000), // 3/hr vs 10/hr (Redis)
   public_api: new InMemoryRateLimiter(2, 3600000), // 2/hr vs 5/hr (Redis)
-  widget: new InMemoryRateLimiter(10, 3600000), // 10/hr vs 30/hr (Redis)
+  widget: new InMemoryRateLimiter(20, 3600000), // 20/hr vs 60/hr (Redis)
   analytics: new InMemoryRateLimiter(60, 60000), // 60/min dev vs 120/min (Redis)
   pulse: new InMemoryRateLimiter(1, 3600000), // 1/hr vs 3/hr (Redis)
   mfa: new InMemoryRateLimiter(3, 60000), // 3/min vs 5/min (Redis)

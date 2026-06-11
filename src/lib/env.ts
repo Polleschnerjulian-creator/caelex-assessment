@@ -98,23 +98,39 @@ const envSchema = z.object({
 /**
  * Production-specific requirements.
  */
-const productionRequirements = z.object({
-  AUTH_URL: z.string().url("AUTH_URL required in production"),
-  ENCRYPTION_KEY: z.string().min(32, "ENCRYPTION_KEY required in production"),
-  ENCRYPTION_SALT: z.string().min(16, "ENCRYPTION_SALT required in production"),
-  UPSTASH_REDIS_REST_URL: z
-    .string()
-    .url("UPSTASH_REDIS_REST_URL required in production for rate limiting"),
-  UPSTASH_REDIS_REST_TOKEN: z
-    .string()
-    .min(
-      1,
-      "UPSTASH_REDIS_REST_TOKEN required in production for rate limiting",
-    ),
-  CRON_SECRET: z
-    .string()
-    .min(16, "CRON_SECRET required in production for cron job authentication"),
-});
+const productionRequirements = z
+  .object({
+    AUTH_URL: z.string().url("AUTH_URL required in production"),
+    ENCRYPTION_KEY: z.string().min(32, "ENCRYPTION_KEY required in production"),
+    ENCRYPTION_SALT: z
+      .string()
+      .min(16, "ENCRYPTION_SALT required in production"),
+    // Redis credentials may arrive under UPSTASH_* names or the Vercel
+    // Marketplace integration's KV_* names — either pair satisfies the
+    // requirement (see src/lib/upstash-env.ts).
+    UPSTASH_REDIS_REST_URL: z.string().url().optional(),
+    UPSTASH_REDIS_REST_TOKEN: z.string().min(1).optional(),
+    KV_REST_API_URL: z.string().url().optional(),
+    KV_REST_API_TOKEN: z.string().min(1).optional(),
+    CRON_SECRET: z
+      .string()
+      .min(
+        16,
+        "CRON_SECRET required in production for cron job authentication",
+      ),
+  })
+  .refine(
+    (env) =>
+      (env.UPSTASH_REDIS_REST_URL && env.UPSTASH_REDIS_REST_TOKEN) ||
+      (env.KV_REST_API_URL && env.KV_REST_API_TOKEN),
+    {
+      message:
+        "Redis credentials required in production for rate limiting: set " +
+        "UPSTASH_REDIS_REST_URL + UPSTASH_REDIS_REST_TOKEN (or the " +
+        "Marketplace-injected KV_REST_API_URL + KV_REST_API_TOKEN)",
+      path: ["UPSTASH_REDIS_REST_URL"],
+    },
+  );
 
 // ─── Types ───
 
