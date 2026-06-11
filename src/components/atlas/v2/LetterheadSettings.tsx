@@ -189,6 +189,12 @@ export function LetterheadSettings() {
 
   const persist = useCallback(
     async (patch: Partial<LocalState>) => {
+      /* L-b fix (2026-06-11): snapshot the pre-patch state so a failed
+         server write can roll back BOTH the optimistic local state and
+         the localStorage write-through cache. Without the rollback the
+         UI (and the PDF/DOCX render path) showed values the server
+         never accepted — silent divergence across devices. */
+      const prev = state;
       const next = { ...state, ...patch };
       setState(next);
       // Always keep localStorage in sync for PDF/DOCX render path.
@@ -238,6 +244,11 @@ export function LetterheadSettings() {
             throw new Error(body.error ?? `HTTP ${res.status}`);
           }
         } catch (err) {
+          /* L-b fix: roll back the optimistic update — local state AND
+             localStorage return to the last server-accepted values.
+             Success path below stays unchanged. */
+          setState(prev);
+          hydrateLocalStorage(prev);
           setError(
             err instanceof Error
               ? err.message

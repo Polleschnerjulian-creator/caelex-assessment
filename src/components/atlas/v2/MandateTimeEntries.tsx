@@ -13,7 +13,19 @@
  */
 
 import { useEffect, useState, useCallback } from "react";
-import { Clock, Loader2, Plus, MessageSquare, AlertCircle } from "lucide-react";
+import Link from "next/link";
+import {
+  Clock,
+  Loader2,
+  Plus,
+  MessageSquare,
+  AlertCircle,
+  Pencil,
+  Trash2,
+  FileSpreadsheet,
+  Check,
+  X,
+} from "lucide-react";
 
 interface TimeEntry {
   id: string;
@@ -95,6 +107,15 @@ export function MandateTimeEntries({
   const [description, setDescription] = useState("");
   const [billable, setBillable] = useState(true);
   const [rate, setRate] = useState<number | "">(280);
+  /* M-a fix (2026-06-11): add-form errors get their own state so the
+     failure renders INSIDE the form (inputs stay filled for retry)
+     instead of vanishing silently. */
+  const [formError, setFormError] = useState<string | null>(null);
+  /* Edit/Delete (abrechnungsfest): pencil → inline edit form, trash →
+     inline confirm (kein Browser-confirm). One id at a time each. */
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [confirmingId, setConfirmingId] = useState<string | null>(null);
+  const [busyId, setBusyId] = useState<string | null>(null);
 
   const reload = useCallback(async () => {
     setLoading(true);
@@ -139,8 +160,13 @@ export function MandateTimeEntries({
     e.preventDefault();
     if (!minutes || !description.trim()) return;
     setAdding(true);
+    setFormError(null);
     try {
-      await fetch(`/api/atlas/mandate/${mandateId}/time-entries`, {
+      /* M-a fix (2026-06-11): the previous version ignored res.ok — a
+         403/429/500 cleared the form and closed it as if saved (silent
+         loss of the entry). Now: error renders in the form, inputs
+         stay filled for retry; only a confirmed 2xx clears them. */
+      const res = await fetch(`/api/atlas/mandate/${mandateId}/time-entries`, {
         method: "POST",
         headers: { "content-type": "application/json" },
         body: JSON.stringify({
@@ -150,12 +176,55 @@ export function MandateTimeEntries({
           hourlyRateEur: billable && rate ? Number(rate) : undefined,
         }),
       });
+      if (!res.ok) {
+        const body = (await res.json().catch(() => ({}))) as {
+          error?: string;
+        };
+        setFormError(
+          body.error || `Speichern fehlgeschlagen (HTTP ${res.status}).`,
+        );
+        return;
+      }
       setMinutes("");
       setDescription("");
       setFormOpen(false);
       await reload();
+    } catch (err) {
+      setFormError(
+        err instanceof Error
+          ? `Netzwerk-Fehler: ${err.message}`
+          : "Netzwerk-Fehler beim Speichern.",
+      );
     } finally {
       setAdding(false);
+    }
+  };
+
+  const handleDelete = async (entryId: string) => {
+    setBusyId(entryId);
+    setError(null);
+    try {
+      const res = await fetch(
+        `/api/atlas/mandate/${mandateId}/time-entries/${entryId}`,
+        { method: "DELETE" },
+      );
+      if (!res.ok) {
+        const body = (await res.json().catch(() => ({}))) as {
+          error?: string;
+        };
+        setError(body.error || `Löschen fehlgeschlagen (HTTP ${res.status}).`);
+        return;
+      }
+      setConfirmingId(null);
+      await reload();
+    } catch (err) {
+      setError(
+        err instanceof Error
+          ? `Netzwerk-Fehler: ${err.message}`
+          : "Netzwerk-Fehler beim Löschen.",
+      );
+    } finally {
+      setBusyId(null);
     }
   };
 
@@ -168,6 +237,18 @@ export function MandateTimeEntries({
 
   return (
     <div className="rounded-lg border border-slate-200 bg-white p-3 dark:border-slate-700/60 dark:bg-slate-900/40">
+      {/* Card head — DATEV-Export Einstieg. Dezent (gleicher Stil wie
+          „Akte exportieren" im Mandats-Header); der Export selbst lebt
+          auf /atlas/exports/datev mit Zeitraum-/Mandats-Filter. */}
+      <div className="mb-2 flex items-center justify-end">
+        <Link
+          href="/atlas/exports/datev"
+          className="inline-flex items-center gap-1.5 text-[11px] text-slate-500 transition-colors hover:text-slate-800 dark:hover:text-slate-200"
+        >
+          <FileSpreadsheet size={11} />
+          Export (DATEV)
+        </Link>
+      </div>
       {error && (
         <div
           role="alert"
@@ -204,45 +285,116 @@ export function MandateTimeEntries({
         </p>
       ) : (
         <ul className="mb-3 max-h-[280px] space-y-1 overflow-y-auto">
-          {entries.map((e) => (
-            <li
-              key={e.id}
-              className="flex items-start gap-2 rounded px-1.5 py-1.5 text-[12.5px] hover:bg-slate-50 dark:hover:bg-slate-900"
-            >
-              <Clock
-                size={11}
-                className={`mt-0.5 shrink-0 ${
-                  e.billable
-                    ? "text-emerald-600 dark:text-emerald-400"
-                    : "text-slate-400"
-                }`}
-              />
-              <div className="min-w-0 flex-1">
-                <div className="line-clamp-1 text-slate-900 dark:text-slate-100">
-                  {e.description}
-                </div>
-                <div className="mt-0.5 flex flex-wrap items-center gap-2 text-[10.5px] text-slate-500">
-                  <span className="font-medium tabular-nums">
-                    {fmtMins(e.minutes)}
-                  </span>
-                  {e.billable && e.hourlyRateEur ? (
-                    <span>· €{e.hourlyRateEur}/h</span>
-                  ) : !e.billable ? (
-                    <span>· nicht abrechenbar</span>
-                  ) : null}
-                  <span>
-                    · {new Date(e.workedOn).toLocaleDateString("de-DE")}
-                  </span>
-                  <span>· {e.user.name || e.user.email}</span>
-                  {e.chatId && (
-                    <span className="inline-flex items-center gap-0.5">
-                      <MessageSquare size={9} /> Chat
+          {entries.map((e) =>
+            editingId === e.id ? (
+              <li key={e.id} className="rounded px-1.5 py-1.5 text-[12.5px]">
+                <EntryEditForm
+                  mandateId={mandateId}
+                  entry={e}
+                  onCancel={() => setEditingId(null)}
+                  onSaved={async () => {
+                    setEditingId(null);
+                    await reload();
+                  }}
+                />
+              </li>
+            ) : (
+              <li
+                key={e.id}
+                className="flex items-start gap-2 rounded px-1.5 py-1.5 text-[12.5px] hover:bg-slate-50 dark:hover:bg-slate-900"
+              >
+                <Clock
+                  size={11}
+                  className={`mt-0.5 shrink-0 ${
+                    e.billable
+                      ? "text-emerald-600 dark:text-emerald-400"
+                      : "text-slate-400"
+                  }`}
+                />
+                <div className="min-w-0 flex-1">
+                  <div className="line-clamp-1 text-slate-900 dark:text-slate-100">
+                    {e.description}
+                  </div>
+                  <div className="mt-0.5 flex flex-wrap items-center gap-2 text-[10.5px] text-slate-500">
+                    <span className="font-medium tabular-nums">
+                      {fmtMins(e.minutes)}
                     </span>
-                  )}
+                    {e.billable && e.hourlyRateEur ? (
+                      <span>· €{e.hourlyRateEur}/h</span>
+                    ) : !e.billable ? (
+                      <span>· nicht abrechenbar</span>
+                    ) : null}
+                    <span>
+                      · {new Date(e.workedOn).toLocaleDateString("de-DE")}
+                    </span>
+                    <span>· {e.user.name || e.user.email}</span>
+                    {e.chatId && (
+                      <span className="inline-flex items-center gap-0.5">
+                        <MessageSquare size={9} /> Chat
+                      </span>
+                    )}
+                  </div>
                 </div>
-              </div>
-            </li>
-          ))}
+                {/* Aktionen: Stift → Inline-Edit, Papierkorb → Inline-
+                    Confirm (Muster: trash→setConfirmingId). Bei
+                    archivierten/geschlossenen Mandaten (disabled)
+                    komplett ausgeblendet. */}
+                {!disabled &&
+                  (confirmingId === e.id ? (
+                    <span className="flex shrink-0 items-center gap-1.5 text-[10.5px]">
+                      <span className="text-slate-500">Löschen?</span>
+                      <button
+                        type="button"
+                        onClick={() => void handleDelete(e.id)}
+                        disabled={busyId === e.id}
+                        className="rounded px-1.5 py-0.5 font-medium text-red-600 hover:bg-red-50 disabled:opacity-50 dark:text-red-400 dark:hover:bg-red-500/10"
+                      >
+                        {busyId === e.id ? (
+                          <Loader2
+                            size={10}
+                            className="animate-spin motion-reduce:animate-none"
+                          />
+                        ) : (
+                          "Ja"
+                        )}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setConfirmingId(null)}
+                        disabled={busyId === e.id}
+                        className="rounded px-1.5 py-0.5 text-slate-500 hover:bg-slate-100 disabled:opacity-50 dark:hover:bg-slate-800"
+                      >
+                        Abbrechen
+                      </button>
+                    </span>
+                  ) : (
+                    <span className="flex shrink-0 items-center gap-1">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setConfirmingId(null);
+                          setEditingId(e.id);
+                        }}
+                        disabled={busyId !== null}
+                        title="Bearbeiten"
+                        className="rounded p-1 text-slate-400 hover:bg-slate-200 hover:text-slate-700 disabled:opacity-50 dark:hover:bg-slate-800 dark:hover:text-slate-200"
+                      >
+                        <Pencil size={11} />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setConfirmingId(e.id)}
+                        disabled={busyId !== null}
+                        title="Löschen"
+                        className="rounded p-1 text-slate-400 hover:bg-red-50 hover:text-red-600 disabled:opacity-50 dark:hover:bg-red-500/10 dark:hover:text-red-400"
+                      >
+                        <Trash2 size={11} />
+                      </button>
+                    </span>
+                  ))}
+              </li>
+            ),
+          )}
         </ul>
       )}
 
@@ -282,6 +434,18 @@ export function MandateTimeEntries({
               disabled={adding}
             />
           </div>
+          {/* M-a fix: Fehler INNERHALB des Formulars anzeigen — die
+              Eingaben bleiben stehen, der Anwalt kann direkt erneut
+              speichern. */}
+          {formError && (
+            <div
+              role="alert"
+              className="flex items-start gap-2 rounded-md border border-red-200 bg-red-50 px-3 py-2 text-[11px] text-red-700 dark:border-red-500/30 dark:bg-red-500/10 dark:text-red-300"
+            >
+              <AlertCircle size={11} className="mt-0.5 shrink-0" />
+              <span>{formError}</span>
+            </div>
+          )}
           <div className="flex flex-wrap items-center gap-2">
             <label className="flex items-center gap-1.5 text-[11px] text-slate-700 dark:text-slate-300">
               <input
@@ -311,7 +475,10 @@ export function MandateTimeEntries({
             <div className="flex-1" />
             <button
               type="button"
-              onClick={() => setFormOpen(false)}
+              onClick={() => {
+                setFormOpen(false);
+                setFormError(null);
+              }}
               className="text-[11px] text-slate-500 hover:text-slate-800 dark:hover:text-slate-300"
             >
               Abbrechen
@@ -345,6 +512,178 @@ export function MandateTimeEntries({
         </button>
       )}
     </div>
+  );
+}
+
+/* ── EntryEditForm — Inline-Edit für einen bestehenden Eintrag ────────
+   Spiegelt das Add-Formular (Minuten, Beschreibung, Abrechenbar, Satz)
+   + Datum (workedOn). PATCH auf die [entryId]-Detailroute; Fehler
+   bleiben im Formular, Eingaben werden bei Fehlern NICHT verworfen. */
+function EntryEditForm({
+  mandateId,
+  entry,
+  onCancel,
+  onSaved,
+}: {
+  mandateId: string;
+  entry: TimeEntry;
+  onCancel: () => void;
+  onSaved: () => Promise<void> | void;
+}) {
+  const [minutes, setMinutes] = useState<number | "">(entry.minutes);
+  const [description, setDescription] = useState(entry.description);
+  const [billable, setBillable] = useState(entry.billable);
+  const [rate, setRate] = useState<number | "">(entry.hourlyRateEur ?? "");
+  const [workedOn, setWorkedOn] = useState<string>(() => {
+    const d = new Date(entry.workedOn);
+    return Number.isNaN(d.getTime()) ? "" : d.toISOString().slice(0, 10);
+  });
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const handleSave = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!minutes || !description.trim()) return;
+    setSaving(true);
+    setError(null);
+    try {
+      const res = await fetch(
+        `/api/atlas/mandate/${mandateId}/time-entries/${entry.id}`,
+        {
+          method: "PATCH",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({
+            minutes: Number(minutes),
+            description: description.trim(),
+            billable,
+            hourlyRateEur: billable && rate !== "" ? Number(rate) : null,
+            ...(workedOn ? { workedOn: new Date(workedOn).toISOString() } : {}),
+          }),
+        },
+      );
+      if (!res.ok) {
+        const body = (await res.json().catch(() => ({}))) as {
+          error?: string;
+        };
+        setError(
+          body.error || `Speichern fehlgeschlagen (HTTP ${res.status}).`,
+        );
+        return;
+      }
+      await onSaved();
+    } catch (err) {
+      setError(
+        err instanceof Error
+          ? `Netzwerk-Fehler: ${err.message}`
+          : "Netzwerk-Fehler beim Speichern.",
+      );
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  return (
+    <form
+      onSubmit={handleSave}
+      className="space-y-2 rounded-md border border-slate-200 bg-slate-50/60 p-2.5 dark:border-slate-700/60 dark:bg-slate-950/40"
+    >
+      <div className="flex flex-col gap-2 sm:flex-row">
+        <input
+          type="number"
+          min={1}
+          max={1440}
+          value={minutes}
+          onChange={(e) =>
+            setMinutes(e.target.value === "" ? "" : Number(e.target.value))
+          }
+          placeholder="Minuten"
+          aria-label="Dauer in Minuten"
+          required
+          className={`w-full sm:w-24 ${INPUT_CLASS}`}
+          disabled={saving}
+        />
+        <input
+          type="text"
+          value={description}
+          onChange={(e) => setDescription(e.target.value)}
+          placeholder="Tätigkeitsbeschreibung"
+          aria-label="Tätigkeitsbeschreibung"
+          required
+          maxLength={500}
+          className={`flex-1 ${INPUT_CLASS}`}
+          disabled={saving}
+        />
+        <input
+          type="date"
+          value={workedOn}
+          onChange={(e) => setWorkedOn(e.target.value)}
+          aria-label="Datum der Tätigkeit"
+          className={`w-full sm:w-36 ${INPUT_CLASS}`}
+          disabled={saving}
+        />
+      </div>
+      {error && (
+        <div
+          role="alert"
+          className="flex items-start gap-2 rounded-md border border-red-200 bg-red-50 px-3 py-2 text-[11px] text-red-700 dark:border-red-500/30 dark:bg-red-500/10 dark:text-red-300"
+        >
+          <AlertCircle size={11} className="mt-0.5 shrink-0" />
+          <span>{error}</span>
+        </div>
+      )}
+      <div className="flex flex-wrap items-center gap-2">
+        <label className="flex items-center gap-1.5 text-[11px] text-slate-700 dark:text-slate-300">
+          <input
+            type="checkbox"
+            checked={billable}
+            onChange={(e) => setBillable(e.target.checked)}
+            className="h-3.5 w-3.5 accent-slate-900 dark:accent-emerald-500"
+          />
+          Abrechenbar
+        </label>
+        {billable && (
+          <label className="flex items-center gap-1.5 text-[11px] text-slate-700 dark:text-slate-300">
+            <span>€/h:</span>
+            <input
+              type="number"
+              min={0}
+              max={5000}
+              value={rate}
+              onChange={(e) =>
+                setRate(e.target.value === "" ? "" : Number(e.target.value))
+              }
+              className={`w-16 ${INPUT_CLASS}`}
+              disabled={saving}
+            />
+          </label>
+        )}
+        <div className="flex-1" />
+        <button
+          type="button"
+          onClick={onCancel}
+          disabled={saving}
+          className="inline-flex items-center gap-1 text-[11px] text-slate-500 hover:text-slate-800 disabled:opacity-50 dark:hover:text-slate-300"
+        >
+          <X size={10} />
+          Abbrechen
+        </button>
+        <button
+          type="submit"
+          disabled={!minutes || !description.trim() || saving}
+          className="inline-flex items-center gap-1 rounded-md bg-slate-900 px-3 py-1 text-xs font-medium text-white hover:bg-slate-800 disabled:opacity-30 dark:bg-emerald-500 dark:hover:bg-emerald-600"
+        >
+          {saving ? (
+            <Loader2
+              size={11}
+              className="animate-spin motion-reduce:animate-none"
+            />
+          ) : (
+            <Check size={11} />
+          )}
+          Aktualisieren
+        </button>
+      </div>
+    </form>
   );
 }
 

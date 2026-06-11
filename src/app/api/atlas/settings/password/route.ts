@@ -6,6 +6,7 @@ import { hashPassword, verifyPassword } from "@/lib/auth";
 import { checkRateLimit, getIdentifier } from "@/lib/ratelimit";
 import { logger } from "@/lib/logger";
 import { maskEmail, maskId } from "@/lib/atlas/log-masking";
+import { logSecurityEvent } from "@/lib/services/security-audit-service";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -111,6 +112,33 @@ export async function PATCH(request: Request) {
     userId: maskId(user.id),
     email: maskEmail(user.email ?? ""),
   });
+
+  // M-c fix (2026-06-11): persist a queryable SecurityAuditLog entry —
+  // same event type + helper as /api/auth/change-password (the dashboard
+  // twin of this route). logger.info alone never reaches the security
+  // views; incident response needs the persisted record incl. IP +
+  // user-agent. Error-swallowing: a failed audit write must not fail an
+  // already-committed password change.
+  const ipAddress =
+    request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ||
+    request.headers.get("x-real-ip") ||
+    "unknown";
+  const userAgent = request.headers.get("user-agent") ?? undefined;
+  try {
+    await logSecurityEvent({
+      event: "PASSWORD_CHANGED",
+      userId: user.id,
+      description: "User changed their password via Atlas settings.",
+      riskLevel: "MEDIUM",
+      ipAddress,
+      userAgent,
+    });
+  } catch (err) {
+    logger.error("[atlas/settings/password] security-audit write failed", {
+      userId: maskId(user.id),
+      error: err instanceof Error ? err.message : String(err),
+    });
+  }
 
   return NextResponse.json({ success: true });
 }

@@ -79,12 +79,13 @@ export function AIContextSection() {
 
   const saveFirm = useCallback(async () => {
     setFirmStatus("saving");
+    const saved = firmDraft.trim() || null;
     try {
       const r = await fetch(API_PATH, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          firmHouseStyle: firmDraft.trim() || null,
+          firmHouseStyle: saved,
         }),
       });
       if (!r.ok) {
@@ -93,6 +94,12 @@ export function AIContextSection() {
           (body as { error?: string }).error ?? `HTTP ${r.status}`,
         );
       }
+      /* L-a fix (2026-06-11): move the baseline to the saved value.
+         Without this, the SaveButton's dirty-check kept comparing
+         against the ORIGINAL load value — reverting the text back to
+         the original disabled the button and the revert could never
+         be saved. */
+      setData((d) => (d ? { ...d, firmHouseStyle: saved } : d));
       setFirmStatus("saved");
       setTimeout(() => setFirmStatus("idle"), 2500);
     } catch (e: unknown) {
@@ -104,12 +111,13 @@ export function AIContextSection() {
 
   const saveUser = useCallback(async () => {
     setUserStatus("saving");
+    const saved = userDraft.trim() || null;
     try {
       const r = await fetch(API_PATH, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          userInstructions: userDraft.trim() || null,
+          userInstructions: saved,
         }),
       });
       if (!r.ok) {
@@ -118,6 +126,9 @@ export function AIContextSection() {
           (body as { error?: string }).error ?? `HTTP ${r.status}`,
         );
       }
+      /* L-a fix (2026-06-11): baseline follows the saved value — see
+         saveFirm for the revert-to-original rationale. */
+      setData((d) => (d ? { ...d, userInstructions: saved } : d));
       setUserStatus("saved");
       setTimeout(() => setUserStatus("idle"), 2500);
     } catch (e: unknown) {

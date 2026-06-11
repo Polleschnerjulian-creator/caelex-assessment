@@ -30,6 +30,7 @@ const mocks = vi.hoisted(() => ({
   rl: vi.fn(),
   verifyPassword: vi.fn(),
   hashPassword: vi.fn(),
+  logSecurityEvent: vi.fn(),
 }));
 
 vi.mock("@/lib/atlas-auth", () => ({
@@ -50,6 +51,9 @@ vi.mock("@/lib/auth", () => ({
 vi.mock("@/lib/ratelimit", () => ({
   checkRateLimit: mocks.rl,
   getIdentifier: () => "ip:test|user:test-user",
+}));
+vi.mock("@/lib/services/security-audit-service", () => ({
+  logSecurityEvent: mocks.logSecurityEvent,
 }));
 
 import { PATCH } from "@/app/api/atlas/settings/password/route";
@@ -112,6 +116,8 @@ beforeEach(() => {
   mocks.verifyPassword.mockResolvedValue(true);
   mocks.hashPassword.mockResolvedValue("$2a$12$newhash");
   mocks.update.mockResolvedValue({ id: "user-1" });
+  mocks.logSecurityEvent.mockReset();
+  mocks.logSecurityEvent.mockResolvedValue({ id: "audit-1" });
 });
 
 // ─── 1. Auth-gate ────────────────────────────────────────────────────
@@ -321,6 +327,56 @@ describe("PATCH /api/atlas/settings/password — happy path", () => {
     const updateCall = mocks.update.mock.calls[0][0];
     expect(updateCall.data.password).not.toBe("NewS3cure!Password123");
     expect(updateCall.data.password).toMatch(/^\$2a\$12\$/);
+  });
+});
+
+// ─── 6b. SecurityAuditLog (M-c fix 2026-06-11) ───────────────────────
+
+describe("PATCH /api/atlas/settings/password — security audit log", () => {
+  it("persists a PASSWORD_CHANGED SecurityAuditLog entry incl. IP + user-agent", async () => {
+    const req = new Request("http://test/api/atlas/settings/password", {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+        "x-forwarded-for": "203.0.113.7, 10.0.0.1",
+        "user-agent": "Vitest/1.0 (test-suite)",
+      },
+      body: JSON.stringify(VALID_BODY),
+    });
+    const res = await PATCH(req);
+    expect(res.status).toBe(200);
+    expect(mocks.logSecurityEvent).toHaveBeenCalledTimes(1);
+    expect(mocks.logSecurityEvent).toHaveBeenCalledWith({
+      event: "PASSWORD_CHANGED",
+      userId: "user-1",
+      description: "User changed their password via Atlas settings.",
+      riskLevel: "MEDIUM",
+      // Leftmost x-forwarded-for entry, trimmed.
+      ipAddress: "203.0.113.7",
+      userAgent: "Vitest/1.0 (test-suite)",
+    });
+  });
+
+  it("falls back to x-real-ip, then 'unknown' when proxy headers are absent", async () => {
+    const res = await PATCH(makeReq(VALID_BODY));
+    expect(res.status).toBe(200);
+    const input = mocks.logSecurityEvent.mock.calls[0][0];
+    expect(input.ipAddress).toBe("unknown");
+  });
+
+  it("does NOT write an audit entry when the change fails (wrong current password)", async () => {
+    mocks.verifyPassword.mockResolvedValueOnce(false);
+    const res = await PATCH(makeReq(VALID_BODY));
+    expect(res.status).toBe(400);
+    expect(mocks.logSecurityEvent).not.toHaveBeenCalled();
+  });
+
+  it("still returns 200 when the audit write itself throws (error-swallowing)", async () => {
+    mocks.logSecurityEvent.mockRejectedValueOnce(new Error("audit db down"));
+    const res = await PATCH(makeReq(VALID_BODY));
+    expect(res.status).toBe(200);
+    const body = await res.json();
+    expect(body.success).toBe(true);
   });
 });
 

@@ -150,6 +150,16 @@ export function MandateDetailView({ mandateId }: Props) {
         agentRuns: data.agentRuns,
         deadlineSuggestions: data.deadlineSuggestions,
       });
+    } catch (e) {
+      /* M-e fix (2026-06-11): without this catch a network failure
+         (fetch throws, res.json() throws) left BOTH mandate and error
+         null → `if (!mandate) return null` → blank page. Now the
+         error view with „Erneut versuchen" renders instead. */
+      setError(
+        e instanceof Error
+          ? `Netzwerk-Fehler: ${e.message}`
+          : "Netzwerk-Fehler beim Laden des Mandats.",
+      );
     } finally {
       setLoading(false);
     }
@@ -231,6 +241,15 @@ export function MandateDetailView({ mandateId }: Props) {
     return (
       <div className="flex h-full flex-col items-center justify-center gap-3 text-sm text-red-500 dark:text-red-400">
         <span>{error}</span>
+        {/* M-e fix: Retry-Affordance statt Sackgasse — reload() setzt
+            error zurück und versucht den Aggregator-Fetch erneut. */}
+        <button
+          type="button"
+          onClick={() => void reload()}
+          className="rounded-md border border-slate-300 px-3 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-100 dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-800"
+        >
+          Erneut versuchen
+        </button>
         <Link
           href="/atlas"
           className="text-xs text-slate-500 underline hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200"
@@ -489,7 +508,7 @@ export function MandateDetailView({ mandateId }: Props) {
           {/* Deadlines (Fristen) */}
           <section id="deadlines" className="mb-8 scroll-mt-20">
             <h2 className="mb-3 text-[14px] font-medium text-slate-700 dark:text-slate-200">
-              Deadlines
+              Fristen
             </h2>
             <MandateDeadlines
               mandateId={mandate.id}
