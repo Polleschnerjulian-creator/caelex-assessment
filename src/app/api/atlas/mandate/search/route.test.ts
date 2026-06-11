@@ -33,6 +33,12 @@ vi.mock("@/lib/ratelimit", () => ({
   getIdentifier: vi.fn().mockReturnValue("test-id"),
 }));
 
+// clientName is stored encrypted (SEC-T0-1); the route decrypts before
+// matching. Identity-decrypt keeps fixtures readable.
+vi.mock("@/lib/atlas/atlas-encryption", () => ({
+  decryptAtlasField: vi.fn(async (v: string | null) => v),
+}));
+
 import { GET } from "./route";
 import { prisma } from "@/lib/prisma";
 import { getAtlasAuth } from "@/lib/atlas-auth";
@@ -86,7 +92,7 @@ describe("GET /api/atlas/mandate/search", () => {
     expect(prisma.atlasMandate.findMany).not.toHaveBeenCalled();
   });
 
-  it("queries prisma with org-scope + member-or-owner clause + prefix match", async () => {
+  it("two-phase query: DB filters plaintext name only, authz on both phases", async () => {
     vi.mocked(getAtlasAuth).mockResolvedValue({
       userId: "u1",
       organizationId: "o1",
@@ -107,15 +113,63 @@ describe("GET /api/atlas/mandate/search", () => {
     expect(body.mandates).toHaveLength(1);
     expect(body.mandates[0].name).toBe("Spire 2024");
 
-    const call = vi.mocked(prisma.atlasMandate.findMany).mock.calls[0][0]!;
-    expect(call.where).toMatchObject({
+    const calls = vi.mocked(prisma.atlasMandate.findMany).mock.calls;
+    expect(calls).toHaveLength(2);
+
+    const authzClause = {
+      AND: [
+        {
+          OR: [{ ownerUserId: "u1" }, { members: { some: { userId: "u1" } } }],
+        },
+      ],
+    };
+
+    // Phase 1 — DB-side match on the PLAINTEXT name column only.
+    // clientName is ciphertext (SEC-T0-1): an ILIKE on it can never
+    // match, so it must not appear in the DB where-clause.
+    const phase1 = calls[0][0]!;
+    expect(phase1.where).toMatchObject({
       organizationId: "o1",
       status: "active",
-      OR: expect.arrayContaining([
-        { name: { contains: "spi", mode: "insensitive" } },
-        { clientName: { contains: "spi", mode: "insensitive" } },
-      ]),
+      name: { contains: "spi", mode: "insensitive" },
+      ...authzClause,
     });
-    expect(call.take).toBe(10);
+    expect(phase1.where).not.toHaveProperty("clientName");
+    expect(phase1.take).toBe(10);
+
+    // Phase 2 — bounded load of all user-accessible mandates for the
+    // in-memory decrypted-clientName match (H16 cap of 200).
+    const phase2 = calls[1][0]!;
+    expect(phase2.where).toMatchObject({
+      organizationId: "o1",
+      status: "active",
+      ...authzClause,
+    });
+    expect(phase2.where).not.toHaveProperty("name");
+    expect(phase2.take).toBe(200);
+  });
+
+  it("finds mandates whose decrypted clientName matches (phase 2)", async () => {
+    vi.mocked(getAtlasAuth).mockResolvedValue({
+      userId: "u1",
+      organizationId: "o1",
+    } as never);
+    const row = {
+      id: "m2",
+      name: "Akte 77",
+      clientName: "Spire Global",
+      updatedAt: new Date("2026-05-12T10:00:00Z"),
+    };
+    vi.mocked(prisma.atlasMandate.findMany)
+      .mockResolvedValueOnce([] as never) // phase 1: no name match
+      .mockResolvedValueOnce([row] as never); // phase 2: clientName match
+    const res = await GET(mkReq("spire glo"));
+    expect(res.status).toBe(200);
+    const body = (await res.json()) as {
+      mandates: Array<{ id: string; clientName: string | null }>;
+    };
+    expect(body.mandates).toHaveLength(1);
+    expect(body.mandates[0].id).toBe("m2");
+    expect(body.mandates[0].clientName).toBe("Spire Global");
   });
 });
