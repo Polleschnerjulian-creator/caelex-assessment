@@ -211,8 +211,8 @@ describe("buildRetentionExport (CSV flatten)", () => {
       "week_2",
     ]);
     // Headers are human-readable.
-    expect(columns[0].header).toBe("Cohort (week of)");
-    expect(columns[2].header).toBe("Week 0 %");
+    expect(columns[0].header).toBe("Kohorte (Woche vom)");
+    expect(columns[2].header).toBe("Woche 0 %");
   });
 
   it("flattens one row per cohort, preserving newest-first order", () => {

@@ -203,11 +203,11 @@ export interface RetentionExport {
  */
 export function buildRetentionExport(grid: RetentionGrid): RetentionExport {
   const columns: RetentionExportColumn[] = [
-    { key: "cohort", header: "Cohort (week of)" },
-    { key: "signups", header: "Signups" },
+    { key: "cohort", header: "Kohorte (Woche vom)" },
+    { key: "signups", header: "Anmeldungen" },
     ...grid.columns.map((w) => ({
       key: `week_${w}`,
-      header: `Week ${w} %`,
+      header: `Woche ${w} %`,
     })),
   ];
 
