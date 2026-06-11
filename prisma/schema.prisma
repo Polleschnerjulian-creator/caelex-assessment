@@ -115,7 +115,7 @@ model User {
   // Trade-scoped API keys created by this user. Distinct from `apiKeys`
   // back-ref above which targets the legacy `ApiKey` model used by the
   // main platform API; Trade keys carry their own prefix + scope set.
-  tradeApiKeysCreated TradeApiKey[] @relation("TradeApiKeyCreatedBy")
+  tradeApiKeysCreated          TradeApiKey[]          @relation("TradeApiKeyCreatedBy")
   tradeScreeningConfigsUpdated TradeScreeningConfig[] @relation("TradeScreeningConfigUpdatedBy")
 
   // Mission domain (Sprint Mission-1) — first-class Mission entity
@@ -3133,6 +3133,7 @@ model Organization {
   atlasMandateParties      AtlasMandateParty[]              @relation("OrgAtlasMandateParties")
   atlasOrgBranding         AtlasOrgBranding?                @relation("OrgAtlasBranding")
   atlasDocumentTemplates   AtlasDocumentTemplate[]          @relation("OrgAtlasDocumentTemplates")
+  atlasConflictClearances  AtlasConflictClearance[]
   stakeholderEngagements   StakeholderEngagement[] // Network: stakeholder engagements
   dataRooms                DataRoom[] // Network: secure data rooms
   attestations             ComplianceAttestation[] // Network: compliance attestations
@@ -3449,7 +3450,7 @@ model OrganizationProductAccess {
   // Audit
   grantedById String? // User.id — set when source = MANUAL
   notes       String? // free-text admin note
-  seatCap     Int?    // null = unlimited; institutional seat ceiling (Scholar)
+  seatCap     Int? // null = unlimited; institutional seat ceiling (Scholar)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -5005,17 +5006,17 @@ model ApiEndpointMetrics {
 // for the cohort that advanced (null for the terminal step / no transitions).
 model AnalyticsFunnelDaily {
   id   String   @id @default(cuid())
-  date DateTime @db.Date @default(now())
+  date DateTime @default(now()) @db.Date
 
   // Funnel identification
   product  String? // comply | trade | atlas | pharos | scholar | marketing — null for cross-product funnels
-  funnelId String @default("") // e.g. "growth", "trade_classify_to_license", "comply_activation"
-  step     Int    @default(0) // 0-based ordinal position of this step within the funnel
+  funnelId String  @default("") // e.g. "growth", "trade_classify_to_license", "comply_activation"
+  step     Int     @default(0) // 0-based ordinal position of this step within the funnel
   stepKey  String? // optional human-readable step token (eventType / status), e.g. "signup_completed"
 
   // Step metrics
-  usersEntered   Int  @default(0) // distinct users/sessions that reached this step
-  usersCompleted Int  @default(0) // of those, how many advanced to the next step
+  usersEntered   Int    @default(0) // distinct users/sessions that reached this step
+  usersCompleted Int    @default(0) // of those, how many advanced to the next step
   medianMsToNext Float? // median ms from this step to the next (null for terminal step)
 
   createdAt DateTime @default(now())
@@ -5036,9 +5037,9 @@ model AnalyticsFunnelDaily {
 model AnalyticsRetentionCohort {
   id String @id @default(cuid())
 
-  cohortWeek   DateTime @db.Date @default(now()) // ISO week-start (Mon) the cohort signed up
+  cohortWeek   DateTime @default(now()) @db.Date // ISO week-start (Mon) the cohort signed up
   productScope String   @default("all") // ProductCode (lowercase) or "all" — never null (unique-key member)
-  activityWeek DateTime @db.Date @default(now()) // ISO week-start (Mon) of the return activity
+  activityWeek DateTime @default(now()) @db.Date // ISO week-start (Mon) of the return activity
 
   // Grid cell
   cohortSize    Int @default(0) // total users in the signup cohort (stable across activityWeek rows)
@@ -5063,7 +5064,7 @@ model AnalyticsRetentionCohort {
 // small (bounded by the route table). One row per (date, product, edge).
 model AnalyticsPathEdge {
   id   String   @id @default(cuid())
-  date DateTime @db.Date @default(now())
+  date DateTime @default(now()) @db.Date
 
   product  String @default("") // comply | trade | atlas | pharos | scholar | marketing (unique-key member)
   fromPath String @default("") // pathname-only (no query/hash); "(entry)" sentinel for session-start edges
@@ -11909,8 +11910,8 @@ model TradeOperation {
   /// §9(1)/§9(2) AWV catch-all RESULTS (derived by the catch-all evaluator,
   /// persisted by recompute so the specific §9 trigger is queryable — not
   /// just folded into notificationDuty).
-  para9NuclearHit  Boolean @default(false)
-  para9MilitaryHit Boolean @default(false)
+  para9NuclearHit          Boolean @default(false)
+  para9MilitaryHit         Boolean @default(false)
 
   /// Z13 — Operator declaration: the technical data / source code in
   /// this operation is accessible IN-COUNTRY to non-US-national
@@ -12039,13 +12040,13 @@ model TradeLicense {
   /// Sum of (quantity × unitValue × FX-converted) drawn down by all
   /// operations referencing this license. Updated atomically by the
   /// license-drawdown engine (Sprint C3) on operation status changes.
-  drawnDownValue BigInt @default(0)
+  drawnDownValue BigInt  @default(0)
   /// The cap from the underlying license document (BAFA-Bescheid value
   /// limit, BIS-license value limit). Null = no cap (e.g. unrestricted
   /// AGG for low-risk codes). Integer euro cents (T-H12).
   totalCapValue  BigInt?
   /// Cap currency (matches conditions.valueCap.currency typically)
-  capCurrency    String @default("EUR")
+  capCurrency    String  @default("EUR")
 
   /// Path in document vault to the actual license PDF (BAFA-Bescheid scan,
   /// BIS-license PDF, etc). Null until the document is uploaded.
@@ -13427,14 +13428,15 @@ model AtlasMandate {
   parties AtlasMandateParty[]
 
   // Relations
-  chats           AtlasChat[]
-  files           AtlasMandateFile[]
-  members         AtlasMandateMember[]
-  deadlines       AtlasMandateDeadline[]
-  clauses         AtlasClause[]
-  timeEntries     AtlasTimeEntry[]
-  agentRuns       AtlasAgentRun[]
-  knowledgeChunks AtlasKnowledgeChunk[]  @relation("AtlasMandateKnowledgeChunks")
+  chats              AtlasChat[]
+  files              AtlasMandateFile[]
+  members            AtlasMandateMember[]
+  deadlines          AtlasMandateDeadline[]
+  clauses            AtlasClause[]
+  timeEntries        AtlasTimeEntry[]
+  agentRuns          AtlasAgentRun[]
+  knowledgeChunks    AtlasKnowledgeChunk[]    @relation("AtlasMandateKnowledgeChunks")
+  conflictClearances AtlasConflictClearance[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -14681,13 +14683,13 @@ model TradeReminderConfig {
   organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
 
   /// Lead-time(s) in days before a licence's validUntil to send warnings.
-  licenceExpiryLeadDays Int[] @default([90, 60, 30])
+  licenceExpiryLeadDays   Int[] @default([90, 60, 30])
   /// Days after an EUC is sent before nudging if still unreturned.
-  eucReminderDays Int @default(21)
+  eucReminderDays         Int   @default(21)
   /// Days before a Supplement-2 filing deadline to remind.
-  supplement2ReminderDays Int @default(14)
+  supplement2ReminderDays Int   @default(14)
   /// Days before a VSD authority deadline to remind.
-  vsdReminderDays Int @default(30)
+  vsdReminderDays         Int   @default(30)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -15327,9 +15329,9 @@ model ScholarUserPreferences {
   id                   String   @id @default(cuid())
   userId               String   @unique
   sourceLanguage       String   @default("original") // original | de | fr | en
-  uiLanguage           String   @default("en")       // UI chrome locale: en | de | it | fr | es
-  defaultJurisdiction  String?  // ISO code or null
-  citationFormat       String   @default("din")      // din | oscola | bluebook
+  uiLanguage           String   @default("en") // UI chrome locale: en | de | it | fr | es
+  defaultJurisdiction  String? // ISO code or null
+  citationFormat       String   @default("din") // din | oscola | bluebook
   // Privacy-by-default (Art. 25(2) GDPR): semantic search (AI processing) and
   // search-history logging (behavioural data) are OPT-IN — off until the user
   // explicitly enables them in Settings. Especially important for the Scholar
@@ -15357,7 +15359,7 @@ model ScholarSearchHistory {
 model ScholarBookmark {
   id        String   @id @default(cuid())
   userId    String
-  itemType  String   // "source" | "case"
+  itemType  String // "source" | "case"
   itemId    String
   createdAt DateTime @default(now())
 
@@ -15382,7 +15384,7 @@ model ScholarReadingListItem {
   id        String             @id @default(cuid())
   listId    String
   list      ScholarReadingList @relation(fields: [listId], references: [id], onDelete: Cascade)
-  itemType  String             // "source" | "case"
+  itemType  String // "source" | "case"
   itemId    String
   note      String?
   position  Int                @default(0)
@@ -15560,7 +15562,31 @@ model AssessmentVerdictSnapshot {
   rulebookVersion String // RULEBOOK.version at compute time
   result          Json // ObligationMapResult (redacted shape)
   unknownsCount   Int
-  createdAt       DateTime @default(now())
+  createdAt       DateTime                  @default(now())
 
   @@index([profileId, createdAt])
+}
+
+/// Documented conflict-of-interest clearance (Mandate conflict-check feature).
+/// Conflict *matches* are computed live from parties (never stored); only the
+/// lawyer's clearance decision is persisted here — the defensible file record.
+/// Spec: docs/superpowers/specs/2026-05-30-atlas-mandate-conflict-check-design.md
+model AtlasConflictClearance {
+  id               String   @id @default(cuid())
+  organizationId   String
+  mandateId        String
+  matchedMandateId String
+  normalizedName   String
+  severity         String
+  status           String   @default("cleared")
+  clearanceReason  String?  @db.Text
+  clearedByUserId  String?
+  clearedAt        DateTime @default(now())
+  createdAt        DateTime @default(now())
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  mandate      AtlasMandate @relation(fields: [mandateId], references: [id], onDelete: Cascade)
+
+  @@unique([mandateId, matchedMandateId, normalizedName])
+  @@index([organizationId, status])
 }
