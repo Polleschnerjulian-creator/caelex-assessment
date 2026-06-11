@@ -1,5 +1,6 @@
 import { Suspense } from "react";
 import { auth } from "@/lib/auth";
+import { AstraProvider } from "@/components/astra/AstraProvider";
 import AstraFullPage from "@/components/astra/AstraFullPage";
 import { listPendingTradeProposals } from "@/lib/trade/trade-proposal-queue.server";
 import { TradeProposalQueue } from "./_components/TradeProposalQueue";
@@ -82,7 +83,15 @@ export default async function TradeAstraPage() {
             </div>
           }
         >
-          <AstraFullPage />
+          {/* B3-DEFER — AstraFullPage requires AstraProvider (useAstra throws
+              without it; the Comply dashboard gets it from DashboardShell).
+              Mounting it HERE with product="trade" both fixes that and
+              activates engine-side product scoping: this chat sends
+              product:"trade", so the model is only offered Trade + universal
+              read-only tools, and the Trade system primer is injected. */}
+          <AstraProvider product="trade">
+            <AstraFullPage />
+          </AstraProvider>
         </Suspense>
       </div>
     </div>

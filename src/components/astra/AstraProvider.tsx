@@ -13,6 +13,7 @@ import type {
   AstraContext,
   AstraArticleContext,
   AstraCategoryContext,
+  AstraChatRequest,
   AstraMissionData,
   ConfidenceLevel,
 } from "@/lib/astra/types";
@@ -101,7 +102,26 @@ function createLocalGreeting(ctx: AstraContext): AstraMessage {
 
 // ─── Provider Component ───
 
-export function AstraProvider({ children }: { children: ReactNode }) {
+export function AstraProvider({
+  children,
+  product,
+}: {
+  children: ReactNode;
+  /**
+   * G4 / T-H10 / B3-DEFER — the Caelex product surface this provider is
+   * mounted in (e.g. "trade" for the Passage shell at /trade/astra).
+   * Forwarded with every chat request so the engine product-scopes the
+   * tool surface offered to the model (a Trade chat only sees Trade +
+   * universal read-only tools).
+   *
+   * OMITTED (undefined) = historic behaviour: the field is dropped from
+   * the JSON payload, the server treats the chat as the default
+   * dashboard, and ALL tools are offered. DashboardShell deliberately
+   * does not set it so the Comply/dashboard chat keeps its full tool
+   * surface unchanged.
+   */
+  product?: AstraChatRequest["product"];
+}) {
   const [messages, setMessages] = useState<AstraMessage[]>([]);
   const [context, setContext] = useState<AstraContext | null>(null);
   const [missionData, setMissionData] = useState<AstraMissionData>({});
@@ -240,6 +260,10 @@ export function AstraProvider({ children }: { children: ReactNode }) {
           message: text.trim(),
           conversationId: conversationId || undefined,
           stream: true,
+          // B3-DEFER — product surface for engine tool-scoping. undefined
+          // for legacy mounts (DashboardShell) → omitted by JSON.stringify,
+          // wire format identical to before.
+          product,
           context: {
             articleId:
               context.mode === "article"
@@ -395,7 +419,7 @@ export function AstraProvider({ children }: { children: ReactNode }) {
         abortControllerRef.current = null;
       }
     },
-    [context, missionData, isTyping, conversationId],
+    [context, missionData, isTyping, conversationId, product],
   );
 
   const updateMissionData = useCallback((data: Partial<AstraMissionData>) => {

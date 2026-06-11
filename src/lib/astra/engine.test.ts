@@ -89,13 +89,44 @@ vi.mock("./system-prompt", () => ({
   buildSystemPrompt: (...args: unknown[]) => mockBuildSystemPrompt(...args),
 }));
 
-// Mock tool-definitions
+// Mock tool-definitions — three REAL tool names so the (deliberately
+// unmocked) trade-tool-gate classifies them the way production does:
+// one Trade tool, one cross-product compliance tool, one universal
+// read-only tool. Lets the product-scoping tests below assert on the
+// `tools` array the engine offers to the Anthropic client.
 vi.mock("./tool-definitions", () => ({
-  ALL_TOOLS: [],
+  ALL_TOOLS: [
+    {
+      name: "classify_trade_item",
+      description: "trade tool",
+      input_schema: { type: "object" as const, properties: {} },
+    },
+    {
+      name: "check_compliance_status",
+      description: "compliance tool",
+      input_schema: { type: "object" as const, properties: {} },
+    },
+    {
+      name: "explain_term",
+      description: "universal read-only tool",
+      input_schema: { type: "object" as const, properties: {} },
+    },
+  ],
+  TOOL_CATEGORIES: { trade: ["classify_trade_item"] },
 }));
 
 vi.mock("./tool-executor", () => ({
   executeTool: (...args: unknown[]) => mockExecuteTool(...args),
+}));
+
+// Mock the comply-v2 action bridge. The REAL bridge side-effect-imports
+// the v2 action modules, whose import chain reaches next-auth — which
+// fails to resolve `next/server` under vitest and previously broke this
+// whole file at load time. The engine only needs the two exports below;
+// an empty registry keeps every offered-tools assertion deterministic.
+vi.mock("@/lib/comply-v2/actions/astra-bridge.server", () => ({
+  getAstraToolDefinitions: () => [],
+  executeAstraAction: vi.fn(),
 }));
 
 vi.mock("./response-formatter", () => {
@@ -464,6 +495,74 @@ describe("AstraEngine", () => {
       const firstArg = mockFormatResponse.mock.calls[0][0];
       expect(firstArg).toContain("Part 1.");
       expect(firstArg).toContain("Part 2.");
+    });
+  });
+
+  // ─── processMessage - product-scoped tool offer surface (B3-DEFER) ───
+
+  describe("processMessage - product-scoped tool offer surface", () => {
+    const endTurnResponse = {
+      id: "msg_scope",
+      type: "message",
+      role: "assistant",
+      content: [{ type: "text", text: "ok" }],
+      stop_reason: "end_turn",
+      usage: { input_tokens: 10, output_tokens: 5 },
+    };
+
+    /** Tool names passed to the (mocked) Anthropic client on call #1. */
+    function offeredToolNames(): string[] {
+      const call = mockMessagesCreate.mock.calls[0]?.[0] as
+        | { tools?: Array<{ name: string }> }
+        | undefined;
+      return (call?.tools ?? []).map((t) => t.name);
+    }
+
+    it("offers ALL tools when no product is set (legacy default — dashboard/Comply unchanged)", async () => {
+      mockMessagesCreate.mockResolvedValue(endTurnResponse);
+
+      const engine = new AstraEngine();
+      await engine.processMessage("Hello", defaultUserContext, emptyHistory);
+
+      const names = offeredToolNames();
+      expect(names).toContain("classify_trade_item");
+      expect(names).toContain("check_compliance_status");
+      expect(names).toContain("explain_term");
+    });
+
+    it("offers only Trade + universal tools for product=trade", async () => {
+      mockMessagesCreate.mockResolvedValue(endTurnResponse);
+
+      const engine = new AstraEngine();
+      await engine.processMessage(
+        "Hello",
+        { ...defaultUserContext, product: "trade" },
+        emptyHistory,
+      );
+
+      const names = offeredToolNames();
+      expect(names).toContain("classify_trade_item");
+      expect(names).toContain("explain_term");
+      expect(names).not.toContain("check_compliance_status");
+      // The comply-v2 action-bridge tools are product-scoped too: a
+      // Trade chat must not be offered v2 dashboard mutations.
+      expect(names).not.toContain("snooze_compliance_item");
+    });
+
+    it("hides Trade tools for an explicit non-Trade product", async () => {
+      mockMessagesCreate.mockResolvedValue(endTurnResponse);
+
+      const engine = new AstraEngine();
+      await engine.processMessage(
+        "Hello",
+        { ...defaultUserContext, product: "comply" },
+        emptyHistory,
+      );
+
+      const names = offeredToolNames();
+      expect(names).not.toContain("classify_trade_item");
+      expect(names).toContain("check_compliance_status");
+      expect(names).toContain("explain_term");
     });
   });
 
@@ -1068,7 +1167,12 @@ describe("AstraEngine", () => {
         "org-1",
       );
 
-      expect(mockSummarizeOlderMessages).toHaveBeenCalledWith("conv-1");
+      // The engine passes the acting userId so summarization stays
+      // scoped to the conversation owner (H-API5 ownership hardening).
+      expect(mockSummarizeOlderMessages).toHaveBeenCalledWith(
+        "conv-1",
+        "user-1",
+      );
     });
 
     it("does not summarize when autoSummarize is disabled", async () => {
@@ -1115,7 +1219,8 @@ describe("AstraEngine", () => {
         "org-1",
       );
 
-      expect(mockGetHistoryForLLM).toHaveBeenCalledWith("conv-1");
+      // Same ownership hardening: history reads carry the acting userId.
+      expect(mockGetHistoryForLLM).toHaveBeenCalledWith("conv-1", "user-1");
     });
 
     it("passes pageContext and missionData through", async () => {

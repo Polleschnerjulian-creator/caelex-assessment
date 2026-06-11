@@ -214,6 +214,60 @@ describe("trade-tool-gate — product scope", () => {
     );
   });
 
+  it("EVERY non-Trade product hides Trade tools (atlas, pharos, comply)", () => {
+    // B3-DEFER matrix: a tool scoped to product X must not be offered in
+    // product Y — pinned for every non-Trade surface, not just comply.
+    for (const product of ["comply", "atlas", "pharos"] as const) {
+      for (const name of TOOL_CATEGORIES.trade) {
+        expect(isToolInProductScope(name, product), `${name}@${product}`).toBe(
+          false,
+        );
+      }
+    }
+  });
+
+  it("universal read-only tools are offered in EVERY product", () => {
+    // B3-DEFER matrix: tools without a product scope (the universal
+    // regulatory-knowledge lookups) appear everywhere — including Trade.
+    const universal = [
+      "search_regulation",
+      "get_article_detail",
+      "get_article_requirements",
+      "get_cross_references",
+      "explain_term",
+      "compare_jurisdictions",
+      "discover_caelex_capabilities",
+    ];
+    for (const product of [
+      "trade",
+      "comply",
+      "atlas",
+      "pharos",
+      "default",
+    ] as const) {
+      for (const name of universal) {
+        expect(isToolInProductScope(name, product), `${name}@${product}`).toBe(
+          true,
+        );
+      }
+    }
+  });
+
+  it("non-Trade tools remain offered in every non-Trade product", () => {
+    // Tools that belong to no special scope keep their historic reach on
+    // all non-Trade surfaces (Trade is an allow-list context by design).
+    for (const product of ["comply", "atlas", "pharos", "default"] as const) {
+      expect(
+        isToolInProductScope("check_compliance_status", product),
+        `check_compliance_status@${product}`,
+      ).toBe(true);
+      expect(
+        isToolInProductScope("generate_debris_mitigation_plan", product),
+        `generate_debris_mitigation_plan@${product}`,
+      ).toBe(true);
+    }
+  });
+
   it("scopeToolsToProduct filters a tool-definition list for Trade", () => {
     const tools = [
       { name: "classify_trade_item" },
@@ -236,5 +290,19 @@ describe("trade-tool-gate — product scope", () => {
       { name: "check_compliance_status" },
     ];
     expect(scopeToolsToProduct(tools, "default")).toHaveLength(2);
+  });
+
+  it("scopeToolsToProduct for comply strips Trade tools, keeps the rest", () => {
+    const tools = [
+      { name: "classify_trade_item" },
+      { name: "screen_trade_party" },
+      { name: "explain_term" },
+      { name: "check_compliance_status" },
+    ];
+    const scoped = scopeToolsToProduct(tools, "comply").map((t) => t.name);
+    expect(scoped).not.toContain("classify_trade_item");
+    expect(scoped).not.toContain("screen_trade_party");
+    expect(scoped).toContain("explain_term");
+    expect(scoped).toContain("check_compliance_status");
   });
 });
