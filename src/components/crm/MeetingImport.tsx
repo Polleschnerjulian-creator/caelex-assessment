@@ -67,8 +67,8 @@ export default function MeetingImport({
       if (!res.ok) {
         setError(
           res.status === 403
-            ? "You don't have access to the CRM importer."
-            : "Extraction failed. Try again.",
+            ? "Du hast keinen Zugriff auf den CRM-Import."
+            : "Auslesen fehlgeschlagen — bitte erneut versuchen.",
         );
         return;
       }
@@ -81,7 +81,7 @@ export default function MeetingImport({
       setCreateDeal(false);
       setPhase("preview");
     } catch {
-      setError("Network error. Try again.");
+      setError("Netzwerkfehler — bitte erneut versuchen.");
     } finally {
       setBusy(false);
     }
@@ -106,14 +106,16 @@ export default function MeetingImport({
     try {
       const res = await post({ mode: "commit", payload });
       if (!res.ok) {
-        setError("Could not save the import. Try again.");
+        setError(
+          "Import konnte nicht gespeichert werden — bitte erneut versuchen.",
+        );
         return;
       }
       setResult(await res.json());
       setPhase("done");
       onImported?.();
     } catch {
-      setError("Network error. Try again.");
+      setError("Netzwerkfehler — bitte erneut versuchen.");
     } finally {
       setBusy(false);
     }
@@ -137,7 +139,7 @@ export default function MeetingImport({
       style={{ background: "rgba(0,0,0,0.5)" }}
       role="dialog"
       aria-modal="true"
-      aria-label="Import meeting"
+      aria-label="Meeting importieren"
       onClick={onClose}
     >
       <div
@@ -159,12 +161,12 @@ export default function MeetingImport({
               className="text-[var(--accent-primary)]"
             />
             <h2 className="text-title font-semibold text-[var(--text-primary)]">
-              Import meeting
+              Meeting importieren
             </h2>
           </div>
           <button
             onClick={onClose}
-            aria-label="Close"
+            aria-label="Schließen"
             className="rounded-lg p-1 text-[var(--text-tertiary)] hover:text-[var(--text-primary)]"
           >
             <X size={18} />
@@ -183,15 +185,15 @@ export default function MeetingImport({
           {phase === "input" && (
             <div className="space-y-4">
               <p className="text-small text-[var(--text-secondary)]">
-                Paste the Gemini meeting notes or transcript. Claude extracts
-                the external attendees, a summary and action items — you review
-                everything before anything is saved.
+                Füge die Gemini-Meeting-Notizen oder das Transkript ein. Claude
+                liest die externen Teilnehmer, eine Zusammenfassung und To-dos
+                heraus — du prüfst alles, bevor irgendetwas gespeichert wird.
               </p>
               <textarea
                 value={transcript}
                 onChange={(e) => setTranscript(e.target.value)}
                 rows={12}
-                placeholder="Paste the meeting transcript or Gemini notes here…"
+                placeholder="Meeting-Transkript oder Gemini-Notizen hier einfügen…"
                 className="w-full resize-y rounded-xl border bg-transparent px-3 py-2.5 text-body text-[var(--text-primary)] placeholder:text-[var(--text-tertiary)] focus:outline-none"
                 style={{ borderColor: "var(--border-default)" }}
               />
@@ -200,7 +202,7 @@ export default function MeetingImport({
                   onClick={onClose}
                   className="rounded-lg px-4 py-2 text-body text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
                 >
-                  Cancel
+                  Abbrechen
                 </button>
                 <button
                   onClick={handleExtract}
@@ -209,7 +211,7 @@ export default function MeetingImport({
                   style={{ background: "var(--accent-primary)" }}
                 >
                   {busy && <Loader2 size={15} className="animate-spin" />}
-                  {busy ? "Extracting…" : "Extract"}
+                  {busy ? "Liest aus…" : "Auslesen"}
                 </button>
               </div>
             </div>
@@ -232,12 +234,12 @@ export default function MeetingImport({
               {/* Contacts */}
               <div>
                 <p className="mb-2 text-caption font-semibold uppercase tracking-wider text-[var(--text-tertiary)]">
-                  Contacts ({contacts.length})
+                  Kontakte ({contacts.length})
                 </p>
                 {contacts.length === 0 && (
                   <p className="text-small text-[var(--text-tertiary)]">
-                    No external attendees were found. You can still save the
-                    meeting note below.
+                    Keine externen Teilnehmer gefunden. Die Meeting-Notiz unten
+                    kannst du trotzdem speichern.
                   </p>
                 )}
                 <div className="space-y-2">
@@ -267,17 +269,17 @@ export default function MeetingImport({
                         >
                           {c.matchedContactId ? (
                             <>
-                              <Link2 size={11} /> existing
+                              <Link2 size={11} /> vorhanden
                             </>
                           ) : (
                             <>
-                              <UserPlus size={11} /> new
+                              <UserPlus size={11} /> neu
                             </>
                           )}
                         </span>
                         <button
                           onClick={() => removeContact(i)}
-                          aria-label="Remove contact"
+                          aria-label="Kontakt entfernen"
                           className="text-[var(--text-tertiary)] hover:text-[var(--accent-danger)]"
                         >
                           <X size={15} />
@@ -300,7 +302,7 @@ export default function MeetingImport({
                               email: e.target.value || null,
                             })
                           }
-                          placeholder="Email"
+                          placeholder="E-Mail"
                           className="rounded-lg border bg-transparent px-2.5 py-1.5 text-small text-[var(--text-primary)]"
                           style={{ borderColor: "var(--border-default)" }}
                         />
@@ -311,7 +313,7 @@ export default function MeetingImport({
                               company: e.target.value || null,
                             })
                           }
-                          placeholder="Company"
+                          placeholder="Firma"
                           className="rounded-lg border bg-transparent px-2.5 py-1.5 text-small text-[var(--text-primary)]"
                           style={{ borderColor: "var(--border-default)" }}
                         />
@@ -320,7 +322,7 @@ export default function MeetingImport({
                           onChange={(e) =>
                             updateContact(i, { title: e.target.value || null })
                           }
-                          placeholder="Title"
+                          placeholder="Titel / Rolle"
                           className="rounded-lg border bg-transparent px-2.5 py-1.5 text-small text-[var(--text-primary)]"
                           style={{ borderColor: "var(--border-default)" }}
                         />
@@ -333,7 +335,7 @@ export default function MeetingImport({
               {/* Note */}
               <div>
                 <p className="mb-2 text-caption font-semibold uppercase tracking-wider text-[var(--text-tertiary)]">
-                  Meeting note
+                  Meeting-Notiz
                 </p>
                 <textarea
                   value={noteBody}
@@ -348,7 +350,7 @@ export default function MeetingImport({
               {preview.actionItems.length > 0 && (
                 <div>
                   <p className="mb-2 text-caption font-semibold uppercase tracking-wider text-[var(--text-tertiary)]">
-                    Action items → tasks
+                    To-dos → Aufgaben
                   </p>
                   <div className="space-y-1.5">
                     {preview.actionItems.map((item, i) => (
@@ -376,7 +378,7 @@ export default function MeetingImport({
                   checked={createDeal}
                   onChange={(e) => setCreateDeal(e.target.checked)}
                 />
-                Create a deal in the pipeline for this meeting
+                Für dieses Meeting einen Deal in der Pipeline anlegen
               </label>
 
               <div
@@ -388,7 +390,7 @@ export default function MeetingImport({
                   disabled={busy}
                   className="rounded-lg px-4 py-2 text-body text-[var(--text-secondary)] hover:text-[var(--text-primary)] disabled:opacity-50"
                 >
-                  Back
+                  Zurück
                 </button>
                 <button
                   onClick={handleConfirm}
@@ -397,7 +399,7 @@ export default function MeetingImport({
                   style={{ background: "var(--accent-primary)" }}
                 >
                   {busy && <Loader2 size={15} className="animate-spin" />}
-                  {busy ? "Saving…" : "Confirm import"}
+                  {busy ? "Speichert…" : "Import bestätigen"}
                 </button>
               </div>
             </div>
@@ -411,13 +413,13 @@ export default function MeetingImport({
                 className="mx-auto text-[var(--accent-success)]"
               />
               <p className="text-body text-[var(--text-primary)]">
-                Imported <strong>{result.contactsUpserted}</strong> contact
-                {result.contactsUpserted === 1 ? "" : "s"},{" "}
-                <strong>{result.notesCreated}</strong> note
-                {result.notesCreated === 1 ? "" : "s"},{" "}
-                <strong>{result.tasksCreated}</strong> task
-                {result.tasksCreated === 1 ? "" : "s"}
-                {result.dealCreated ? ", and a deal" : ""}.
+                Übernommen: <strong>{result.contactsUpserted}</strong>{" "}
+                {result.contactsUpserted === 1 ? "Kontakt" : "Kontakte"},{" "}
+                <strong>{result.notesCreated}</strong>{" "}
+                {result.notesCreated === 1 ? "Notiz" : "Notizen"},{" "}
+                <strong>{result.tasksCreated}</strong>{" "}
+                {result.tasksCreated === 1 ? "Aufgabe" : "Aufgaben"}
+                {result.dealCreated ? " und ein Deal" : ""}.
               </p>
               <div className="flex justify-center gap-2">
                 <button
@@ -430,14 +432,14 @@ export default function MeetingImport({
                   className="rounded-lg border px-4 py-2 text-body text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
                   style={{ borderColor: "var(--border-default)" }}
                 >
-                  Import another
+                  Weiteres Meeting importieren
                 </button>
                 <button
                   onClick={onClose}
                   className="rounded-lg px-4 py-2 text-body font-medium text-white"
                   style={{ background: "var(--accent-primary)" }}
                 >
-                  Done
+                  Fertig
                 </button>
               </div>
             </div>

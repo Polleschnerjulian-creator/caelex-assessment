@@ -1,6 +1,7 @@
 "use client";
 
 import { format, formatDistanceToNow } from "date-fns";
+import { de } from "date-fns/locale";
 import {
   Mail,
   Phone,
@@ -119,15 +120,15 @@ function formatDayHeader(isoDate: string): string {
   yesterday.setDate(today.getDate() - 1);
 
   if (format(date, "yyyy-MM-dd") === format(today, "yyyy-MM-dd"))
-    return "Today";
+    return "Heute";
   if (format(date, "yyyy-MM-dd") === format(yesterday, "yyyy-MM-dd"))
-    return "Yesterday";
-  return format(date, "EEEE, d MMM yyyy");
+    return "Gestern";
+  return format(date, "EEEE, d. MMM yyyy", { locale: de });
 }
 
 export default function ActivityTimeline({
   activities,
-  emptyMessage = "No activity yet",
+  emptyMessage = "Noch keine Aktivität",
   compact = false,
 }: {
   activities: Activity[];
@@ -187,17 +188,18 @@ export default function ActivityTimeline({
                       <div className="flex items-center gap-2 mt-1 text-[10px] text-[var(--text-tertiary)]">
                         {activity.source === "CLAUDE" && (
                           <span className="flex items-center gap-0.5">
-                            <Sparkles size={9} /> AI
+                            <Sparkles size={9} /> KI
                           </span>
                         )}
                         {activity.source === "MANUAL" &&
                           activity.user?.name && (
-                            <span>by {activity.user.name}</span>
+                            <span>von {activity.user.name}</span>
                           )}
                         <span>
                           ·{" "}
                           {formatDistanceToNow(new Date(activity.occurredAt), {
                             addSuffix: true,
+                            locale: de,
                           })}
                         </span>
                         {activity.contact && (

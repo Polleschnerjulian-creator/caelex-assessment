@@ -116,22 +116,22 @@ export default function CommandPalette() {
 
   const quickActions: QuickAction[] = [
     {
-      label: "Go to Pipeline",
+      label: "Zur Pipeline",
       hint: "G P",
       run: () => router.push("/admin/crm"),
     },
     {
-      label: "Go to Contacts",
+      label: "Zu den Kontakten",
       hint: "G C",
       run: () => router.push("/admin/crm?tab=contacts"),
     },
     {
-      label: "Go to Companies",
+      label: "Zu den Firmen",
       hint: "G O",
       run: () => router.push("/admin/crm?tab=companies"),
     },
     {
-      label: "Go to Activities",
+      label: "Zu den Aktivitäten",
       hint: "G A",
       run: () => router.push("/admin/crm?tab=activities"),
     },
@@ -240,7 +240,7 @@ export default function CommandPalette() {
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             onKeyDown={handleKeyDown}
-            placeholder="Search contacts, companies, deals... or jump to a page"
+            placeholder="Kontakte, Firmen, Deals suchen … oder direkt zu einer Seite springen"
             className="flex-1 bg-transparent text-body text-[var(--text-primary)] placeholder:text-[var(--text-tertiary)] outline-none"
           />
           {loading && (
@@ -259,7 +259,7 @@ export default function CommandPalette() {
           {!results && (
             <div className="py-2">
               <p className="px-4 py-1 text-caption font-semibold uppercase tracking-wider text-[var(--text-tertiary)]">
-                Quick actions
+                Schnellzugriff
               </p>
               {quickActions.map((action, idx) => {
                 const isActive = idx === activeIndex;
@@ -295,14 +295,14 @@ export default function CommandPalette() {
 
           {results && !hasResults && !loading && (
             <div className="py-12 text-center text-body text-[var(--text-tertiary)]">
-              No results for &quot;{query}&quot;
+              Keine Treffer für &quot;{query}&quot;
             </div>
           )}
 
           {results && results.contacts.length > 0 && (
             <div className="py-2">
               <p className="px-4 py-1 text-caption font-semibold uppercase tracking-wider text-[var(--text-tertiary)]">
-                Contacts
+                Kontakte
               </p>
               {results.contacts.map((c) => {
                 const name =
@@ -347,7 +347,7 @@ export default function CommandPalette() {
               style={{ borderColor: "var(--border-subtle)" }}
             >
               <p className="px-4 py-1 text-caption font-semibold uppercase tracking-wider text-[var(--text-tertiary)]">
-                Companies
+                Firmen
               </p>
               {results.companies.map((c) => {
                 const thisIdx = currentIdx++;

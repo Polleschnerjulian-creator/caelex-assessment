@@ -4,6 +4,7 @@ import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import Link from "next/link";
 import { formatDistanceToNow } from "date-fns";
+import { de } from "date-fns/locale";
 import { Building2, User, Calendar, AlertCircle } from "lucide-react";
 import { DEAL_STAGE_SLA_DAYS } from "@/lib/crm/types";
 import type { CrmDealStage } from "@prisma/client";
@@ -146,7 +147,7 @@ export default function DealCard({
             }}
           >
             {isStale && <AlertCircle size={10} />}
-            <span>{daysInStage}d</span>
+            <span>{daysInStage} Tg.</span>
           </div>
         </div>
 
@@ -155,9 +156,10 @@ export default function DealCard({
           <div className="flex items-center gap-1 mt-1.5 text-[10px] text-[var(--text-tertiary)]">
             <Calendar size={10} />
             <span>
-              Close{" "}
+              Abschluss{" "}
               {formatDistanceToNow(new Date(deal.expectedCloseDate), {
                 addSuffix: true,
+                locale: de,
               })}
             </span>
           </div>

@@ -1,7 +1,7 @@
 import ContactDetail from "@/components/crm/ContactDetail";
 
 export const dynamic = "force-dynamic";
-export const metadata = { title: "Contact | Caelex Admin" };
+export const metadata = { title: "Kontakt | Caelex Admin" };
 
 export default async function Page({
   params,

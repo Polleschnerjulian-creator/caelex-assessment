@@ -53,16 +53,17 @@ export const DEAL_STAGE_ORDER: CrmDealStage[] = [
   "ACTIVE",
 ];
 
+/** Deutsche Anzeige-Labels (UI-only — die Enum-Werte bleiben englisch). */
 export const DEAL_STAGE_LABELS: Record<CrmDealStage, string> = {
-  IDENTIFIED: "Identified",
-  ENGAGED: "Engaged",
-  ASSESSED: "Assessed",
-  PROPOSAL: "Proposal",
-  PROCUREMENT: "Procurement",
-  CLOSED_WON: "Closed Won",
-  CLOSED_LOST: "Closed Lost",
+  IDENTIFIED: "Identifiziert",
+  ENGAGED: "Im Gespräch",
+  ASSESSED: "Bedarf geklärt",
+  PROPOSAL: "Angebot",
+  PROCUREMENT: "Im Einkauf",
+  CLOSED_WON: "Gewonnen",
+  CLOSED_LOST: "Verloren",
   ONBOARDING: "Onboarding",
-  ACTIVE: "Active",
+  ACTIVE: "Aktiv",
 };
 
 /** Default probability % by stage — used to compute weighted pipeline value. */
@@ -102,35 +103,37 @@ export const KANBAN_STAGES: CrmDealStage[] = [
 
 // ─── Lifecycle Stages ─────────────────────────────────────────────────────────
 
+/** Deutsche Anzeige-Labels (UI-only — die Enum-Werte bleiben englisch). */
 export const LIFECYCLE_STAGE_LABELS: Record<CrmLifecycleStage, string> = {
-  SUBSCRIBER: "Subscriber",
+  SUBSCRIBER: "Abonnent",
   LEAD: "Lead",
-  MQL: "MQL",
-  SQL: "SQL",
-  OPPORTUNITY: "Opportunity",
-  CUSTOMER: "Customer",
-  EVANGELIST: "Evangelist",
-  CHURNED: "Churned",
-  DISQUALIFIED: "Disqualified",
+  MQL: "Marketing-qualifiziert",
+  SQL: "Vertriebs-qualifiziert",
+  OPPORTUNITY: "Verkaufschance",
+  CUSTOMER: "Kunde",
+  EVANGELIST: "Fürsprecher",
+  CHURNED: "Abgesprungen",
+  DISQUALIFIED: "Passt nicht",
 };
 
 // ─── Operator Types ───────────────────────────────────────────────────────────
 
+/** Deutsche Anzeige-Labels (UI-only — die Enum-Werte bleiben englisch). */
 export const OPERATOR_TYPE_LABELS: Record<CrmOperatorType, string> = {
-  SPACECRAFT_OPERATOR: "Spacecraft Operator",
-  LAUNCH_PROVIDER: "Launch Provider",
-  LAUNCH_SITE: "Launch Site",
-  IN_SPACE_SERVICE: "In-Space Service",
-  COLLISION_AVOIDANCE: "Collision Avoidance",
-  POSITIONAL_DATA: "Positional Data",
-  THIRD_COUNTRY: "Third Country Operator",
-  GOVERNMENT: "Government / Agency",
-  HARDWARE_MANUFACTURER: "Hardware Manufacturer",
-  DEFENSE: "Defense",
-  INSURANCE: "Insurance",
-  LEGAL_CONSULTING: "Legal / Consulting",
+  SPACECRAFT_OPERATOR: "Satellitenbetreiber",
+  LAUNCH_PROVIDER: "Startanbieter",
+  LAUNCH_SITE: "Startplatz",
+  IN_SPACE_SERVICE: "In-Orbit-Dienste",
+  COLLISION_AVOIDANCE: "Kollisionsvermeidung",
+  POSITIONAL_DATA: "Positionsdaten",
+  THIRD_COUNTRY: "Drittstaaten-Betreiber",
+  GOVERNMENT: "Behörde / Agentur",
+  HARDWARE_MANUFACTURER: "Hardware-Hersteller",
+  DEFENSE: "Verteidigung",
+  INSURANCE: "Versicherung",
+  LEGAL_CONSULTING: "Kanzlei / Beratung",
   STARTUP: "Startup",
-  OTHER: "Other",
+  OTHER: "Sonstige",
 };
 
 // ─── Activity Type Labels + Categories ────────────────────────────────────────
@@ -145,40 +148,41 @@ export type ActivityCategory =
   | "regulatory"
   | "ai";
 
+/** Deutsche Anzeige-Labels (UI-only — die Enum-Werte bleiben englisch). */
 export const ACTIVITY_TYPE_LABELS: Record<CrmActivityType, string> = {
-  FORM_SUBMITTED: "Form submitted",
-  DEMO_REQUESTED: "Demo requested",
-  CONTACT_FORM: "Contact form",
-  NEWSLETTER_SIGNUP: "Newsletter signup",
-  ASSESSMENT_COMPLETED: "Assessment completed",
-  MEETING_SCHEDULED: "Meeting scheduled",
-  MEETING_HELD: "Meeting held",
-  MEETING_NO_SHOW: "No-show",
-  MEETING_CANCELLED: "Meeting cancelled",
-  EMAIL_SENT: "Email sent",
-  EMAIL_RECEIVED: "Email received",
-  EMAIL_OPENED: "Email opened",
-  EMAIL_CLICKED: "Link clicked",
-  CALL_LOGGED: "Call logged",
-  NOTE_ADDED: "Note added",
-  TASK_CREATED: "Task created",
-  TASK_COMPLETED: "Task completed",
-  STAGE_CHANGED: "Stage changed",
-  OWNER_CHANGED: "Owner changed",
-  FIELD_CHANGED: "Field updated",
-  SCORE_CHANGED: "Score updated",
-  LIFECYCLE_CHANGED: "Lifecycle stage changed",
-  SIGNUP: "Signed up",
-  LOGIN: "Logged in",
-  SUBSCRIPTION_STARTED: "Subscription started",
-  SUBSCRIPTION_CANCELLED: "Subscription cancelled",
-  HEALTH_ALERT: "Health alert",
-  FILING_DEADLINE: "Filing deadline",
-  REGULATION_RELEVANT: "Regulation relevant",
-  COMPLIANCE_GAP_DETECTED: "Compliance gap detected",
-  AI_RESEARCH: "AI research",
-  AI_SUGGESTION: "AI suggestion",
-  OTHER: "Other",
+  FORM_SUBMITTED: "Formular ausgefüllt",
+  DEMO_REQUESTED: "Demo angefragt",
+  CONTACT_FORM: "Kontaktformular",
+  NEWSLETTER_SIGNUP: "Newsletter-Anmeldung",
+  ASSESSMENT_COMPLETED: "Assessment abgeschlossen",
+  MEETING_SCHEDULED: "Meeting geplant",
+  MEETING_HELD: "Meeting stattgefunden",
+  MEETING_NO_SHOW: "Nicht erschienen",
+  MEETING_CANCELLED: "Meeting abgesagt",
+  EMAIL_SENT: "E-Mail gesendet",
+  EMAIL_RECEIVED: "E-Mail erhalten",
+  EMAIL_OPENED: "E-Mail geöffnet",
+  EMAIL_CLICKED: "Link geklickt",
+  CALL_LOGGED: "Anruf notiert",
+  TASK_CREATED: "Aufgabe erstellt",
+  TASK_COMPLETED: "Aufgabe erledigt",
+  NOTE_ADDED: "Notiz hinzugefügt",
+  STAGE_CHANGED: "Phase geändert",
+  OWNER_CHANGED: "Zuständigkeit geändert",
+  FIELD_CHANGED: "Feld aktualisiert",
+  SCORE_CHANGED: "Score aktualisiert",
+  LIFECYCLE_CHANGED: "Lebenszyklus geändert",
+  SIGNUP: "Registriert",
+  LOGIN: "Eingeloggt",
+  SUBSCRIPTION_STARTED: "Abo gestartet",
+  SUBSCRIPTION_CANCELLED: "Abo gekündigt",
+  HEALTH_ALERT: "Health-Warnung",
+  FILING_DEADLINE: "Einreichungsfrist",
+  REGULATION_RELEVANT: "Regulierung relevant",
+  COMPLIANCE_GAP_DETECTED: "Compliance-Lücke erkannt",
+  AI_RESEARCH: "KI-Recherche",
+  AI_SUGGESTION: "KI-Vorschlag",
+  OTHER: "Sonstiges",
 };
 
 export const ACTIVITY_TYPE_CATEGORY: Record<CrmActivityType, ActivityCategory> =

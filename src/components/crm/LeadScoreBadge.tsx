@@ -115,7 +115,7 @@ export default function LeadScoreBadge({
             >
               <div className="flex items-center justify-between">
                 <p className="text-caption font-semibold uppercase tracking-wider text-[var(--text-tertiary)]">
-                  Score breakdown
+                  So setzt sich der Score zusammen
                 </p>
                 <p className="text-small font-semibold text-[var(--text-primary)]">
                   {breakdown.total} / 100 ({breakdown.grade})

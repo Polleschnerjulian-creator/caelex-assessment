@@ -101,7 +101,7 @@ export default function ContactDetail({ id }: { id: string }) {
     return (
       <div className="flex items-center justify-center py-24 text-[var(--text-tertiary)]">
         <Loader2 size={16} className="animate-spin mr-2" />
-        Loading contact…
+        Kontakt wird geladen…
       </div>
     );
   }
@@ -110,13 +110,13 @@ export default function ContactDetail({ id }: { id: string }) {
     return (
       <div className="text-center py-24">
         <p className="text-body text-[var(--text-secondary)]">
-          Contact not found
+          Kontakt nicht gefunden
         </p>
         <Link
           href="/admin/crm"
           className="inline-flex items-center gap-1 text-small text-[var(--accent-primary)] hover:underline mt-2"
         >
-          <ArrowLeft size={12} /> Back to CRM
+          <ArrowLeft size={12} /> Zurück zum CRM
         </Link>
       </div>
     );
@@ -125,7 +125,7 @@ export default function ContactDetail({ id }: { id: string }) {
   const fullName =
     [contact.firstName, contact.lastName].filter(Boolean).join(" ") ||
     contact.email ||
-    "Unknown";
+    "Unbekannt";
 
   return (
     <div className="space-y-6">
@@ -134,7 +134,7 @@ export default function ContactDetail({ id }: { id: string }) {
         href="/admin/crm?tab=contacts"
         className="inline-flex items-center gap-1 text-small text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
       >
-        <ArrowLeft size={12} /> Back to contacts
+        <ArrowLeft size={12} /> Zurück zu den Kontakten
       </Link>
 
       {/* Header */}
@@ -199,7 +199,7 @@ export default function ContactDetail({ id }: { id: string }) {
             }}
           >
             <h2 className="text-caption font-semibold uppercase tracking-wider text-[var(--text-tertiary)] mb-3">
-              Contact info
+              Kontaktdaten
             </h2>
             <div className="grid grid-cols-2 gap-3 text-body">
               {contact.email && (
@@ -257,7 +257,7 @@ export default function ContactDetail({ id }: { id: string }) {
             }}
           >
             <h2 className="text-caption font-semibold uppercase tracking-wider text-[var(--text-tertiary)] mb-4">
-              Activity
+              Aktivität
             </h2>
             <ActivityTimeline activities={activities} />
           </section>
@@ -285,7 +285,7 @@ export default function ContactDetail({ id }: { id: string }) {
             }}
           >
             <h2 className="text-caption font-semibold uppercase tracking-wider text-[var(--text-tertiary)] mb-4">
-              Notes
+              Notizen
             </h2>
             <NotesPanel notes={notes} contactId={contact.id} />
           </section>
@@ -302,7 +302,7 @@ export default function ContactDetail({ id }: { id: string }) {
               }}
             >
               <p className="text-caption font-semibold uppercase tracking-wider text-[var(--text-tertiary)] mb-2">
-                Company
+                Firma
               </p>
               <Link
                 href={`/admin/crm/companies/${contact.company.id}`}
@@ -331,15 +331,15 @@ export default function ContactDetail({ id }: { id: string }) {
               </div>
               {contact.company.spacecraftCount != null && (
                 <p className="text-caption text-[var(--text-secondary)] mt-2">
-                  {contact.company.spacecraftCount} satellites in orbit
+                  {contact.company.spacecraftCount} Satelliten im Orbit
                 </p>
               )}
               {contact.company.nextLaunchDate && (
                 <p className="text-caption text-[var(--accent-warning)] mt-1">
-                  Next launch:{" "}
-                  {new Date(
-                    contact.company.nextLaunchDate,
-                  ).toLocaleDateString()}
+                  Nächster Start:{" "}
+                  {new Date(contact.company.nextLaunchDate).toLocaleDateString(
+                    "de-DE",
+                  )}
                 </p>
               )}
             </div>
@@ -354,7 +354,7 @@ export default function ContactDetail({ id }: { id: string }) {
               }}
             >
               <p className="text-caption font-semibold uppercase tracking-wider text-[var(--text-tertiary)] mb-2">
-                Open deals
+                Offene Deals
               </p>
               <div className="space-y-2">
                 {contact.primaryFor.map((deal) => (
@@ -388,18 +388,21 @@ export default function ContactDetail({ id }: { id: string }) {
             }}
           >
             <p>
-              First touch:{" "}
+              Erster Kontakt:{" "}
               {contact.firstTouchAt
-                ? new Date(contact.firstTouchAt).toLocaleDateString()
+                ? new Date(contact.firstTouchAt).toLocaleDateString("de-DE")
                 : "—"}
             </p>
             <p>
-              Last touch:{" "}
+              Letzter Kontakt:{" "}
               {contact.lastTouchAt
-                ? new Date(contact.lastTouchAt).toLocaleDateString()
+                ? new Date(contact.lastTouchAt).toLocaleDateString("de-DE")
                 : "—"}
             </p>
-            <p>Created: {new Date(contact.createdAt).toLocaleDateString()}</p>
+            <p>
+              Angelegt:{" "}
+              {new Date(contact.createdAt).toLocaleDateString("de-DE")}
+            </p>
           </div>
         </div>
       </div>

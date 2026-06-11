@@ -81,7 +81,7 @@ function KanbanColumn({
           </span>
           {weightedValue > 0 && weightedValue !== totalValue && (
             <span className="text-[var(--text-tertiary)]">
-              · weighted €
+              · gewichtet €
               {(weightedValue / 100).toLocaleString("de-DE", {
                 maximumFractionDigits: 0,
               })}
@@ -98,7 +98,7 @@ function KanbanColumn({
         <div className="space-y-2 min-h-[100px]">
           {deals.length === 0 ? (
             <div className="text-center py-6 text-caption text-[var(--text-tertiary)]">
-              No deals
+              Keine Deals
             </div>
           ) : (
             deals.map((deal) => <DealCard key={deal.id} deal={deal} />)

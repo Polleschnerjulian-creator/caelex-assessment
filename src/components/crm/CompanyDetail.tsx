@@ -118,7 +118,7 @@ export default function CompanyDetail({ id }: { id: string }) {
     return (
       <div className="flex items-center justify-center py-24 text-[var(--text-tertiary)]">
         <Loader2 size={16} className="animate-spin mr-2" />
-        Loading company…
+        Firma wird geladen…
       </div>
     );
   }
@@ -127,7 +127,7 @@ export default function CompanyDetail({ id }: { id: string }) {
     return (
       <div className="text-center py-24">
         <p className="text-body text-[var(--text-secondary)]">
-          Company not found
+          Firma nicht gefunden
         </p>
       </div>
     );
@@ -139,7 +139,7 @@ export default function CompanyDetail({ id }: { id: string }) {
         href="/admin/crm?tab=companies"
         className="inline-flex items-center gap-1 text-small text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
       >
-        <ArrowLeft size={12} /> Back to companies
+        <ArrowLeft size={12} /> Zurück zu den Firmen
       </Link>
 
       {/* Header */}
@@ -227,11 +227,11 @@ export default function CompanyDetail({ id }: { id: string }) {
             }}
           >
             <h2 className="text-caption font-semibold uppercase tracking-wider text-[var(--text-tertiary)] mb-3 flex items-center gap-2">
-              <Rocket size={12} /> Regulatory profile
+              <Rocket size={12} /> Regulatorisches Profil
             </h2>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-body">
               <Field
-                label="Operator type"
+                label="Betreiber-Typ"
                 value={
                   company.operatorType
                     ? OPERATOR_TYPE_LABELS[company.operatorType]
@@ -239,39 +239,43 @@ export default function CompanyDetail({ id }: { id: string }) {
                 }
               />
               <Field
-                label="Spacecraft in orbit"
+                label="Satelliten im Orbit"
                 value={company.spacecraftCount?.toString() || "—"}
               />
               <Field
-                label="Planned spacecraft"
+                label="Geplante Satelliten"
                 value={company.plannedSpacecraft?.toString() || "—"}
               />
               <Field
-                label="Funding stage"
+                label="Finanzierungsphase"
                 value={company.fundingStage || "—"}
               />
               <Field
-                label="Next launch"
+                label="Nächster Start"
                 value={
                   company.nextLaunchDate
-                    ? new Date(company.nextLaunchDate).toLocaleDateString()
+                    ? new Date(company.nextLaunchDate).toLocaleDateString(
+                        "de-DE",
+                      )
                     : "—"
                 }
               />
               <Field
-                label="License expiry"
+                label="Lizenz läuft ab"
                 value={
                   company.licenseExpiryDate
-                    ? new Date(company.licenseExpiryDate).toLocaleDateString()
+                    ? new Date(company.licenseExpiryDate).toLocaleDateString(
+                        "de-DE",
+                      )
                     : "—"
                 }
               />
               <Field
-                label="Raising capital"
-                value={company.isRaising ? "Yes" : "No"}
+                label="Sammelt Kapital ein"
+                value={company.isRaising ? "Ja" : "Nein"}
               />
               <Field
-                label="Jurisdictions"
+                label="Jurisdiktionen"
                 value={company.jurisdictions.join(", ") || "—"}
               />
             </div>
@@ -287,7 +291,7 @@ export default function CompanyDetail({ id }: { id: string }) {
               }}
             >
               <h2 className="text-caption font-semibold uppercase tracking-wider text-[var(--text-tertiary)] mb-3">
-                Contacts ({company.contacts.length})
+                Kontakte ({company.contacts.length})
               </h2>
               <div className="space-y-2">
                 {company.contacts.map((c) => {
@@ -362,7 +366,7 @@ export default function CompanyDetail({ id }: { id: string }) {
             }}
           >
             <h2 className="text-caption font-semibold uppercase tracking-wider text-[var(--text-tertiary)] mb-4">
-              Activity
+              Aktivität
             </h2>
             <ActivityTimeline activities={activities} />
           </section>
@@ -376,7 +380,7 @@ export default function CompanyDetail({ id }: { id: string }) {
             }}
           >
             <h2 className="text-caption font-semibold uppercase tracking-wider text-[var(--text-tertiary)] mb-4">
-              Notes
+              Notizen
             </h2>
             <NotesPanel notes={notes} companyId={company.id} />
           </section>
@@ -395,7 +399,7 @@ export default function CompanyDetail({ id }: { id: string }) {
               }}
             >
               <p className="text-caption font-semibold uppercase tracking-wider text-[var(--text-tertiary)] mb-2">
-                Active Customer
+                Aktiver Kunde
               </p>
               <p className="text-body text-[var(--text-primary)] mb-1">
                 Plan: {company.organization.plan}

@@ -15,9 +15,20 @@ import LeadScoreBadge from "@/components/crm/LeadScoreBadge";
 import { DealStageBadge } from "@/components/crm/StageBadge";
 import ActivityTimeline from "@/components/crm/ActivityTimeline";
 import NotesPanel from "@/components/crm/NotesPanel";
-import { DEAL_STAGE_LABELS, DEAL_STAGE_ORDER } from "@/lib/crm/types";
+import {
+  DEAL_STAGE_LABELS,
+  DEAL_STAGE_ORDER,
+  OPERATOR_TYPE_LABELS,
+} from "@/lib/crm/types";
 import { csrfHeaders } from "@/lib/csrf-client";
-import type { CrmDealStage } from "@prisma/client";
+import type { CrmDealStage, CrmOperatorType } from "@prisma/client";
+
+/** Deutsche Anzeige der KI-Dringlichkeit (API liefert low/medium/high). */
+const URGENCY_LABELS: Record<"low" | "medium" | "high", string> = {
+  low: "niedrig",
+  medium: "mittel",
+  high: "dringend",
+};
 
 interface DealDetail {
   id: string;
@@ -125,7 +136,7 @@ export default function DealDetail({ id }: { id: string }) {
     return (
       <div className="flex items-center justify-center py-24 text-[var(--text-tertiary)]">
         <Loader2 size={16} className="animate-spin mr-2" />
-        Loading deal…
+        Deal wird geladen…
       </div>
     );
   }
@@ -133,7 +144,7 @@ export default function DealDetail({ id }: { id: string }) {
   if (!deal) {
     return (
       <div className="text-center py-24 text-body text-[var(--text-secondary)]">
-        Deal not found
+        Deal nicht gefunden
       </div>
     );
   }
@@ -149,7 +160,7 @@ export default function DealDetail({ id }: { id: string }) {
         href="/admin/crm?tab=deals"
         className="inline-flex items-center gap-1 text-small text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
       >
-        <ArrowLeft size={12} /> Back to deals
+        <ArrowLeft size={12} /> Zurück zu den Deals
       </Link>
 
       {/* Header */}
@@ -188,7 +199,7 @@ export default function DealDetail({ id }: { id: string }) {
               : "—"}
           </p>
           <p className="text-caption text-[var(--text-tertiary)]">
-            {deal.probability}% probability
+            {deal.probability} % Wahrscheinlichkeit
           </p>
         </div>
       </div>
@@ -247,11 +258,11 @@ export default function DealDetail({ id }: { id: string }) {
           >
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               <Field
-                label="Stage"
+                label="Phase"
                 value={<DealStageBadge stage={deal.stage} />}
               />
               <Field
-                label="Days in stage"
+                label="Tage in dieser Phase"
                 value={
                   <span className="text-body text-[var(--text-primary)]">
                     {daysInStage}
@@ -259,17 +270,19 @@ export default function DealDetail({ id }: { id: string }) {
                 }
               />
               <Field
-                label="Expected close"
+                label="Geplanter Abschluss"
                 value={
                   <span className="text-body text-[var(--text-primary)]">
                     {deal.expectedCloseDate
-                      ? new Date(deal.expectedCloseDate).toLocaleDateString()
+                      ? new Date(deal.expectedCloseDate).toLocaleDateString(
+                          "de-DE",
+                        )
                       : "—"}
                   </span>
                 }
               />
               <Field
-                label="Owner"
+                label="Zuständig"
                 value={
                   <span className="text-body text-[var(--text-primary)]">
                     {deal.owner?.name || deal.owner?.email || "—"}
@@ -288,7 +301,7 @@ export default function DealDetail({ id }: { id: string }) {
             }}
           >
             <h2 className="text-caption font-semibold uppercase tracking-wider text-[var(--text-tertiary)] mb-4">
-              Activity
+              Aktivität
             </h2>
             <ActivityTimeline activities={activities} />
           </section>
@@ -302,7 +315,7 @@ export default function DealDetail({ id }: { id: string }) {
             }}
           >
             <h2 className="text-caption font-semibold uppercase tracking-wider text-[var(--text-tertiary)] mb-4">
-              Notes
+              Notizen
             </h2>
             <NotesPanel notes={notes} dealId={deal.id} />
           </section>
@@ -328,7 +341,9 @@ export default function DealDetail({ id }: { id: string }) {
                 <Sparkles size={14} />
               )}
               <span className="text-body font-medium">
-                {nextActionLoading ? "Thinking…" : "Suggest next action"}
+                {nextActionLoading
+                  ? "Denkt nach…"
+                  : "Nächsten Schritt vorschlagen"}
               </span>
             </button>
           ) : (
@@ -343,7 +358,7 @@ export default function DealDetail({ id }: { id: string }) {
                 <div className="flex items-center gap-2">
                   <Sparkles size={12} className="text-[var(--accent-info)]" />
                   <p className="text-caption font-semibold uppercase tracking-wider text-[var(--text-tertiary)]">
-                    Next Action
+                    Nächster Schritt
                   </p>
                 </div>
                 <span
@@ -363,7 +378,7 @@ export default function DealDetail({ id }: { id: string }) {
                           : "var(--text-secondary)",
                   }}
                 >
-                  {nextAction.urgency}
+                  {URGENCY_LABELS[nextAction.urgency] ?? nextAction.urgency}
                 </span>
               </div>
               <p className="text-body font-semibold text-[var(--text-primary)] mb-2">
@@ -376,7 +391,7 @@ export default function DealDetail({ id }: { id: string }) {
                 onClick={() => setNextAction(null)}
                 className="text-caption text-[var(--text-tertiary)] hover:text-[var(--text-primary)] mt-2"
               >
-                Regenerate
+                Neu vorschlagen
               </button>
             </div>
           )}
@@ -391,30 +406,32 @@ export default function DealDetail({ id }: { id: string }) {
               }}
             >
               <p className="text-caption font-semibold uppercase tracking-wider text-[var(--text-tertiary)] mb-2">
-                Regulatory Context
+                Regulatorischer Kontext
               </p>
               <div className="space-y-2 text-small">
                 {deal.company.operatorType && (
                   <div>
-                    <p className="text-[var(--text-tertiary)]">Operator type</p>
+                    <p className="text-[var(--text-tertiary)]">Betreiber-Typ</p>
                     <p className="text-[var(--text-primary)]">
-                      {deal.company.operatorType
-                        .toLowerCase()
-                        .replace(/_/g, " ")}
+                      {OPERATOR_TYPE_LABELS[
+                        deal.company.operatorType as CrmOperatorType
+                      ] ?? deal.company.operatorType}
                     </p>
                   </div>
                 )}
                 {deal.company.spacecraftCount != null && (
                   <div>
-                    <p className="text-[var(--text-tertiary)]">Satellites</p>
+                    <p className="text-[var(--text-tertiary)]">Satelliten</p>
                     <p className="text-[var(--text-primary)]">
-                      {deal.company.spacecraftCount} in orbit
+                      {deal.company.spacecraftCount} im Orbit
                     </p>
                   </div>
                 )}
                 {deal.company.jurisdictions.length > 0 && (
                   <div>
-                    <p className="text-[var(--text-tertiary)]">Jurisdictions</p>
+                    <p className="text-[var(--text-tertiary)]">
+                      Jurisdiktionen
+                    </p>
                     <p className="text-[var(--text-primary)]">
                       {deal.company.jurisdictions.join(", ")}
                     </p>
@@ -424,11 +441,11 @@ export default function DealDetail({ id }: { id: string }) {
                   <div className="flex items-start gap-1 text-[var(--accent-warning)]">
                     <AlertCircle size={12} className="flex-shrink-0 mt-0.5" />
                     <div>
-                      <p className="font-semibold">Launch approaching</p>
+                      <p className="font-semibold">Start steht bevor</p>
                       <p>
                         {new Date(
                           deal.company.nextLaunchDate,
-                        ).toLocaleDateString()}
+                        ).toLocaleDateString("de-DE")}
                       </p>
                     </div>
                   </div>

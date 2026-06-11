@@ -128,10 +128,11 @@ export default async function AdminLeadsPage() {
                     {lead.consentNewsletter ? "Opt-in" : "—"}
                   </td>
                   <td className="px-4 py-2.5 opacity-70">
-                    {lead.createdAt
-                      .toISOString()
-                      .slice(0, 16)
-                      .replace("T", " ")}
+                    {lead.createdAt.toLocaleString("de-DE", {
+                      dateStyle: "short",
+                      timeStyle: "short",
+                      timeZone: "Europe/Berlin",
+                    })}
                   </td>
                   <td className="px-4 py-2.5">
                     <ConvertLeadButton leadId={lead.id} />

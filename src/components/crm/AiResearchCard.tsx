@@ -20,6 +20,14 @@ const ICP_COLORS: Record<ResearchResult["icpFit"], string> = {
   unknown: "var(--text-tertiary)",
 };
 
+/** Deutsche Anzeige der ICP-Einschätzung (API liefert strong/moderate/…). */
+const ICP_FIT_LABELS: Record<ResearchResult["icpFit"], string> = {
+  strong: "stark",
+  moderate: "mittel",
+  weak: "schwach",
+  unknown: "unklar",
+};
+
 export default function AiResearchCard({
   companyId,
   onComplete,
@@ -52,7 +60,7 @@ export default function AiResearchCard({
           keyInsights: [],
           suggestedActions: [],
           complianceGaps: [],
-          error: "Failed to generate research",
+          error: "Recherche konnte nicht erstellt werden",
         });
       }
     } catch (err) {
@@ -63,7 +71,7 @@ export default function AiResearchCard({
         keyInsights: [],
         suggestedActions: [],
         complianceGaps: [],
-        error: "Network error",
+        error: "Netzwerkfehler",
       });
     } finally {
       setLoading(false);
@@ -85,12 +93,14 @@ export default function AiResearchCard({
         {loading ? (
           <>
             <Loader2 size={16} className="animate-spin" />
-            <span className="text-body font-medium">Researching…</span>
+            <span className="text-body font-medium">Recherchiert…</span>
           </>
         ) : (
           <>
             <Sparkles size={16} />
-            <span className="text-body font-medium">Research with Claude</span>
+            <span className="text-body font-medium">
+              Mit Claude recherchieren
+            </span>
           </>
         )}
       </button>
@@ -108,18 +118,18 @@ export default function AiResearchCard({
       >
         <div className="flex items-center gap-2 text-[var(--accent-danger)]">
           <AlertCircle size={14} />
-          <p className="text-small font-medium">Research failed</p>
+          <p className="text-small font-medium">Recherche fehlgeschlagen</p>
         </div>
         <p className="text-caption text-[var(--text-tertiary)] mt-1">
           {result.error === "NOT_CONFIGURED"
-            ? "Set ANTHROPIC_API_KEY to enable AI research."
+            ? "ANTHROPIC_API_KEY setzen, um die KI-Recherche zu aktivieren."
             : result.error}
         </p>
         <button
           onClick={handleResearch}
           className="mt-2 text-caption text-[var(--accent-primary)] hover:underline"
         >
-          Try again
+          Erneut versuchen
         </button>
       </div>
     );
@@ -137,7 +147,7 @@ export default function AiResearchCard({
         <div className="flex items-center gap-2">
           <Sparkles size={14} className="text-[var(--accent-info)]" />
           <p className="text-caption font-semibold uppercase tracking-wider text-[var(--text-tertiary)]">
-            AI Briefing
+            KI-Briefing
           </p>
         </div>
         <span
@@ -147,7 +157,7 @@ export default function AiResearchCard({
             color: ICP_COLORS[result.icpFit],
           }}
         >
-          ICP fit: {result.icpFit}
+          Zielkunden-Fit: {ICP_FIT_LABELS[result.icpFit] ?? result.icpFit}
         </span>
       </div>
 
@@ -158,7 +168,7 @@ export default function AiResearchCard({
       {result.keyInsights.length > 0 && (
         <div>
           <p className="text-caption font-semibold text-[var(--text-tertiary)] mb-1.5">
-            Key insights
+            Wichtigste Erkenntnisse
           </p>
           <ul className="space-y-1">
             {result.keyInsights.map((insight, i) => (
@@ -176,7 +186,7 @@ export default function AiResearchCard({
       {result.suggestedActions.length > 0 && (
         <div>
           <p className="text-caption font-semibold text-[var(--text-tertiary)] mb-1.5">
-            Suggested actions
+            Empfohlene Schritte
           </p>
           <ul className="space-y-1">
             {result.suggestedActions.map((action, i) => (
@@ -194,7 +204,7 @@ export default function AiResearchCard({
       {result.complianceGaps.length > 0 && (
         <div>
           <p className="text-caption font-semibold text-[var(--text-tertiary)] mb-1.5">
-            Likely compliance gaps
+            Vermutliche Compliance-Lücken
           </p>
           <ul className="space-y-1">
             {result.complianceGaps.map((gap, i) => (
@@ -213,7 +223,7 @@ export default function AiResearchCard({
         onClick={() => setResult(null)}
         className="text-caption text-[var(--text-tertiary)] hover:text-[var(--text-primary)]"
       >
-        Regenerate
+        Neu erstellen
       </button>
     </div>
   );

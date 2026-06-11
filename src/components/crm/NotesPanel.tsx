@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { Send, Loader2 } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
+import { de } from "date-fns/locale";
 import { csrfHeaders } from "@/lib/csrf-client";
 
 interface Note {
@@ -67,7 +68,7 @@ export default function NotesPanel({
         <textarea
           value={draft}
           onChange={(e) => setDraft(e.target.value)}
-          placeholder="Add a note… (markdown supported)"
+          placeholder="Notiz schreiben… (Markdown möglich)"
           rows={3}
           className="w-full rounded-lg border px-3 py-2 text-body resize-none focus:outline-none focus:ring-1"
           style={{
@@ -91,7 +92,7 @@ export default function NotesPanel({
             ) : (
               <Send size={14} />
             )}
-            <span>Add note</span>
+            <span>Notiz speichern</span>
           </button>
         </div>
       </form>
@@ -99,7 +100,7 @@ export default function NotesPanel({
       <div className="space-y-3">
         {notes.length === 0 ? (
           <p className="text-body text-[var(--text-tertiary)] text-center py-6">
-            No notes yet
+            Noch keine Notizen
           </p>
         ) : (
           notes.map((note) => (
@@ -118,6 +119,7 @@ export default function NotesPanel({
                 {note.author.name || note.author.email} ·{" "}
                 {formatDistanceToNow(new Date(note.createdAt), {
                   addSuffix: true,
+                  locale: de,
                 })}
               </p>
             </div>
