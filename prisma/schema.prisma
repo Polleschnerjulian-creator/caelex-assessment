@@ -223,6 +223,7 @@ model User {
   crmActivities     CrmActivity[] @relation("CrmActivityUser")
   crmNotes          CrmNote[]     @relation("CrmNoteAuthor")
   crmTasks          CrmTask[]     @relation("CrmTaskOwner")
+  crmTasksAssigned  CrmTask[]     @relation("CrmTaskAssignee")
 
   // ATLAS: per-user annotations on legal sources
   atlasAnnotations AtlasAnnotation[]
@@ -5837,6 +5838,11 @@ model CrmTask {
   ownerId String
   owner   User   @relation("CrmTaskOwner", fields: [ownerId], references: [id])
 
+  // Assignee — who should DO the task (2-person founder team: Julian/Niklas).
+  // Nullable = unassigned; distinct from owner (= creator).
+  assigneeId String?
+  assignee   User?   @relation("CrmTaskAssignee", fields: [assigneeId], references: [id])
+
   // Polymorphic
   contactId String?
   contact   CrmContact? @relation(fields: [contactId], references: [id], onDelete: Cascade)
@@ -5849,6 +5855,7 @@ model CrmTask {
   updatedAt DateTime @updatedAt
 
   @@index([ownerId, status])
+  @@index([assigneeId, status])
   @@index([dueDate])
   @@index([contactId])
   @@index([companyId])

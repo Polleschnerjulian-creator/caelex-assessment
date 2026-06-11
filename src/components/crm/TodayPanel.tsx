@@ -3,8 +3,10 @@
 /**
  * "Heute" — the CRM working cockpit (Phase 2: "immer auf dem aktuellen
  * Stand"). Three columns of truth, all from existing APIs:
- *   1. Aufgaben — overdue / today / upcoming open tasks across the whole
- *      CRM, completable inline (PATCH).
+ *   1. Meine Aufgaben — overdue / today / upcoming open tasks that are
+ *      assigned to ME (or unassigned and owned by me), completable
+ *      inline (PATCH). Everything else lives on the "Aufgaben" tab
+ *      (onShowAllTasks switches to it).
  *   2. Letzte Aktivitäten — the global activity stream (notes, stage
  *      changes, imports) with entity links.
  *   3. Neue Leads — link out to /admin/leads where conversion lives.
@@ -15,6 +17,7 @@ import Link from "next/link";
 import { formatDistanceToNow, isPast, isToday } from "date-fns";
 import { Inbox, ArrowRight } from "lucide-react";
 import { csrfHeaders } from "@/lib/csrf-client";
+import { useAssignees } from "@/components/crm/useAssignees";
 import type { CrmTaskRow } from "./TasksPanel";
 
 interface TaskWithRefs extends CrmTaskRow {
@@ -57,9 +60,15 @@ function taskEntityLabel(t: TaskWithRefs): string {
   return "";
 }
 
-export default function TodayPanel() {
+export default function TodayPanel({
+  onShowAllTasks,
+}: {
+  /** Wechselt auf den „Aufgaben"-Tab (vom CrmWorkspace durchgereicht). */
+  onShowAllTasks?: () => void;
+}) {
   const [tasks, setTasks] = useState<TaskWithRefs[] | null>(null);
   const [activities, setActivities] = useState<ActivityRow[] | null>(null);
+  const { meId } = useAssignees();
 
   const load = useCallback(async () => {
     const [taskRes, actRes] = await Promise.all([
@@ -93,7 +102,13 @@ export default function TodayPanel() {
     await load();
   }
 
-  const open = tasks ?? [];
+  // „Meine Aufgaben": mir zugewiesen ODER (unzugewiesen UND von mir
+  // angelegt). Bis meId geladen ist, zeigen wir alles (kein Flackern
+  // von „leer" → „voll").
+  const open = (tasks ?? []).filter(
+    (t) =>
+      !meId || t.assignee?.id === meId || (!t.assignee && t.owner?.id === meId),
+  );
   const overdue = open.filter(
     (t) =>
       t.dueDate && isPast(new Date(t.dueDate)) && !isToday(new Date(t.dueDate)),
@@ -165,16 +180,32 @@ export default function TodayPanel() {
 
   return (
     <div className="grid gap-6 lg:grid-cols-[1.2fr_1fr]">
-      {/* Aufgaben */}
+      {/* Meine Aufgaben */}
       <div>
-        <h3 className="text-title font-medium text-[var(--text-primary)] mb-3">
-          Aufgaben
-        </h3>
+        <div className="flex items-center justify-between mb-1">
+          <h3 className="text-title font-medium text-[var(--text-primary)]">
+            Meine Aufgaben
+          </h3>
+          {onShowAllTasks ? (
+            <button
+              type="button"
+              onClick={onShowAllTasks}
+              className="inline-flex items-center gap-1 text-small text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
+            >
+              Alle Aufgaben <ArrowRight size={12} />
+            </button>
+          ) : null}
+        </div>
+        <p className="text-caption text-[var(--text-tertiary)] mb-3">
+          Zeigt nur, was dir zugewiesen ist (oder unzugewiesen von dir angelegt
+          wurde).
+        </p>
         {tasks === null ? (
           <p className="text-body text-[var(--text-tertiary)]">Lade…</p>
         ) : open.length === 0 ? (
           <p className="text-body text-[var(--text-tertiary)]">
-            Keine offenen Aufgaben. Lege nächste Schritte direkt am Kontakt an.
+            Keine offenen Aufgaben für dich. Neue legst du im Tab „Aufgaben"
+            oder direkt am Kontakt an.
           </p>
         ) : (
           <>

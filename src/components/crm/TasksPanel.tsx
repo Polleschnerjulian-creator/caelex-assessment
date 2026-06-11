@@ -11,6 +11,11 @@ import { useCallback, useEffect, useState } from "react";
 import { Loader2, Plus, RotateCcw } from "lucide-react";
 import { formatDistanceToNow, isPast } from "date-fns";
 import { csrfHeaders } from "@/lib/csrf-client";
+import {
+  assigneeInitials,
+  assigneeLabel,
+  useAssignees,
+} from "@/components/crm/useAssignees";
 
 export interface CrmTaskRow {
   id: string;
@@ -18,7 +23,8 @@ export interface CrmTaskRow {
   status: "OPEN" | "COMPLETED" | "CANCELLED";
   dueDate: string | null;
   completedAt: string | null;
-  owner?: { name: string | null; email: string } | null;
+  owner?: { id: string; name: string | null; email: string } | null;
+  assignee?: { id: string; name: string | null; email: string } | null;
 }
 
 export default function TasksPanel({
@@ -34,6 +40,11 @@ export default function TasksPanel({
   const [title, setTitle] = useState("");
   const [dueDate, setDueDate] = useState("");
   const [busy, setBusy] = useState(false);
+  const { assignees, meId, loaded: assigneesLoaded } = useAssignees();
+  // null = keine explizite Wahl → „Ich" (meId), sobald geladen.
+  const [assigneeSel, setAssigneeSel] = useState<string | null>(null);
+  const composerAssignee = assigneeSel ?? meId ?? "";
+  const others = assignees.filter((a) => a.id !== meId);
 
   const scopeParam = contactId
     ? `contactId=${contactId}`
@@ -72,6 +83,7 @@ export default function TasksPanel({
         body: JSON.stringify({
           title: title.trim(),
           ...(dueDate ? { dueDate: new Date(dueDate).toISOString() } : {}),
+          ...(composerAssignee ? { assigneeId: composerAssignee } : {}),
           contactId,
           companyId,
           dealId,
@@ -92,6 +104,15 @@ export default function TasksPanel({
       method: "PATCH",
       headers: { "Content-Type": "application/json", ...csrfHeaders() },
       body: JSON.stringify({ id, status }),
+    }).catch(() => null);
+    await load();
+  }
+
+  async function reassign(id: string, assigneeId: string | null) {
+    await fetch("/api/admin/crm/tasks", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json", ...csrfHeaders() },
+      body: JSON.stringify({ id, assigneeId }),
     }).catch(() => null);
     await load();
   }
@@ -125,6 +146,26 @@ export default function TasksPanel({
             color: "var(--text-secondary)",
           }}
         />
+        <select
+          value={composerAssignee}
+          onChange={(e) => setAssigneeSel(e.target.value)}
+          aria-label="Zuweisen an"
+          disabled={!assigneesLoaded}
+          className="rounded-lg border px-2 py-2 text-small focus:outline-none"
+          style={{
+            background: "var(--surface-sunken)",
+            borderColor: "var(--border-default)",
+            color: "var(--text-secondary)",
+          }}
+        >
+          {meId ? <option value={meId}>Ich</option> : null}
+          {others.map((a) => (
+            <option key={a.id} value={a.id}>
+              {assigneeLabel(a)}
+            </option>
+          ))}
+          <option value="">Unzugewiesen</option>
+        </select>
         <button
           type="submit"
           disabled={!title.trim() || busy}
@@ -188,6 +229,42 @@ export default function TasksPanel({
                     </p>
                   ) : null}
                 </div>
+                {t.assignee ? (
+                  <span
+                    title={`Zugewiesen an ${
+                      t.assignee.id === meId
+                        ? "mich"
+                        : assigneeLabel(t.assignee)
+                    }`}
+                    className="inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-[10px] font-semibold"
+                    style={{
+                      background: "var(--accent-primary-soft)",
+                      color: "var(--accent-primary)",
+                    }}
+                  >
+                    {assigneeInitials(t.assignee)}
+                  </span>
+                ) : null}
+                <select
+                  value={t.assignee?.id ?? ""}
+                  onChange={(e) => void reassign(t.id, e.target.value || null)}
+                  aria-label={`„${t.title}" zuweisen`}
+                  title="Zuweisen"
+                  className="max-w-[100px] shrink-0 rounded-md border px-1.5 py-1 text-caption focus:outline-none"
+                  style={{
+                    background: "var(--surface-sunken)",
+                    borderColor: "var(--border-default)",
+                    color: "var(--text-secondary)",
+                  }}
+                >
+                  {meId ? <option value={meId}>Ich</option> : null}
+                  {others.map((a) => (
+                    <option key={a.id} value={a.id}>
+                      {assigneeLabel(a)}
+                    </option>
+                  ))}
+                  <option value="">Unzugewiesen</option>
+                </select>
               </li>
             );
           })}

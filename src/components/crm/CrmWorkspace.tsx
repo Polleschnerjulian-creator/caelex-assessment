@@ -9,6 +9,7 @@ import {
   Briefcase,
   Activity as ActivityIcon,
   LayoutGrid,
+  ListTodo,
   Loader2,
   TrendingUp,
   Plus,
@@ -26,6 +27,7 @@ import { DealStageBadge, LifecycleBadge } from "@/components/crm/StageBadge";
 import ActivityTimeline from "@/components/crm/ActivityTimeline";
 import MeetingImport from "@/components/crm/MeetingImport";
 import TodayPanel from "@/components/crm/TodayPanel";
+import TaskBoard from "@/components/crm/TaskBoard";
 import {
   CreateContactDialog,
   CreateCompanyDialog,
@@ -39,6 +41,7 @@ import type {
 
 type Tab =
   | "today"
+  | "tasks"
   | "pipeline"
   | "contacts"
   | "companies"
@@ -269,6 +272,12 @@ function CrmPageContent() {
           label="Heute"
         />
         <TabButton
+          active={tab === "tasks"}
+          onClick={() => changeTab("tasks")}
+          icon={<ListTodo size={14} />}
+          label="Aufgaben"
+        />
+        <TabButton
           active={tab === "pipeline"}
           onClick={() => changeTab("pipeline")}
           icon={<LayoutGrid size={14} />}
@@ -301,7 +310,10 @@ function CrmPageContent() {
       </div>
 
       {/* Tab content */}
-      {tab === "today" && <TodayPanel />}
+      {tab === "today" && (
+        <TodayPanel onShowAllTasks={() => changeTab("tasks")} />
+      )}
+      {tab === "tasks" && <TaskBoard />}
       {tab === "pipeline" && <PipelineTab stats={stats} />}
       {tab === "contacts" && <ContactsTab />}
       {tab === "companies" && <CompaniesTab />}
