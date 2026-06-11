@@ -54,6 +54,15 @@ vi.mock("@upstash/redis", () => {
 
 // ─── Import module under test ───
 
+// getToken does real JWE decoding — a fabricated cookie value yields null,
+// which the middleware (correctly) treats as "not authenticated". Mock it so
+// tests model "valid session" explicitly; the null default mirrors production
+// behavior for undecodable cookies.
+vi.mock("next-auth/jwt", () => ({
+  getToken: vi.fn().mockResolvedValue(null),
+}));
+
+import { getToken } from "next-auth/jwt";
 import middleware from "./middleware";
 import { validateCsrfToken } from "@/lib/csrf";
 
@@ -112,7 +121,7 @@ describe("middleware", () => {
   // ─── Security Headers ───
 
   describe("security headers", () => {
-    it("sets HSTS header on all responses", async () => {
+    it("does NOT set HSTS outside production (prod-only by design)", async () => {
       const req = createRequest("/", {
         headers: {
           "user-agent":
@@ -120,9 +129,34 @@ describe("middleware", () => {
         },
       });
       const res = await middleware(req);
-      expect(res.headers.get("Strict-Transport-Security")).toBe(
-        "max-age=63072000; includeSubDomains; preload",
-      );
+      // HSTS is baked into SECURITY_HEADERS at module load for production
+      // only — dev/test speak plain HTTP and must not HTTPS-pin localhost.
+      expect(res.headers.get("Strict-Transport-Security")).toBeNull();
+    });
+
+    it("sets HSTS on page and API responses in production", async () => {
+      // SECURITY_HEADERS is evaluated at module load, so the production
+      // variant needs a fresh import under a stubbed NODE_ENV.
+      vi.resetModules();
+      vi.stubEnv("NODE_ENV", "production");
+      try {
+        const { default: prodMiddleware } = await import("./middleware");
+        for (const path of ["/", "/api/test"]) {
+          const req = createRequest(path, {
+            headers: {
+              "user-agent":
+                "Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/120.0",
+            },
+          });
+          const res = await prodMiddleware(req);
+          expect(res.headers.get("Strict-Transport-Security")).toBe(
+            "max-age=63072000; includeSubDomains; preload",
+          );
+        }
+      } finally {
+        vi.unstubAllEnvs();
+        vi.resetModules();
+      }
     });
 
     it("sets X-Frame-Options DENY on non-widget paths", async () => {
@@ -192,9 +226,13 @@ describe("middleware", () => {
         },
       });
       const res = await middleware(req);
-      expect(res.headers.get("Strict-Transport-Security")).toBeTruthy();
+      // HSTS is covered by the production-import test above (prod-only).
       expect(res.headers.get("X-Content-Type-Options")).toBe("nosniff");
       expect(res.headers.get("X-Frame-Options")).toBe("DENY");
+      expect(res.headers.get("Referrer-Policy")).toBe(
+        "strict-origin-when-cross-origin",
+      );
+      expect(res.headers.get("Permissions-Policy")).toContain("camera=()");
     });
   });
 
@@ -720,7 +758,10 @@ describe("middleware", () => {
       expect(location).toContain("callbackUrl=%2Fdashboard");
     });
 
-    it("passes through /dashboard with authjs.session-token cookie", async () => {
+    it("passes through /dashboard with a decodable session token", async () => {
+      // The MFA gate decodes the JWT; only a decodable token without a
+      // pending MFA requirement passes through.
+      vi.mocked(getToken).mockResolvedValueOnce({ sub: "user-1" });
       const req = createRequest("/dashboard", {
         headers: {
           "user-agent":
@@ -734,6 +775,7 @@ describe("middleware", () => {
     });
 
     it("passes through /dashboard with __Secure-authjs.session-token cookie", async () => {
+      vi.mocked(getToken).mockResolvedValueOnce({ sub: "user-1" });
       const req = createRequest("/dashboard/settings", {
         headers: {
           "user-agent":
@@ -743,6 +785,41 @@ describe("middleware", () => {
       });
       const res = await middleware(req);
       expect(res.status).not.toBe(307);
+    });
+
+    it("bounces /dashboard to /login when the session cookie does not decode", async () => {
+      // Cookie present but getToken yields null (corrupt cookie / key
+      // rotation) — middleware must treat that as unauthenticated rather
+      // than trusting cookie presence.
+      vi.mocked(getToken).mockResolvedValueOnce(null);
+      const req = createRequest("/dashboard", {
+        headers: {
+          "user-agent":
+            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/120.0",
+        },
+        cookies: { "authjs.session-token": "forged-or-stale" },
+      });
+      const res = await middleware(req);
+      expect(res.status).toBe(307);
+      expect(res.headers.get("location")).toContain("/login");
+    });
+
+    it("redirects to the MFA challenge when the token requires unverified MFA", async () => {
+      vi.mocked(getToken).mockResolvedValueOnce({
+        sub: "user-1",
+        mfaRequired: true,
+        mfaVerified: false,
+      });
+      const req = createRequest("/dashboard", {
+        headers: {
+          "user-agent":
+            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/120.0",
+        },
+        cookies: { "authjs.session-token": "valid-session" },
+      });
+      const res = await middleware(req);
+      expect(res.status).toBe(307);
+      expect(res.headers.get("location")).toContain("/auth/mfa-challenge");
     });
 
     it("redirects /dashboard to / when AUTH_SECRET is not set", async () => {
