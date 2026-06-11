@@ -8,6 +8,17 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 
 vi.mock("server-only", () => ({}));
 
+// React.cache is a server-runtime API — undefined in the vitest client
+// build of react. Identity-mock (same pattern as dal.test.ts) so the
+// module under test loads AND results are not memoised across cases.
+vi.mock("react", async () => {
+  const actual = await vi.importActual("react");
+  return {
+    ...actual,
+    cache: <T extends (...args: unknown[]) => unknown>(fn: T) => fn,
+  };
+});
+
 // vi.hoisted ensures these fns are created before the vi.mock factory runs
 // (Vitest hoists vi.mock calls above imports, so plain const refs fail).
 const { mockFindUnique, mockUpsert } = vi.hoisted(() => ({

@@ -638,7 +638,7 @@ const IMPLEMENTING_LEGISLATION_NL: LegalSource[] = [
       "Implements WRA registration obligations and the Registration Convention.",
       "Part A: operational objects. Part B: decommissioned objects -- Dutch innovation in space object tracking.",
     ],
-    last_verified: "2026-06",
+    last_verified: "2026-06-04",
   },
   {
     id: "NL-BESLUIT-ONGELEIDE-2015",
@@ -675,7 +675,7 @@ const IMPLEMENTING_LEGISLATION_NL: LegalSource[] = [
       "Besluit van 19 januari 2015 (Stb. 2015, 18; BWBR0036190), in force 1 July 2015.",
       "Corrects the common misconception of a '2013 amendment' -- the unguided-satellite extension is this 2015 decree. Verified 2026-06.",
     ],
-    last_verified: "2026-06",
+    last_verified: "2026-06-04",
   },
 ];
 
