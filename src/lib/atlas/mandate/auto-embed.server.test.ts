@@ -16,7 +16,11 @@ vi.mock("@/lib/prisma", () => ({
     atlasKnowledgeChunk: {
       count: vi.fn(),
       createMany: vi.fn(),
+      // AUDIT-FIX H15: pgvector insert is createManyAndReturn (ids for
+      // the follow-up CASE-WHEN vector UPDATE via $executeRaw).
+      createManyAndReturn: vi.fn(),
     },
+    $executeRaw: vi.fn(),
   },
 }));
 
@@ -25,6 +29,14 @@ vi.mock("@/lib/atlas/knowledge/embed.server", () => ({
   embedTexts: vi.fn(async (chunks: string[]) =>
     chunks.map((_, i) => Array.from({ length: 1536 }, () => i / 1536)),
   ),
+  EMBED_MODEL: "test-embed-model",
+}));
+
+// SEC-T0-1 step 5: chunk text is encrypted before persisting; the real
+// helper needs ENCRYPTION_KEY and would throw in vitest.
+vi.mock("@/lib/atlas/atlas-encryption", () => ({
+  encryptAtlasField: vi.fn(async (text: string) => `enc:${text}`),
+  decryptAtlasField: vi.fn(async (text: string | null) => text),
 }));
 
 vi.mock("@/lib/logger", () => ({
@@ -90,16 +102,28 @@ describe("autoEmbedMandateFile", () => {
       extractedText: "A".repeat(500),
     } as never);
     vi.mocked(prisma.atlasKnowledgeChunk.count).mockResolvedValue(0);
-    vi.mocked(prisma.atlasKnowledgeChunk.createMany).mockResolvedValue({
-      count: 2,
-    } as never);
+    // H15 two-step insert: createManyAndReturn yields the row ids, the
+    // vector itself lands via ONE $executeRaw CASE-WHEN update.
+    vi.mocked(prisma.atlasKnowledgeChunk.createManyAndReturn).mockResolvedValue(
+      [{ id: "k1" }, { id: "k2" }] as never,
+    );
+    vi.mocked(prisma.$executeRaw).mockResolvedValue(2 as never);
 
     const result = await autoEmbedMandateFile("f1");
     expect(result).toMatchObject({
       status: "embedded",
       chunkCount: 2,
     });
-    expect(prisma.atlasKnowledgeChunk.createMany).toHaveBeenCalledTimes(1);
+    expect(
+      prisma.atlasKnowledgeChunk.createManyAndReturn,
+    ).toHaveBeenCalledTimes(1);
+    expect(prisma.$executeRaw).toHaveBeenCalledTimes(1);
+    // SEC-T0-1: persisted chunk text must be the ENCRYPTED form.
+    const createArgs = vi.mocked(prisma.atlasKnowledgeChunk.createManyAndReturn)
+      .mock.calls[0][0] as { data: Array<{ text: string }> };
+    for (const row of createArgs.data) {
+      expect(row.text).toMatch(/^enc:/);
+    }
   });
 
   it("returns 'failed' when file not found", async () => {

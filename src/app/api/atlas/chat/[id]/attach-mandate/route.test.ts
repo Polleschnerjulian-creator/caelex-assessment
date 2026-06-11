@@ -49,7 +49,9 @@ const mkReq = (body: unknown) =>
     body: JSON.stringify(body),
   }) as unknown as Parameters<typeof POST>[0];
 
-const mkCtx = (id = "c1") => ({ params: Promise.resolve({ id }) });
+const CHAT_CUID = "cjld2cjxh0001qzrmn831i7rn"; // AUDIT-FIX L3: param chatId requires .cuid()
+const MANDATE_CUID = "cjld2cjxh0000qzrmn831i7rn"; // AUDIT-FIX M05: body schema requires .cuid()
+const mkCtx = (id: string = CHAT_CUID) => ({ params: Promise.resolve({ id }) });
 
 describe("POST /api/atlas/chat/[id]/attach-mandate", () => {
   beforeEach(() => {
@@ -58,7 +60,7 @@ describe("POST /api/atlas/chat/[id]/attach-mandate", () => {
 
   it("returns 401 when not authenticated", async () => {
     vi.mocked(getAtlasAuth).mockResolvedValue(null);
-    const res = await POST(mkReq({ mandateId: "m1" }), mkCtx());
+    const res = await POST(mkReq({ mandateId: MANDATE_CUID }), mkCtx());
     expect(res.status).toBe(401);
   });
 
@@ -77,7 +79,7 @@ describe("POST /api/atlas/chat/[id]/attach-mandate", () => {
       organizationId: "o1",
     } as never);
     vi.mocked(prisma.atlasChat.findFirst).mockResolvedValue(null);
-    const res = await POST(mkReq({ mandateId: "m1" }), mkCtx());
+    const res = await POST(mkReq({ mandateId: MANDATE_CUID }), mkCtx());
     expect(res.status).toBe(404);
   });
 
@@ -87,10 +89,10 @@ describe("POST /api/atlas/chat/[id]/attach-mandate", () => {
       organizationId: "o1",
     } as never);
     vi.mocked(prisma.atlasChat.findFirst).mockResolvedValue({
-      id: "c1",
+      id: CHAT_CUID,
     } as never);
     vi.mocked(prisma.atlasMandate.findFirst).mockResolvedValue(null);
-    const res = await POST(mkReq({ mandateId: "m1" }), mkCtx());
+    const res = await POST(mkReq({ mandateId: MANDATE_CUID }), mkCtx());
     expect(res.status).toBe(404);
     const body = (await res.json()) as { error: string };
     expect(body.error.toLowerCase()).toContain("mandate");
@@ -102,32 +104,32 @@ describe("POST /api/atlas/chat/[id]/attach-mandate", () => {
       organizationId: "o1",
     } as never);
     vi.mocked(prisma.atlasChat.findFirst).mockResolvedValue({
-      id: "c1",
+      id: CHAT_CUID,
     } as never);
     vi.mocked(prisma.atlasMandate.findFirst).mockResolvedValue({
-      id: "m1",
+      id: MANDATE_CUID,
       name: "Spire 2024",
     } as never);
     vi.mocked(prisma.atlasChat.update).mockResolvedValue({
-      id: "c1",
-      mandateId: "m1",
+      id: CHAT_CUID,
+      mandateId: MANDATE_CUID,
       title: "T",
       updatedAt: new Date(),
     } as never);
 
-    const res = await POST(mkReq({ mandateId: "m1" }), mkCtx());
+    const res = await POST(mkReq({ mandateId: MANDATE_CUID }), mkCtx());
     expect(res.status).toBe(200);
     const body = (await res.json()) as {
       ok: boolean;
       chat: { id: string; mandateId: string };
     };
     expect(body.ok).toBe(true);
-    expect(body.chat.mandateId).toBe("m1");
+    expect(body.chat.mandateId).toBe(MANDATE_CUID);
 
     expect(prisma.atlasChat.update).toHaveBeenCalledWith(
       expect.objectContaining({
-        where: { id: "c1" },
-        data: { mandateId: "m1" },
+        where: { id: CHAT_CUID },
+        data: { mandateId: MANDATE_CUID },
       }),
     );
   });
@@ -142,14 +144,14 @@ describe("POST /api/atlas/chat/[id]/attach-mandate", () => {
       organizationId: "o1",
     } as never);
     vi.mocked(prisma.atlasChat.findFirst).mockResolvedValue({
-      id: "c1",
+      id: CHAT_CUID,
     } as never);
     vi.mocked(prisma.atlasMessage.findFirst).mockResolvedValue({
       id: "msg-streaming",
       createdAt: new Date(),
     } as never);
 
-    const res = await POST(mkReq({ mandateId: "m1" }), mkCtx());
+    const res = await POST(mkReq({ mandateId: MANDATE_CUID }), mkCtx());
     expect(res.status).toBe(409);
     const body = (await res.json()) as { error: string; code: string };
     expect(body.code).toBe("STREAM_IN_FLIGHT");
@@ -169,10 +171,10 @@ describe("POST /api/atlas/chat/[id]/attach-mandate", () => {
       organizationId: "o1",
     } as never);
     vi.mocked(prisma.atlasChat.findFirst).mockResolvedValue({
-      id: "c1",
+      id: CHAT_CUID,
     } as never);
     vi.mocked(prisma.atlasChat.update).mockResolvedValue({
-      id: "c1",
+      id: CHAT_CUID,
       mandateId: null,
       title: "T",
       updatedAt: new Date(),
@@ -189,10 +191,10 @@ describe("POST /api/atlas/chat/[id]/attach-mandate", () => {
       organizationId: "o1",
     } as never);
     vi.mocked(prisma.atlasChat.findFirst).mockResolvedValue({
-      id: "c1",
+      id: CHAT_CUID,
     } as never);
     vi.mocked(prisma.atlasChat.update).mockResolvedValue({
-      id: "c1",
+      id: CHAT_CUID,
       mandateId: null,
       title: "T",
       updatedAt: new Date(),
@@ -204,7 +206,7 @@ describe("POST /api/atlas/chat/[id]/attach-mandate", () => {
     expect(prisma.atlasMandate.findFirst).not.toHaveBeenCalled();
     expect(prisma.atlasChat.update).toHaveBeenCalledWith(
       expect.objectContaining({
-        where: { id: "c1" },
+        where: { id: CHAT_CUID },
         data: { mandateId: null },
       }),
     );
