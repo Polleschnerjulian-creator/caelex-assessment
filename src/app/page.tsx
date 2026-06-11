@@ -23,9 +23,12 @@ export default function Home() {
       />
       <Hero />
       <main className="landing-light bg-[#F7F8FA] text-[#111827] min-h-screen">
-        <BlogShowcase />
+        {/* Landing-review item 6: a first-time visitor needs WHAT Caelex
+            is (mission, products) before news — Palantir order. Blog
+            moved below the product showcase. */}
         <MissionStatement />
         <SoftwareShowcase />
+        <BlogShowcase />
         <CtaBanner />
       </main>
     </>

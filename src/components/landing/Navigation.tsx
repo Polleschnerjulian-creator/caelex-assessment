@@ -64,16 +64,14 @@ const NEWS_ITEMS = [
     title:
       "Free 3-minute quick check is live — map your EU Space Act obligations",
     href: "/assessment/quick",
-    image:
-      "https://images.unsplash.com/photo-1446776811953-b23d57bd21aa?w=600&h=400&fit=crop",
+    image: "/images/nav/news-1.jpg",
   },
   {
     date: "June 2026",
     category: "Product",
     title: "Passage: export control that explains itself",
     href: "/changelog",
-    image:
-      "https://images.unsplash.com/photo-1614728263952-84ea256f9679?w=600&h=400&fit=crop",
+    image: "/images/nav/news-2.jpg",
   },
   {
     date: "February 2026",
@@ -81,16 +79,14 @@ const NEWS_ITEMS = [
     title:
       "NIS2 Directive now applies to space — 5 things every operator must do",
     href: "/solutions/cybersecurity-nis2",
-    image:
-      "https://images.unsplash.com/photo-1550751827-4bd374c3f58b?w=600&h=400&fit=crop",
+    image: "/images/nav/news-3.jpg",
   },
   {
     date: "May 2026",
     category: "Product",
     title: "Screening that follows the ownership chain",
     href: "/changelog",
-    image:
-      "https://images.unsplash.com/photo-1457364887197-9150188c107b?w=600&h=400&fit=crop",
+    image: "/images/nav/news-4.jpg",
   },
   {
     date: "January 2026",
@@ -98,8 +94,7 @@ const NEWS_ITEMS = [
     title:
       "10 European jurisdictions, one platform — how Caelex maps the regulatory landscape",
     href: "/modules",
-    image:
-      "https://images.unsplash.com/photo-1451187580459-43490279c0fa?w=600&h=400&fit=crop",
+    image: "/images/nav/news-5.jpg",
   },
   {
     date: "January 2026",
@@ -107,8 +102,7 @@ const NEWS_ITEMS = [
     title:
       "Regulatory deadlines 2026–2028: the critical dates for EU space operators",
     href: "/resources/timeline",
-    image:
-      "https://images.unsplash.com/photo-1516849841032-87cbac4d88f7?w=600&h=400&fit=crop",
+    image: "/images/nav/news-6.jpg",
   },
 ];
 
