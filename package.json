@@ -155,7 +155,6 @@
     "server-only": "^0.0.1",
     "sonner": "^2.0.7",
     "stripe": "^20.3.0",
-    "swagger-ui-react": "^5.31.0",
     "tailwind-merge": "^3.5.0",
     "three": "^0.160.0",
     "tiptap-footnotes": "^3.0.1",
