@@ -38,7 +38,7 @@ import {
   Briefcase,
 } from "lucide-react";
 import { useLanguage } from "@/components/providers/LanguageProvider";
-import { ALL_SOURCES } from "@/data/legal-sources";
+import { SOURCE_JURISDICTION_CODES } from "@/data/legal-sources/meta";
 import { openAIMode } from "@/components/atlas/AIModeLauncher";
 import { pushDraftLibrary } from "@/lib/atlas/drafting-history";
 import { getActiveMandate, type Mandate } from "@/lib/atlas/mandate-store";
@@ -113,11 +113,9 @@ export default function ParallelDraftPage() {
   const [dispatched, setDispatched] = useState<Set<string>>(new Set());
 
   const allJurisdictions = useMemo(() => {
-    const set = new Set<string>();
-    for (const s of ALL_SOURCES) set.add(s.jurisdiction);
-    return Array.from(set)
-      .filter((j) => j !== "INT" && j !== "EU")
-      .sort();
+    // Baked, pre-sorted distinct source jurisdictions (meta generator —
+    // perf pass F3; previously derived from the 3MB ALL_SOURCES barrel).
+    return SOURCE_JURISDICTION_CODES.filter((j) => j !== "INT" && j !== "EU");
   }, []);
 
   /* If mandate has primary jurisdiction, prefill it first in the set. */

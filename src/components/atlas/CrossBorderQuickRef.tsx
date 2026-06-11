@@ -28,11 +28,12 @@ import {
   ATLAS_EXTENDED_JURISDICTION_CODES,
   type AtlasExtendedJurisdictionCode,
 } from "@/lib/space-law-types";
-import {
-  getLegalSourcesByJurisdiction,
-  getAuthoritiesByJurisdiction,
-  type ComplianceArea,
-} from "@/data/legal-sources";
+// Baked per-jurisdiction aggregates (perf pass F3) — source counts,
+// top compliance areas and the authority preview used to be tallied
+// here from the ~3MB corpus barrel; the meta generator now bakes the
+// identical derivation (guarded by meta-drift.test.ts).
+import { getJurisdictionMeta } from "@/data/legal-sources/meta";
+import type { ComplianceArea } from "@/data/legal-sources/types";
 
 const FLAG: Record<AtlasExtendedJurisdictionCode, string> = {
   JP: "🇯🇵",
@@ -72,31 +73,15 @@ interface QuickRefCard {
 }
 
 function buildCard(code: AtlasExtendedJurisdictionCode): QuickRefCard {
-  const sources = getLegalSourcesByJurisdiction(code);
-  const authorities = getAuthoritiesByJurisdiction(code);
-
-  // Tally compliance areas across this JD's sources, return top 3.
-  const tally = new Map<ComplianceArea, number>();
-  for (const s of sources) {
-    for (const a of s.compliance_areas) {
-      tally.set(a, (tally.get(a) ?? 0) + 1);
-    }
-  }
-  const topAreas = [...tally.entries()]
-    .sort((a, b) => b[1] - a[1])
-    .slice(0, 3)
-    .map(([a]) => a);
+  const meta = getJurisdictionMeta(code);
 
   return {
     code,
     name: NAME[code],
     flag: FLAG[code],
-    sourceCount: sources.length,
-    authorities: authorities.slice(0, 3).map((a) => ({
-      id: a.id,
-      abbreviation: a.abbreviation ?? "",
-    })),
-    topAreas,
+    sourceCount: meta?.sourceCount ?? 0,
+    authorities: meta ? [...meta.authoritiesPreview] : [],
+    topAreas: meta ? [...meta.topComplianceAreas] : [],
   };
 }
 

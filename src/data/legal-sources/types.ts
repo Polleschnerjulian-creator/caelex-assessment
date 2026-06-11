@@ -435,3 +435,57 @@ export interface JurisdictionLegalData {
   sources: LegalSource[];
   authorities: Authority[];
 }
+
+// ─── Client-safe corpus metadata (perf pass F3) ──────────────────────
+//
+// Light projections of the corpus, BAKED at generation time by
+// `scripts/generate-legal-sources-meta.ts` into *.generated.ts files so
+// client components can render counts / labels / per-jurisdiction stats
+// without value-importing the ~3MB barrel. See ./meta.ts and
+// ./source-meta.ts for the lookup facades.
+
+/** Top-level corpus inventory counts. */
+export interface CorpusStats {
+  sources: number;
+  authorities: number;
+  jurisdictions: number;
+}
+
+/**
+ * Light per-source record — ONLY cheap scalar fields. Full texts
+ * (key_provisions, scope_description, …) deliberately excluded; fetch
+ * those server-side or via /api/atlas/source-preview/[id].
+ */
+export interface LegalSourceMetaRecord {
+  id: string;
+  jurisdiction: string;
+  type: LegalSourceType;
+  status: LegalSourceStatus;
+  title_en: string;
+}
+
+/**
+ * Per-jurisdiction aggregate, mirroring what the browse surfaces
+ * (atlas/jurisdictions, CrossBorderQuickRef) derive from
+ * getLegalSourcesByJurisdiction()/getAuthoritiesByJurisdiction() —
+ * including INT/EU instruments that apply to the jurisdiction.
+ */
+export interface JurisdictionMetaRecord {
+  code: string;
+  /** getLegalSourcesByJurisdiction(code).length (national + applicable INT/EU). */
+  sourceCount: number;
+  /** getAuthoritiesByJurisdiction(code).length. */
+  authorityCount: number;
+  /** Treaty-ratification flags derived from in-force sources (id heuristics). */
+  treaties: {
+    ost: boolean;
+    liability: boolean;
+    registration: boolean;
+    moon: boolean;
+    artemis: boolean;
+  };
+  /** Top-3 compliance areas by frequency across the jurisdiction's sources. */
+  topComplianceAreas: ComplianceArea[];
+  /** First 3 authorities (id + abbreviation) for quick-ref cards. */
+  authoritiesPreview: { id: string; abbreviation: string }[];
+}

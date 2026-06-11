@@ -44,11 +44,7 @@ import {
   useAtlasTheme,
   type AtlasTheme,
 } from "../_components/AtlasThemeProvider";
-import {
-  ALL_SOURCES,
-  ALL_AUTHORITIES,
-  getAvailableJurisdictions,
-} from "@/data/legal-sources";
+import { CORPUS_STATS } from "@/data/legal-sources/meta";
 import { AccountBanner } from "@/components/atlas/AccountBanner";
 import { AtlasDataRightsCard } from "./AtlasDataRightsCard";
 import { LetterheadSettings } from "@/components/atlas/v2/LetterheadSettings";
@@ -57,12 +53,14 @@ import { NotificationsSection } from "@/components/atlas/v2/NotificationsSection
 import { AIContextSection } from "@/components/atlas/v2/AIContextSection";
 import { invalidateFirmBranding } from "@/components/atlas/useFirmBranding";
 
-// Computed inventory counts — derived from the same barrel exports the
-// rest of Atlas uses, so the settings stats never drift from reality.
+// Inventory counts — baked from the corpus by the meta generator
+// (drift-guarded by meta-drift.test.ts), so the settings stats stay in
+// sync with reality WITHOUT shipping the ~3MB barrel to the client
+// (perf pass F3).
 const ATLAS_STATS = {
-  jurisdictions: getAvailableJurisdictions().length,
-  sources: ALL_SOURCES.length,
-  authorities: ALL_AUTHORITIES.length,
+  jurisdictions: CORPUS_STATS.jurisdictions,
+  sources: CORPUS_STATS.sources,
+  authorities: CORPUS_STATS.authorities,
 };
 
 /* ────────────────────────────────────────────

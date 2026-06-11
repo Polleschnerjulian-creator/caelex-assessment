@@ -3,19 +3,17 @@
 import { useState, useMemo } from "react";
 import Link from "next/link";
 import { JURISDICTION_DATA } from "@/data/national-space-laws";
-import {
-  getLegalSourcesByJurisdiction,
-  getAuthoritiesByJurisdiction,
-  getAvailableJurisdictions,
-} from "@/data/legal-sources";
+// Baked per-jurisdiction aggregates (counts + treaty flags) from the
+// meta generator — perf pass F3. Replaces getLegalSourcesByJurisdiction
+// / getAuthoritiesByJurisdiction so this browse page no longer ships
+// the ~3MB corpus barrel; meta-drift.test.ts keeps the numbers honest.
+import { getJurisdictionMeta } from "@/data/legal-sources/meta";
 import { useLanguage } from "@/components/providers/LanguageProvider";
 import { getJurisdictionNames } from "../i18n-labels";
 import { ArrowRight, Filter, Check, FileDown } from "lucide-react";
 import { BookmarkButton } from "../_components/BookmarkButton";
 
 // ─── Build enriched jurisdiction data ──────────────────────────────
-
-const SOURCES_SET = new Set(getAvailableJurisdictions());
 
 interface Jurisdiction {
   code: string;
@@ -42,32 +40,11 @@ interface Jurisdiction {
 function buildJurisdictions(): Jurisdiction[] {
   const result: Jurisdiction[] = [];
   for (const [code, data] of JURISDICTION_DATA) {
-    const hasSources = SOURCES_SET.has(code);
-    const sources = hasSources ? getLegalSourcesByJurisdiction(code) : [];
-    const authorities = hasSources ? getAuthoritiesByJurisdiction(code) : [];
-
-    // Detect treaty ratification from sources
-    const hasOST = sources.some(
-      (s) => s.id.includes("OST") && s.status === "in_force",
-    );
-    const hasLiabilityConv = sources.some(
-      (s) =>
-        s.id.includes("LIABILITY") &&
-        s.type === "international_treaty" &&
-        s.status === "in_force",
-    );
-    const hasRegConv = sources.some(
-      (s) =>
-        s.id.includes("REGISTRATION") &&
-        s.type === "international_treaty" &&
-        s.status === "in_force",
-    );
-    const hasMoon = sources.some(
-      (s) => s.id.includes("MOON") && s.status === "in_force",
-    );
-    const hasArtemis = sources.some(
-      (s) => s.id.includes("ARTEMIS") && s.status === "in_force",
-    );
+    // Counts + treaty-ratification flags come baked from the meta
+    // generator (same derivation that previously ran here over the
+    // full corpus). Codes without a legal-sources catalogue entry get
+    // the same zero/false shape the old `hasSources` gate produced.
+    const meta = getJurisdictionMeta(code);
 
     const hasSpaceAct =
       data.legislation.status === "enacted" && data.legislation.yearEnacted > 0;
@@ -84,13 +61,13 @@ function buildJurisdictions(): Jurisdiction[] {
       liability: data.insuranceLiability.liabilityRegime,
       hasRegistry: data.registration.nationalRegistryExists,
       hasDebrisRules: data.debrisMitigation.deorbitRequirement,
-      sourceCount: sources.length,
-      authorityCount: authorities.length,
-      ost: hasOST,
-      liability_conv: hasLiabilityConv,
-      registration_conv: hasRegConv,
-      moon: hasMoon,
-      artemis: hasArtemis,
+      sourceCount: meta?.sourceCount ?? 0,
+      authorityCount: meta?.authorityCount ?? 0,
+      ost: meta?.treaties.ost ?? false,
+      liability_conv: meta?.treaties.liability ?? false,
+      registration_conv: meta?.treaties.registration ?? false,
+      moon: meta?.treaties.moon ?? false,
+      artemis: meta?.treaties.artemis ?? false,
     });
   }
   return result.sort(

@@ -38,7 +38,7 @@ import {
   Globe,
 } from "lucide-react";
 import { useLanguage } from "@/components/providers/LanguageProvider";
-import { ALL_SOURCES } from "@/data/legal-sources";
+import { SOURCE_JURISDICTION_CODES } from "@/data/legal-sources/meta";
 import {
   getClauses,
   createClause,
@@ -94,11 +94,9 @@ export default function ClauseLibraryPage() {
 
   const refresh = () => setClauses(getClauses());
 
-  const allJurisdictions = useMemo(() => {
-    const set = new Set<string>();
-    for (const s of ALL_SOURCES) set.add(s.jurisdiction);
-    return Array.from(set).sort();
-  }, []);
+  // Baked, pre-sorted distinct source jurisdictions (meta generator —
+  // perf pass F3; previously derived from the 3MB ALL_SOURCES barrel).
+  const allJurisdictions = SOURCE_JURISDICTION_CODES;
 
   const allTags = useMemo(() => {
     const set = new Set<string>();

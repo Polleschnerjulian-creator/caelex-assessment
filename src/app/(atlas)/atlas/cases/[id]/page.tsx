@@ -17,7 +17,10 @@ import {
   getCasesApplyingSource,
   getTranslatedCase,
 } from "@/data/legal-cases";
-import { getLegalSourceById } from "@/data/legal-sources";
+// Light id → title/type/jurisdiction lookup (perf pass F3) — the
+// "applied sources" list only renders labels + links, so the ~3MB
+// corpus barrel (getLegalSourceById) is deliberately NOT imported here.
+import { getSourceMetaById } from "@/data/legal-sources/source-meta";
 import { useLanguage } from "@/components/providers/LanguageProvider";
 
 /**
@@ -271,7 +274,7 @@ export default function AtlasCaseDetailPage({ params }: PageProps) {
             </h2>
             <ul className="space-y-2">
               {c.applied_sources.map((sid) => {
-                const src = getLegalSourceById(sid);
+                const src = getSourceMetaById(sid);
                 return (
                   <li key={sid}>
                     <Link

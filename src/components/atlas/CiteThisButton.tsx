@@ -2,8 +2,11 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Quote, Copy, Check, X } from "lucide-react";
-import type { LegalSource } from "@/data/legal-sources";
-import { getTranslatedSource } from "@/data/legal-sources";
+import type { LegalSource } from "@/data/legal-sources/types";
+// Translation lookup only — imported from the translations submodule so
+// this prop-driven component never drags the ~3MB corpus barrel into
+// the client bundle (perf pass F3).
+import { getTranslatedSource } from "@/data/legal-sources/translations";
 import type { Language } from "@/lib/i18n";
 
 /**

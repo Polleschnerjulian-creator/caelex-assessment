@@ -27,7 +27,7 @@ import {
   Layers,
 } from "lucide-react";
 import { useLanguage } from "@/components/providers/LanguageProvider";
-import { ALL_SOURCES } from "@/data/legal-sources";
+import { SOURCE_JURISDICTION_CODES } from "@/data/legal-sources/meta";
 import { openAIMode } from "@/components/atlas/AIModeLauncher";
 import {
   getRecentAuth,
@@ -536,13 +536,11 @@ export default function DraftingStudioPage() {
     privileged ? buildPrivilegePrefix(language) + prompt : prompt;
 
   const allJurisdictions = useMemo(() => {
-    const set = new Set<string>();
-    for (const s of ALL_SOURCES) set.add(s.jurisdiction);
+    // Baked, pre-sorted distinct source jurisdictions (meta generator —
+    // perf pass F3; previously derived from the 3MB ALL_SOURCES barrel).
     // Drop INT/EU from the dropdown — they're not "filing" targets in
     // the same sense as a national jurisdiction.
-    return Array.from(set)
-      .filter((j) => j !== "INT" && j !== "EU")
-      .sort();
+    return SOURCE_JURISDICTION_CODES.filter((j) => j !== "INT" && j !== "EU");
   }, []);
 
   /* Q4 — outputDe is the source of truth for which language Astra

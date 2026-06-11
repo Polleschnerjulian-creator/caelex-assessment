@@ -4,12 +4,16 @@ import type {
   LegalSource,
   Authority,
   KeyProvision,
-} from "@/data/legal-sources";
+} from "@/data/legal-sources/types";
+// Sources/authorities arrive via props; only the translation lookups
+// and the provision normaliser are needed at runtime. Imported from the
+// light submodules so this component never drags the ~3MB corpus
+// barrel into the client bundle (perf pass F3).
 import {
   getTranslatedSource,
   getTranslatedAuthority,
-  normalizeKeyProvision,
-} from "@/data/legal-sources";
+} from "@/data/legal-sources/translations";
+import { normalizeKeyProvision } from "@/data/legal-sources/types";
 import type {
   SpaceLawCountryCode,
   JurisdictionLaw,

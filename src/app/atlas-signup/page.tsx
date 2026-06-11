@@ -6,20 +6,17 @@ import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import { Eye, EyeOff, Mail } from "lucide-react";
-import {
-  ALL_SOURCES,
-  ALL_AUTHORITIES,
-  getAvailableJurisdictions,
-} from "@/data/legal-sources";
+import { CORPUS_STATS } from "@/data/legal-sources/meta";
 import styles from "./atlas-signup.module.css";
 
 /**
  * /atlas-signup — Atlas-branded create-account page.
  *
  * Same dark stage as /login, but the left column carries a pitch +
- * three live stat chips derived from the legal-source barrel. The
- * stats compile to literal numbers at build time (no runtime fetch)
- * so the page has zero network dependencies on first paint.
+ * three live stat chips baked from the legal-source corpus (via the
+ * generated meta module — NOT the 3MB barrel). The stats compile to
+ * literal numbers at build time (no runtime fetch) so the page has
+ * zero network dependencies on first paint.
  *
  * Supports the invite-redemption flow via ?inviteToken=… &email=…
  * query params: the invite banner replaces the org field and locks
@@ -30,11 +27,13 @@ import styles from "./atlas-signup.module.css";
  * brand (dark stage, caelex wordmark, ATLAS lockup footer).
  */
 
-/** Live inventory — evaluated at module load from static data files. */
+/** Live inventory — baked from the corpus by the meta generator
+ *  (drift-guarded by meta-drift.test.ts). Keeps the stat chips in sync
+ *  without shipping the ~3MB barrel on the public signup route. */
 const ATLAS_STATS = {
-  sources: ALL_SOURCES.length,
-  authorities: ALL_AUTHORITIES.length,
-  jurisdictions: getAvailableJurisdictions().length,
+  sources: CORPUS_STATS.sources,
+  authorities: CORPUS_STATS.authorities,
+  jurisdictions: CORPUS_STATS.jurisdictions,
 };
 
 const CAELEX_ICON_SRC = "/brand/caelex-icon.png";
