@@ -40,6 +40,7 @@ const PARTY_TYPES = [
 /* AUDIT-FIX Q03 (2026-05-17): membership check moved to shared
    @/lib/atlas/mandate-membership. */
 import { checkMandateMembership } from "@/lib/atlas/mandate-membership";
+import { detectConflictsOnWrite } from "@/lib/atlas/conflict-check-detect.server";
 
 export async function GET(
   req: NextRequest,
@@ -179,7 +180,18 @@ export async function POST(
       partyId: created.id,
       type: created.type,
     });
-    return NextResponse.json({ party: created });
+    /* Conflict-of-interest detect-on-write (spec §7, additive — the
+       existing `party` field is untouched). The new party may collide
+       with parties of other mandates in the firm; surfacing the result
+       here lets the UI warn in the same round-trip. Detect failures
+       never block the write (wrapper falls back to []). */
+    const conflicts = await detectConflictsOnWrite({
+      orgId: atlas.organizationId,
+      mandateId,
+      callerUserId: atlas.userId,
+      logScope: "[atlas/parties]",
+    });
+    return NextResponse.json({ party: created, conflicts });
   } catch (err) {
     logger.error("[atlas/parties] create failed", {
       mandateId,

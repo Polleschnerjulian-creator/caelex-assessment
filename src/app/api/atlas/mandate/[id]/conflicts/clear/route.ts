@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getAtlasAuth } from "@/lib/atlas-auth";
 import { prisma } from "@/lib/prisma";
 import { logger } from "@/lib/logger";
+import { maskId } from "@/lib/atlas/log-masking";
 import { checkMandateMembership } from "@/lib/atlas/mandate-membership";
 import { z } from "zod";
 
@@ -122,9 +123,10 @@ export async function POST(
     });
     return NextResponse.json({ clearance });
   } catch (err) {
+    // AUDIT-FIX M23 convention: mask CUIDs before logging.
     logger.error("[atlas/conflicts] clear failed", {
-      mandateId,
-      userId: atlas.userId,
+      mandateId: maskId(mandateId),
+      userId: maskId(atlas.userId),
       error: err instanceof Error ? err.message : String(err),
     });
     return NextResponse.json(

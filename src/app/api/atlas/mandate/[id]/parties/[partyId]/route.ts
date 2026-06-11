@@ -25,6 +25,7 @@ import { getAtlasAuth } from "@/lib/atlas-auth";
 import { checkRateLimit, getIdentifier } from "@/lib/ratelimit";
 import { prisma } from "@/lib/prisma";
 import { logger } from "@/lib/logger";
+import { detectConflictsOnWrite } from "@/lib/atlas/conflict-check-detect.server";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -127,7 +128,18 @@ export async function PATCH(
       partyId,
       userId: atlas.userId,
     });
-    return NextResponse.json({ party: updated });
+    /* Conflict-of-interest detect-on-write (spec §7, additive — the
+       existing `party` field is untouched). A rename or type change can
+       create (or resolve) a conflict; recompute so the UI warns in the
+       same round-trip. Detect failures never block the write (wrapper
+       falls back to []). */
+    const conflicts = await detectConflictsOnWrite({
+      orgId: atlas.organizationId,
+      mandateId,
+      callerUserId: atlas.userId,
+      logScope: "[atlas/parties]",
+    });
+    return NextResponse.json({ party: updated, conflicts });
   } catch (err) {
     logger.error("[atlas/parties] update failed", {
       mandateId,

@@ -57,6 +57,7 @@ import { MandateBackgroundAgentSection } from "./MandateBackgroundAgentSection";
 import { MandateHeaderEditor } from "./MandateHeaderEditor";
 import { MandateDeadlineSuggestions } from "./MandateDeadlineSuggestions";
 import { MandateParties } from "./MandateParties";
+import { MandateConflictBanner } from "./MandateConflictBanner";
 import { MandateActivityFeed } from "./MandateActivityFeed";
 
 interface Props {
@@ -516,6 +517,13 @@ export function MandateDetailView({ mandateId }: Props) {
               initialData={aggregated?.timeEntries}
             />
           </section>
+
+          {/* Interessenkonflikt-Banner (Spec 2026-05-30): rendert nur bei
+              offenen Treffern; refetcht auf "atlas:parties-changed". */}
+          <MandateConflictBanner
+            mandateId={mandate.id}
+            disabled={isArchived || isClosed}
+          />
 
           {/* AUDIT-FIX 2026-05-17: strukturierte Parteien — Mandant, Gegner,
               Behörde, Co-Counsel. Schließt die größte Audit-Feature-Lücke

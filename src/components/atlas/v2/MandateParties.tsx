@@ -32,6 +32,7 @@ import {
   X,
   Check,
 } from "lucide-react";
+import { PARTIES_CHANGED_EVENT } from "./MandateConflictBanner";
 
 type PartyType = "client" | "opponent" | "authority" | "co_counsel" | "other";
 
@@ -159,6 +160,9 @@ export function MandateParties({ mandateId, disabled, initialData }: Props) {
       );
       if (res.ok) {
         setParties((prev) => prev.filter((p) => p.id !== party.id));
+        // Konflikt-Banner refetcht auf dieses Event (Löschen kann einen
+        // offenen Konflikt auflösen).
+        window.dispatchEvent(new Event(PARTIES_CHANGED_EVENT));
       } else {
         const body = (await res.json().catch(() => ({}))) as {
           error?: string;
@@ -176,6 +180,9 @@ export function MandateParties({ mandateId, disabled, initialData }: Props) {
       return prev.map((p) => (p.id === party.id ? party : p));
     });
     setEditorState(null);
+    // Konflikt-Banner refetcht auf dieses Event — neue/umbenannte
+    // Parteien können firm-weite Interessenkonflikte erzeugen.
+    window.dispatchEvent(new Event(PARTIES_CHANGED_EVENT));
   };
 
   return (

@@ -21,6 +21,7 @@ import {
   encryptAtlasField,
   decryptAtlasField,
 } from "@/lib/atlas/atlas-encryption";
+import { detectConflictsOnWrite } from "@/lib/atlas/conflict-check-detect.server";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -102,6 +103,19 @@ export async function POST(req: NextRequest) {
         createdAt: true,
       },
     });
+    /* Conflict-of-interest detect-on-write (spec §7, additive — the
+       existing `mandate` field is untouched). A freshly created mandate
+       has no structured parties yet, so this is usually `[]`, but the
+       field keeps the response contract uniform with the parties
+       routes. A detect failure never blocks creation (wrapper falls
+       back to [] and logs masked). */
+    const conflicts = await detectConflictsOnWrite({
+      orgId: atlas.organizationId,
+      mandateId: created.id,
+      callerUserId: atlas.userId,
+      logScope: "[atlas/mandate]",
+    });
+
     /* Decrypt the returned clientName before responding so the client
        UI receives plaintext (encryption is a server-side invariant,
        transparent to API consumers). */
@@ -110,6 +124,7 @@ export async function POST(req: NextRequest) {
         ...created,
         clientName: await decryptAtlasField(created.clientName),
       },
+      conflicts,
     });
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err);

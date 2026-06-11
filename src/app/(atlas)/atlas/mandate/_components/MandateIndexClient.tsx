@@ -16,6 +16,7 @@ import { useMemo, useState } from "react";
 import Link from "next/link";
 import { Search, Plus } from "lucide-react";
 import { MandateIndexCard, type IndexMandate } from "./MandateIndexCard";
+import { FirmConflictsPanel } from "./FirmConflictsPanel";
 
 type SortKey = "recent" | "name" | "deadlines";
 type StatusFilter = "active" | "archived" | "closed" | "all";
@@ -74,6 +75,9 @@ export function MandateIndexClient({ mandates }: Props) {
           Neues Mandat
         </Link>
       </div>
+
+      {/* Firm-weite offene Interessenkonflikte — rendert nur bei Treffern */}
+      <FirmConflictsPanel />
 
       {/* Filters / Search */}
       <div className="flex items-center gap-2 border-b border-slate-100 px-6 py-3 dark:border-white/[0.05]">

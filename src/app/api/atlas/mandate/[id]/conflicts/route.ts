@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getAtlasAuth } from "@/lib/atlas-auth";
 import { logger } from "@/lib/logger";
+import { maskId } from "@/lib/atlas/log-masking";
 import { checkMandateMembership } from "@/lib/atlas/mandate-membership";
 import { detectConflicts } from "@/lib/atlas/conflict-check-detect.server";
 
@@ -47,9 +48,10 @@ export async function GET(
     });
     return NextResponse.json({ conflicts });
   } catch (err) {
+    // AUDIT-FIX M23 convention: mask CUIDs before logging.
     logger.error("[atlas/conflicts] detect failed", {
-      mandateId,
-      userId: atlas.userId,
+      mandateId: maskId(mandateId),
+      userId: maskId(atlas.userId),
       error: err instanceof Error ? err.message : String(err),
     });
     return NextResponse.json(
