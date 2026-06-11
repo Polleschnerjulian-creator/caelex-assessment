@@ -24,7 +24,7 @@ The platform includes:
 - **Payments:** Stripe (checkout, portal, webhooks)
 - **Storage:** Cloudflare R2 / S3-compatible (via AWS SDK)
 - **AI:** Anthropic Claude (@anthropic-ai/sdk) for Astra AI copilot + document generation
-- **Rate Limiting:** Upstash Redis (sliding window, 19 tiers)
+- **Rate Limiting:** Upstash Redis (sliding window, ~40 tiers — `src/lib/ratelimit.ts` is the source of truth; ACTIVE in prod since 2026-06-11 via Marketplace store, credentials resolve through `src/lib/upstash-env.ts` accepting UPSTASH\_\* or KV*REST_API*\* names)
 - **Encryption:** AES-256-GCM (scrypt key derivation) for sensitive fields
 - **Email:** Resend (primary) / Nodemailer SMTP (fallback)
 - **PDF:** @react-pdf/renderer (client-side) + jsPDF (server-side), 8+ report types
@@ -119,7 +119,7 @@ tests/                  163 test files (co-located in src/ as *.test.ts)
 - `/blog`, `/blog/[slug]` — Blog system
 - `/careers`, `/careers/[id]`, `/careers/apply` — Career pages
 - `/glossary`, `/guides`, `/modules`, `/jurisdictions` — Content pages
-- `/docs/api` — API documentation (Swagger UI)
+- `/docs/api` — API reference (native server-rendered from `src/lib/openapi.ts`; login-gated + noindex, NOT public)
 - `/supplier/[token]` — Supplier data portal (token-gated)
 - `/stakeholder/portal` — Stakeholder compliance portal
 
@@ -349,7 +349,7 @@ npm run build:widget     # Build embeddable widget
 
 - **Server-only files:** `*.server.ts` — Never bundled to client. Import `server-only` package.
 - **Input validation:** Centralized Zod schemas in `src/lib/validations.ts`
-- **Rate limiting:** `src/lib/ratelimit.ts` — Upstash Redis sliding window with 19 tiers: `api` (100/min), `auth` (5/min), `registration` (3/hr), `assessment` (10/hr), `export` (20/hr), `sensitive` (5/hr), `supplier` (30/hr), `document_generation` (5/hr), `nca_portal` (30/hr), `nca_package` (10/hr), `public_api` (5/hr), `widget` (30/hr), `mfa` (5/min), `generate2` (20/hr), `admin` (30/min), `contact` (5/hr), `assure` (30/hr), `assure_public` (10/hr), `academy` (30/min). In-memory fallback with ~50% lower limits for dev.
+- **Rate limiting:** `src/lib/ratelimit.ts` — Upstash Redis sliding window, ~40 tiers (the file is the source of truth; this doc deliberately stops enumerating them because the list drifted). Notable: `api` (100/min), `auth` (5/min), `assessment_calculate` (120/hr, sized for shared NAT/booth IPs), `widget` incl. /passage/check (60/hr), `public_api` (5/hr). In-memory fallback with ~50% lower limits when Redis is absent (dev) — per-instance only.
 - **Encryption:** `src/lib/encryption.ts` — AES-256-GCM for VAT numbers, bank accounts, tax IDs, policy numbers
 - **Auth helpers:** `src/lib/auth.ts` (NextAuth config) + `src/lib/api-auth.ts` (API key auth)
 - **Audit logging:** `src/lib/audit.ts` — Full trail with IP, user-agent, entity changes
@@ -359,7 +359,7 @@ npm run build:widget     # Build embeddable widget
 ## Security
 
 - **CSRF:** Origin header validation in middleware + CSRF tokens on state-changing requests
-- **Rate limiting:** Upstash Redis sliding window (19 tiers, IP-based + user-based), in-memory fallback for dev
+- **Rate limiting:** Upstash Redis sliding window (~40 tiers, IP-based + user-based), in-memory fallback for dev
 - **IP resolution:** 4-layer trust: cf-connecting-ip → x-real-ip → rightmost x-forwarded-for → "unknown" (strict)
 - **Brute force:** 5 login attempts per 15 minutes, event logging, `LoginAttempt` + `LoginEvent` models
 - **MFA:** TOTP with QR setup + backup codes, WebAuthn/FIDO2 hardware keys (`MfaConfig`, `WebAuthnCredential`)
