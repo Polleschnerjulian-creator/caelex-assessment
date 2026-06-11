@@ -17,13 +17,11 @@ All API requests require an API key. Include your key in the \`Authorization\` h
 Authorization: Bearer caelex_your_api_key_here
 \`\`\`
 
-API keys can be generated in the [Settings > API Keys](/settings/api-keys) section of your dashboard.
+API keys can be generated in the [Settings > API Keys](/dashboard/settings/api-keys) section of your dashboard.
 
 ## Rate Limits
 
-- **Standard plan**: 1,000 requests per hour
-- **Professional plan**: 10,000 requests per hour
-- **Enterprise plan**: Custom limits
+Each API key carries its own request budget — **1,000 requests per hour by default**. Higher limits are available on request ([contact us](/contact)).
 
 Rate limit headers are included in all responses:
 - \`X-RateLimit-Limit\`: Maximum requests per hour
@@ -73,14 +71,12 @@ The API uses standard HTTP status codes. Error responses include:
       url: "https://www.caelex.eu/terms",
     },
   },
+  // ONE real server — the previous first entry (app.caelex.eu) never
+  // existed and broke copy-paste integration on the first request.
   servers: [
     {
-      url: "https://app.caelex.eu/api/v1",
+      url: "https://www.caelex.eu/api/v1",
       description: "Production",
-    },
-    {
-      url: `${process.env.NEXT_PUBLIC_APP_URL || "https://www.caelex.eu"}/api/v1`,
-      description: "Local development",
     },
   ],
   tags: [
@@ -713,7 +709,13 @@ The API uses standard HTTP status codes. Error responses include:
 
     // ─── Public Endpoints ───
 
-    "/../public/compliance/quick-check": {
+    // Public endpoints live under /api/public (not /api/v1) — expressed via
+    // a path-level server override instead of the old "/../public" hack
+    // that rendered as a broken path in the reference.
+    "/compliance/quick-check": {
+      servers: [
+        { url: "https://www.caelex.eu/api/public", description: "Public" },
+      ],
       post: {
         tags: ["Public"],
         summary: "Quick compliance check (unauthenticated)",
@@ -761,7 +763,10 @@ The API uses standard HTTP status codes. Error responses include:
         },
       },
     },
-    "/../public/compliance/nis2/quick-classify": {
+    "/compliance/nis2/quick-classify": {
+      servers: [
+        { url: "https://www.caelex.eu/api/public", description: "Public" },
+      ],
       post: {
         tags: ["Public"],
         summary: "Quick NIS2 classification (unauthenticated)",
@@ -788,6 +793,82 @@ The API uses standard HTTP status codes. Error responses include:
         },
         responses: {
           "200": { description: "NIS2 classification result" },
+          "429": { $ref: "#/components/responses/RateLimited" },
+        },
+      },
+    },
+    "/passage-check": {
+      servers: [
+        { url: "https://www.caelex.eu/api/public", description: "Public" },
+      ],
+      post: {
+        tags: ["Public"],
+        summary: "Export-control keyword check (unauthenticated)",
+        description:
+          "Deterministic keyword match of a free-text product description " +
+          "against the control-list corpus (EU Annex I, NSG, EU Reg. 833/2014 " +
+          "deep annexes, plus headline sets of US CCL/USML XV/MTCR/Wassenaar/" +
+          "DE Ausfuhrliste). INDICATION ONLY — every response carries a " +
+          "disclaimer: keyword hints are not a classification, and zero " +
+          "matches is not a clearance. Rate limited to 30 requests/hour per " +
+          "IP. No API key required; nothing is stored.",
+        operationId: "passageCheck",
+        requestBody: {
+          required: true,
+          content: {
+            "application/json": {
+              schema: {
+                type: "object",
+                required: ["description"],
+                properties: {
+                  description: {
+                    type: "string",
+                    minLength: 10,
+                    maxLength: 2000,
+                    example:
+                      "Momentum-exchange reaction wheel for satellite attitude control, 0.25 Nms, space-qualified bearings",
+                  },
+                },
+              },
+            },
+          },
+        },
+        responses: {
+          "200": {
+            description:
+              "Indicative candidates + the mandatory honesty disclaimer",
+            content: {
+              "application/json": {
+                schema: {
+                  type: "object",
+                  properties: {
+                    disclaimer: { type: "string" },
+                    coveredLists: {
+                      type: "array",
+                      items: { type: "string" },
+                    },
+                    candidates: {
+                      type: "array",
+                      items: {
+                        type: "object",
+                        properties: {
+                          code: { type: "string", example: "9A004" },
+                          list: {
+                            type: "string",
+                            example: "EU Annex I Cat. 1+2",
+                          },
+                          title: { type: "string" },
+                          rationale: { type: "string" },
+                          confidence: { type: "string", example: "LOW" },
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+          "400": { description: "Description missing or out of bounds" },
           "429": { $ref: "#/components/responses/RateLimited" },
         },
       },
