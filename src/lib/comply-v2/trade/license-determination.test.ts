@@ -1146,4 +1146,25 @@ describe("Gate 4.5 — thin origin-regime coverage (fail-closed)", () => {
     );
     expect(withGBNoSignals).toEqual(withoutOrigin);
   });
+
+  // militärische Raumfahrt — der Fall, für den das EU_CML-Regime existiert.
+  it("DE origin + declared USML item (no eccnEU/eccnUS) → military leg arms EU_CML thin-coverage gate → REVIEW_NEEDED with THIN_ORIGIN_REGIME and EU_CML reason", () => {
+    const det = determineLicenseRequirements(
+      evalWith(),
+      null,
+      "US", // non-EU, non-embargo destination to keep prior gates inactive
+      undefined,
+      undefined,
+      { eccnEU: null, eccnUS: null, usmlCategory: "XV(f)" },
+      DE_ORIGIN,
+    );
+    expect(det.gate).not.toBe("CLEARED");
+    const thinReq = det.requirements.find(
+      (r) => r.triggerCode === "THIN_ORIGIN_REGIME",
+    );
+    expect(thinReq).toBeDefined();
+    expect(thinReq!.reason).toMatch(
+      /EU.?CML|Militärgüterliste|Common Military List/i,
+    );
+  });
 });
