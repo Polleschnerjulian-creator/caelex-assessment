@@ -1156,7 +1156,16 @@ describe("Gate 4.5 — thin origin-regime coverage (fail-closed)", () => {
   });
 
   // militärische Raumfahrt — der Fall, für den das EU_CML-Regime existiert.
-  it("DE origin + declared USML item (no eccnEU/eccnUS) → military leg arms EU_CML thin-coverage gate → REVIEW_NEEDED with THIN_ORIGIN_REGIME and EU_CML reason", () => {
+  //
+  // Data-Sprint S4 lifted EU_CML 3 → 2 (space slice curated, OJ C/2026/1640), so
+  // the EU_CML MILITARY leg of Gate 4.5 no longer arms the THIN_ORIGIN_REGIME
+  // gate. THE SAFETY PROPERTY THE LIFT RELIES ON: a declared usmlCategory is
+  // independently caught by Gate 3.5 (DDTC, ITAR-controlled, no intra-EU
+  // exemption, destination-independent) — so the DE-seat verdict stays
+  // non-CLEARED via the DDTC path, NOT via the thin-origin path. This is the
+  // empirically-proven guard (golden spike byte-identical 74/396/274 across the
+  // lift). The test below documents the lift by asserting the new, true path.
+  it("DE origin + declared USML item (no eccnEU/eccnUS) → still non-CLEARED, but via Gate 3.5 DDTC (NOT the EU_CML thin-origin leg, which S4's 3→2 lift retired)", () => {
     const det = determineLicenseRequirements(
       evalWith(),
       null,
@@ -1166,14 +1175,23 @@ describe("Gate 4.5 — thin origin-regime coverage (fail-closed)", () => {
       { eccnEU: null, eccnUS: null, usmlCategory: "XV(f)" },
       DE_ORIGIN,
     );
+    // Safety net holds: the declared USML item is NOT cleared.
     expect(det.gate).not.toBe("CLEARED");
+    // The independent guard is the DDTC (ITAR) requirement from Gate 3.5 —
+    // present for ANY destination because ITAR control attaches to the item.
+    const ddtcReq = det.requirements.find(
+      (r) => r.triggerCode === "ACTUAL_USML_DECLARED",
+    );
+    expect(ddtcReq).toBeDefined();
+    expect(ddtcReq!.authority).toBe("DDTC");
+    expect(ddtcReq!.reason).toMatch(/ITAR|USML/i);
+    // And the EU_CML thin-origin leg no longer fires (EU_CML is Tier 2 now): a
+    // declared usmlCategory alone must NOT raise a THIN_ORIGIN_REGIME review for
+    // an EU seat anymore — the lift retired exactly this path.
     const thinReq = det.requirements.find(
       (r) => r.triggerCode === "THIN_ORIGIN_REGIME",
     );
-    expect(thinReq).toBeDefined();
-    expect(thinReq!.reason).toMatch(
-      /EU.?CML|Militärgüterliste|Common Military List/i,
-    );
+    expect(thinReq).toBeUndefined();
   });
 });
 
