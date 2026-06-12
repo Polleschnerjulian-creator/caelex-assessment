@@ -38,4 +38,44 @@ describe("resolveExporterSeat", () => {
       "UK",
     );
   });
+
+  // ── Coercion guard ────────────────────────────────────────────────────────
+  // billingAddress.country must be a non-empty string; non-string primitives
+  // and arrays must never be coerced into a country code.
+  it("rejects non-string country values — arrays and numbers return null", () => {
+    expect(
+      resolveExporterSeat({ billingAddress: { country: ["DE"] } }),
+    ).toBeNull();
+    expect(resolveExporterSeat({ billingAddress: { country: 49 } })).toBeNull();
+  });
+
+  // ── North-Korea adjacency pin ─────────────────────────────────────────────
+  // Highest-consequence wrong-seat in export control: "Korea (Republic of)"
+  // is South Korea (KR, circle-A ally); DPRK / North Korea must NEVER appear
+  // as a resolvable seat — any path that would return "KP" is a critical bug.
+  it("resolves 'Korea (Republic of)' to KR — South Korea, NOT North Korea", () => {
+    expect(
+      resolveExporterSeat({
+        billingAddress: { country: "Korea (Republic of)" },
+      }),
+    ).toBe("KR");
+  });
+
+  it("KP adjacency: no name-map entry resolves to KP — north-korea variants return null", () => {
+    // Assert via observable behaviour: the strings that could be confused with
+    // North Korea all return null (no KP entry in NAME_MAP, and "KP" itself
+    // would only be returned if passed as a literal ISO-2, which is a
+    // deliberately unsupported-origin signal — not a name-map output).
+    const northKoreaInputs = [
+      "north korea",
+      "korea (democratic people's republic of)",
+      "nordkorea",
+    ];
+    for (const input of northKoreaInputs) {
+      expect(
+        resolveExporterSeat({ billingAddress: { country: input } }),
+        `expected "${input}" to resolve to null (not KP)`,
+      ).toBeNull();
+    }
+  });
 });

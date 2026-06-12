@@ -111,6 +111,11 @@ const NAME_MAP: Readonly<Record<string, string>> = {
  * pattern) but scoped to the single `country` key this resolver needs.
  */
 function pickCountry(addr: Record<string, unknown>): string | undefined {
+  // Guard with Object.prototype.hasOwnProperty.call so prototype-chain values
+  // (e.g. from Object.create or inherited properties) can never be returned as
+  // a country code.  This matches the pattern used elsewhere in trade services
+  // (program-service.ts, org-profile-service.ts) and is safe at ES2017 target.
+  if (!Object.prototype.hasOwnProperty.call(addr, "country")) return undefined;
   const v = addr["country"];
   if (typeof v === "string" && v.trim() !== "") return v.trim();
   return undefined;
