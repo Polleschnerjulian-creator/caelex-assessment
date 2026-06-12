@@ -36,38 +36,46 @@
  * Orakel wie der Server; die Divergenz ist geschlossen.
  *
  * ─── Verteilung (ECHT, über `deriveVerdict`) ─────────────────────────────
- *   744 Zellen: 74 GO / 484 REVIEW / 186 BLOCKED.
- *   Die 186 BLOCKED stammen AUSSCHLIESSLICH aus AVAs konservativem
- *   `hardBlock()` (heuristik-getriebenes `itarBlock` bei eo-sar/eo-optical/
- *   hall-thruster), NICHT aus einem destinations-getriebenen Embargo-Gate —
- *   ein solches Gate existiert noch nicht (PF-1, separater Task). Die BLOCKED-
- *   Zellen sind über die GANZE Matrix verteilt (auch INTRA_EU/US/FRIENDLY/IN),
- *   weil eine ITAR-Heuristik destinations-unabhängig feuert.
+ *   744 Zellen: 74 GO / 396 REVIEW / 274 BLOCKED.
+ *   Zwei DISJUNKTE Block-Quellen:
+ *   (a) AVAs konservatives `hardBlock()` über heuristik-getriebenes
+ *       `itarBlock` (eo-sar/eo-optical/hall-thruster) — destinations-
+ *       UNABHÄNGIG, über die GANZE Matrix verteilt (auch INTRA_EU/US/
+ *       FRIENDLY/IN): 186 Zellen.
+ *   (b) NEU (PF-1): Gate 1.6 — das destinations-getriebene RU/BY-Dual-Use-
+ *       Verbot (Art. 2/2a VO (EU) 833/2014 · Art. 1e/1f VO (EG) 765/2006).
+ *       Es hebt die RU-Spalte für kontrollierte Dual-Use-Items von REVIEW
+ *       auf BLOCKED: +88 Zellen (RU-Spalte jetzt 11 GO / 0 REVIEW / 121
+ *       BLOCKED; die 11 GO sind reaction-wheel = unkontrolliert).
+ *   Daher 186 → 274 BLOCKED und 484 → 396 REVIEW; GO unverändert 74.
+ *   Belegt per Spike vor Commit.
  *
- * ─── WICHTIGE Rechts-Erkenntnis: KEINE EXACT-RU-Böden (dokumentiert) ──────
- * Der Plan schlug zwei EXACT-Overrides vor:
- *   "apogee-engine|DE|RU": "BLOCKED"  und  "sat-bus|DE|RU": "BLOCKED"
- * (mit Verweis auf Reg. 833/2014). Die Verifikation im Code zeigt: die
- * 833/2014-Hartsperre ist in `license-determination.ts` AUSSCHLIESSLICH
- * Gate 0 (Annex IV, status PROHIBITED) — und Gate 0 feuert NUR, wenn der
- * Screening-Kontext der GEGENPARTEI `EU_ANNEX_IV` enthält. Es gibt KEIN
- * destinations-getriebenes RU-Embargo-Gate (RU ist NICHT in
- * EMBARGOED_COUNTRIES = {CU,IR,KP,SY}; RU sitzt in der D:1-RESTRICTED-Gruppe,
- * die nur die De-minimis-Schwelle, kein Block, beeinflusst).
+ * ─── Rechts-Erkenntnis: RU/BY-Dual-Use ist BLOCKED, nicht REVIEW (PF-1) ───
+ * FRÜHER dokumentierte dieser Header, RU-Dual-Use sei über die party-lose
+ * Pipeline rechtlich nur REVIEW, weil die einzige 833/2014-Hartsperre Gate 0
+ * (Annex IV, GEGENPARTEI-getrieben) war. Das war der PF-1-Befund: KEINE
+ * Schicht setzte das DESTINATIONS-getriebene Verbot durch.
  *
- * Diese Golden-Matrix ist BEWUSST rein item×origin×dest (mit synthetischem
- * CLEAR-Screening) — sie hat keine echte Gegenpartei-Dimension. Folglich ist
- * ein GENERISCH kontrolliertes Dual-Use-Item nach RU rechtlich korrekt REVIEW
- * (Ausfuhr-Genehmigungspflicht), NICHT BLOCKED — ein destinations-getriebener
- * RU-Hartblock ist ein PARTEI-Ergebnis (Annex-IV-Treffer), das diese Schicht
- * nicht herstellt. Die beiden EXACT-Einträge wären also eine FALSCHE Behauptung
- * über diese Schicht. Daher: EXACT-Tabelle bleibt LEER.
+ * Gate 1.6 (`license-determination.ts`, Task 9b) schließt diese Lücke: das
+ * Verbot der Ausfuhr von EU-Dual-Use-Gütern (Anhang I VO 2021/821) nach
+ * Russland/Belarus nach Art. 2/2a VO (EU) 833/2014 bzw. Art. 1e/1f VO (EG)
+ * 765/2006 ist DESTINATIONS-basiert — es braucht KEINEN gelisteten Empfänger.
+ * Es feuert auf das EU-Dual-Use-Signal (deklarierter eccnEU/eccnUS≠EAR99 ODER
+ * heuristisches EU_ANNEX_I/US_CCL-Signal) und setzt `embargoBlock=true` →
+ * AVAs `hardBlock()` → BLOCKED. (RU/BY sind weiterhin NICHT in
+ * EMBARGOED_COUNTRIES = {CU,IR,KP,SY}; das eigenständige Gate 1.6, nicht die
+ * E:1/E:2-Embargo-Liste, erzeugt den Block.)
  *
- * NICHT zu verwechseln: die 186 BLOCKED-Zellen (eo-sar/eo-optical/hall-thruster
- * nach ALLEN Dests inkl. RU) entstehen NICHT aus einem RU-/Embargo-Gate, sondern
- * aus AVAs destinations-UNABHÄNGIGER ITAR-Heuristik (`hardBlock → itarBlock`).
- * Der EMBARGO-Boden ist trotzdem überall erfüllt: BLOCKED ≥ REVIEW.
- * Belegt per Spike vor Commit (744 Zellen: 74 GO / 484 REVIEW / 186 BLOCKED).
+ * Folglich sind die EXACT-Pins sat-bus|DE|RU, apogee-engine|DE|RU und
+ * sat-bus|GB|RU (all-origins-Scope) jetzt rechtlich eindeutig BLOCKED — sie
+ * stehen unten in `EXACT` mit Quellen-Kommentar.
+ *
+ * GRENZE (ehrlich): rein USML/ITAR-Items (nur usmlCategory) lösen Gate 1.6
+ * NICHT aus (US-Recht; `itarBlock` deckt sie separat). Und ein GENUIN
+ * unkontrolliertes Item (reaction-wheel) bleibt nach RU korrekt GO — kein
+ * Über-Blocken. Die Art-2a/1f-Advanced-Tech-Sperre ist nur insoweit
+ * abgedeckt, wie das EU-Dual-Use-Signal greift (Annex-VII/XXIII/XXIX-
+ * Güterklassen ohne itemClass-Signal: S1+).
  *
  * ─── Boden-Anpassung: CN/EMBARGO nur für kontrollverdächtige Items ────────
  * Beobachtung (Spike): ein GENUIN unkontrolliertes Item (reaction-wheel: kein
@@ -140,18 +148,39 @@ const MIN_BY_DEST_CLASS: Record<DestClass, Verdict> = {
   FRIENDLY: "GO",
   IN: "GO",
   CN: "REVIEW", // kontrollierte Space-Güter nach CN: nie stilles GO
-  EMBARGO: "REVIEW", // mindestens; harter Block ist ein Partei-Ergebnis (Annex IV)
+  // EMBARGO (RU): mindestens REVIEW. Seit Gate 1.6 (PF-1) blockt RU für
+  // kontrollierte EU-Dual-Use-Items destinations-getrieben HART (Art. 2/2a
+  // VO (EU) 833/2014) — die EXACT-Pins fixieren das für konkrete Zellen. Der
+  // Boden bleibt bewusst REVIEW (sicheres Minimum): er gilt für ALLE
+  // kontrollverdächtigen Items, auch solche, deren EU-Dual-Use-Signal über
+  // die party-lose Matrix nicht eindeutig BLOCKED erzwingt.
+  EMBARGO: "REVIEW",
 };
 
 /**
  * EXACT-Erwartungen: NUR wo der Rechtstext über DIESE reine Pipeline
- * eindeutig ist. Bewusst LEER — die einzigen Kandidaten (RU-Block für
- * apogee-engine/sat-bus) sind über die party-lose Pipeline NICHT erreichbar
- * (833/2014-Hartsperre = Gate 0 / Annex-IV-Partei; siehe Datei-Header). Ein
- * Daten-Sprint, der ein exaktes Verdict belegen kann, trägt es hier mit
- * Quellen-Kommentar nach.
+ * eindeutig ist.
+ *
+ * PF-1 (S0): Gate 1.6 (`license-determination.ts`) macht das destinations-
+ * getriebene RU/BY-Dual-Use-Verbot nun OHNE Gegenpartei-Treffer geltend —
+ * exakt das Gate, dessen Fehlen dieser Header früher dokumentierte. Damit
+ * sind die folgenden drei Zellen über die reine Pipeline rechtlich eindeutig
+ * BLOCKED:
+ *
+ * Rechtsgrundlage (verbatim instruments):
+ *   • sat-bus|DE|RU / apogee-engine|DE|RU: Ausfuhr von EU-Dual-Use-Gütern
+ *     (Anhang I VO 2021/821 — sat-bus = 9A004, apogee-engine = 9A106) nach
+ *     Russland ist nach Art. 2/2a Council Reg. (EU) 833/2014 (i.d.g.F.)
+ *     verboten — kein Genehmigungsweg, kein gelisteter Empfänger nötig.
+ *   • sat-bus|GB|RU: dasselbe Verbot greift origin-unabhängig (Scope-
+ *     Entscheidung Gate 1.6: Über-Blocken akzeptabel; UK/US haben äquivalente
+ *     RU-Dual-Use-Verbote). Pins the all-origins scope.
  */
-const EXACT: Record<string, Verdict> = {};
+const EXACT: Record<string, Verdict> = {
+  "sat-bus|DE|RU": "BLOCKED", // 9A004 (Anhang I VO 2021/821) → RU: Art. 2 VO (EU) 833/2014
+  "apogee-engine|DE|RU": "BLOCKED", // 9A106 (Anhang I VO 2021/821) → RU: Art. 2 VO (EU) 833/2014
+  "sat-bus|GB|RU": "BLOCKED", // origin-unabhängig (Gate-1.6-Scope) → RU: Art. 2 VO (EU) 833/2014
+};
 
 // ─── Item-Klassifizierbarkeit (Kontrollverdacht) ──────────────────────────
 
