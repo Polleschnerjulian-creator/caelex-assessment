@@ -78,6 +78,10 @@
  * SPDX-License-Identifier: LicenseRef-Caelex-Proprietary
  */
 
+// ─── Imports ────────────────────────────────────────────────────────
+
+import type { OriginRegimeRouting } from "./origin-regime-map";
+
 // ─── Types ──────────────────────────────────────────────────────────
 
 /**
@@ -234,15 +238,22 @@ const NATIONAL_SUPPLEMENTAL: ReadonlySet<ListId> = new Set<ListId>([
  *      superseded (ITAR exclusive jurisdiction, 22 CFR § 120.5).
  *   3. Else if EU_ANNEX_IV present → Annex IV wins (sanctions trump
  *      licensing). All other jurisdictional lists are superseded.
- *   4. Else if EAR_CCL present → EAR is primary; parallel EU/national
+ *   4. Origin-promotion (additive): when `opts.origin` is supplied and
+ *      `origin.supported` is true, any match whose `list` equals
+ *      `origin.dualUsePrimary` or `origin.militaryPrimary` is elevated
+ *      to primary-eligible BEFORE tiers 3–5 run. A MULTILATERAL_LISTS
+ *      member can never become primary even if it somehow equals an
+ *      origin regime. This only applies when no USML or EU_ANNEX_IV
+ *      match is present (those still outrank origin-promotion).
+ *   5. Else if EAR_CCL present → EAR is primary; parallel EU/national
  *      lists remain in scope (each jurisdiction binds its own export).
- *   5. Else if EU_ANNEX_I present → EU Annex I is primary; national
+ *   6. Else if EU_ANNEX_I present → EU Annex I is primary; national
  *      supplemental lists are parallel.
- *   6. Else if a national list present (no EU primary) → that national
+ *   7. Else if a national list present (no EU primary) → that national
  *      list is primary on its own.
- *   7. Else if only multilateral matches → `primaryAuthority` = null,
+ *   8. Else if only multilateral matches → `primaryAuthority` = null,
  *      multilateral surfaced for trace-through.
- *   8. Empty input → `primaryAuthority` = null, no rationale beyond
+ *   9. Empty input → `primaryAuthority` = null, no rationale beyond
  *      "no matches".
  *
  * The function is order-insensitive over the input array. Duplicate
@@ -250,11 +261,17 @@ const NATIONAL_SUPPLEMENTAL: ReadonlySet<ListId> = new Set<ListId>([
  * output stable and avoid double-counting.
  *
  * @param matches  All matches that upstream engines produced for the item.
+ * @param opts     Optional parameters. `opts.origin` enables origin-seat
+ *                 promotion — the exporter's jurisdiction's national list
+ *                 is preferred as primary over foreign national lists when
+ *                 a higher-tier list (USML, EU_ANNEX_IV, EAR_CCL, EU_ANNEX_I)
+ *                 does not already govern.
  * @returns A resolved `OrderOfReviewResult` with primary, superseded,
  *          parallel, multilateral, rationale, and disclaimer.
  */
 export function resolveOrderOfReview(
   matches: readonly ListMatch[],
+  opts?: { origin?: OriginRegimeRouting },
 ): OrderOfReviewResult {
   const deduped = dedupeMatches(matches);
 
@@ -339,6 +356,48 @@ export function resolveOrderOfReview(
       rationale: buildEarRationale(earMatch, parallel, multilateral),
       disclaimer: DISCLAIMER,
     };
+  }
+
+  // ─── Origin-promotion (additive, between EAR and EU Annex I) ────────
+  // When the caller supplies an origin regime (exporter's jurisdictional
+  // seat), and a match exists for that origin's primary list (dual-use
+  // or military), that match is promoted to primary BEFORE the EU Annex I
+  // and national-only tiers. USML, EU_ANNEX_IV, and EAR_CCL are never
+  // outranked — those higher-tier guards already returned above.
+  //
+  // MULTILATERAL_LISTS members are never promotable; they are informational
+  // and must stay in the baseline bucket regardless of origin.
+  //
+  // Foreign national lists (not the exporter's own regime) stay in the
+  // existing NATIONAL_SUPPLEMENTAL path as parallel — they are NOT promoted.
+  if (opts?.origin?.supported === true) {
+    const { dualUsePrimary, militaryPrimary } = opts.origin;
+    const originPrimaryMatch = jurisdictional.find(
+      (m) =>
+        !MULTILATERAL_LISTS.has(m.list) &&
+        (m.list === dualUsePrimary ||
+          (militaryPrimary !== null && m.list === militaryPrimary)),
+    );
+    if (originPrimaryMatch) {
+      const parallel = jurisdictional.filter(
+        (m) =>
+          m !== originPrimaryMatch &&
+          (m.list === "EU_ANNEX_I" || NATIONAL_SUPPLEMENTAL.has(m.list)),
+      );
+      return {
+        primaryAuthority: originPrimaryMatch,
+        supersededLists: [],
+        parallelLists: parallel,
+        multilateralBaseline: multilateral,
+        rationale: buildOriginPromotedRationale(
+          originPrimaryMatch,
+          opts.origin.dualUsePrimary,
+          parallel,
+          multilateral,
+        ),
+        disclaimer: DISCLAIMER,
+      };
+    }
   }
 
   // ─── Tier 4: EU Annex I ───────────────────────────────────────────
@@ -494,19 +553,33 @@ export function normalizeListId(regimeName: string): ListId | null {
  *   - `DE_AUSFUHRLISTE` primary → BAFA
  *   - `JP_METI` primary → METI (Trade and Economic Cooperation Bureau)
  *   - `UK_STRATEGIC` primary → ECJU
+ *   - `EU_CML` primary → null (licensing authority is the member state's —
+ *     BAFA/DGA/etc.; no single EU hint)
+ *   - `CA_ECL` primary → Global Affairs Canada
+ *   - `AU_DSGL` primary → Defence Export Controls (Australia)
+ *   - `KR_STRATEGIC` primary → MOTIE (Korea)
+ *   - `CH_GKV` primary → SECO (Switzerland)
+ *   - `NO_LIST` primary → Norwegian Ministry of Foreign Affairs
+ *   - `IN_SCOMET` primary → DGFT (India)
  *   - `null` primary → operator must trace through multilateral to a
  *     national implementation; this helper returns `null` in that case.
+ *   - Multilateral lists (WASSENAAR, MTCR, NSG, AG) cannot be primary —
+ *     their cases are included for exhaustiveness only and return null.
  *
  * This is a SOFT integration — it does not call the license-
  * determination engine, just maps the precedence result onto its
  * authority taxonomy. Use it to enrich UI surfaces with the
  * "this routes to BIS / DDTC / BAFA / ..." breadcrumb.
+ *
+ * The switch is EXHAUSTIVE over ListId — adding a new ListId without a
+ * case here is a compile error (satisfies never guard).
  */
 export function deriveLicenseAuthorityHint(
   result: OrderOfReviewResult,
-): "DDTC" | "BIS" | "BAFA" | "ECJU" | "METI" | "EU_COMPETENT_AUTHORITY" | null {
+): string | null {
   if (!result.primaryAuthority) return null;
-  switch (result.primaryAuthority.list) {
+  const list = result.primaryAuthority.list;
+  switch (list) {
     case "USML":
       return "DDTC";
     case "EAR_CCL":
@@ -520,8 +593,34 @@ export function deriveLicenseAuthorityHint(
       return "METI";
     case "UK_STRATEGIC":
       return "ECJU";
-    default:
+    // EU_CML: licensing authority is the member state's (BAFA/DGA/etc.); no single EU hint
+    case "EU_CML":
       return null;
+    case "CA_ECL":
+      return "Global Affairs Canada";
+    case "AU_DSGL":
+      return "Defence Export Controls (Australia)";
+    case "KR_STRATEGIC":
+      return "MOTIE (Korea)";
+    case "CH_GKV":
+      return "SECO (Switzerland)";
+    case "NO_LIST":
+      return "Norwegian Ministry of Foreign Affairs";
+    case "IN_SCOMET":
+      return "DGFT (India)";
+    // Multilateral lists are informational and can never be primary.
+    // These cases exist only for exhaustiveness (satisfies-never guard).
+    case "WASSENAAR":
+    case "MTCR":
+    case "NSG":
+    case "AG":
+      return null;
+    default: {
+      // Exhaustiveness guard: if a new ListId is added without a case above,
+      // this line becomes a compile error because `list` would not satisfy `never`.
+      const _exhaustive: never = list;
+      return _exhaustive;
+    }
   }
 }
 
@@ -664,4 +763,26 @@ function buildMultilateralOnlyRationale(
   multilateral: readonly ListMatch[],
 ): string {
   return `Item matches only multilateral baseline lists: ${formatList(multilateral)}. These regimes (Wassenaar / MTCR / NSG / AG) are NEVER a standalone control authority — they are implemented through national regulations. No primary authority can be assigned from this input alone. The operator must trace each multilateral entry to the corresponding national implementing regulation (EAR / Annex I / DE Ausfuhrliste / etc.) before licensing analysis proceeds.`;
+}
+
+function buildOriginPromotedRationale(
+  primary: ListMatch,
+  originRegimePrimary: ListId,
+  parallel: readonly ListMatch[],
+  multilateral: readonly ListMatch[],
+): string {
+  const parts = [
+    `Item matches ${primary.list} (entry ${primary.entry}). primary chosen because exporter seat regime ${originRegimePrimary} governs — the exporter's jurisdictional seat determines the applicable export law. Higher-tier lists (USML, Annex IV, EAR) are not present for this item.`,
+  ];
+  if (parallel.length > 0) {
+    parts.push(
+      `Parallel controls: ${formatList(parallel)}. These apply in addition to the origin-seat regime and must also be cleared.`,
+    );
+  }
+  if (multilateral.length > 0) {
+    parts.push(
+      `Multilateral baseline (informational): ${formatList(multilateral)}.`,
+    );
+  }
+  return parts.join(" ");
 }

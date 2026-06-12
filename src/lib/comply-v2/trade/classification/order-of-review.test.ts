@@ -37,6 +37,7 @@ import {
   resolveOrderOfReview,
   type ListMatch,
 } from "./order-of-review";
+import { originRegimes } from "./origin-regime-map";
 
 // ─── Fixtures ─────────────────────────────────────────────────────────
 
@@ -707,5 +708,87 @@ describe("S0: new circle-A regimes in ListId", () => {
     ]);
     expect(r.primaryAuthority?.list).toBe("EU_ANNEX_I");
     expect(r.parallelLists.map((m) => m.list)).toContain("CA_ECL");
+  });
+});
+
+// ─── S0: origin-aware order of review ───────────────────────────────
+
+describe("S0: origin-aware order of review", () => {
+  const ukMatch = {
+    list: "UK_STRATEGIC" as const,
+    entry: "PL9009",
+    citation: "UK SECL",
+  };
+  const euMatch = {
+    list: "EU_ANNEX_I" as const,
+    entry: "9A004",
+    citation: "Reg. 2021/821",
+  };
+
+  it("promotes the ORIGIN's national list to primary (GB exporter)", () => {
+    const r = resolveOrderOfReview([euMatch, ukMatch], {
+      origin: originRegimes("GB"),
+    });
+    expect(r.primaryAuthority?.list).toBe("UK_STRATEGIC");
+    expect(r.parallelLists.map((m) => m.list)).toContain("EU_ANNEX_I");
+  });
+
+  it("keeps FOREIGN national lists supplemental (DE exporter, UK match)", () => {
+    const r = resolveOrderOfReview([euMatch, ukMatch], {
+      origin: originRegimes("DE"),
+    });
+    expect(r.primaryAuthority?.list).toBe("EU_ANNEX_I");
+  });
+
+  it("without origin param behaves byte-identical to today (regression)", () => {
+    const before = resolveOrderOfReview([euMatch, ukMatch]);
+    expect(before.primaryAuthority?.list).toBe("EU_ANNEX_I");
+  });
+
+  it("multilateral stays baseline even when it is the origin's only match", () => {
+    const r = resolveOrderOfReview(
+      [{ list: "MTCR", entry: "1.A.1", citation: "MTCR Annex" }],
+      { origin: originRegimes("GB") },
+    );
+    expect(r.primaryAuthority).toBeNull();
+    expect(r.multilateralBaseline).toHaveLength(1);
+  });
+
+  it("origin promotion never outranks the EU_ANNEX_IV hard-prohibition tier", () => {
+    const r = resolveOrderOfReview(
+      [
+        {
+          list: "EU_ANNEX_IV",
+          entry: "AnnexIV-Entity",
+          citation: "Reg. 833/2014 Annex IV",
+        },
+        ukMatch,
+      ],
+      { origin: originRegimes("GB") },
+    );
+    expect(r.primaryAuthority?.list).toBe("EU_ANNEX_IV");
+  });
+});
+
+// ─── deriveLicenseAuthorityHint exhaustiveness ──────────────────────
+
+describe("S0: deriveLicenseAuthorityHint — exhaustive switch coverage", () => {
+  it("CA_ECL primary → Global Affairs Canada", () => {
+    const result = resolveOrderOfReview([
+      { list: "CA_ECL", entry: "9-15", citation: "ECL Group 9" },
+    ]);
+    expect(deriveLicenseAuthorityHint(result)).toBe("Global Affairs Canada");
+  });
+
+  it("EU_CML primary → null (member-state authority, no single EU hint)", () => {
+    // EU_CML can become primary only in national-only scenario (no USML/EAR/AnnexI/AnnexIV).
+    const result = resolveOrderOfReview([
+      {
+        list: "EU_CML",
+        entry: "ML21",
+        citation: "Council CP 2008/944/CFSP ML21",
+      },
+    ]);
+    expect(deriveLicenseAuthorityHint(result)).toBeNull();
   });
 });
