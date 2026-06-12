@@ -30,6 +30,26 @@ describe("originRegimes", () => {
     }
   });
 
+  it("fail-closed: 'UK' is NOT ISO-3166 alpha-2 — GB is canonical; strict map has no friendly alias", () => {
+    // The map is deliberately fail-closed: only exact ISO-3166-1 alpha-2 codes
+    // are accepted. "UK" is a common colloquial abbreviation but is NOT the
+    // ISO standard code — "GB" is. No friendly aliases are provided.
+    expect(originRegimes("UK").supported).toBe(false);
+  });
+
+  it("fail-closed: 3-letter codes (ISO alpha-3) are unsupported", () => {
+    // The map exclusively accepts 2-letter alpha-2 codes.
+    expect(originRegimes("DEU").supported).toBe(false);
+    expect(originRegimes("GBR").supported).toBe(false);
+  });
+
+  it("KREIS_A_ISO2 membership pins: DE and GB are members, UK is not", () => {
+    expect(KREIS_A_ISO2.has("DE")).toBe(true);
+    expect(KREIS_A_ISO2.has("GB")).toBe(true);
+    // "UK" is not ISO-3166 alpha-2; the set contains only canonical codes
+    expect(KREIS_A_ISO2.has("UK")).toBe(false);
+  });
+
   it("is case/whitespace tolerant and never throws", () => {
     expect(originRegimes(" gb ").dualUsePrimary).toBe("UK_STRATEGIC");
     expect(originRegimes("").supported).toBe(false);

@@ -691,14 +691,14 @@ describe("Z28 — composite real-world inputs", () => {
 // ─── S0: new circle-A regimes ────────────────────────────────────────
 
 describe("S0: new circle-A regimes in ListId", () => {
-  it("normalizeListId resolves the seven new regime spellings", () => {
-    expect(normalizeListId("EU Common Military List")).toBe("EU_CML");
-    expect(normalizeListId("Canada Export Control List")).toBe("CA_ECL");
-    expect(normalizeListId("Australia DSGL")).toBe("AU_DSGL");
-    expect(normalizeListId("Korea Strategic Items")).toBe("KR_STRATEGIC");
-    expect(normalizeListId("Switzerland GKV")).toBe("CH_GKV");
-    expect(normalizeListId("Norway List I")).toBe("NO_LIST");
-    expect(normalizeListId("India SCOMET")).toBe("IN_SCOMET");
+  it("normalizeListId resolves the seven new regime tags (hyphenated machine-tag convention)", () => {
+    expect(normalizeListId("EU-CML")).toBe("EU_CML");
+    expect(normalizeListId("CA-ECL")).toBe("CA_ECL");
+    expect(normalizeListId("AU-DSGL")).toBe("AU_DSGL");
+    expect(normalizeListId("KR-STRATEGIC")).toBe("KR_STRATEGIC");
+    expect(normalizeListId("CH-GKV")).toBe("CH_GKV");
+    expect(normalizeListId("NO-LIST")).toBe("NO_LIST");
+    expect(normalizeListId("IN-SCOMET")).toBe("IN_SCOMET");
   });
   it("new national lists are supplemental by default (no origin given)", () => {
     const r = resolveOrderOfReview([

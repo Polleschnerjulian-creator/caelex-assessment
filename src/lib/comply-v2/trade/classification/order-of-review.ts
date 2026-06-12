@@ -461,19 +461,19 @@ export function normalizeListId(regimeName: string): ListId | null {
       return "AG";
     case "EU-ANNEX-IV":
       return "EU_ANNEX_IV";
-    case "EU Common Military List":
+    case "EU-CML":
       return "EU_CML";
-    case "Canada Export Control List":
+    case "CA-ECL":
       return "CA_ECL";
-    case "Australia DSGL":
+    case "AU-DSGL":
       return "AU_DSGL";
-    case "Korea Strategic Items":
+    case "KR-STRATEGIC":
       return "KR_STRATEGIC";
-    case "Switzerland GKV":
+    case "CH-GKV":
       return "CH_GKV";
-    case "Norway List I":
+    case "NO-LIST":
       return "NO_LIST";
-    case "India SCOMET":
+    case "IN-SCOMET":
       return "IN_SCOMET";
     default:
       return null;
