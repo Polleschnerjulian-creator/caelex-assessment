@@ -35,6 +35,7 @@ import {
 } from "./usml-xv-bcdf";
 import { USML_XV_GH_ENTRIES, USML_XV_GH_AS_OF } from "./usml-xv-gh";
 import { USML_XV_I_ENTRIES, USML_XV_I_AS_OF } from "./usml-xv-i";
+import { USML_IV_ENUMERATION, USML_IV_AS_OF_DATE } from "./usml-iv";
 import { WASSENAAR_CAT6_9_ENTRIES } from "./wassenaar-cat6-9";
 import { JAPAN_METI_ENTRIES } from "./japan-meti";
 import { INDIA_SCOMET_ENTRIES, INDIA_SCOMET_AS_OF } from "./india-scomet";
@@ -96,7 +97,17 @@ export const REGIME_MATURITY: Record<CorpusRegime, 1 | 2 | 3> = {
   // MTCR Annex curated at item/sub-item level (Items 1–20) against the
   // 2024-03-14 Annex — Data-Sprint S1 lifted it from headline (3) to Tier 1.
   MTCR_ANNEX: 1,
-  USML: 2,
+  // Data-Sprint S2 lifted USML 2 → 1: the two space-relevant USML categories
+  // are now both at paragraph depth — Cat XV (spacecraft) across the
+  // `usml-xv-*` files (already Tier 1) and Cat IV (launch vehicles / rocket
+  // propulsion / parts) via `usml-iv.ts` (66 paragraphs, eCFR 2026-06-09).
+  // The remaining `USML`-regime rows (coarse Cat XI/XII cross-references in
+  // `usml.ts`) are peripheral military-electronics/navigation entries, not the
+  // space launch+spacecraft spine. SAFETY: no circle-A origin has
+  // `dualUsePrimary === "USML"` (US's dual-use leg is EAR_CCL→US_CCL, Tier 2),
+  // so `isThinOrigin` (which reads dualUsePrimary only) is unaffected — this
+  // lift cannot flip any golden-set thin-origin cell.
+  USML: 1,
   US_CCL: 2,
   EU_ANNEX_I: 2,
   RU_833: 2,
@@ -186,7 +197,17 @@ function adaptClassificationEntries(
   }));
 }
 
-/** Paragraph-keyed USML XV enumerations (e / b-c-d-f / g-h / i). */
+/**
+ * Paragraph-keyed USML enumerations (XV: e / b-c-d-f / g-h / i — and, since
+ * Data-Sprint S2, Category IV).
+ *
+ * `opts.regime` defaults to `"USML_XV"` so the four existing XV call-sites are
+ * byte-identical. Category IV passes `regime: "USML"` (it is a different USML
+ * category, not the post-ECR XV remainder) — the canonicalId prefix follows
+ * the regime, giving `USML:IV(...)` keys that intentionally collide with the
+ * coarse `usml.ts` Cat IV entries so the richer paragraph-depth entries can
+ * win the union's de-dup when ordered first (see the union assembly).
+ */
 function adaptUsmlXv(
   entries: ReadonlyArray<{
     paragraph: string;
@@ -199,11 +220,16 @@ function adaptUsmlXv(
   }>,
   list: string,
   asOfDate: string,
+  opts: {
+    regime?: Extract<CorpusRegime, "USML" | "USML_XV">;
+    depthTier?: 1 | 2 | 3;
+  } = {},
 ): NormalizedCorpusEntry[] {
+  const regime = opts.regime ?? "USML_XV";
   return entries.map((e) => ({
-    canonicalId: `USML_XV:${e.paragraph}`,
+    canonicalId: `${regime}:${e.paragraph}`,
     code: e.paragraph,
-    regime: "USML_XV" as const,
+    regime,
     list,
     title: e.title,
     description: e.description,
@@ -214,6 +240,7 @@ function adaptUsmlXv(
     itarSME: e.itarSME,
     isSeeThroughTrigger: e.isSeeThroughTrigger,
     earCclRef: e.ear600SeriesCounterpart,
+    depthTier: opts.depthTier,
   }));
 }
 
@@ -338,6 +365,17 @@ function adaptRussia833(
 export const NORMALIZED_CORPUS_UNION: NormalizedCorpusEntry[] = (() => {
   const all: NormalizedCorpusEntry[] = [
     ...adaptClassificationEntries(US_CCL_ENTRIES, "US_CCL", "EAR CCL"),
+    // Data-Sprint S2 — USML Category IV at paragraph depth (regime "USML",
+    // `USML:IV(...)` keys). Ordered BEFORE the coarse `usml.ts` (USML_ENTRIES)
+    // so the six overlapping Cat IV codes (IV(a)(1), IV(b), IV(c), IV(d)(1),
+    // IV(d)(2), IV(h)(1)) resolve to THESE richer entries — the union's
+    // `seen`-set de-dup keeps the first occurrence, dropping the coarse
+    // duplicates. usml.ts is left intact (it still serves `findUsmlEntry` and
+    // a coverage count); only its Cat IV rows go dead in the union.
+    ...adaptUsmlXv(USML_IV_ENUMERATION, "USML Cat. IV", USML_IV_AS_OF_DATE, {
+      regime: "USML",
+      depthTier: 1,
+    }),
     ...adaptClassificationEntries(USML_ENTRIES, "USML", "USML (ITAR)"),
     ...adaptClassificationEntries(
       MTCR_ANNEX_ENTRIES,

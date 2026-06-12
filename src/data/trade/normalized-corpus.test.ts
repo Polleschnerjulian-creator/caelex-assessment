@@ -168,6 +168,14 @@ describe("S0: regime maturity (fail-closed input)", () => {
     expect(REGIME_MATURITY.USML_XV).toBe(1);
     expect(REGIME_MATURITY.EU_ANNEX_I).toBe(2);
   });
+  it("USML is tier 1 after S2 (Cat IV + Cat XV both at paragraph depth)", () => {
+    // Data-Sprint S2 curated Category IV (launch vehicles / rocket propulsion)
+    // at paragraph depth in `usml-iv.ts`; together with the Cat XV files
+    // (already Tier 1) the space-relevant USML spectrum is now paragraph-deep.
+    // No circle-A origin's dualUsePrimary is USML, so this does not affect
+    // isThinOrigin / the golden-set thin-set.
+    expect(REGIME_MATURITY.USML).toBe(1);
+  });
   it("MTCR_ANNEX is tier 1 after S1 (full Annex curated)", () => {
     // Data-Sprint S1 curated the complete MTCR Annex (Items 1–20, 2024-03-14)
     // at item/sub-item level; the maturity map records the upgrade 3 → 1.
