@@ -93,13 +93,15 @@ export type CorpusRegime =
  */
 export const REGIME_MATURITY: Record<CorpusRegime, 1 | 2 | 3> = {
   USML_XV: 1,
+  // MTCR Annex curated at item/sub-item level (Items 1–20) against the
+  // 2024-03-14 Annex — Data-Sprint S1 lifted it from headline (3) to Tier 1.
+  MTCR_ANNEX: 1,
   USML: 2,
   US_CCL: 2,
   EU_ANNEX_I: 2,
   RU_833: 2,
   NSG: 2,
   WASSENAAR: 2,
-  MTCR_ANNEX: 3,
   DE_ANLAGE_AL: 3,
   DE_AUSFUHRLISTE: 3,
   JP_METI: 3,

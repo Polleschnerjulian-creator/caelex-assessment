@@ -168,4 +168,9 @@ describe("S0: regime maturity (fail-closed input)", () => {
     expect(REGIME_MATURITY.USML_XV).toBe(1);
     expect(REGIME_MATURITY.EU_ANNEX_I).toBe(2);
   });
+  it("MTCR_ANNEX is tier 1 after S1 (full Annex curated)", () => {
+    // Data-Sprint S1 curated the complete MTCR Annex (Items 1–20, 2024-03-14)
+    // at item/sub-item level; the maturity map records the upgrade 3 → 1.
+    expect(REGIME_MATURITY.MTCR_ANNEX).toBe(1);
+  });
 });
