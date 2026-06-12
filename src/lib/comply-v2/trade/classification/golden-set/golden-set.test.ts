@@ -180,6 +180,20 @@ const EXACT: Record<string, Verdict> = {
   "sat-bus|DE|RU": "BLOCKED", // 9A004 (Anhang I VO 2021/821) → RU: Art. 2 VO (EU) 833/2014
   "apogee-engine|DE|RU": "BLOCKED", // 9A106 (Anhang I VO 2021/821) → RU: Art. 2 VO (EU) 833/2014
   "sat-bus|GB|RU": "BLOCKED", // origin-unabhängig (Gate-1.6-Scope) → RU: Art. 2 VO (EU) 833/2014
+  // S3-Gefahren-Pin: GB-Sitz, deklariertes 9A004, intra-EU-Ziel (DE).
+  // Dies MUSS REVIEW bleiben. Begründung: ein UK→EU-Dual-Use-Transfer ist
+  // post-Brexit lizenzpflichtig (ECJU) — es ist KEIN intra-EU-Freiverkehr
+  // mehr. In dieser party-losen Pipeline kommt der REVIEW aus Gate 4.5
+  // (Thin-Origin): GB.dualUsePrimary = UK_STRATEGIC, REGIME_MATURITY 3, und
+  // sat-bus ist kontrollverdächtig (deklariertes 9A004). Gate 3.5 feuert für
+  // DE-Ziel NICHT (intra-EU), Gate 1.6 nur für RU/BY — Gate 4.5 ist also der
+  // EINZIGE Wächter. Würde S3 die Maturity (entgegen der Controller-
+  // Amendment) auf 2 heben, verstummte Gate 4.5 und diese Zelle kippte
+  // STILL auf GO (false-CLEARED-Klasse). Der Pin sperrt genau diesen
+  // verfrühten Maturity-Lift, bis UK-Origin-Lizenzlogik existiert
+  // (Engine-Phase, post-S7). Vgl. den REGIME_MATURITY-Kommentarblock in
+  // `normalized-corpus.ts`.
+  "sat-bus|GB|DE": "REVIEW",
 };
 
 // ─── Item-Klassifizierbarkeit (Kontrollverdacht) ──────────────────────────
