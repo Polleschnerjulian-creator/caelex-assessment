@@ -327,7 +327,9 @@ const DUAL_USE_ENTRIES: UkStrategicEntry[] = [
       "'Star trackers' and specially designed components — the celestial-attitude " +
       "determination sensor central to 3-axis-stabilised spacecraft; accuracy and " +
       "field-of-view gates in the entry govern.",
-    controlReason: ["NS"],
+    // UK source carries regime bracket [M9A2*] (MTCR item 9A2 — star-tracker
+    // category) in addition to Wassenaar/NS. W6 reviewer confirmed 2026-06-13.
+    controlReason: ["NS", "MT"],
     euAnnexIRef: "7A004",
     sourceUrl: PDF_URL,
     asOfDate: UK_STRATEGIC_AS_OF,
@@ -2024,6 +2026,7 @@ export const UK_STRATEGIC_COVERAGE: UkStrategicCoverage = {
     "Sub-paragraph detail of the ML positions and most dual-use 9B/9C entries beyond the curated space spine",
     "PL ratings PL9003 (vaccines), PL9004 (americium), PL9008 (Iran vessels), PL9010/PL9011 (firearms) — not space-relevant",
     "Annex IV (intra-UK transfer-licensing subset) — licensing-pathway metadata, not a distinct rating scheme",
+    "9E003 (gas-turbine 'other technology') — peripheral to the space slice, not curated",
   ],
   asOfDate: UK_STRATEGIC_AS_OF,
   editionDate: UK_STRATEGIC_EDITION_DATE,

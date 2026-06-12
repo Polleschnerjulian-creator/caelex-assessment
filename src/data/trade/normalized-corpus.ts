@@ -123,7 +123,7 @@ export const REGIME_MATURITY: Record<CorpusRegime, 1 | 2 | 3> = {
   JP_METI: 3,
   IN_SCOMET: 3,
   // Data-Sprint S3 curated the UK Strategic Export Control List space slice
-  // (121 verified entries, edition 2025-12-16) — yet UK_STRATEGIC is
+  // (123 verified entries: 109 dual-use + 8 ML + 6 PL, edition 2025-12-16) — yet UK_STRATEGIC is
   // DELIBERATELY KEPT AT TIER 3, overriding the plan's "→ 2" parameter.
   //
   // WHY (fail-closed safety, not a data gap): the curated corpus makes UK
