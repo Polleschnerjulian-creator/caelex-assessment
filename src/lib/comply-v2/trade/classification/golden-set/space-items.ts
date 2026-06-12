@@ -98,6 +98,10 @@ export const GOLDEN_ITEMS: readonly GoldenItem[] = [
     attributes: {},
     // Undeklariert: keine Heuristik trifft — repräsentiert ein unkontrolliertes
     // AOCS-Bauteil (Klassifizierer liefert kein Trigger ⇒ CLEARED-Tendenz).
+    // CAVEAT: ein Reaktionsrad, das SPEZIELL für einen 9A515-gelisteten Satelliten
+    // ausgelegt ist, wäre selbst 9A515.x-kontrolliert — dieses Golden-Item modelliert
+    // bewusst die generische, nicht-spezifisch-ausgelegte Variante. Der GO-Pin gilt
+    // für DIESE Attribute, nicht für Reaktionsräder allgemein.
   },
   {
     id: "ground-tt-c",

@@ -7,21 +7,42 @@
  * Invarianten. Sie ist die Regressions-Messlatte, gegen die jeder Daten-
  * Sprint (S1–S6) läuft: präzisere Daten dürfen Böden anheben, nie absenken.
  *
- * ─── Pipeline-Komposition (mirror von operation-assistant.server.ts) ──────
+ * ─── Was diese Matrix prüft (Orakel = AVAs ECHTES Zeilen-Verdict) ─────────
  * Pro Zelle (Item × Origin × Dest) bauen wir dieselbe Aufruf-Kette wie eine
- * AVA-Operationszeile, NUR ohne Prisma (alles hier ist rein):
+ * AVA-Operationszeile, NUR ohne Prisma (alles hier ist rein), UND laufen durch
+ * AVAs echten Verdict-Orakel `deriveVerdict` — NICHT durch ein direktes
+ * gate→verdict-Mapping (das war der alte blinde Fleck):
  *   1. originRegimes(originIso)  → OriginRegimeRouting (Sitz → Ausfuhrrecht)
  *   2. classifyItemForOperation(item, { destinationCountry, exporterOrigin })
  *      — exporterOrigin wird (wie in der Server-Quelle) NUR für unterstützte
  *        Sitze durchgereicht; für circle-A sind ALLE Origins supported, also
  *        immer gesetzt. classifyItemForOperation ruft intern
  *        determineLicenseRequirements inkl. Gate 4.5 (Thin-Origin) auf.
- *   3. gate (CLEARED|REVIEW_NEEDED|BLOCKED) → Verdict (GO|REVIEW|BLOCKED).
+ *   3. das Ergebnis wird als `LineAssessment` (classified=true) verpackt und
+ *      zusammen mit einem SYNTHETISCHEN all-CLEAR-Screening an
+ *      `deriveVerdict(lines, screening)` gereicht → Verdict (GO|REVIEW|BLOCKED).
  *
- * ─── Gate→Verdict-Mapping (Spec §4.4) ────────────────────────────────────
- *   CLEARED        → GO
- *   REVIEW_NEEDED  → REVIEW
- *   BLOCKED        → BLOCKED
+ * Diese Schicht = "AVA-Zeilen-Verdict mit synthetischem CLEAR-Screening". Die
+ * Matrix ist BEWUSST partei-los (rein item×origin×dest, keine Gegenpartei-
+ * Dimension) — das synthetische CLEAR isoliert genau das Zeilen-Verdict.
+ *
+ * ─── Warum NICHT bloss gate→verdict (der geschlossene blinde Fleck) ───────
+ * Früher mappte die Matrix `gate` direkt (CLEARED→GO, REVIEW_NEEDED→REVIEW,
+ * BLOCKED→BLOCKED). Das ließ AVAs `hardBlock()` aus, das ZUSÄTZLICH zum Gate
+ * auf `itarBlock || embargoBlock || annexIVBlock || mtcrCatIBlock` sperrt.
+ * Folge: 186 Zellen divergierten (AVA BLOCKED, Harness nur REVIEW) — die
+ * heuristik-ITAR-Items (eo-sar, eo-optical, hall-thruster), deren Block über
+ * `itarBlock` (nicht über das Gate) kommt. Jetzt nutzt die Matrix dasselbe
+ * Orakel wie der Server; die Divergenz ist geschlossen.
+ *
+ * ─── Verteilung (ECHT, über `deriveVerdict`) ─────────────────────────────
+ *   744 Zellen: 74 GO / 484 REVIEW / 186 BLOCKED.
+ *   Die 186 BLOCKED stammen AUSSCHLIESSLICH aus AVAs konservativem
+ *   `hardBlock()` (heuristik-getriebenes `itarBlock` bei eo-sar/eo-optical/
+ *   hall-thruster), NICHT aus einem destinations-getriebenen Embargo-Gate —
+ *   ein solches Gate existiert noch nicht (PF-1, separater Task). Die BLOCKED-
+ *   Zellen sind über die GANZE Matrix verteilt (auch INTRA_EU/US/FRIENDLY/IN),
+ *   weil eine ITAR-Heuristik destinations-unabhängig feuert.
  *
  * ─── WICHTIGE Rechts-Erkenntnis: KEINE EXACT-RU-Böden (dokumentiert) ──────
  * Der Plan schlug zwei EXACT-Overrides vor:
@@ -34,14 +55,19 @@
  * EMBARGOED_COUNTRIES = {CU,IR,KP,SY}; RU sitzt in der D:1-RESTRICTED-Gruppe,
  * die nur die De-minimis-Schwelle, kein Block, beeinflusst).
  *
- * Diese Golden-Matrix ist BEWUSST rein item×origin×dest — sie hat keine
- * Gegenpartei-/Screening-Dimension. Folglich ist ein kontrolliertes Dual-
- * Use-Item nach RU rechtlich korrekt REVIEW (Ausfuhr-Genehmigungspflicht),
- * NICHT BLOCKED — der harte Block ist ein PARTEI-Ergebnis (Annex-IV-Treffer),
- * das diese Pipeline-Schicht nicht herstellt. Die beiden EXACT-Einträge wären
- * also eine FALSCHE Behauptung über die reine Pipeline. Daher: EXACT-Tabelle
- * bleibt LEER; der EMBARGO-Boden bleibt REVIEW (vom Code erfüllt). Belegt per
- * Spike vor Commit (744 Fälle: 74 GO / 670 REVIEW / 0 BLOCKED).
+ * Diese Golden-Matrix ist BEWUSST rein item×origin×dest (mit synthetischem
+ * CLEAR-Screening) — sie hat keine echte Gegenpartei-Dimension. Folglich ist
+ * ein GENERISCH kontrolliertes Dual-Use-Item nach RU rechtlich korrekt REVIEW
+ * (Ausfuhr-Genehmigungspflicht), NICHT BLOCKED — ein destinations-getriebener
+ * RU-Hartblock ist ein PARTEI-Ergebnis (Annex-IV-Treffer), das diese Schicht
+ * nicht herstellt. Die beiden EXACT-Einträge wären also eine FALSCHE Behauptung
+ * über diese Schicht. Daher: EXACT-Tabelle bleibt LEER.
+ *
+ * NICHT zu verwechseln: die 186 BLOCKED-Zellen (eo-sar/eo-optical/hall-thruster
+ * nach ALLEN Dests inkl. RU) entstehen NICHT aus einem RU-/Embargo-Gate, sondern
+ * aus AVAs destinations-UNABHÄNGIGER ITAR-Heuristik (`hardBlock → itarBlock`).
+ * Der EMBARGO-Boden ist trotzdem überall erfüllt: BLOCKED ≥ REVIEW.
+ * Belegt per Spike vor Commit (744 Zellen: 74 GO / 484 REVIEW / 186 BLOCKED).
  *
  * ─── Boden-Anpassung: CN/EMBARGO nur für kontrollverdächtige Items ────────
  * Beobachtung (Spike): ein GENUIN unkontrolliertes Item (reaction-wheel: kein
@@ -64,10 +90,12 @@ import {
   type ClassifiableItem,
 } from "@/lib/trade/classification/classify-item";
 import {
-  REGIME_MATURITY,
-  type CorpusRegime,
-} from "@/data/trade/normalized-corpus";
-import type { ListId } from "../order-of-review";
+  deriveVerdict,
+  type LineAssessment,
+  type ScreeningAssessment,
+} from "@/lib/trade/operation-assistant-verdict";
+import { LIST_ID_TO_CORPUS_REGIME } from "@/lib/comply-v2/trade/license-determination";
+import { REGIME_MATURITY } from "@/data/trade/normalized-corpus";
 
 // ─── Matrix-Achsen (aus dem Plan §4.4) ────────────────────────────────────
 
@@ -141,34 +169,15 @@ function itemLooksControlled(item: GoldenItem): boolean {
 // ─── Thin-Origin-Bestimmung (fail-closed, aus REGIME_MATURITY abgeleitet) ──
 
 /**
- * Spiegelung der `LIST_ID_TO_CORPUS_REGIME`-Tabelle aus
- * `license-determination.ts` (dort modul-privat, daher hier minimal
- * nachgebaut). Nur die Dual-Use-Primärregime der circle-A-Origins werden
- * gebraucht; multilaterale ListIds sind absichtlich nicht enthalten (Gate 4.5
- * feuert nie auf multilateralen Baselines).
- */
-const LIST_ID_TO_CORPUS_REGIME: Partial<Record<ListId, CorpusRegime>> = {
-  EAR_CCL: "US_CCL",
-  EU_ANNEX_I: "EU_ANNEX_I",
-  UK_STRATEGIC: "UK_STRATEGIC",
-  JP_METI: "JP_METI",
-  IN_SCOMET: "IN_SCOMET",
-  EU_CML: "EU_CML",
-  CA_ECL: "CA_ECL",
-  AU_DSGL: "AU_DSGL",
-  KR_STRATEGIC: "KR_STRATEGIC",
-  CH_GKV: "CH_GKV",
-  NO_LIST: "NO_LIST",
-  USML: "USML",
-  DE_AUSFUHRLISTE: "DE_AUSFUHRLISTE",
-};
-
-/**
  * Ein Origin ist "dünn", wenn sein primäres Dual-Use-Regime REGIME_MATURITY
  * 3 hat (noch nicht tief modelliert) — DANN feuert Gate 4.5 für
  * kontrollverdächtige Items (fail-closed). Aus der Map abgeleitet statt
  * hartkodiert, damit der Test mit jedem Maturity-Upgrade (S3–S6) automatisch
  * mitwandert.
+ *
+ * Liest `LIST_ID_TO_CORPUS_REGIME` direkt aus `license-determination.ts`
+ * (exportiert, kein Nachbau) — so kann die Thin-Origin-Ableitung nie von der
+ * Tabelle abdriften, die Gate 4.5 tatsächlich benutzt.
  */
 function isThinOrigin(originIso: string): boolean {
   const regime = originRegimes(originIso);
@@ -178,11 +187,6 @@ function isThinOrigin(originIso: string): boolean {
 }
 
 // ─── Pipeline-Helper (DAS Orakel der Matrix) ───────────────────────────────
-
-const gateToVerdict = (
-  gate: "CLEARED" | "REVIEW_NEEDED" | "BLOCKED",
-): Verdict =>
-  gate === "CLEARED" ? "GO" : gate === "BLOCKED" ? "BLOCKED" : "REVIEW";
 
 /**
  * Baut die `ClassifiableItem`-Form aus einem Golden-Item: `attributes` sind
@@ -207,9 +211,30 @@ function buildClassifiableItem(item: GoldenItem): ClassifiableItem {
 }
 
 /**
- * Die reine Pipeline für eine Matrix-Zelle. Mirror der AVA-Zeilen-Logik
- * (operation-assistant.server.ts:190–224) minus Prisma + Screening (rein
- * item×origin×dest). exporterOrigin wird nur für unterstützte Sitze
+ * Synthetisches, all-CLEAR Screening-Argument für `deriveVerdict`. Die Golden-
+ * Matrix ist BEWUSST partei-los (rein item×origin×dest) — sie hat keine
+ * Gegenpartei-Dimension. Ein sauberes Screening isoliert daher genau das, was
+ * diese Matrix prüfen soll: das Item-/Origin-/Dest-getriebene Zeilen-Verdict.
+ * `lastScreenedAt: null` heißt "Frische unbekannt" → wird NICHT zum Gap
+ * abgewertet (siehe `ScreeningAssessment`-Doku), das Screening bleibt ein
+ * sauberes GO und drückt das Verdict nie künstlich hoch.
+ */
+const SYNTHETIC_CLEAR_SCREENING: ScreeningAssessment = {
+  status: "CLEAR",
+  partyName: "Golden-Set (party-less harness)",
+  partyBlocked: false,
+  lastScreenedAt: null,
+};
+
+/**
+ * DAS Orakel der Matrix: das ECHTE AVA-Zeilen-Verdict. Statt `gate → verdict`
+ * direkt zu mappen (der alte blinde Fleck — er ließ AVAs `hardBlock()` aus),
+ * baut diese Funktion exakt das, was operation-assistant.server.ts pro Zeile
+ * baut — ein `LineAssessment` (classified=true, mit `classification`) — und
+ * reicht es zusammen mit einem synthetischen all-CLEAR-Screening an
+ * `deriveVerdict`. Damit greift AVAs `hardBlock()` (gate==BLOCKED ODER
+ * itarBlock/embargoBlock/annexIVBlock/mtcrCatIBlock) genauso wie in der echten
+ * Server-Bewertung. exporterOrigin wird nur für unterstützte Sitze
  * durchgereicht — für circle-A sind alle Origins supported.
  */
 function runPipeline(
@@ -218,11 +243,18 @@ function runPipeline(
   destIso: string,
 ): Verdict {
   const origin = originRegimes(originIso);
-  const result = classifyItemForOperation(buildClassifiableItem(item), {
+  const classification = classifyItemForOperation(buildClassifiableItem(item), {
     destinationCountry: destIso,
     exporterOrigin: origin.supported ? origin : undefined,
   });
-  return gateToVerdict(result.licenseDetermination.gate);
+  const line: LineAssessment = {
+    lineId: `${item.id}-line`,
+    itemId: item.id,
+    itemName: item.name,
+    classified: true,
+    classification,
+  };
+  return deriveVerdict([line], SYNTHETIC_CLEAR_SCREENING).verdict;
 }
 
 // ─── Assertion-Helfer ──────────────────────────────────────────────────────
@@ -245,11 +277,14 @@ describe("GOLDEN SET — space items × circle-A origins × destination classes"
 
           it(`${item.id} | ${origin}→${dest.iso} [${dest.cls}]`, () => {
             const verdict = runPipeline(item, origin, dest.iso);
+            // Stabiler Map-Lookup-Key (ohne Klasse) für EXACT; Label trägt
+            // zusätzlich die Dest-Klasse für schnellere Triage bei Failures.
             const key = `${item.id}|${origin}|${dest.iso}`;
+            const label = `${key} [${dest.cls}]`;
 
             // 1. EXACT-Override (falls belegt) — sonst Mindest-Strenge-Boden.
             if (EXACT[key] !== undefined) {
-              expect(verdict, `${key} — EXACT`).toBe(EXACT[key]);
+              expect(verdict, `${label} — EXACT`).toBe(EXACT[key]);
             } else {
               // CN/EMBARGO-Böden gelten NUR für kontrollverdächtige Items
               // (siehe Header). Für unkontrollierte Items ist GO nach CN/RU
@@ -258,7 +293,7 @@ describe("GOLDEN SET — space items × circle-A origins × destination classes"
                 (dest.cls !== "CN" && dest.cls !== "EMBARGO") ||
                 itemLooksControlled(item);
               if (floorApplies) {
-                expectAtLeast(verdict, MIN_BY_DEST_CLASS[dest.cls], key);
+                expectAtLeast(verdict, MIN_BY_DEST_CLASS[dest.cls], label);
               }
             }
 
@@ -271,7 +306,7 @@ describe("GOLDEN SET — space items × circle-A origins × destination classes"
             ) {
               expect(
                 verdict,
-                `${key} — thin origin + control-suspicious darf nie GO sein (Gate 4.5)`,
+                `${label} — thin origin + control-suspicious darf nie GO sein (Gate 4.5)`,
               ).not.toBe("GO");
             }
           });
@@ -327,5 +362,36 @@ describe("GOLDEN SET — Invarianten", () => {
     expect(rw, "reaction-wheel muss im Golden Set existieren").toBeDefined();
     expect(runPipeline(rw!, "DE", "CN")).toBe("GO");
     expect(runPipeline(rw!, "DE", "RU")).toBe("GO");
+  });
+
+  it("Heuristik-Pin: undeklarierte heuristik-getriebene Items (eo-sar, hall-thruster) sind irgendwo NICHT GO", () => {
+    // Diese Items tragen KEINEN deklarierten Code (itemLooksControlled=false),
+    // ihre Kontrolle entsteht AUSSCHLIESSLICH über die Keyword-Heuristik (SAR /
+    // Hall-Thruster → ITAR via hardBlock). Da kein Boden auf sie greift, würde
+    // eine kaputte/abgeklemmte Heuristik sie still auf GO-überall fallen lassen,
+    // ohne dass ein anderer Test es merkt. Dieser Pin verlangt mindestens EIN
+    // Nicht-GO-Verdict je Item über die Matrix — die Heuristik MUSS feuern.
+    for (const id of ["eo-sar", "hall-thruster"] as const) {
+      const item = GOLDEN_ITEMS.find((i) => i.id === id);
+      expect(item, `${id} muss im Golden Set existieren`).toBeDefined();
+      expect(itemLooksControlled(item!), `${id} ist bewusst undeklariert`).toBe(
+        false,
+      );
+      let sawNonGo = false;
+      for (const origin of ORIGINS) {
+        for (const dest of DESTS) {
+          if (origin === dest.iso) continue;
+          if (runPipeline(item!, origin, dest.iso) !== "GO") {
+            sawNonGo = true;
+            break;
+          }
+        }
+        if (sawNonGo) break;
+      }
+      expect(
+        sawNonGo,
+        `${id} ist über die GANZE Matrix GO — die Keyword-Heuristik feuert nicht mehr (stiller ITAR-Verlust)`,
+      ).toBe(true);
+    }
   });
 });

@@ -153,7 +153,12 @@ export interface LicenseDetermination {
 // are intentionally absent — the gate NEVER fires on multilateral baselines,
 // only on the exporter's primary list. A missing key means the gate does
 // not fire for that ListId (fail-safe: no false reviews).
-const LIST_ID_TO_CORPUS_REGIME: Partial<Record<ListId, CorpusRegime>> = {
+//
+// Exported (value, not a copy) so the golden-set matrix harness can derive
+// thin-origin status from the SAME table this gate uses — see
+// `classification/golden-set/golden-set.test.ts`. Export only; no behavior
+// change.
+export const LIST_ID_TO_CORPUS_REGIME: Partial<Record<ListId, CorpusRegime>> = {
   EAR_CCL: "US_CCL",
   EU_ANNEX_I: "EU_ANNEX_I",
   UK_STRATEGIC: "UK_STRATEGIC",
