@@ -504,6 +504,46 @@ export const CONTROL_LIST_CROSS_WALK: ControlListEntry[] = [
   },
 
   // ═══════════════════════════════════════════════════════════════
+  // MTCR Cat. II — Other complete delivery systems (Item 19.A.1)
+  //
+  // Data-Sprint S1 (2024-03-14 Annex). Item 19.A.1 controls complete
+  // rocket systems (ballistic missiles, SLVs, sounding rockets) NOT
+  // caught by 1.A.1, capable of a "range" ≥ 300 km — i.e. the SAME
+  // 300 km range tripwire but WITHOUT the 500 kg payload floor of Cat I.
+  // A sounding rocket / SLV that reaches ≥ 300 km with a sub-500 kg
+  // payload lands here (Cat II, case-by-case) rather than in 1.A.1
+  // (Cat I, strong presumption of denial). Single-predicate (range only)
+  // so it fires even when payload is unknown — fail-closed by design.
+  // ═══════════════════════════════════════════════════════════════
+  {
+    canonicalId: "MTCR:Item-19.A.1",
+    regime: "MTCR-ANNEX",
+    category: "19",
+    productGroup: "A",
+    entryNumber: "1",
+    title:
+      "Complete rocket systems (incl. SLVs, sounding rockets) with range ≥ 300 km, not specified in 1.A.1",
+    predicates: [{ attribute: "rangeKm", op: "gte", value: 300 }],
+    reasonsForControl: ["MTCR-Cat-II"],
+    licenseExceptions: [],
+    seeAlso: [
+      {
+        regime: "MTCR-ANNEX",
+        id: "Item 1.A.1",
+        relationship: "analogous",
+        notes:
+          "1.A.1 is the Cat I corner (range ≥ 300 km AND payload ≥ 500 kg); 19.A.1 is the Cat II catch for the same range with a lighter payload.",
+      },
+      { regime: "EU-ANNEX-I", id: "9A104", relationship: "analogous" },
+      { regime: "EAR-CCL", id: "9A104", relationship: "analogous" },
+    ],
+    citation: "MTCR Annex, Category II, Item 19.A.1",
+    validFrom: "1987-04-16",
+    notes:
+      "Case-by-case review (no strong presumption of denial). The 300 km range threshold is identical to Item 1.A.1 — the only difference is the absence of the 500 kg payload floor. Sounding rockets reaching ≥ 300 km are the canonical space-industry case.",
+  },
+
+  // ═══════════════════════════════════════════════════════════════
   // Rad-hard ICs — Z3d expansion encodes the full 9A515.d FIVE
   // conjunctive criteria from the ontology blueprint § 3.1:
   //   1. TID         ≥ 5×10⁵ Rad(Si) = 500 krad

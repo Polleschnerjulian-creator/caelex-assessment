@@ -317,6 +317,38 @@ describe("MTCR Cat. I (300 km AND 500 kg combined)", () => {
   });
 });
 
+describe("MTCR Cat. II Item 19.A.1 (range ≥ 300 km, no payload floor)", () => {
+  it("range 300, payload 100 → 19.A.1 MATCH but NOT Cat. I 1.A.1", () => {
+    // A sounding rocket / SLV reaching ≥ 300 km with a sub-500 kg payload is
+    // Item 19.A.1 (Cat II), not Item 1.A.1 (Cat I, which needs ≥ 500 kg too).
+    const result = matchAgainstCrossWalk({
+      rangeKm: 300,
+      payloadKg: 100,
+    });
+    const ids = result.candidates.map((c) => c.entry.canonicalId);
+    expect(ids).toContain("MTCR:Item-19.A.1");
+    expect(ids).not.toContain("MTCR:Item-1.A.1");
+  });
+
+  it("range 299 → no 19.A.1 match (below the 300 km tripwire)", () => {
+    const result = matchAgainstCrossWalk({
+      rangeKm: 299,
+    });
+    const ids = result.candidates.map((c) => c.entry.canonicalId);
+    expect(ids).not.toContain("MTCR:Item-19.A.1");
+  });
+
+  it("range 1200 (no payload supplied) → 19.A.1 MATCH on range alone", () => {
+    const result = matchAgainstCrossWalk({
+      rangeKm: 1200,
+    });
+    const m = result.candidates.find(
+      (c) => c.entry.canonicalId === "MTCR:Item-19.A.1",
+    );
+    expect(m).toBeDefined();
+  });
+});
+
 describe("Electric propulsion (Isp ≥ 1000)", () => {
   it("Isp 1500 + itemClass propulsion.electric + SD=true → matches 9A515.x EP", () => {
     const result = matchAgainstCrossWalk({
