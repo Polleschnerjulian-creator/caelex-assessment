@@ -111,4 +111,46 @@ describe("VerdictPanel", () => {
     expect(screen.getByText(/BAFA-Antrag/)).toBeTruthy();
     expect(screen.getByRole("button", { name: /screenen/i })).toBeTruthy();
   });
+  it("renders 'Bewertet unter' line with assessedUnder value when present", async () => {
+    const withSeat = {
+      assessment: { ...GO.assessment, assessedUnder: "EU_ANNEX_I" },
+    };
+    (fetch as ReturnType<typeof vi.fn>).mockResolvedValue({
+      ok: true,
+      json: async () => withSeat,
+    });
+    render(<VerdictPanel operationId="op1" />);
+    await waitFor(() =>
+      expect(screen.getByTestId("assessed-under-line")).toBeTruthy(),
+    );
+    expect(screen.getByText("EU_ANNEX_I")).toBeTruthy();
+  });
+  it("renders 'EU (Standard)' fallback when assessedUnder is absent", async () => {
+    (fetch as ReturnType<typeof vi.fn>).mockResolvedValue({
+      ok: true,
+      json: async () => GO,
+    });
+    render(<VerdictPanel operationId="op1" />);
+    await waitFor(() =>
+      expect(screen.getByTestId("assessed-under-line")).toBeTruthy(),
+    );
+    expect(screen.getByText("EU (Standard)")).toBeTruthy();
+  });
+  it("renders originNotice when set", async () => {
+    const withNotice = {
+      assessment: {
+        ...GO.assessment,
+        originNotice:
+          "Exporteur-Sitz im Org-Profil nicht gesetzt — Bewertung nimmt EU-Standard an",
+      },
+    };
+    (fetch as ReturnType<typeof vi.fn>).mockResolvedValue({
+      ok: true,
+      json: async () => withNotice,
+    });
+    render(<VerdictPanel operationId="op1" />);
+    await waitFor(() =>
+      expect(screen.getByText(/EU-Standard an/)).toBeTruthy(),
+    );
+  });
 });

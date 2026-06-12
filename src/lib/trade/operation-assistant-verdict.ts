@@ -24,6 +24,8 @@ export interface StepResult {
   detailRef?: string;
 }
 export interface Pendenz {
+  /** Stable machine-readable identifier. Optional for legacy callers. */
+  id?: string;
   label: string;
   actionHref?: string;
 }
@@ -86,6 +88,19 @@ export interface VerdictResult {
    * UNVERIFIED — never a confident green de-minimis on an unaudited number.
    */
   deMinimisExplained: ExplainedResult<DeMinimisVerdictValue>;
+  /**
+   * Spec §4.3b / Task 6 — the primary dual-use list under which this operation
+   * was assessed (e.g. "EU_ANNEX_I", "EAR_CCL"). Set only when the exporter's
+   * country-of-seat is known AND supported by Passage. Null for unsupported or
+   * unknown seats.
+   */
+  assessedUnder?: string | null;
+  /**
+   * Spec §4.7 / Task 6 — informational notice shown when the org's billing
+   * address could not be resolved (no country set). Signals that the assessment
+   * implicitly applied EU standard rules without a confirmed seat.
+   */
+  originNotice?: string | null;
 }
 
 /**

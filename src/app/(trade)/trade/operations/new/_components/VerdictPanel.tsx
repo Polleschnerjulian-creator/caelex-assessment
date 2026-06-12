@@ -32,6 +32,7 @@ interface StepResult {
   why: string;
 }
 interface Pendenz {
+  id?: string;
   label: string;
   actionHref?: string;
 }
@@ -58,6 +59,17 @@ interface Assessment {
    * it is shown beneath the jurisdiction step.
    */
   deMinimisExplained?: ExplainedResult<unknown>;
+  /**
+   * Spec §4.3b / Task 6 — the primary dual-use list under which this
+   * operation was assessed (e.g. "EU_ANNEX_I", "EAR_CCL"). Null / absent
+   * when the seat is unsupported or unknown.
+   */
+  assessedUnder?: string | null;
+  /**
+   * Spec §4.7 / Task 6 — informational notice when the org's billing address
+   * could not be resolved.
+   */
+  originNotice?: string | null;
 }
 
 const STEP_LABEL: Record<string, string> = {
@@ -252,6 +264,28 @@ export function VerdictPanel({ operationId }: { operationId: string }) {
         className={`rounded-xl border px-5 py-4 text-lg font-semibold ${VERDICT_CLASS[assessment.verdict]}`}
       >
         {assessment.headline}
+      </div>
+
+      {/* Origin seat — "Bewertet unter" line (Spec §4.3b + §4.7 / S0 Task 6).
+          Shows which primary dual-use list governs this operation, or falls
+          back to "EU (Standard)" when the seat is unknown / unsupported.
+          The notice is rendered in muted styling — informational, not alarming. */}
+      <div
+        className="flex flex-wrap items-center gap-x-3 gap-y-0.5 text-small text-trade-text-muted"
+        data-testid="assessed-under-line"
+      >
+        <span>
+          Bewertet unter:{" "}
+          <span className="font-medium text-trade-text-primary">
+            {assessment.assessedUnder ?? "EU (Standard)"}
+          </span>
+        </span>
+        {assessment.originNotice && (
+          <span className="flex items-center gap-1 text-trade-text-muted/70">
+            <Info className="h-3 w-3 shrink-0" />
+            {assessment.originNotice}
+          </span>
+        )}
       </div>
 
       {/* Liability framing (tier 1/2) — directly under the verdict, as
