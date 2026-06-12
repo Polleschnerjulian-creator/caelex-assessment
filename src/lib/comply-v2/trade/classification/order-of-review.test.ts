@@ -770,6 +770,50 @@ describe("S0: origin-aware order of review", () => {
   });
 });
 
+// ─── S0: origin promotion — order-insensitivity + military-first tie-break ──
+
+describe("S0: origin promotion — deterministic military-first tie-break", () => {
+  it("origin promotion is order-insensitive and prefers the military list when both origin lists match (fail-closed: ML goods are governed by the stricter military regime)", () => {
+    const cml = { list: "EU_CML" as const, entry: "ML11", citation: "EU CML" };
+    const annexI = {
+      list: "EU_ANNEX_I" as const,
+      entry: "9A004",
+      citation: "Reg. 2021/821",
+    };
+    const a = resolveOrderOfReview([cml, annexI], {
+      origin: originRegimes("DE"),
+    });
+    const b = resolveOrderOfReview([annexI, cml], {
+      origin: originRegimes("DE"),
+    });
+    expect(a.primaryAuthority?.list).toBe("EU_CML");
+    expect(b.primaryAuthority?.list).toBe("EU_CML");
+    expect(a.rationale).toContain("EU_CML"); // rationale names the ACTUAL winner (Finding 1)
+  });
+
+  it("EAR_CCL outranks origin promotion (US extraterritorial reach stays primary)", () => {
+    const r = resolveOrderOfReview(
+      [
+        { list: "EAR_CCL", entry: "9A515.a", citation: "15 CFR 774" },
+        { list: "JP_METI", entry: "Schedule1-4", citation: "METI" },
+      ],
+      { origin: originRegimes("JP") },
+    );
+    expect(r.primaryAuthority?.list).toBe("EAR_CCL");
+  });
+
+  it("USML outranks origin promotion", () => {
+    const r = resolveOrderOfReview(
+      [
+        { list: "USML", entry: "XV(a)", citation: "22 CFR 121.1" },
+        { list: "EU_ANNEX_I", entry: "9A004", citation: "Reg. 2021/821" },
+      ],
+      { origin: originRegimes("DE") },
+    );
+    expect(r.primaryAuthority?.list).toBe("USML");
+  });
+});
+
 // ─── deriveLicenseAuthorityHint exhaustiveness ──────────────────────
 
 describe("S0: deriveLicenseAuthorityHint — exhaustive switch coverage", () => {

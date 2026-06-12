@@ -238,22 +238,25 @@ const NATIONAL_SUPPLEMENTAL: ReadonlySet<ListId> = new Set<ListId>([
  *      superseded (ITAR exclusive jurisdiction, 22 CFR § 120.5).
  *   3. Else if EU_ANNEX_IV present → Annex IV wins (sanctions trump
  *      licensing). All other jurisdictional lists are superseded.
- *   4. Origin-promotion (additive): when `opts.origin` is supplied and
+ *   3.5. Origin-promotion (additive): when `opts.origin` is supplied and
  *      `origin.supported` is true, any match whose `list` equals
  *      `origin.dualUsePrimary` or `origin.militaryPrimary` is elevated
- *      to primary-eligible BEFORE tiers 3–5 run. A MULTILATERAL_LISTS
+ *      to primary-eligible BEFORE tiers 4–5 run. A MULTILATERAL_LISTS
  *      member can never become primary even if it somehow equals an
- *      origin regime. This only applies when no USML or EU_ANNEX_IV
- *      match is present (those still outrank origin-promotion).
- *   5. Else if EAR_CCL present → EAR is primary; parallel EU/national
+ *      origin regime. This only applies when no USML, EU_ANNEX_IV, or
+ *      EAR_CCL match is present (those still outrank origin-promotion).
+ *      Tie-break (fail-closed): when a match exists on BOTH the origin's
+ *      military list and its dual-use list, the military list wins — a
+ *      military good is governed by the stricter military regime.
+ *   4. Else if EAR_CCL present → EAR is primary; parallel EU/national
  *      lists remain in scope (each jurisdiction binds its own export).
- *   6. Else if EU_ANNEX_I present → EU Annex I is primary; national
+ *   5. Else if EU_ANNEX_I present → EU Annex I is primary; national
  *      supplemental lists are parallel.
- *   7. Else if a national list present (no EU primary) → that national
+ *   6. Else if a national list present (no EU primary) → that national
  *      list is primary on its own.
- *   8. Else if only multilateral matches → `primaryAuthority` = null,
+ *   7. Else if only multilateral matches → `primaryAuthority` = null,
  *      multilateral surfaced for trace-through.
- *   9. Empty input → `primaryAuthority` = null, no rationale beyond
+ *   8. Empty input → `primaryAuthority` = null, no rationale beyond
  *      "no matches".
  *
  * The function is order-insensitive over the input array. Duplicate
@@ -264,8 +267,9 @@ const NATIONAL_SUPPLEMENTAL: ReadonlySet<ListId> = new Set<ListId>([
  * @param opts     Optional parameters. `opts.origin` enables origin-seat
  *                 promotion — the exporter's jurisdiction's national list
  *                 is preferred as primary over foreign national lists when
- *                 a higher-tier list (USML, EU_ANNEX_IV, EAR_CCL, EU_ANNEX_I)
- *                 does not already govern.
+ *                 a higher-tier list (USML, EU_ANNEX_IV, EAR_CCL) does
+ *                 not already govern. Military list beats dual-use list
+ *                 when both origin lists match (fail-closed tie-break).
  * @returns A resolved `OrderOfReviewResult` with primary, superseded,
  *          parallel, multilateral, rationale, and disclaimer.
  */
@@ -358,7 +362,7 @@ export function resolveOrderOfReview(
     };
   }
 
-  // ─── Origin-promotion (additive, between EAR and EU Annex I) ────────
+  // ─── Tier 3.5: Origin-promotion (additive, between EAR and EU Annex I) ──
   // When the caller supplies an origin regime (exporter's jurisdictional
   // seat), and a match exists for that origin's primary list (dual-use
   // or military), that match is promoted to primary BEFORE the EU Annex I
@@ -370,14 +374,25 @@ export function resolveOrderOfReview(
   //
   // Foreign national lists (not the exporter's own regime) stay in the
   // existing NATIONAL_SUPPLEMENTAL path as parallel — they are NOT promoted.
+  //
+  // Tie-break (fail-closed): when both the origin's military list AND its
+  // dual-use list appear in the jurisdictional matches, the military list
+  // wins. An item that matches the military list is a military good and the
+  // military regime is the stricter governing one. Implementation: try the
+  // military list first (when non-null), then fall back to the dual-use list.
   if (opts?.origin?.supported === true) {
     const { dualUsePrimary, militaryPrimary } = opts.origin;
-    const originPrimaryMatch = jurisdictional.find(
-      (m) =>
-        !MULTILATERAL_LISTS.has(m.list) &&
-        (m.list === dualUsePrimary ||
-          (militaryPrimary !== null && m.list === militaryPrimary)),
-    );
+    // Military-first: look for a military-list match first (fail-closed tie-break).
+    const originPrimaryMatch =
+      (militaryPrimary !== null
+        ? jurisdictional.find(
+            (m) =>
+              !MULTILATERAL_LISTS.has(m.list) && m.list === militaryPrimary,
+          )
+        : undefined) ??
+      jurisdictional.find(
+        (m) => !MULTILATERAL_LISTS.has(m.list) && m.list === dualUsePrimary,
+      );
     if (originPrimaryMatch) {
       const parallel = jurisdictional.filter(
         (m) =>
@@ -391,7 +406,7 @@ export function resolveOrderOfReview(
         multilateralBaseline: multilateral,
         rationale: buildOriginPromotedRationale(
           originPrimaryMatch,
-          opts.origin.dualUsePrimary,
+          originPrimaryMatch.list,
           parallel,
           multilateral,
         ),
@@ -767,12 +782,12 @@ function buildMultilateralOnlyRationale(
 
 function buildOriginPromotedRationale(
   primary: ListMatch,
-  originRegimePrimary: ListId,
+  winningList: ListId,
   parallel: readonly ListMatch[],
   multilateral: readonly ListMatch[],
 ): string {
   const parts = [
-    `Item matches ${primary.list} (entry ${primary.entry}). primary chosen because exporter seat regime ${originRegimePrimary} governs — the exporter's jurisdictional seat determines the applicable export law. Higher-tier lists (USML, Annex IV, EAR) are not present for this item.`,
+    `Item matches ${primary.list} (entry ${primary.entry}). Primary chosen because exporter seat regime ${winningList} governs — the exporter's jurisdictional seat determines the applicable export law. Higher-tier lists (USML, Annex IV, EAR) are not present for this item.`,
   ];
   if (parallel.length > 0) {
     parts.push(
