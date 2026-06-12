@@ -23,6 +23,7 @@ import {
 } from "./license-determination";
 import type { TriggerEvaluation } from "./property-trigger-engine";
 import type { DeMinimisResult } from "./de-minimis-calculator";
+import type { OriginRegimeRouting } from "./classification/origin-regime-map";
 
 // ─── Fixtures ─────────────────────────────────────────────────────────
 
@@ -1018,5 +1019,131 @@ describe("Gate 3.5 — declared control-code backstop (T-M5 completion)", () => 
     expect(
       detEU.requirements.some((r) => r.triggerCode === "ACTUAL_USML_DECLARED"),
     ).toBe(true);
+  });
+});
+
+// ─── Gate 4.5: Thin-origin-coverage fail-closed gate (S0 Task 7) ──────
+//
+// When the exporter's origin regime has maturity 3 ("dünn" = not yet
+// deeply modelled) AND the item is control-suspicious, the gate fires
+// a mandatory REQUIRES_REVIEW outcome so a human can confirm whether
+// the origin jurisdiction's law creates an independent license obligation.
+
+describe("Gate 4.5 — thin origin-regime coverage (fail-closed)", () => {
+  // ─── Origin fixtures ──────────────────────────────────────────────
+  /** GB = UK_STRATEGIC, maturity 3, supported */
+  const GB_ORIGIN: OriginRegimeRouting = {
+    dualUsePrimary: "UK_STRATEGIC",
+    militaryPrimary: "UK_STRATEGIC",
+    multilateralBaseline: ["WASSENAAR", "MTCR", "NSG", "AG"],
+    supported: true,
+  };
+  /** DE = EU_ANNEX_I, maturity 2 (mature regime — gate must NOT fire) */
+  const DE_ORIGIN: OriginRegimeRouting = {
+    dualUsePrimary: "EU_ANNEX_I",
+    militaryPrimary: "EU_CML",
+    multilateralBaseline: ["WASSENAAR", "MTCR", "NSG", "AG"],
+    supported: true,
+  };
+  /** JP = JP_METI, maturity 3, supported */
+  const JP_ORIGIN: OriginRegimeRouting = {
+    dualUsePrimary: "JP_METI",
+    militaryPrimary: null,
+    multilateralBaseline: ["WASSENAAR", "MTCR", "NSG", "AG"],
+    supported: true,
+  };
+
+  it("GB origin + declared EU dual-use ECCN → outcome NOT CLEARED, reason mentions UK and thin coverage", () => {
+    const det = determineLicenseRequirements(
+      evalWith(),
+      null,
+      "US", // non-EU, non-embargo destination to keep prior gates inactive
+      undefined,
+      undefined,
+      { eccnEU: "9A515.a", eccnUS: null, usmlCategory: null },
+      GB_ORIGIN,
+    );
+    expect(det.gate).not.toBe("CLEARED");
+    const thinReq = det.requirements.find(
+      (r) => r.triggerCode === "THIN_ORIGIN_REGIME",
+    );
+    expect(thinReq).toBeDefined();
+    expect(thinReq!.reason).toMatch(/UK.*nicht tief|noch nicht tief/i);
+  });
+
+  it("DE origin (EU_ANNEX_I maturity 2) + declared EU ECCN → result deep-equals result WITHOUT exporterOrigin (gate adds nothing)", () => {
+    const withoutOrigin = determineLicenseRequirements(
+      evalWith(),
+      null,
+      "US",
+      undefined,
+      undefined,
+      { eccnEU: "9A515.a", eccnUS: null, usmlCategory: null },
+    );
+    const withDeOrigin = determineLicenseRequirements(
+      evalWith(),
+      null,
+      "US",
+      undefined,
+      undefined,
+      { eccnEU: "9A515.a", eccnUS: null, usmlCategory: null },
+      DE_ORIGIN,
+    );
+    expect(withDeOrigin).toEqual(withoutOrigin);
+  });
+
+  it("no exporterOrigin → byte-identical legacy (deep-equal against result without origin param)", () => {
+    const legacy = determineLicenseRequirements(
+      EU_ONLY_EVAL,
+      null,
+      "JP",
+      undefined,
+      undefined,
+      { eccnEU: "9A004", eccnUS: null, usmlCategory: null },
+    );
+    const withUndefined = determineLicenseRequirements(
+      EU_ONLY_EVAL,
+      null,
+      "JP",
+      undefined,
+      undefined,
+      { eccnEU: "9A004", eccnUS: null, usmlCategory: null },
+      undefined,
+    );
+    expect(withUndefined).toEqual(legacy);
+  });
+
+  it("JP origin (JP_METI maturity 3) + declared ECCN → REQUIRES_REVIEW with JP reason", () => {
+    const det = determineLicenseRequirements(
+      evalWith(),
+      null,
+      "US",
+      undefined,
+      undefined,
+      { eccnEU: null, eccnUS: "9A515.a", usmlCategory: null },
+      JP_ORIGIN,
+    );
+    expect(det.gate).not.toBe("CLEARED");
+    const thinReq = det.requirements.find(
+      (r) => r.triggerCode === "THIN_ORIGIN_REGIME",
+    );
+    expect(thinReq).toBeDefined();
+    expect(thinReq!.reason).toMatch(
+      /JP.*nicht tief|Japan.*nicht tief|noch nicht tief.*JP|JP_METI/i,
+    );
+  });
+
+  it("GB origin + NO control signals (EAR99-like, no declared codes, CLEAN_EVAL) → unchanged vs without origin (gate must NOT blanket-review)", () => {
+    const withoutOrigin = determineLicenseRequirements(CLEAN_EVAL, null, "US");
+    const withGBNoSignals = determineLicenseRequirements(
+      CLEAN_EVAL,
+      null,
+      "US",
+      undefined,
+      undefined,
+      undefined,
+      GB_ORIGIN,
+    );
+    expect(withGBNoSignals).toEqual(withoutOrigin);
   });
 });

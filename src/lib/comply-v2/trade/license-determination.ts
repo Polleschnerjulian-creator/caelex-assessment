@@ -36,6 +36,12 @@ import {
   type ApplicableException,
   type ExceptionMatchInput,
 } from "./license-exception-matrix";
+import type { OriginRegimeRouting } from "./classification/origin-regime-map";
+import {
+  REGIME_MATURITY,
+  type CorpusRegime,
+} from "@/data/trade/normalized-corpus";
+import type { ListId } from "./classification/order-of-review";
 
 // ─── Types ────────────────────────────────────────────────────────────
 
@@ -140,6 +146,52 @@ export interface LicenseDetermination {
   disclaimer: string;
 }
 
+// ─── Gate 4.5: Thin-origin-regime mapping ─────────────────────────────
+//
+// Maps each ListId from OriginRegimeRouting to the CorpusRegime key used
+// in REGIME_MATURITY. Multilateral ListIds (WASSENAAR, MTCR, NSG, AG)
+// are intentionally absent — the gate NEVER fires on multilateral baselines,
+// only on the exporter's primary list. A missing key means the gate does
+// not fire for that ListId (fail-safe: no false reviews).
+const LIST_ID_TO_CORPUS_REGIME: Partial<Record<ListId, CorpusRegime>> = {
+  EAR_CCL: "US_CCL",
+  EU_ANNEX_I: "EU_ANNEX_I",
+  UK_STRATEGIC: "UK_STRATEGIC",
+  JP_METI: "JP_METI",
+  IN_SCOMET: "IN_SCOMET",
+  EU_CML: "EU_CML",
+  CA_ECL: "CA_ECL",
+  AU_DSGL: "AU_DSGL",
+  KR_STRATEGIC: "KR_STRATEGIC",
+  CH_GKV: "CH_GKV",
+  NO_LIST: "NO_LIST",
+  USML: "USML",
+  DE_AUSFUHRLISTE: "DE_AUSFUHRLISTE",
+  // Multilateral baselines intentionally absent — gate never fires on them.
+};
+
+/**
+ * Returns a human-readable German label for a ListId used in Gate 4.5 reasons.
+ */
+function listIdLabel(listId: ListId): string {
+  const labels: Partial<Record<ListId, string>> = {
+    UK_STRATEGIC: "UK-Kontrollliste (UK Strategic Export Control List)",
+    JP_METI: "Japan-METI-Kontrollliste",
+    IN_SCOMET: "India SCOMET-Liste",
+    EU_CML: "EU-Common-Military-List",
+    CA_ECL: "Kanada ECL (Export Control List)",
+    AU_DSGL: "Australien DSGL (Defence and Strategic Goods List)",
+    KR_STRATEGIC: "Korea Strategic-Kontrollliste",
+    CH_GKV: "Schweiz GKV (Güterkontrollverordnung)",
+    NO_LIST: "Norwegen Kontrollliste",
+    DE_AUSFUHRLISTE: "DE-Ausfuhrliste",
+    EAR_CCL: "US EAR Commerce Control List",
+    EU_ANNEX_I: "EU Annex I Dual-Use-Liste",
+    USML: "US Munitions List (USML)",
+  };
+  return labels[listId] ?? listId;
+}
+
 // ─── Engine ───────────────────────────────────────────────────────────
 
 const DISCLAIMER =
@@ -200,6 +252,20 @@ export function determineLicenseRequirements(
     eccnUS?: string | null;
     usmlCategory?: string | null;
   },
+  /**
+   * S0 Task 7 — Gate 4.5 (fail-closed thin-origin-coverage gate).
+   *
+   * The OriginRegimeRouting for the exporter's seat, resolved via
+   * `originRegimes(seat)` in the call stack. When supplied AND the
+   * exporter's primary regime has REGIME_MATURITY === 3 (not yet deeply
+   * modelled in Passage) AND the item carries control-suspicious signals,
+   * the gate fires a REQUIRES_REVIEW requirement with a German clear-text
+   * reason naming the regime.
+   *
+   * Additive + tightening-only: omitting this param (or passing undefined)
+   * preserves byte-identical pre-Task-7 behaviour for all existing callers.
+   */
+  exporterOrigin?: OriginRegimeRouting,
 ): LicenseDetermination {
   const requirements: LicenseRequirement[] = [];
   const nextSteps: string[] = [];
@@ -591,6 +657,95 @@ export function determineLicenseRequirements(
         recommendedAction: `Determine the applicable licence (a specific BAFA licence or an EU general/global authorisation) for destination ${destinationCountry} before shipping.`,
         triggerCode: "ACTUAL_CODE_DECLARED",
       });
+    }
+  }
+
+  // ── Gate 4.5: Fail-closed thin-origin-coverage gate (S0 Task 7) ─────
+  //
+  // Purpose: when the exporter's origin regime is supported (known seat)
+  // but has REGIME_MATURITY === 3 (not yet deeply modelled in Passage),
+  // the engine cannot confidently evaluate that regime's own licensing
+  // rules. For control-suspicious items, we MUST flag this for human
+  // review rather than silently clearing.
+  //
+  // Fires when ALL of:
+  //   1. exporterOrigin is supplied and supported === true
+  //   2. At least one of the primary list legs (dualUsePrimary or
+  //      militaryPrimary) maps to a CorpusRegime with REGIME_MATURITY === 3
+  //   3. The item is "control-suspicious" — same signals as Gate 3.5
+  //      (declared ECCN or USML, or heuristic trigger fired). One thin
+  //      leg suffices for condition 2 (fail-closed).
+  //
+  // Effect: tightening-only — promotes gate to REVIEW_NEEDED (or higher if
+  // already BLOCKED). Never downgrades an existing BLOCKED/DENIED.
+  if (exporterOrigin?.supported === true) {
+    // Condition 2: check primary lists against item signals — dual-use leg
+    // fires for dual-use items; military leg fires for USML/ITAR items.
+    // Coupling each leg to its matching item-type avoids false reviews on
+    // DE exporters (EU_ANNEX_I maturity 2, EU_CML maturity 3) for purely
+    // dual-use items. One thin leg still suffices when an item IS both.
+    const eccnEUCode = actualCodes?.eccnEU?.trim();
+    const eccnUSCode = actualCodes?.eccnUS?.trim();
+    const usmlCode = actualCodes?.usmlCategory?.trim();
+    const hasControlledDualUseCode =
+      !!eccnEUCode || (!!eccnUSCode && eccnUSCode.toUpperCase() !== "EAR99");
+    const hasDeclaredUsml = !!usmlCode;
+    // Heuristic triggers: dual-use heuristic (EU_ANNEX_I/US_CCL codes) or
+    // ITAR heuristic. Gate 3.5 mirrors this exactly.
+    const heuristicDualUseFired = triggerEval.results.some((r) =>
+      r.suggestedCodes.some(
+        (c) => c.jurisdiction === "EU_ANNEX_I" || c.jurisdiction === "US_CCL",
+      ),
+    );
+    const heuristicItarFired = triggerEval.hasItarFlag;
+
+    // Determine which primary list qualifies as "thin" for this item:
+    //   — dualUsePrimary: relevant when item has dual-use signals (eccnEU/US or
+    //     EU_ANNEX_I/US_CCL heuristic). Mirrors Gate 3.5's `hasControlledDualUseCode`
+    //     condition.
+    //   — militaryPrimary: relevant only when item has USML/ITAR signals (declared
+    //     usmlCategory or heuristic ITAR flag).
+    let thinRegimeListId: ListId | undefined;
+
+    if (hasControlledDualUseCode || heuristicDualUseFired) {
+      const dualCorpus =
+        LIST_ID_TO_CORPUS_REGIME[exporterOrigin.dualUsePrimary];
+      if (dualCorpus !== undefined && REGIME_MATURITY[dualCorpus] === 3) {
+        thinRegimeListId = exporterOrigin.dualUsePrimary;
+      }
+    }
+    if (
+      thinRegimeListId === undefined &&
+      exporterOrigin.militaryPrimary !== null &&
+      (hasDeclaredUsml || heuristicItarFired)
+    ) {
+      const milCorpus =
+        LIST_ID_TO_CORPUS_REGIME[exporterOrigin.militaryPrimary];
+      if (milCorpus !== undefined && REGIME_MATURITY[milCorpus] === 3) {
+        thinRegimeListId = exporterOrigin.militaryPrimary;
+      }
+    }
+
+    if (thinRegimeListId !== undefined) {
+      // Only add the gate if it is not already blocked/prohibited (never loosen BLOCKED).
+      const alreadyBlocked = requirements.some(
+        (r) => r.status === "DENIED" || r.status === "PROHIBITED",
+      );
+      if (!alreadyBlocked) {
+        const label = listIdLabel(thinRegimeListId);
+        requirements.push({
+          jurisdiction: `Exporteur-Sitz (${thinRegimeListId})`,
+          authority: "EU_COMPETENT_AUTHORITY",
+          status: "LIKELY_REQUIRED",
+          licenseType: null,
+          reason: `${label} ist in Passage noch nicht tief genug abgedeckt (Tier 3) — Genehmigungspflicht nach ${thinRegimeListId}-Recht manuell prüfen`,
+          recommendedAction: `Die Ausfuhrkontrollpflichten nach ${label} manuell mit qualifiziertem Exportkontroll-Rechtsberater klären, bevor die Sendung erfolgt.`,
+          triggerCode: "THIN_ORIGIN_REGIME",
+        });
+        nextSteps.push(
+          `Genehmigungspflicht nach ${label} (Tier 3 — nicht vollständig modelliert) manuell prüfen.`,
+        );
+      }
     }
   }
 
