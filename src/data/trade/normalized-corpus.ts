@@ -43,6 +43,11 @@ import {
   DE_AUSFUHRLISTE_ENTRIES,
   DE_AUSFUHRLISTE_AS_OF,
 } from "./de-ausfuhrliste";
+import {
+  UK_STRATEGIC_ENTRIES,
+  UK_STRATEGIC_AS_OF,
+  type UkStrategicEntry,
+} from "./uk-strategic";
 import { EU_ANNEX_I_ENTRIES } from "./eu-annex-i";
 import { EU_ANNEX_I_CAT1_2_ENTRIES } from "./eu-annex-i-cat1-2";
 import { EU_ANNEX_I_CAT3_ENTRIES } from "./eu-annex-i-cat3";
@@ -117,6 +122,26 @@ export const REGIME_MATURITY: Record<CorpusRegime, 1 | 2 | 3> = {
   DE_AUSFUHRLISTE: 3,
   JP_METI: 3,
   IN_SCOMET: 3,
+  // Data-Sprint S3 curated the UK Strategic Export Control List space slice
+  // (121 verified entries, edition 2025-12-16) — yet UK_STRATEGIC is
+  // DELIBERATELY KEPT AT TIER 3, overriding the plan's "→ 2" parameter.
+  //
+  // WHY (fail-closed safety, not a data gap): the curated corpus makes UK
+  // codes RESOLVABLE (a declared 9A004 from a GB seat now yields
+  // `UK_STRATEGIC:9A004` chips in classification), but the determination
+  // engine has NO UK-origin LICENCE logic yet. Post-Brexit, a UK→EU dual-use
+  // export REQUIRES a UK (ECJU) licence in its own right; Gate 4.5
+  // (thin-origin REVIEW) is currently the ONLY guard that produces a review
+  // for a GB-seat controlled export. Lifting maturity to 2 would silence
+  // Gate 4.5, and — because Gate 3.5's dual-use leg does not fire for an
+  // intra-EU destination — a GB→DE declared-9A004 cell would silently become
+  // GO: a false-CLEARED-class bug. Keeping Tier 3 means GB customers get
+  // precise UK ratings/chips in classification while their verdicts stay
+  // fail-closed REVIEW until the licence engine exists.
+  //
+  // LIFT-CONDITION: raise to 2 only once UK-origin licence determination is
+  // modelled (engine phase, post-S7). The golden-set EXACT pin
+  // `sat-bus|GB|DE = REVIEW` guards this invariant against a premature lift.
   UK_STRATEGIC: 3,
   EU_CML: 3,
   CA_ECL: 3,
@@ -295,6 +320,45 @@ function adaptIndiaScomet(): NormalizedCorpusEntry[] {
   }));
 }
 
+/**
+ * UK Strategic Export Control List (consolidated edition 2025-12-16) — the
+ * space slice across the three UK component schemes (dual-use Annex I, the
+ * UK Military List ML positions, and UK national PL ratings). Data-Sprint S3.
+ *
+ * `depthTier: 2` (code-level) on every entry — the corpus is curated at code
+ * depth, not paragraph+predicate depth. The UK control-reason letters
+ * (NS/MT/NP/CB and the UK-only NAT for PL ratings) pass straight onto the
+ * flat `controlReason` array (no fabrication — they come from the source's
+ * bracketed regime letters). The `list` label is uniform so the UI chips read
+ * "UK Strategic Export Control List" regardless of which component scheme a
+ * code came from; the scheme itself is recoverable from the code shape.
+ *
+ * NOTE ON MATURITY: this corpus is RESOLVABLE in the matcher (a declared
+ * 9A004 from a GB seat now yields `UK_STRATEGIC:9A004` chips), but
+ * `REGIME_MATURITY.UK_STRATEGIC` stays 3 on purpose — see the comment block
+ * on REGIME_MATURITY above (Gate 4.5 must keep producing fail-closed REVIEW
+ * for GB-seat exports until UK-origin licence logic exists).
+ */
+function adaptUkStrategic(
+  entries: readonly UkStrategicEntry[],
+): NormalizedCorpusEntry[] {
+  return entries.map((e) => ({
+    canonicalId: `UK_STRATEGIC:${e.code}`,
+    code: e.code,
+    regime: "UK_STRATEGIC" as const,
+    list: "UK Strategic Export Control List",
+    title: e.title,
+    description: e.description,
+    controlReason: [...e.controlReason],
+    sourceUrl: e.sourceUrl,
+    asOfDate: e.asOfDate ?? UK_STRATEGIC_AS_OF,
+    isItar: false,
+    mtcrCategory: e.mtcrCategory ?? null,
+    euAnnexIRef: e.euAnnexIRef,
+    depthTier: 2,
+  }));
+}
+
 function adaptDeAusfuhrliste(): NormalizedCorpusEntry[] {
   return DE_AUSFUHRLISTE_ENTRIES.map((e) => ({
     canonicalId: `DE_AUSFUHRLISTE:${e.position}`,
@@ -402,6 +466,12 @@ export const NORMALIZED_CORPUS_UNION: NormalizedCorpusEntry[] = (() => {
     ...adaptWassenaar(),
     ...adaptJapanMeti(),
     ...adaptIndiaScomet(),
+    // Data-Sprint S3 — UK Strategic Export Control List (space slice).
+    // Code-level (depthTier 2). UK dual-use codes share the EU Annex I scheme
+    // (post-Brexit assimilation) but live under the distinct UK_STRATEGIC
+    // regime, so canonicalIds (`UK_STRATEGIC:9A004`) never collide with the
+    // EU_ANNEX_I rows — both resolve independently for a code/keyword match.
+    ...adaptUkStrategic(UK_STRATEGIC_ENTRIES),
     ...adaptDeAusfuhrliste(),
     // EU Annex I (Reg. 2021/821) — the core EU dual-use list, all categories.
     ...adaptClassificationEntries(
