@@ -1390,4 +1390,77 @@ describe("Gate 1.6 — RU/BY destination ban on EU dual-use (Reg 833/2014 + 765/
     expect(det.gate).toBe("BLOCKED");
     expect(det.embargoBlock).toBe(true);
   });
+
+  // ── Review-finding 2026-06-12: qualified citation on US-ECCN-only path ──
+  //
+  // When the ONLY control signal is a declared non-EAR99 US ECCN (eccnUS set,
+  // eccnEU null, no EU_ANNEX_I/US_CCL heuristic), we cannot assert that the
+  // item is on EU Annex I. The gate still BLOCKs (conservative) but the reason
+  // must use a qualified citation rather than an unconditional Annex I claim.
+  //
+  // (a) US-ECCN-only path (9A515.a) + RU → BLOCKED + embargoBlock + reason
+  //     matches /konservativ.*soweit|soweit das Gut/ AND /833\/2014/
+  it("US-ECCN-only path (eccnUS 9A515.a, eccnEU null, no heuristic) + RU → BLOCKED with qualified 'konservativ/soweit' citation", () => {
+    const det = determineLicenseRequirements(
+      evalWith(), // no heuristic EU_ANNEX_I/US_CCL signal
+      null,
+      "RU",
+      undefined,
+      undefined,
+      { eccnEU: null, eccnUS: "9A515.a", usmlCategory: null },
+    );
+    expect(det.gate).toBe("BLOCKED");
+    expect(det.embargoBlock).toBe(true);
+    const ru = det.requirements.find(
+      (r) => r.triggerCode === "EU_RESTRICTIVE_RU_DUAL_USE",
+    );
+    expect(ru).toBeDefined();
+    expect(ru!.status).toBe("PROHIBITED");
+    expect(ru!.reason).toMatch(/833\/2014/);
+    // Must use the qualified (conservative) citation — not the unqualified Annex I claim
+    expect(ru!.reason).toMatch(/konservativ.*soweit|soweit das Gut/i);
+  });
+
+  // (b) EU-signal path (eccnEU "9A004") + RU → reason UNCHANGED (unqualified).
+  //     The differentiated text must NOT leak into this path.
+  it("EU-signal path (eccnEU set) + RU → reason unchanged (unqualified Annex I citation, no 'konservativ')", () => {
+    const det = determineLicenseRequirements(
+      evalWith(),
+      null,
+      "RU",
+      undefined,
+      undefined,
+      { eccnEU: "9A004", eccnUS: null, usmlCategory: null },
+    );
+    const ru = det.requirements.find(
+      (r) => r.triggerCode === "EU_RESTRICTIVE_RU_DUAL_USE",
+    );
+    expect(ru).toBeDefined();
+    // The EU-signal reason must assert Anhang I directly (unqualified)
+    expect(ru!.reason).toMatch(/Anhang I VO 2021\/821/);
+    // Must NOT contain the qualified/conservative wording
+    expect(ru!.reason).not.toMatch(/konservativ.*soweit|soweit das Gut/i);
+  });
+
+  // (c) US-ECCN-only path + BY → BLOCKED with qualified citation referencing 765/2006
+  it("US-ECCN-only path (eccnUS 9A515.a, eccnEU null, no heuristic) + BY → BLOCKED with qualified '765/2006' citation", () => {
+    const det = determineLicenseRequirements(
+      evalWith(),
+      null,
+      "BY",
+      undefined,
+      undefined,
+      { eccnEU: null, eccnUS: "9A515.a", usmlCategory: null },
+    );
+    expect(det.gate).toBe("BLOCKED");
+    expect(det.embargoBlock).toBe(true);
+    const by = det.requirements.find(
+      (r) => r.triggerCode === "EU_RESTRICTIVE_BY_DUAL_USE",
+    );
+    expect(by).toBeDefined();
+    expect(by!.status).toBe("PROHIBITED");
+    expect(by!.reason).toMatch(/765\/2006/);
+    // Must use the qualified (conservative) citation
+    expect(by!.reason).toMatch(/konservativ.*soweit|soweit das Gut/i);
+  });
 });

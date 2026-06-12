@@ -439,6 +439,16 @@ export function determineLicenseRequirements(
   if (isRuByDestination && ruByHasDualUseSignal && !ruByAlreadyProhibited) {
     ruByDestinationBlock = true;
     const isBelarus = ruByDest === "BY";
+    // Detect the US-ECCN-only sub-case: the trigger is a declared non-EAR99
+    // US ECCN with NO EU-Annex-I signal (no eccnEU declared, no heuristic
+    // EU_ANNEX_I/US_CCL co-fire). On this path we cannot assert that the item
+    // is on EU Annex I of Reg. 2021/821 — the citation would be a false fact.
+    // We still BLOCK (conservative / Über-Blocken akzeptabel) but use a
+    // qualified reason that names the ECCN and hedges the Annex-I claim.
+    // Über-Blocken bewusst; Zitat darf keine ungesicherte Anhang-I-Behauptung
+    // enthalten (Review-Finding 2026-06-12).
+    const usOnlyTrigger = !ruByEccnEU && !ruByHeuristicDualUse && !!ruByEccnUS;
+
     // Effect mirrors Gate 0's hard-prohibition shape (PROHIBITED status,
     // EU_COMPETENT_AUTHORITY, no derogation) so the gate aggregation yields
     // BLOCKED and the embargoBlock flag (consumed by deriveVerdict.hardBlock)
@@ -451,8 +461,12 @@ export function determineLicenseRequirements(
       status: "PROHIBITED",
       licenseType: null,
       reason: isBelarus
-        ? "Verbringung von EU-Dual-Use-Gütern (Anhang I VO 2021/821) nach Belarus ist nach Art. 1e/1f VO (EG) 765/2006 verboten — kein Genehmigungsweg. (Die Art-1f-Advanced-Tech-Sperre ist nur insoweit abgedeckt, wie das EU-Dual-Use-Signal greift.)"
-        : "Verbringung von EU-Dual-Use-Gütern (Anhang I VO 2021/821) nach Russland ist nach Art. 2/2a VO (EU) 833/2014 verboten — kein Genehmigungsweg. (Die Art-2a-Advanced-Tech-Sperre ist nur insoweit abgedeckt, wie das EU-Dual-Use-Signal greift.)",
+        ? usOnlyTrigger
+          ? `US-kontrolliertes Dual-Use-Gut (ECCN ${ruByEccnUS}): Lieferung nach Belarus wird konservativ blockiert — EU-Restriktivmaßnahmen (VO (EG) 765/2006 Art. 1e/1f, soweit das Gut von Anhang I VO 2021/821 erfasst ist) und parallele US-Exportkontrollen gegen Belarus; Rechtsgrundlage je Listung manuell verifizieren.`
+          : "Verbringung von EU-Dual-Use-Gütern (Anhang I VO 2021/821) nach Belarus ist nach Art. 1e/1f VO (EG) 765/2006 verboten — kein Genehmigungsweg. (Die Art-1f-Advanced-Tech-Sperre ist nur insoweit abgedeckt, wie das EU-Dual-Use-Signal greift.)"
+        : usOnlyTrigger
+          ? `US-kontrolliertes Dual-Use-Gut (ECCN ${ruByEccnUS}): Lieferung nach Russland wird konservativ blockiert — EU-Restriktivmaßnahmen (VO (EU) 833/2014 Art. 2/2a, soweit das Gut von Anhang I VO 2021/821 erfasst ist) und parallele US-Exportkontrollen gegen Russland; Rechtsgrundlage je Listung manuell verifizieren.`
+          : "Verbringung von EU-Dual-Use-Gütern (Anhang I VO 2021/821) nach Russland ist nach Art. 2/2a VO (EU) 833/2014 verboten — kein Genehmigungsweg. (Die Art-2a-Advanced-Tech-Sperre ist nur insoweit abgedeckt, wie das EU-Dual-Use-Signal greift.)",
       recommendedAction: isBelarus
         ? "NICHT AUSFÜHREN. Operation abbrechen und dokumentieren. Die Ausfuhr gelisteter Dual-Use-Güter nach Belarus ist nach VO (EG) 765/2006 untersagt; es gibt keinen regulären Genehmigungsweg. Etwaige enge Ausnahmen nur mit qualifiziertem Exportkontroll-Rechtsberater prüfen."
         : "NICHT AUSFÜHREN. Operation abbrechen und dokumentieren. Die Ausfuhr gelisteter Dual-Use-Güter nach Russland ist nach VO (EU) 833/2014 untersagt; es gibt keinen regulären Genehmigungsweg. Etwaige enge Ausnahmen nur mit qualifiziertem Exportkontroll-Rechtsberater prüfen.",
