@@ -754,9 +754,17 @@ describe("Gate 0 — EU Reg. 833/2014 Annex IV Art. 2b", () => {
   it("no screeningContext → annexIVBlock false (backward compat)", () => {
     const det = determineLicenseRequirements(EU_ONLY_EVAL, null, "RU");
     expect(det.annexIVBlock).toBe(false);
-    expect(
-      det.requirements.find((r) => r.status === "PROHIBITED"),
-    ).toBeUndefined();
+    // This test pins Gate 0 (party-based Annex IV / Art. 2b) backward-compat:
+    // without a screening hit, Gate 0 must not fire. The assertion is scoped
+    // to the Gate 0 requirement specifically (triggerCode "EU 833/2014 Art. 2b"
+    // / "Annex IV" jurisdiction). Note: as of Gate 1.6 (PF-1, destination-based
+    // RU/BY dual-use ban), EU_ONLY_EVAL → RU now legitimately yields a SEPARATE
+    // PROHIBITED requirement (triggerCode EU_RESTRICTIVE_RU_DUAL_USE) — that is
+    // the intended new behaviour and must NOT be conflated with Gate 0.
+    const gate0Prohibition = det.requirements.find(
+      (r) => r.triggerCode === "EU 833/2014 Art. 2b",
+    );
+    expect(gate0Prohibition).toBeUndefined();
   });
 
   it("screeningContext with non-Annex-IV lists does not trigger Gate 0", () => {
@@ -1166,5 +1174,220 @@ describe("Gate 4.5 — thin origin-regime coverage (fail-closed)", () => {
     expect(thinReq!.reason).toMatch(
       /EU.?CML|Militärgüterliste|Common Military List/i,
     );
+  });
+});
+
+// ─── Gate 1.6 — EU restrictive measures: RU/BY dual-use destination ban ────
+//
+// PF-1 (S0): the DESTINATION-based prohibition on exporting EU-dual-use
+// items (Annex I of Reg. 2021/821) to Russia/Belarus. Legal basis:
+//   • Council Reg. (EU) 833/2014 Art. 2 + Art. 2a (RU) — destination-based,
+//     no listed counterparty required.
+//   • Council Reg. (EC) 765/2006 Art. 1e/1f (BY) — analogous BY ban.
+// This is DISTINCT from Gate 0 (party-based Annex IV / Art. 2b). Gate 1.6
+// fires on destination + an EU-dual-use control signal, with NO screening
+// hit needed. It is tightening-only (never weakens a stricter outcome) and
+// scoped to ALL exporter origins (over-blocking acceptable; US/UK have
+// equivalent RU prohibitions).
+describe("Gate 1.6 — RU/BY destination ban on EU dual-use (Reg 833/2014 + 765/2006)", () => {
+  it("DE + declared eccnEU 9A004 + RU → BLOCKED, reason cites 833/2014, embargo flag true", () => {
+    const det = determineLicenseRequirements(
+      evalWith(), // no heuristic trigger — declared code is the only signal
+      null,
+      "RU",
+      undefined,
+      undefined,
+      { eccnEU: "9A004", eccnUS: null, usmlCategory: null },
+    );
+    expect(det.gate).toBe("BLOCKED");
+    expect(det.embargoBlock).toBe(true);
+    const ru = det.requirements.find(
+      (r) => r.triggerCode === "EU_RESTRICTIVE_RU_DUAL_USE",
+    );
+    expect(ru).toBeDefined();
+    expect(ru!.status).toBe("PROHIBITED");
+    expect(ru!.reason).toMatch(/833\/2014/);
+  });
+
+  it("DE + declared eccnEU 9A004 + BY → BLOCKED, reason cites 765/2006", () => {
+    const det = determineLicenseRequirements(
+      evalWith(),
+      null,
+      "BY",
+      undefined,
+      undefined,
+      { eccnEU: "9A004", eccnUS: null, usmlCategory: null },
+    );
+    expect(det.gate).toBe("BLOCKED");
+    expect(det.embargoBlock).toBe(true);
+    const by = det.requirements.find(
+      (r) => r.triggerCode === "EU_RESTRICTIVE_BY_DUAL_USE",
+    );
+    expect(by).toBeDefined();
+    expect(by!.status).toBe("PROHIBITED");
+    expect(by!.reason).toMatch(/765\/2006/);
+  });
+
+  it("GB + declared eccnEU + RU → BLOCKED (all-origins scope pin)", () => {
+    // Scope decision: the gate fires for ALL exporter origins, not only EU
+    // seats. Over-blocking is acceptable by product principle; US/UK have
+    // equivalent RU dual-use prohibitions. A non-EU honest-path would need
+    // per-origin embargo-law modelling = out of S0 scope.
+    const det = determineLicenseRequirements(
+      evalWith(),
+      null,
+      "RU",
+      undefined,
+      undefined,
+      { eccnEU: "9A004", eccnUS: null, usmlCategory: null },
+      // GB origin: dual-use UK_STRATEGIC, supported. Gate 4.5 may also flag a
+      // thin-origin review, but the RU ban must already force BLOCKED.
+      {
+        dualUsePrimary: "UK_STRATEGIC",
+        militaryPrimary: "UK_STRATEGIC",
+        multilateralBaseline: ["WASSENAAR", "MTCR", "NSG", "AG"],
+        supported: true,
+      },
+    );
+    expect(det.gate).toBe("BLOCKED");
+    expect(det.embargoBlock).toBe(true);
+    const ru = det.requirements.find(
+      (r) => r.triggerCode === "EU_RESTRICTIVE_RU_DUAL_USE",
+    );
+    expect(ru?.status).toBe("PROHIBITED");
+  });
+
+  it("DE + declared eccnEU + CN → unchanged vs pre-gate snapshot (no creep)", () => {
+    // CN is not RU/BY → Gate 1.6 must NOT fire. The result must deep-equal
+    // the determination an unaffected destination produces. CN keeps the
+    // ordinary Gate 3.5 dual-use REVIEW path.
+    const args = (dest: string) =>
+      determineLicenseRequirements(
+        evalWith(),
+        null,
+        dest,
+        undefined,
+        undefined,
+        {
+          eccnEU: "9A004",
+          eccnUS: null,
+          usmlCategory: null,
+        },
+      );
+    const cn = args("CN");
+    expect(cn.gate).toBe("REVIEW_NEEDED");
+    expect(cn.embargoBlock).toBe(false);
+    expect(
+      cn.requirements.some((r) => r.triggerCode?.startsWith("EU_RESTRICTIVE_")),
+    ).toBe(false);
+    // No 833/765 requirement anywhere.
+    expect(
+      cn.requirements.some((r) => /833\/2014|765\/2006/.test(r.reason)),
+    ).toBe(false);
+  });
+
+  it("DE + NO control signals + RU → unchanged (uncontrolled stays uncontrolled at THIS layer)", () => {
+    // An item with no declared code AND no heuristic trigger going to RU is
+    // not caught by Gate 1.6 — we cannot presume EU Annex I control. The
+    // Art. 2a advanced-tech leg (Annex XXIII et al.) is honestly out of scope
+    // here (no reliable itemClass signal); S1+ corpus work will widen it.
+    const det = determineLicenseRequirements(
+      CLEAN_EVAL, // no trigger, no flags
+      null,
+      "RU",
+      undefined,
+      undefined,
+      { eccnEU: null, eccnUS: null, usmlCategory: null },
+    );
+    expect(det.gate).toBe("CLEARED");
+    expect(det.embargoBlock).toBe(false);
+    expect(
+      det.requirements.some((r) =>
+        r.triggerCode?.startsWith("EU_RESTRICTIVE_"),
+      ),
+    ).toBe(false);
+  });
+
+  it("DE + declared usmlCategory ONLY (no eccnEU) + RU → does NOT gain the 833 requirement (boundary pin)", () => {
+    // USML/ITAR-only signals are the US-law leg; AVA's itarBlock hard-blocks
+    // them separately. Gate 1.6 (EU-dual-use ban) must NOT newly fire on a
+    // purely USML-classified item — the EU Annex I signal is absent.
+    const det = determineLicenseRequirements(
+      evalWith(),
+      null,
+      "RU",
+      undefined,
+      undefined,
+      { eccnEU: null, eccnUS: null, usmlCategory: "XV(e)" },
+    );
+    expect(
+      det.requirements.some((r) =>
+        r.triggerCode?.startsWith("EU_RESTRICTIVE_"),
+      ),
+    ).toBe(false);
+    // The DDTC requirement (Gate 3.5 USML leg) still appears.
+    expect(det.requirements.some((r) => r.authority === "DDTC")).toBe(true);
+  });
+
+  it("heuristic EU dual-use signal (EU_ONLY_EVAL, no declared code) + RU → BLOCKED via Gate 1.6", () => {
+    // The gate also fires on the heuristic EU_ANNEX_I/US_CCL signal that
+    // Gate 4.5 uses — not only on declared codes. EU_ONLY_EVAL carries a
+    // 9A004 EU_ANNEX_I suggested code from the trigger engine.
+    const det = determineLicenseRequirements(EU_ONLY_EVAL, null, "RU");
+    expect(det.gate).toBe("BLOCKED");
+    expect(det.embargoBlock).toBe(true);
+    const ru = det.requirements.find(
+      (r) => r.triggerCode === "EU_RESTRICTIVE_RU_DUAL_USE",
+    );
+    expect(ru?.status).toBe("PROHIBITED");
+  });
+
+  it("eccnUS = EAR99 + RU → does NOT fire (EAR99 is not a control signal)", () => {
+    const det = determineLicenseRequirements(
+      evalWith(),
+      null,
+      "RU",
+      undefined,
+      undefined,
+      { eccnEU: null, eccnUS: "EAR99", usmlCategory: null },
+    );
+    expect(
+      det.requirements.some((r) =>
+        r.triggerCode?.startsWith("EU_RESTRICTIVE_"),
+      ),
+    ).toBe(false);
+    expect(det.embargoBlock).toBe(false);
+  });
+
+  it("does not double-block when Gate 0 (Annex IV) already prohibits — idempotency/tightening", () => {
+    // Party-based Gate 0 fires PROHIBITED first; Gate 1.6 must not add a
+    // duplicate prohibition (alreadyProhibited guard). Still BLOCKED.
+    const det = determineLicenseRequirements(
+      EU_ONLY_EVAL,
+      null,
+      "RU",
+      undefined,
+      { sanctionsLists: ["EU_ANNEX_IV"] },
+      { eccnEU: "9A004", eccnUS: null, usmlCategory: null },
+    );
+    expect(det.gate).toBe("BLOCKED");
+    expect(det.annexIVBlock).toBe(true);
+    const restrictive = det.requirements.filter(
+      (r) => r.triggerCode === "EU_RESTRICTIVE_RU_DUAL_USE",
+    );
+    expect(restrictive).toHaveLength(0);
+  });
+
+  it("case-insensitive destination (lowercase ru) still fires", () => {
+    const det = determineLicenseRequirements(
+      evalWith(),
+      null,
+      "ru",
+      undefined,
+      undefined,
+      { eccnEU: "9A004", eccnUS: null, usmlCategory: null },
+    );
+    expect(det.gate).toBe("BLOCKED");
+    expect(det.embargoBlock).toBe(true);
   });
 });

@@ -367,6 +367,106 @@ export function determineLicenseRequirements(
     );
   }
 
+  // ─── Gate 1.6: EU restrictive measures — RU/BY dual-use destination ban ──
+  //
+  // PF-1 (S0). A DESTINATION-based prohibition that the prior gates miss.
+  // Russia and Belarus are NOT in EMBARGOED_COUNTRIES (= EAR Country Group
+  // E:1∪E:2 = {CU, IR, KP, SY}); they sit in the D:1/RESTRICTED group, which
+  // only changes the de-minimis THRESHOLD, not the licensing outcome. Before
+  // this gate, a declared-9A004 dual-use bus from a DE exporter to RU resolved
+  // to REVIEW (Gate 3.5) — but EU sanctions law PROHIBITS that export outright.
+  //
+  // Legal basis (verbatim instruments — destination-based, NO listed
+  // counterparty required, unlike Gate 0's party-based Art. 2b):
+  //   • Council Regulation (EU) 833/2014, Art. 2 + Art. 2a (as amended):
+  //     prohibition to sell, supply, transfer or export, directly or
+  //     indirectly, dual-use goods listed in Annex I of Reg. 2021/821 (Art. 2)
+  //     and advanced-technology goods (Art. 2a) to any natural/legal person in
+  //     Russia or for use in Russia. (Corroborated in-repo by
+  //     `src/data/trade/russia-833-deep-annexes.ts` Annex VII et al. and the
+  //     de-minimis calculator's country classifications.)
+  //   • Council Regulation (EC) 765/2006 (Belarus, as amended 2022+),
+  //     Art. 1e/1f: analogous prohibition on dual-use + advanced-tech exports
+  //     to Belarus.
+  //
+  // SCOPE DECISION (documented): the gate fires for ALL exporter origins, not
+  // only EU seats. Over-blocking is acceptable by product principle
+  // ("Über-Blocken akzeptabel, Falsch-Freigeben nicht"); US (EAR § 746.8) and
+  // UK have equivalent RU prohibitions, and an honest non-EU-origin path would
+  // require per-origin embargo-law modelling = out of S0 scope.
+  //
+  // SIGNAL: the EU-dual-use leg only. Fires when the item carries a declared
+  // `eccnEU` (or a declared non-EAR99 `eccnUS`, i.e. CCL dual-use) OR the
+  // heuristic engine suggested an EU_ANNEX_I / US_CCL code — the SAME EU signal
+  // Gate 3.5/4.5 use (`hasControlledDualUseCode` + `heuristicDualUseFired`).
+  // Declared USML/ITAR-only signals do NOT newly block here: that is the
+  // US-law leg, and AVA's `itarBlock` hard-blocks ITAR items separately
+  // (Gate 2 / deriveVerdict.hardBlock). This keeps the gate's legal claim
+  // honest — it asserts only the EU dual-use prohibition.
+  //
+  // HONESTY (Art. 2a advanced-tech leg): this gate covers Art. 2a / Reg.
+  // 765/2006 advanced-tech goods ONLY insofar as the EU-dual-use signal fires.
+  // The item-class-based Annex VII/XXIII/XXIX prohibitions are NOT modelled
+  // here — there is no reliable itemClass signal in this pipeline. S1+ corpus
+  // work will widen this leg.
+  //
+  // TIGHTENING-ONLY: guarded by `alreadyProhibited` so it never adds a
+  // duplicate when Gate 0 (Annex IV) or Gate 1.5 (embargo) already prohibits,
+  // and it never weakens a stricter outcome — it only ever adds a BLOCK.
+  const RU_BY_BAN_COUNTRIES = new Set<string>(["RU", "BY"]);
+  const ruByDest = destinationCountry?.trim().toUpperCase();
+  const isRuByDestination = Boolean(
+    ruByDest && RU_BY_BAN_COUNTRIES.has(ruByDest),
+  );
+  // EU-dual-use control signal — declared codes (mirrors Gate 3.5) OR the
+  // heuristic EU_ANNEX_I/US_CCL signal (mirrors Gate 4.5's heuristicDualUseFired).
+  const ruByEccnEU = actualCodes?.eccnEU?.trim();
+  const ruByEccnUS = actualCodes?.eccnUS?.trim();
+  const ruByHasDeclaredDualUse =
+    !!ruByEccnEU || (!!ruByEccnUS && ruByEccnUS.toUpperCase() !== "EAR99");
+  const ruByHeuristicDualUse = triggerEval.results.some((r) =>
+    r.suggestedCodes.some(
+      (c) => c.jurisdiction === "EU_ANNEX_I" || c.jurisdiction === "US_CCL",
+    ),
+  );
+  const ruByHasDualUseSignal = ruByHasDeclaredDualUse || ruByHeuristicDualUse;
+  // Idempotency: do not stack on top of an existing hard prohibition (Gate 0
+  // Annex IV PROHIBITED, or Gate 1.5 embargo DENIED). Mirrors Gate 0's pattern.
+  const ruByAlreadyProhibited = requirements.some(
+    (r) => r.status === "DENIED" || r.status === "PROHIBITED",
+  );
+  let ruByDestinationBlock = false;
+  if (isRuByDestination && ruByHasDualUseSignal && !ruByAlreadyProhibited) {
+    ruByDestinationBlock = true;
+    const isBelarus = ruByDest === "BY";
+    // Effect mirrors Gate 0's hard-prohibition shape (PROHIBITED status,
+    // EU_COMPETENT_AUTHORITY, no derogation) so the gate aggregation yields
+    // BLOCKED and the embargoBlock flag (consumed by deriveVerdict.hardBlock)
+    // is set true the same way Gate 1.5 sets it for EMBARGOED_COUNTRIES.
+    requirements.push({
+      jurisdiction: isBelarus
+        ? "EU (Reg. 765/2006 — Belarus)"
+        : "EU (Reg. 833/2014 — Russia)",
+      authority: "EU_COMPETENT_AUTHORITY",
+      status: "PROHIBITED",
+      licenseType: null,
+      reason: isBelarus
+        ? "Verbringung von EU-Dual-Use-Gütern (Anhang I VO 2021/821) nach Belarus ist nach Art. 1e/1f VO (EG) 765/2006 verboten — kein Genehmigungsweg. (Die Art-1f-Advanced-Tech-Sperre ist nur insoweit abgedeckt, wie das EU-Dual-Use-Signal greift.)"
+        : "Verbringung von EU-Dual-Use-Gütern (Anhang I VO 2021/821) nach Russland ist nach Art. 2/2a VO (EU) 833/2014 verboten — kein Genehmigungsweg. (Die Art-2a-Advanced-Tech-Sperre ist nur insoweit abgedeckt, wie das EU-Dual-Use-Signal greift.)",
+      recommendedAction: isBelarus
+        ? "NICHT AUSFÜHREN. Operation abbrechen und dokumentieren. Die Ausfuhr gelisteter Dual-Use-Güter nach Belarus ist nach VO (EG) 765/2006 untersagt; es gibt keinen regulären Genehmigungsweg. Etwaige enge Ausnahmen nur mit qualifiziertem Exportkontroll-Rechtsberater prüfen."
+        : "NICHT AUSFÜHREN. Operation abbrechen und dokumentieren. Die Ausfuhr gelisteter Dual-Use-Güter nach Russland ist nach VO (EU) 833/2014 untersagt; es gibt keinen regulären Genehmigungsweg. Etwaige enge Ausnahmen nur mit qualifiziertem Exportkontroll-Rechtsberater prüfen.",
+      triggerCode: isBelarus
+        ? "EU_RESTRICTIVE_BY_DUAL_USE"
+        : "EU_RESTRICTIVE_RU_DUAL_USE",
+    });
+    nextSteps.unshift(
+      isBelarus
+        ? "BLOCKED: Ausfuhr von EU-Dual-Use-Gütern nach Belarus ist nach Art. 1e/1f VO (EG) 765/2006 verboten — kein Genehmigungsweg. Operation abbrechen."
+        : "BLOCKED: Ausfuhr von EU-Dual-Use-Gütern nach Russland ist nach Art. 2/2a VO (EU) 833/2014 verboten — kein Genehmigungsweg. Operation abbrechen.",
+    );
+  }
+
   // ─── Gate 2: ITAR / USML ──────────────────────────────────────────
   const itarBlock = triggerEval.hasItarFlag;
   if (itarBlock) {
@@ -786,8 +886,13 @@ export function determineLicenseRequirements(
     );
   }
 
+  // embargoBlock — consumed by AVA's deriveVerdict.hardBlock. Gate 1.6's RU/BY
+  // dual-use prohibition is an EU restrictive-measures embargo for this flag's
+  // purpose: set it the SAME way Gate 1.5 (EMBARGOED_COUNTRIES) does so the
+  // operation verdict hard-blocks. (PF-1.)
   const embargoBlock =
     embargoDestinationBlock ||
+    ruByDestinationBlock ||
     deMinimis?.outcome === "EMBARGOED_DESTINATION" ||
     requirements.some(
       (r) => r.status === "DENIED" && r.jurisdiction.includes("embargo"),
