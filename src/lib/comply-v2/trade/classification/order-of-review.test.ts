@@ -687,3 +687,25 @@ describe("Z28 — composite real-world inputs", () => {
     expect(result.supersededLists[0].citation).toBe(EAR_9A515_A_1.citation);
   });
 });
+
+// ─── S0: new circle-A regimes ────────────────────────────────────────
+
+describe("S0: new circle-A regimes in ListId", () => {
+  it("normalizeListId resolves the seven new regime spellings", () => {
+    expect(normalizeListId("EU Common Military List")).toBe("EU_CML");
+    expect(normalizeListId("Canada Export Control List")).toBe("CA_ECL");
+    expect(normalizeListId("Australia DSGL")).toBe("AU_DSGL");
+    expect(normalizeListId("Korea Strategic Items")).toBe("KR_STRATEGIC");
+    expect(normalizeListId("Switzerland GKV")).toBe("CH_GKV");
+    expect(normalizeListId("Norway List I")).toBe("NO_LIST");
+    expect(normalizeListId("India SCOMET")).toBe("IN_SCOMET");
+  });
+  it("new national lists are supplemental by default (no origin given)", () => {
+    const r = resolveOrderOfReview([
+      { list: "EU_ANNEX_I", entry: "9A004", citation: "Reg. 2021/821 Annex I" },
+      { list: "CA_ECL", entry: "9-15", citation: "ECL Group 9" },
+    ]);
+    expect(r.primaryAuthority?.list).toBe("EU_ANNEX_I");
+    expect(r.parallelLists.map((m) => m.list)).toContain("CA_ECL");
+  });
+});

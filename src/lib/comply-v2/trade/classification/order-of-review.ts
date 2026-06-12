@@ -110,7 +110,21 @@ export type ListId =
   /** Nuclear Suppliers Group Trigger List — multilateral baseline. */
   | "NSG"
   /** Australia Group Common Control List (CBW precursors) — multilateral baseline. */
-  | "AG";
+  | "AG"
+  /** EU Common Military List (Council Common Position 2008/944/CFSP). */
+  | "EU_CML"
+  /** Canada Export Control List, SOR/89-202. */
+  | "CA_ECL"
+  /** Australia Defence and Strategic Goods List (DSGL). */
+  | "AU_DSGL"
+  /** Korea Strategic Items list (MOTIE Strategic Trade Act). */
+  | "KR_STRATEGIC"
+  /** Switzerland Güterkontrollverordnung (GKV, SR 946.202.1). */
+  | "CH_GKV"
+  /** Norway List I / List II (Norwegian Export Control Regulations). */
+  | "NO_LIST"
+  /** India SCOMET Appendix 3 (Special Chemicals, Organisms, Materials, Equipment and Technologies). */
+  | "IN_SCOMET";
 
 /**
  * A single regulatory-list match. Produced upstream by the parametric
@@ -199,6 +213,13 @@ const NATIONAL_SUPPLEMENTAL: ReadonlySet<ListId> = new Set<ListId>([
   "DE_AUSFUHRLISTE",
   "JP_METI",
   "UK_STRATEGIC",
+  "EU_CML",
+  "CA_ECL",
+  "AU_DSGL",
+  "KR_STRATEGIC",
+  "CH_GKV",
+  "NO_LIST",
+  "IN_SCOMET",
 ]);
 
 // ─── Engine ─────────────────────────────────────────────────────────
@@ -440,6 +461,20 @@ export function normalizeListId(regimeName: string): ListId | null {
       return "AG";
     case "EU-ANNEX-IV":
       return "EU_ANNEX_IV";
+    case "EU Common Military List":
+      return "EU_CML";
+    case "Canada Export Control List":
+      return "CA_ECL";
+    case "Australia DSGL":
+      return "AU_DSGL";
+    case "Korea Strategic Items":
+      return "KR_STRATEGIC";
+    case "Switzerland GKV":
+      return "CH_GKV";
+    case "Norway List I":
+      return "NO_LIST";
+    case "India SCOMET":
+      return "IN_SCOMET";
     default:
       return null;
   }
