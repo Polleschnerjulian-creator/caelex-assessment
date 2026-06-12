@@ -48,6 +48,7 @@ import {
   UK_STRATEGIC_AS_OF,
   type UkStrategicEntry,
 } from "./uk-strategic";
+import { EU_CML_ENTRIES, EU_CML_AS_OF, type EuCmlEntry } from "./eu-cml";
 import { EU_ANNEX_I_ENTRIES } from "./eu-annex-i";
 import { EU_ANNEX_I_CAT1_2_ENTRIES } from "./eu-annex-i-cat1-2";
 import { EU_ANNEX_I_CAT3_ENTRIES } from "./eu-annex-i-cat3";
@@ -143,7 +144,28 @@ export const REGIME_MATURITY: Record<CorpusRegime, 1 | 2 | 3> = {
   // modelled (engine phase, post-S7). The golden-set EXACT pin
   // `sat-bus|GB|DE = REVIEW` guards this invariant against a premature lift.
   UK_STRATEGIC: 3,
-  EU_CML: 3,
+  // Data-Sprint S4 curated the EU Common Military List space slice (25 verified
+  // entries across 10 ML positions, edition OJ C/2026/1640 adopted 2026-02-23)
+  // and LIFTS EU_CML 3 → 2 — the plan's parameter, PROVEN safe (unlike the UK
+  // corpus, which stays Tier 3 because GB-origin licence logic does not exist).
+  //
+  // WHY THE LIFT IS SAFE (golden spike byte-identical 74/396/274 GO/REVIEW/
+  // BLOCKED, before == after):
+  //   • Gate 4.5 (thin-origin REVIEW) consults EU_CML only on its MILITARY leg,
+  //     and only when `exporterOrigin.militaryPrimary === "EU_CML"` (i.e. an EU
+  //     seat) AND the item has USML/ITAR signals (declared usmlCategory OR the
+  //     ITAR heuristic fired). ML codes are NOT a declared-code field, so no
+  //     verdict path keys on an EU_CML code match alone.
+  //   • Those exact trigger items are INDEPENDENTLY guarded: (a) a declared
+  //     usmlCategory ⇒ Gate 3.5 adds a DDTC review for ANY destination (no
+  //     intra-EU exemption); (b) an ITAR-heuristic item ⇒ AVA `itarBlock`
+  //     hard-BLOCKs it. Either dominates the thin-origin REVIEW that the lift
+  //     removes, so the lift cannot turn a REVIEW into GO or a BLOCKED into
+  //     anything lower.
+  //   • `isThinOrigin` reads `dualUsePrimary` ONLY; for EU seats that is
+  //     EU_ANNEX_I (Tier 2, unchanged), so the golden thin-set is untouched.
+  // The maturity test's "new tier-3" set drops from 7 to 6 (EU_CML leaves it).
+  EU_CML: 2,
   CA_ECL: 3,
   AU_DSGL: 3,
   KR_STRATEGIC: 3,
@@ -359,6 +381,36 @@ function adaptUkStrategic(
   }));
 }
 
+/**
+ * EU Common Military List (Data-Sprint S4). Mirrors `adaptUkStrategic`: an own
+ * slim source type (`EuCmlEntry`, since `ClassificationEntry.jurisdiction` has
+ * no EU-CML member), normalized to the flat corpus shape. The control-reason
+ * tags (MIL / MT) pass straight onto `controlReason` (no fabrication — derived
+ * from each position's subject matter). The `list` label is uniform so UI chips
+ * read "EU Gemeinsame Militärgüterliste" regardless of ML position; `isItar`
+ * is false (this is the EU, not ITAR).
+ *
+ * NOTE ON MATURITY: unlike the UK corpus (kept Tier 3), EU_CML is lifted to
+ * Tier 2 — see the REGIME_MATURITY comment block above for the safety proof
+ * (the military leg's only fail-closed dropper is independently guarded by
+ * Gate 3.5 DDTC + AVA itarBlock; golden spike byte-identical 74/396/274).
+ */
+function adaptEuCml(entries: readonly EuCmlEntry[]): NormalizedCorpusEntry[] {
+  return entries.map((e) => ({
+    canonicalId: `EU_CML:${e.code}`,
+    code: e.code,
+    regime: "EU_CML" as const,
+    list: "EU Gemeinsame Militärgüterliste",
+    title: e.title,
+    description: e.description,
+    controlReason: [...e.controlReason],
+    sourceUrl: e.sourceUrl,
+    asOfDate: e.asOfDate ?? EU_CML_AS_OF,
+    isItar: false,
+    depthTier: 2,
+  }));
+}
+
 function adaptDeAusfuhrliste(): NormalizedCorpusEntry[] {
   return DE_AUSFUHRLISTE_ENTRIES.map((e) => ({
     canonicalId: `DE_AUSFUHRLISTE:${e.position}`,
@@ -472,6 +524,13 @@ export const NORMALIZED_CORPUS_UNION: NormalizedCorpusEntry[] = (() => {
     // regime, so canonicalIds (`UK_STRATEGIC:9A004`) never collide with the
     // EU_ANNEX_I rows — both resolve independently for a code/keyword match.
     ...adaptUkStrategic(UK_STRATEGIC_ENTRIES),
+    // Data-Sprint S4 — EU Common Military List (space slice). Sub-position
+    // depth (depthTier 2). The military counterpart to EU Annex I; codes are
+    // `ML…` so canonicalIds (`EU_CML:ML11.c`) never collide with the dual-use
+    // EU_ANNEX_I rows (numeric `9A004` codes). EU member states transpose this
+    // into national military lists (DE: Ausfuhrliste Teil I A) — but the EU CML
+    // is the harmonised CFSP source.
+    ...adaptEuCml(EU_CML_ENTRIES),
     ...adaptDeAusfuhrliste(),
     // EU Annex I (Reg. 2021/821) — the core EU dual-use list, all categories.
     ...adaptClassificationEntries(

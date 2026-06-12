@@ -151,10 +151,11 @@ describe("S0: regime maturity (fail-closed input)", () => {
     ];
     for (const r of expected) expect([1, 2, 3]).toContain(REGIME_MATURITY[r]);
   });
-  it("not-yet-curated regimes are tier 3 (forces REVIEW)", () => {
+  it("not-yet-curated regimes are tier 3 (forces REVIEW) — 6 after S4 (EU_CML left)", () => {
+    // Data-Sprint S4 lifted EU_CML 3 → 2, so the "still headline" set drops from
+    // 7 to 6. EU_CML's lift is asserted separately below.
     for (const r of [
       "UK_STRATEGIC",
-      "EU_CML",
       "CA_ECL",
       "AU_DSGL",
       "KR_STRATEGIC",
@@ -167,6 +168,14 @@ describe("S0: regime maturity (fail-closed input)", () => {
   it("USML_XV stays tier 1, EU_ANNEX_I tier 2", () => {
     expect(REGIME_MATURITY.USML_XV).toBe(1);
     expect(REGIME_MATURITY.EU_ANNEX_I).toBe(2);
+  });
+  it("EU_CML is tier 2 after S4 (space slice curated, lift spike-proven safe)", () => {
+    // Data-Sprint S4 curated the EU Common Military List space slice (OJ
+    // C/2026/1640) and lifted EU_CML 3 → 2. The lift is safe because Gate 4.5's
+    // EU_CML military leg fires only for USML/ITAR-signalled items, which are
+    // independently guarded by Gate 3.5 (DDTC) + AVA itarBlock — golden spike
+    // distribution byte-identical (74/396/274) before and after.
+    expect(REGIME_MATURITY.EU_CML).toBe(2);
   });
   it("USML is tier 1 after S2 (Cat IV + Cat XV both at paragraph depth)", () => {
     // Data-Sprint S2 curated Category IV (launch vehicles / rocket propulsion)
