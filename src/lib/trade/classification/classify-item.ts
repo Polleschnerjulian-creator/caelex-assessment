@@ -27,6 +27,7 @@ import {
   matchDeclaredCodes,
   type CorpusCodeMatch,
 } from "@/lib/comply-v2/trade/classification/corpus-code-matcher";
+import type { OriginRegimeRouting } from "@/lib/comply-v2/trade/classification/origin-regime-map";
 
 // ─── Public types ─────────────────────────────────────────────────────
 
@@ -68,6 +69,13 @@ export interface ClassifyOptions {
   destinationCountry?: string | null;
   /** Sanctions lists consulted for the counterparty, forwarded to the license gate. */
   screeningContext?: { sanctionsLists: string[] };
+  /**
+   * S0 Task 7 — the OriginRegimeRouting for the exporter's seat, forwarded
+   * to Gate 4.5 in `determineLicenseRequirements`. Only passed when the seat
+   * resolved AND `regime.supported` is true; omitting it preserves pre-Task-7
+   * byte-identical behaviour for all other callers.
+   */
+  exporterOrigin?: OriginRegimeRouting;
 }
 
 // ─── Helpers ──────────────────────────────────────────────────────────
@@ -135,6 +143,8 @@ export function classifyItemForOperation(
       eccnUS: item.eccnUS ?? null,
       usmlCategory: item.usmlCategory ?? null,
     },
+    // S0 Task 7: forward exporter origin to Gate 4.5 when provided.
+    opts.exporterOrigin,
   );
 
   // DCW-1: recognise the item's DECLARED control codes against the full

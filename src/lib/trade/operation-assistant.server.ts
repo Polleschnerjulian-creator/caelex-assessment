@@ -115,6 +115,78 @@ export async function assessOperation(
     );
   }
 
+  const screening: ScreeningAssessment = {
+    status: operation.counterparty.screeningStatus,
+    partyName: operation.counterparty.legalName,
+    partyBlocked: operation.counterparty.status === "BLOCKED",
+    lastScreenedAt: operation.counterparty.lastScreenedAt,
+  };
+
+  // ── Origin-seat resolution (Spec §4.3b + §4.7 / S0 Task 6) ────────────────
+  // Fetch the org's billingAddress to determine which export-control regime
+  // applies. The three cases are strictly fail-closed:
+  //   1. Supported seat (e.g. DE): assessedUnder = dualUsePrimary. No new gap.
+  //   2. Unsupported seat (e.g. BR): push a "origin-unsupported" Pendenz so
+  //      deriveVerdict's existing "any gap ⇒ REVIEW" rule fires. assessedUnder = null.
+  //   3. Null seat (no/unparseable billingAddress): behavior-equal to today —
+  //      no new Pendenz, no gap. originNotice set; assessedUnder = null.
+  //
+  // IMPORTANT (S0 Task 7): resolvedExporterOrigin is resolved BEFORE
+  // lineAssessments so it is available when classifyItemForOperation is called
+  // for each line. Moving this block above lineAssessments avoids the TDZ issue
+  // that would otherwise silently degrade all lines to "unclassified".
+  let assessedUnder: string | null = null;
+  let originNotice: string | null = null;
+  const originPendenzen: VerdictResult["pendenzen"] = [];
+  // S0 Task 7: resolved OriginRegimeRouting forwarded to classifyItemForOperation
+  // so Gate 4.5 can fire. Set only for supported seats (Case 1); undefined otherwise.
+  let resolvedExporterOrigin:
+    | import("@/lib/comply-v2/trade/classification/origin-regime-map").OriginRegimeRouting
+    | undefined;
+
+  try {
+    const org = await prisma.organization.findUnique({
+      where: { id: ctx.organizationId },
+      select: { billingAddress: true },
+    });
+
+    const seat = resolveExporterSeat(org);
+
+    if (seat === null) {
+      // Case 3: null seat — behavior-equal, only a notice
+      originNotice =
+        "Exporteur-Sitz im Org-Profil nicht gesetzt — Bewertung nimmt EU-Standard an";
+    } else {
+      const regime = originRegimes(seat);
+      if (regime.supported) {
+        // Case 1: supported seat — set assessedUnder, no Pendenz, forward regime
+        // to Gate 4.5 via classifyItemForOperation (Task 7 wire-through).
+        assessedUnder = regime.dualUsePrimary;
+        resolvedExporterOrigin = regime;
+      } else {
+        // Case 2: unsupported seat — push a gap Pendenz (triggers REVIEW via deriveVerdict)
+        originPendenzen.push({
+          id: "origin-unsupported",
+          label: `Exporteur-Sitz ${seat} wird von Passage noch nicht unterstützt — Ausfuhrrecht manuell prüfen`,
+        });
+        // Do NOT forward exporterOrigin: unsupported.supported === false,
+        // and Gate 4.5 only fires for supported seats.
+      }
+    }
+  } catch (err) {
+    // A seat-lookup failure must NEVER silently drop the assessment. We log and
+    // fall through with null seat (behavior-equal — same as case 3). Fail-safe:
+    // worst case the notice is missing, but no false GO is ever produced.
+    logger.error(
+      "assessOperation: org billingAddress lookup failed; origin-seat not resolved",
+      err,
+      { organizationId: ctx.organizationId },
+    );
+    originNotice =
+      "Exporteur-Sitz im Org-Profil nicht gesetzt — Bewertung nimmt EU-Standard an";
+  }
+
+  // ── Line assessments (built AFTER origin resolution so exporterOrigin is set) ─
   const lineAssessments: LineAssessment[] = operation.lines.map((l) => {
     const item = l.item;
     let classified = isClassified(item);
@@ -126,6 +198,10 @@ export async function assessOperation(
           {
             destinationCountry,
             screeningContext,
+            // S0 Task 7: pass the resolved exporter origin to Gate 4.5.
+            // Only set when seat resolved AND regime.supported (Case 1).
+            // Undefined for null/unsupported seats → legacy behavior.
+            exporterOrigin: resolvedExporterOrigin,
           },
         );
       } catch (err) {
@@ -146,63 +222,6 @@ export async function assessOperation(
       classification,
     };
   });
-
-  const screening: ScreeningAssessment = {
-    status: operation.counterparty.screeningStatus,
-    partyName: operation.counterparty.legalName,
-    partyBlocked: operation.counterparty.status === "BLOCKED",
-    lastScreenedAt: operation.counterparty.lastScreenedAt,
-  };
-
-  // ── Origin-seat resolution (Spec §4.3b + §4.7 / S0 Task 6) ────────────────
-  // Fetch the org's billingAddress to determine which export-control regime
-  // applies. The three cases are strictly fail-closed:
-  //   1. Supported seat (e.g. DE): assessedUnder = dualUsePrimary. No new gap.
-  //   2. Unsupported seat (e.g. BR): push a "origin-unsupported" Pendenz so
-  //      deriveVerdict's existing "any gap ⇒ REVIEW" rule fires. assessedUnder = null.
-  //   3. Null seat (no/unparseable billingAddress): behavior-equal to today —
-  //      no new Pendenz, no gap. originNotice set; assessedUnder = null.
-  let assessedUnder: string | null = null;
-  let originNotice: string | null = null;
-  const originPendenzen: VerdictResult["pendenzen"] = [];
-
-  try {
-    const org = await prisma.organization.findUnique({
-      where: { id: ctx.organizationId },
-      select: { billingAddress: true },
-    });
-
-    const seat = resolveExporterSeat(org);
-
-    if (seat === null) {
-      // Case 3: null seat — behavior-equal, only a notice
-      originNotice =
-        "Exporteur-Sitz im Org-Profil nicht gesetzt — Bewertung nimmt EU-Standard an";
-    } else {
-      const regime = originRegimes(seat);
-      if (regime.supported) {
-        // Case 1: supported seat — set assessedUnder, no Pendenz
-        assessedUnder = regime.dualUsePrimary;
-      } else {
-        // Case 2: unsupported seat — push a gap Pendenz (triggers REVIEW via deriveVerdict)
-        originPendenzen.push({
-          id: "origin-unsupported",
-          label: `Exporteur-Sitz ${seat} wird von Passage noch nicht unterstützt — Ausfuhrrecht manuell prüfen`,
-        });
-      }
-    }
-  } catch (err) {
-    // A seat-lookup failure must NEVER silently drop the assessment. We log and
-    // fall through with null seat (behavior-equal — same as case 3). Fail-safe:
-    // worst case the notice is missing, but no false GO is ever produced.
-    logger.error(
-      "assessOperation: org billingAddress lookup failed; origin-seat not resolved",
-      err,
-      { organizationId: ctx.organizationId },
-    );
-    originNotice =
-      "Exporteur-Sitz im Org-Profil nicht gesetzt — Bewertung nimmt EU-Standard an";
-  }
 
   const verdict = deriveVerdict(lineAssessments, screening);
 

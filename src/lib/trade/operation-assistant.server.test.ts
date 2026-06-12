@@ -171,3 +171,75 @@ describe("assessOperation — origin-pendenz / assessed-under (S0 Task 6)", () =
     expect(res.pendenzen.some((p) => p.id?.startsWith("origin-"))).toBe(false);
   });
 });
+
+describe("assessOperation — Gate 4.5 thin-origin wire-through (S0 Task 7)", () => {
+  it("GB org + line with declared EU ECCN → verdict NOT GO and UK mentioned in line requirements", async () => {
+    // GB seat = UK_STRATEGIC (REGIME_MATURITY 3) — Gate 4.5 must fire for an
+    // item carrying a declared dual-use ECCN, so verdict becomes non-GO.
+    findFirst.mockResolvedValue(
+      operationRow({
+        shipToCountry: "US", // non-EU, non-embargo so no other gates fire
+        lines: [
+          {
+            id: "l1",
+            itemId: "i1",
+            item: item({ eccnEU: "9A515.a", status: "CLASSIFIED" }),
+          },
+        ],
+      }),
+    );
+    orgFindUnique.mockResolvedValue({
+      billingAddress: { country: "GB" },
+    });
+    const res = await assessOperation("op1", { organizationId: "org1" });
+    expect(res.verdict).not.toBe("GO");
+    // The THIN_ORIGIN_REGIME requirement must be present in the line's
+    // classification, with a reason mentioning UK.
+    const hasUkMention = res.lines.some((l) =>
+      l.classification?.licenseDetermination.requirements.some((r) =>
+        /UK/i.test(r.reason),
+      ),
+    );
+    expect(hasUkMention).toBe(true);
+  });
+
+  it("DE org + line with declared EU ECCN → verdict unchanged vs DE baseline (Gate 4.5 must NOT fire for mature EU_ANNEX_I regime)", async () => {
+    // DE seat = EU_ANNEX_I (REGIME_MATURITY 2) — Gate 4.5 must NOT fire.
+    // For a dual-use item going to a non-EU non-embargo destination with a
+    // clear screening, a DE exporter should get the same verdict as the
+    // pre-Task-7 baseline (REVIEW_NEEDED due to BAFA requirement from Gate 4,
+    // not any new origin-review requirement from Gate 4.5).
+    findFirst.mockResolvedValue(
+      operationRow({
+        shipToCountry: "US",
+        lines: [
+          {
+            id: "l1",
+            itemId: "i1",
+            item: item({ eccnEU: "9A515.a", status: "CLASSIFIED" }),
+          },
+        ],
+      }),
+    );
+    orgFindUnique.mockResolvedValue({
+      billingAddress: { country: "DE" },
+    });
+    const resDE = await assessOperation("op1", { organizationId: "org1" });
+
+    // Re-run with null billingAddress to get the behavior-equal baseline.
+    orgFindUnique.mockResolvedValue({ billingAddress: null });
+    const resBaseline = await assessOperation("op1", {
+      organizationId: "org1",
+    });
+
+    // Gate 4.5 must NOT add any THIN_ORIGIN_REGIME requirement for DE.
+    const deHasThinReq = resDE.lines.some((l) =>
+      l.classification?.licenseDetermination.requirements.some(
+        (r) => r.triggerCode === "THIN_ORIGIN_REGIME",
+      ),
+    );
+    expect(deHasThinReq).toBe(false);
+    // Both verdicts should match (DE's mature regime doesn't change the picture).
+    expect(resDE.verdict).toBe(resBaseline.verdict);
+  });
+});
