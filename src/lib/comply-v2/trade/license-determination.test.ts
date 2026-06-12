@@ -1193,6 +1193,37 @@ describe("Gate 4.5 — thin origin-regime coverage (fail-closed)", () => {
     );
     expect(thinReq).toBeUndefined();
   });
+
+  // Restores military-leg positive coverage after the EU_CML tier-2 retirement (W6 finding S4).
+  // GB_ORIGIN has militaryPrimary: "UK_STRATEGIC" (tier 3) → the military branch of Gate 4.5
+  // must still arm THIN_ORIGIN_REGIME for a GB-seated exporter with an ITAR-signal item.
+  // Gate 3.5 also fires independently (ACTUAL_USML_DECLARED → DDTC REQUIRED), so both guards
+  // are present in the same result. Asserting both here documents the dual-guard invariant.
+  it("GB origin + declared usmlCategory (no eccnEU/eccnUS) → THIN_ORIGIN_REGIME (UK_STRATEGIC mil-leg) AND Gate-3.5 DDTC requirement both present", () => {
+    const det = determineLicenseRequirements(
+      evalWith(),
+      null,
+      "US", // non-EU, non-embargo destination to keep prior gates inactive
+      undefined,
+      undefined,
+      { eccnEU: null, eccnUS: null, usmlCategory: "XV(f)" },
+      GB_ORIGIN,
+    );
+    // Gate 4.5 military leg fires: UK_STRATEGIC is tier 3, hasDeclaredUsml is true
+    const thinReq = det.requirements.find(
+      (r) => r.triggerCode === "THIN_ORIGIN_REGIME",
+    );
+    expect(thinReq).toBeDefined();
+    expect(thinReq!.reason).toMatch(/UK[-_ ]?STRATEGIC|UK-Kontrollliste/i);
+    // Gate 3.5 DDTC guard fires independently (ITAR attaches to the item regardless of origin)
+    const ddtcReq = det.requirements.find(
+      (r) => r.triggerCode === "ACTUAL_USML_DECLARED",
+    );
+    expect(ddtcReq).toBeDefined();
+    expect(ddtcReq!.authority).toBe("DDTC");
+    // Verdict must not be CLEARED — two independent non-clearance guards active
+    expect(det.gate).not.toBe("CLEARED");
+  });
 });
 
 // ─── Gate 1.6 — EU restrictive measures: RU/BY dual-use destination ban ────
