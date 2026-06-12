@@ -77,7 +77,41 @@ export type CorpusRegime =
   | "DE_AUSFUHRLISTE"
   | "EU_ANNEX_I"
   | "NSG"
-  | "RU_833";
+  | "RU_833"
+  | "UK_STRATEGIC"
+  | "EU_CML"
+  | "CA_ECL"
+  | "AU_DSGL"
+  | "KR_STRATEGIC"
+  | "CH_GKV"
+  | "NO_LIST";
+
+/**
+ * Kuratierungs-Reife je Regime. 3 = headline/leer ⇒ Fail-Closed-Regel 4.3a (REVIEW).
+ * Jeder Daten-Sprint (S1–S6) hebt sein Regime und passt den Test an — der Test
+ * dokumentiert den Reifegrad bewusst.
+ */
+export const REGIME_MATURITY: Record<CorpusRegime, 1 | 2 | 3> = {
+  USML_XV: 1,
+  USML: 2,
+  US_CCL: 2,
+  EU_ANNEX_I: 2,
+  RU_833: 2,
+  NSG: 2,
+  WASSENAAR: 2,
+  MTCR_ANNEX: 3,
+  DE_ANLAGE_AL: 3,
+  DE_AUSFUHRLISTE: 3,
+  JP_METI: 3,
+  IN_SCOMET: 3,
+  UK_STRATEGIC: 3,
+  EU_CML: 3,
+  CA_ECL: 3,
+  AU_DSGL: 3,
+  KR_STRATEGIC: 3,
+  CH_GKV: 3,
+  NO_LIST: 3,
+};
 
 /**
  * The one flat shape every control-list corpus normalizes to. Only fields
@@ -112,6 +146,12 @@ export interface NormalizedCorpusEntry {
   euAnnexIRef?: string;
   earCclRef?: string;
   usmlRef?: string;
+  /** Kuratierungs-Tiefe dieses Eintrags (Spec 2026-06-12 §4.1): 1=Paragraph+Prädikate, 2=Code-Ebene, 3=Headline. */
+  depthTier?: 1 | 2 | 3;
+  /** Mirror-Architektur: canonicalId des Quell-Eintrags (z. B. "WASSENAAR:9A004"), wenn dieser Eintrag eine nationale Spiegelung ist. */
+  mirrorsCanonicalId?: string;
+  /** Delta-Typ der Spiegelung; Pflichtfeld-Beschreibung bei MODIFIED/NATIONAL_ONLY wird im Mirror-Adapter erzwungen (S5). */
+  mirrorDelta?: "NONE" | "MODIFIED" | "NATIONAL_ONLY";
 }
 
 // Shared USML eCFR source for the paragraph-keyed XV files (their file-level

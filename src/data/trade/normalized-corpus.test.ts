@@ -123,3 +123,49 @@ describe("NORMALIZED_CORPUS_UNION — honest provenance (no fabricated reasons)"
     expect(de.some((e) => e.code === "0010j")).toBe(true);
   });
 });
+
+import { REGIME_MATURITY } from "./normalized-corpus";
+
+describe("S0: regime maturity (fail-closed input)", () => {
+  it("declares a tier for EVERY CorpusRegime incl. the 7 new ones", () => {
+    const expected: CorpusRegime[] = [
+      "US_CCL",
+      "USML",
+      "MTCR_ANNEX",
+      "DE_ANLAGE_AL",
+      "USML_XV",
+      "WASSENAAR",
+      "JP_METI",
+      "IN_SCOMET",
+      "DE_AUSFUHRLISTE",
+      "EU_ANNEX_I",
+      "NSG",
+      "RU_833",
+      "UK_STRATEGIC",
+      "EU_CML",
+      "CA_ECL",
+      "AU_DSGL",
+      "KR_STRATEGIC",
+      "CH_GKV",
+      "NO_LIST",
+    ];
+    for (const r of expected) expect([1, 2, 3]).toContain(REGIME_MATURITY[r]);
+  });
+  it("not-yet-curated regimes are tier 3 (forces REVIEW)", () => {
+    for (const r of [
+      "UK_STRATEGIC",
+      "EU_CML",
+      "CA_ECL",
+      "AU_DSGL",
+      "KR_STRATEGIC",
+      "CH_GKV",
+      "NO_LIST",
+    ] as const) {
+      expect(REGIME_MATURITY[r]).toBe(3);
+    }
+  });
+  it("USML_XV stays tier 1, EU_ANNEX_I tier 2", () => {
+    expect(REGIME_MATURITY.USML_XV).toBe(1);
+    expect(REGIME_MATURITY.EU_ANNEX_I).toBe(2);
+  });
+});
