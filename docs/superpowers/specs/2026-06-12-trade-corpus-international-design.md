@@ -217,3 +217,12 @@ dann Origins nach Kundenwahrscheinlichkeit (UK → EU-Militär → Mirror-Block 
 
 - **2026-06-12 / S0:** §4.2 nahm an, `resolveOrderOfReview` sei der Live-Verdict-Träger. Befund PF-2 (Golden-Set-Review): die Funktion hat KEINEN Produktions-Caller (toter Code; nur Typ-Import). Die Origin-Awareness wurde stattdessen dort verankert, wo das Verdict real entsteht: `license-determination.ts` (Gate 4.5 thin-coverage + **Gate 1.6 RU/BY-Destinationsverbot**, neu) + AVA (`assessedUnder`, Origin-Pendenz). `resolveOrderOfReview` ist origin-aware ausgebaut und getestet, Wire-up-Entscheidung = S1+ (PF-2 im Plan-Board).
 - **2026-06-12 / S0-Scope-Erweiterung (PF-1, HIGH):** Das Golden Set deckte auf, dass KEIN Layer das destinationsbasierte Dual-Use-Verbot nach RU/BY erzwang (Art. 2/2a VO (EU) 833/2014; Art. 1e/1f VO (EG) 765/2006) — Verdict war REVIEW statt BLOCKED. Geschlossen durch Gate 1.6 (alle Origins, Über-Blocken bewusst; qualifizierte Rechtszitate auf dem US-ECCN-only-Pfad). Damit sind die in §4.4 vorgesehenen EXACT-RU-Pins real.
+
+## 11. Quartals-Frische-Checkliste (§4.6 operationalisiert)
+
+Vierteljährlich (oder vor jedem größeren Trade-Release) durchführen — reine Kuration, null externe Kosten:
+
+1. **Skript laufen lassen:** `npx tsx scripts/trade-corpus-freshness.ts` — druckt die nach `asOfDate` aufsteigend sortierte Regime-Tabelle (älteste zuerst, Top-3 mit ⚠ markiert).
+2. **Amendments prüfen:** Für die 3 ältesten Regime die amtliche Quelle (Spalte SOURCE) auf Novellen abgleichen — EUR-Lex-Konsolidierungen, eCFR-Issue-Dates, gov.uk-/BAFA-Updates.
+3. **Nachziehen:** Drift in die jeweilige `src/data/trade/<regime>.ts`-Datei kuratieren (`asOfDate` heben, Einträge anpassen) — mit der W6-Verifikationsdisziplin (unabhängiger Prüf-Agent gegen den Rechtstext, Golden-Set grün vor Commit).
+4. **Boards aktualisieren:** Plan §0-Statusboard + Trade-MASTER-Plan §4 fortschreiben (was geprüft/nachgezogen wurde + neues `asOfDate`).
