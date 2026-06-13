@@ -665,66 +665,79 @@ export const WASSENAAR_CAT6_9_ENTRIES: WassenaarEntry[] = [
     asOfDate: ASOF,
   },
 
-  // ─── 9.A.6 — Spacecraft and components ──────────────────────────
+  // ─── 9.A.6 — Systems & components for LIQUID rocket propulsion ────
+  // CORRECTION (S5 verify): the prior .a-.e text labelled these as
+  // spacecraft / star-trackers / attitude-control thrusters / electric
+  // propulsion. That is WRONG. Official WA 9.A.6 (= EU 9A006) is
+  // "Systems and components specially designed for LIQUID ROCKET
+  // PROPULSION systems"; the .a-.h sub-paragraphs are all liquid-
+  // propulsion items (cryogenic systems, slush-H2, turbopumps, thrust
+  // chambers, propellant storage/injectors, carbon-carbon chambers).
+  // Spacecraft live under 9.A.4 (9A004); star trackers under 7.A.4
+  // (7A004); spacecraft AOCS/on-board systems under 9.A.4.e (9A004.e) —
+  // each already present in this file. So the .a-.e text is rewritten to
+  // the REAL liquid-propulsion scope and the fabricated 9A006.d.1/.d.2
+  // sub-sub-codes are corrected to the real flat 9A006.d / 9A006.e.
+  // Source: Wassenaar WA-LIST 9.A.6 / EU 2021/821 Annex I 9A006.
   {
     code: "9.A.6.a",
     list: "DUL",
     category: "9",
-    title: "Spacecraft (satellites, probes, space stations)",
+    title: "Cryogenic refrigerators, dewars, heat pipes (low-loss)",
     description:
-      "Civilian-mission spacecraft above payload thresholds. EO, comms, science, navigation satellites. Military spacecraft route via ML15/USML XV.",
+      "Cryogenic refrigerators, flightweight dewars, cryogenic heat pipes or cryogenic systems specially designed for liquid rocket propulsion and designed to restrict cryogenic fluid losses to less than 30% per year. Part of WA/EU 9.A.6 'liquid rocket propulsion systems & components'.",
     euAnnexIRef: "9A006.a",
     earCclRef: "9A006.a",
     sourceUrl: SOURCE_URL,
-    asOfDate: ASOF,
+    asOfDate: ASOF_S5,
   },
   {
     code: "9.A.6.b",
     list: "DUL",
     category: "9",
-    title: "Star trackers and sun sensors for spacecraft",
+    title: "Cryogenic containers / closed-cycle refrigeration (≤100 K)",
     description:
-      "Attitude-determination sensors above performance thresholds (FoV, NEA, drift rate). Sodern, Jena-Optronik, Terma class.",
+      "Cryogenic containers or closed-cycle refrigeration systems capable of maintaining or producing temperatures less than or equal to 100 K (−173.15 °C) for liquid rocket propulsion. Part of WA/EU 9.A.6 'liquid rocket propulsion systems & components'.",
     euAnnexIRef: "9A006.b",
     earCclRef: "9A006.b",
     sourceUrl: SOURCE_URL,
-    asOfDate: ASOF,
+    asOfDate: ASOF_S5,
   },
   {
     code: "9.A.6.c",
     list: "DUL",
     category: "9",
-    title: "Spacecraft attitude-control thrusters",
+    title: "Slush hydrogen storage or transfer systems",
     description:
-      "Cold-gas, monopropellant, bipropellant, and electric ACS thrusters above specific-impulse + thrust thresholds.",
+      "Slush hydrogen storage or transfer systems specially designed for liquid rocket propulsion. Part of WA/EU 9.A.6 'liquid rocket propulsion systems & components'.",
     euAnnexIRef: "9A006.c",
     earCclRef: "9A006.c",
     sourceUrl: SOURCE_URL,
-    asOfDate: ASOF,
+    asOfDate: ASOF_S5,
   },
   {
     code: "9.A.6.d",
     list: "DUL",
     category: "9",
-    title: "Electric propulsion — Hall-effect thrusters (HETs)",
+    title: "High-pressure turbopumps (>17.5 MPa) and drive systems",
     description:
-      "Hall-effect thrusters above thrust + Isp thresholds. Snecma PPS-1350 class and below; ENPULSION TUS, ThrustMe NPT-30, Exotrail XL units.",
-    euAnnexIRef: "9A006.d.1",
-    earCclRef: "9A006.d.1",
+      "High-pressure (exceeding 17.5 MPa) turbopumps, pump components, or their associated gas-generator or expander-cycle turbine drive systems for liquid rocket engines. Part of WA/EU 9.A.6 'liquid rocket propulsion systems & components'.",
+    euAnnexIRef: "9A006.d",
+    earCclRef: "9A006.d",
     sourceUrl: SOURCE_URL,
-    asOfDate: ASOF,
+    asOfDate: ASOF_S5,
   },
   {
     code: "9.A.6.e",
     list: "DUL",
     category: "9",
-    title: "Electric propulsion — gridded ion engines",
+    title: "High-pressure thrust chambers and nozzles (>10.6 MPa)",
     description:
-      "Gridded ion engines (Kaufman, RIT, etc.) above thrust + Isp thresholds. Bus-class deep-space propulsion.",
-    euAnnexIRef: "9A006.d.2",
-    earCclRef: "9A006.d.2",
+      "High-pressure (exceeding 10.6 MPa) thrust chambers and nozzles therefor, for liquid rocket engines. Part of WA/EU 9.A.6 'liquid rocket propulsion systems & components'.",
+    euAnnexIRef: "9A006.e",
+    earCclRef: "9A006.e",
     sourceUrl: SOURCE_URL,
-    asOfDate: ASOF,
+    asOfDate: ASOF_S5,
   },
   {
     code: "9.A.6.f",
