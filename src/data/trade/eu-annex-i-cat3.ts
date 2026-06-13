@@ -21,24 +21,26 @@
  *
  * Scope:
  *   3A001 / 3A002         Hardware
- *   3A090 / 3A091 / 3A092 Advanced computing AI chips + supporting EUV
- *                         lithography (Oct 2022 IFR transposition)
+ *   3A090                 Advanced-computing AI chips (Oct 2022 IFR
+ *                         transposition; EUV litho tooling is 3B001.f)
  *   3A201 / 3A225 / 3A228 Nuclear-relevant electronics (cross-controlled)
- *   3A501 / 3A611         EU-autonomous Wassenaar-derived electronics
- *   3B001-3B991           Production equipment (chip-fab tooling)
- *   3C001-3C992           Materials (substrates, photoresists, dopants)
- *   3D001-3D993           Software (EDA, lithography software, control)
- *   3E001-3E994           Technology (drawings, specs, processes)
+ *   3A501                 EU-autonomous quantum/cryogenic electronics
+ *                         (2025 Annex I update)
+ *   3B001 / 3B002         Production equipment (chip-fab tooling)
+ *   3C001-3C006           Materials (substrates, photoresists, dopants)
+ *   3D001-3D101           Software (EDA, lithography software, control)
+ *   3E001-3E201           Technology (drawings, specs, processes)
  *
- * Space-critical entries (call-outs from Z32a brief):
- *   3A001.a.2  — rad-hardened TID-tolerance (parametric cross-walk
- *                uses Z25 `radHardenedTID_krad` attribute)
- *   3A001.b.*  — ADCs/DACs above sample-rate thresholds
- *   3A001.c.*  — FPGAs (anti-fuse, SRAM, flash) above gate counts
- *   3A001.h.1  — atomic-frequency standards (GNSS payloads,
+ * Space-critical entries (re-verified vs current 02021R0821, 2026-06-13):
+ *   3A001.a.1  — radiation-hardened ICs (headline entry lives in
+ *                eu-annex-i.ts; parametric gate EU:3A001.a.1 uses the
+ *                Z25 `radHardenedTID_krad` attribute)
+ *   3A001.a.5  — ADCs/DACs above resolution × sample-rate thresholds
+ *   3A001.a.7  — FPGAs/CPLDs (> 700 single-ended I/O or ≥ 500 Gb/s)
+ *   3A002.g    — atomic-frequency standards (GNSS payloads,
  *                long-baseline interferometry — Allan-variance gate)
  *   3A090      — AI accelerators with TPP > 4800 (Oct 2022 IFR)
- *   3A092      — EUV lithography (≤ 13.5 nm) production equipment
+ *   3B001.f    — DUV/EUV lithography (≤ 13.5 nm) production equipment
  *
  * Source: EUR-Lex Reg. (EU) 2021/821, Annex I, Cat 3, consolidated
  * + Delegated Reg. (EU) 2025/2003 amendments + EU transposition of
@@ -56,22 +58,19 @@ import type { ClassificationEntry, ClassificationCoverage } from "./schema";
 
 const SOURCE_URL =
   "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX%3A02021R0821";
-const SOURCE_DELEG_2025_2003 =
-  "https://eur-lex.europa.eu/eli/reg_del/2025/2003/oj";
-
-const ASOF = "2026-05-23";
+const ASOF = "2026-06-13";
 
 export const EU_ANNEX_I_CAT3_COVERAGE: ClassificationCoverage = {
   jurisdiction: "EU_ANNEX_I",
   scope:
     "Full EU Annex I Category 3 (Electronics) enumeration — hardware (3A), test/production equipment (3B), materials (3C), software (3D), technology (3E). Includes Oct 2022 IFR AI-compute additions (3A090/3D090/3E090) and EU-autonomous 3A501/3A504/3A611 entries.",
   excluded: [
-    "Non-aerospace Cat-3 specialised sub-paragraphs (e.g. 3A001.e.4 batteries for chemical/biological detectors, 3A001.b.7.b travelling-wave-tubes for ground broadcasting)",
-    "Cat-3 entries already covered in eu-annex-i.ts (3A001.a.1, 3A504) are NOT duplicated here — see that file for the headline definitions",
+    "Officially 'not used' Annex I sub-paragraphs (e.g. 3A001.a.4, 3B001.c, 3B001.d) and US-only catch-all/600-series codes (3A611, 3B991, 3D991, 3E991) are deliberately NOT modelled — they carry no EU control",
+    "Cat-3 entries already covered in eu-annex-i.ts (3A001.a.1 radiation-hardened ICs, 3A504) are NOT duplicated here — see that file for the headline definitions",
   ],
   asOfDate: ASOF,
   officialTotalEntriesApprox: 220,
-  caelexCoverageCount: 61,
+  caelexCoverageCount: 51,
 };
 
 export const EU_ANNEX_I_CAT3_ENTRIES: ClassificationEntry[] = [
@@ -96,97 +95,82 @@ export const EU_ANNEX_I_CAT3_ENTRIES: ClassificationEntry[] = [
   {
     code: "3A001.a.3",
     jurisdiction: "EU_ANNEX_I",
-    title: "Memory ICs (SRAM, DRAM, NV-RAM) above density thresholds",
+    title: "Compound-semiconductor microprocessor / MCU ICs above 40 MHz",
     description:
-      "Memory integrated circuits exceeding defined density (storage-cell-count) thresholds. Includes SRAM, DRAM, NVRAM, MRAM, PCM, ReRAM. Rad-hard spaceborne memory (e.g. 3D Plus, Cobham Gaisler, Honeywell HX series) escalates to .a.5 when SEU/TID thresholds are met.",
+      "EU Annex I 3A001.a.3 — 'microprocessor microcircuits', 'micro-computer microcircuits' and microcontroller microcircuits manufactured from a compound semiconductor and operating at a clock frequency exceeding 40 MHz. The compound-semiconductor process (GaAs / SiGe / InP etc.), not silicon storage density, is the control trigger; relevant to high-speed spaceborne signal-processing front-ends.",
     controlReasons: ["NS"],
     crossReferenceTopic: "spacecraft-rad-hard-electronics",
     sourceUrl: SOURCE_URL,
     asOfDate: ASOF,
-  },
-  {
-    code: "3A001.a.4",
-    jurisdiction: "EU_ANNEX_I",
-    title: "Analog-to-digital and digital-to-analog converters (ADC/DAC)",
-    description:
-      "ADC ICs with: (i) ≥ 8-bit resolution AND sample rate > 1.3 GSPS, OR (ii) ≥ 10-bit resolution AND sample rate > 600 MSPS, OR (iii) ≥ 12-bit resolution AND sample rate > 105 MSPS. DAC ICs at the matching settling-time × resolution thresholds. Spaceborne ADC/DAC drives EO sensor read-out and SAR digital back-ends.",
-    controlReasons: ["NS"],
-    crossReferenceTopic: null,
-    sourceUrl: SOURCE_URL,
-    asOfDate: ASOF,
-    notes:
-      "Threshold pair (resolution × sample-rate) is the EU 2021/821 wording. Texas Instruments ADC12DJ5200RF, Analog Devices AD9213, and TI ADC10DV200 are common space-grade examples that exceed at least one threshold.",
   },
   {
     code: "3A001.a.5",
     jurisdiction: "EU_ANNEX_I",
-    title:
-      "Microprocessors / FPGAs / memory hardened for radiation tolerance (TID/SEU)",
+    title: "Analogue-to-digital and digital-to-analogue converters (ADC/DAC)",
     description:
-      "EU Annex I 3A001.a.5 — microprocessors, FPGAs, ASICs, and memory ICs RATED OR DESIGNED for total-ionizing-dose tolerance ≥ 5×10⁴ rad(Si) AND meeting at least one of: (a) SEU ≤ 1×10⁻⁸ errors/bit/day; (b) SEL-immune at LET ≥ 80 MeV·cm²/mg; (c) latch-up-immunity above defined dose-rate. Captures the European space-grade microelectronics core: STMicro BAE RAD750-class processors, Microchip ATMEGA-S64M1, Cobham GR716, NanoXplore NG-MEDIUM/NG-LARGE FPGA.",
-    controlReasons: ["NS", "MT"],
-    crossReferenceTopic: "spacecraft-rad-hard-electronics",
+      "EU Annex I 3A001.a.5 — analogue-to-digital converter ICs with a resolution × sample-rate above: 8–10 bit > 1.3 GSPS; 10–12 bit > 600 MSPS; 12–14 bit > 400 MSPS; 14–16 bit > 250 MSPS; ≥ 16 bit > 65 MSPS. Includes digital-to-analogue converters with settling time < 9 ns OR spurious-free dynamic range > 68 dBc, and ICs integrating an ADC/DAC with on-chip storage or processing (3A001.a.14). Spaceborne ADC/DAC drives EO sensor read-out and SAR digital back-ends.",
+    controlReasons: ["NS"],
+    crossReferenceTopic: null,
     sourceUrl: SOURCE_URL,
     asOfDate: ASOF,
     notes:
-      "3A001.a.5 is the dominant 'space-grade rad-hard processor / FPGA' capture entry in the EU regime. Parametric cross-walk EU:3A001.a.5 encodes the TID gate via the Z25 radHardenedTID_krad attribute; US-side analogue is 9A515.d (five-criteria conjunctive) or 9A515.e (TID-only).",
+      "Radiation-hardened ICs are a SEPARATE control at 3A001.a.1 (modelled in eu-annex-i.ts, cross-walk EU:3A001.a.1) — they are NOT 3A001.a.5. Texas Instruments ADC12DJ5200RF, Analog Devices AD9213, and TI ADC10DV200 are common space-grade ADCs that exceed at least one threshold.",
   },
   {
     code: "3A001.a.7",
     jurisdiction: "EU_ANNEX_I",
-    title: "Microcontrollers and microcomputers (general MCU)",
+    title:
+      "Field-programmable logic devices (FPGA / CPLD) above I/O or data-rate",
     description:
-      "Microcontroller microcircuits with embedded memory and peripherals, controlled when designed for high-temperature operation (≥ 125 °C ambient) or when supplied as part of an MTCR-controlled flight controller. Captures the embedded-MCU layer below the .a.2 microprocessor tier.",
+      "EU Annex I 3A001.a.7 — field-programmable logic devices having either more than 700 single-ended digital input/outputs, OR an aggregate one-way serial transceiver data rate of 500 Gb/s or more. Captures the large reconfigurable-logic parts (FPGAs, CPLDs) that drive spaceborne payload-processor logic, on-board AI feature pipelines and AOCS decision logic. Microchip RTG4, Xilinx Virtex-5QV and NanoXplore NG-LARGE typically fall here.",
     controlReasons: ["NS"],
-    crossReferenceTopic: null,
+    crossReferenceTopic: "spacecraft-rad-hard-electronics",
     sourceUrl: SOURCE_URL,
     asOfDate: ASOF,
   },
   {
     code: "3A001.a.10",
     jurisdiction: "EU_ANNEX_I",
-    title: "Custom integrated circuits (ASICs) for spacecraft systems",
+    title: "Custom integrated circuits of unknown function",
     description:
-      "Application-specific integrated circuits (ASICs) specially designed for use in MTCR-relevant or spacecraft-relevant systems. Captures the standard-cell ASIC layer commonly seen in payload-dedicated signal-conditioning silicon (e.g. integrated AFEs for EO focal-plane arrays).",
-    controlReasons: ["NS", "MT"],
-    crossReferenceTopic: "spacecraft-rad-hard-electronics",
+      "EU Annex I 3A001.a.10 — integrated circuits for which either the function is unknown, OR the control status of the equipment in which they will be used is unknown to the manufacturer, having any of: more than 1 500 terminals; a typical 'basic gate propagation delay time' of less than 0,02 ns; or an operating frequency exceeding 3 GHz. The unknown-function / unknown-end-use catch keeps high-pin-count custom silicon in scope when the datasheet does not resolve classification.",
+    controlReasons: ["NS"],
+    crossReferenceTopic: null,
     sourceUrl: SOURCE_URL,
     asOfDate: ASOF,
   },
   {
     code: "3A001.a.12",
     jurisdiction: "EU_ANNEX_I",
-    title: "Programmable logic devices (FPGA, CPLD) above gate-count threshold",
+    title: "Fast Fourier Transform (FFT) processor ICs",
     description:
-      "Field-programmable gate arrays (FPGAs), complex programmable logic devices (CPLDs), and reconfigurable logic above defined gate-count thresholds (typically > 30,000 4-input LUTs or equivalent). Anti-fuse and SRAM-based FPGAs both captured. Drives spaceborne payload-processor logic, on-board AI feature pipelines, AOCS decision logic.",
+      "EU Annex I 3A001.a.12 — 'Fast Fourier Transform (FFT) processors' having a rated execution time for an N-point complex FFT of less than (N log₂ N) / 20 480 ms (i.e. faster than the listed throughput). Captures dedicated spectral-transform silicon used in SAR back-ends, spectrum-monitoring payloads and on-board signal-intelligence processing chains.",
     controlReasons: ["NS"],
-    crossReferenceTopic: "spacecraft-rad-hard-electronics",
+    crossReferenceTopic: null,
     sourceUrl: SOURCE_URL,
     asOfDate: ASOF,
-    notes:
-      "Microchip RTG4 (anti-fuse), Xilinx Virtex-5QV (SRAM), NanoXplore NG-LARGE all fall under 3A001.a.12 with the .a.5 rad-hard escalation typically also applying.",
   },
 
   // ─── 3A001.b — Discrete devices & power semiconductors ─────────────
   {
     code: "3A001.b.1",
     jurisdiction: "EU_ANNEX_I",
-    title: "GaN / GaAs HEMTs (high-electron-mobility transistors)",
+    title: "Vacuum electronic devices / travelling-wave tubes above 31.8 GHz",
     description:
-      "Gallium-nitride (GaN) or gallium-arsenide (GaAs) high-electron-mobility transistors (HEMTs) rated for operating frequency above defined RF thresholds, OR power-density / breakdown-voltage above thresholds. Captures the RF power-amp silicon in satellite TT&C, X/Ka-band downlink amplifiers, and active phased-array T/R modules.",
+      "EU Annex I 3A001.b.1 — vacuum electronic devices and cathodes: travelling-wave tubes/devices operating above 31.8 GHz, OR with cathode turn-on < 3 s, coupled-cavity tubes with > 7% instantaneous bandwidth or > 2.5 kW peak power, helix / folded-waveguide / serpentine tubes with > 1-octave instantaneous bandwidth and (average power × frequency) > 0.5, space-qualified or gridded-gun tubes, and crossed-field amplifiers with gain > 17 dB. The RF-power-source layer for Ka/Ku-band high-power downlink and deep-space transmitters.",
     controlReasons: ["NS"],
     crossReferenceTopic: null,
     sourceUrl: SOURCE_URL,
     asOfDate: ASOF,
     notes:
-      "GaN HEMTs are the dominant RF power technology for modern Ka/Ku phased-arrays. UMS GaN30, Wolfspeed CGHV1J, and STMicroelectronics MMICs commonly trigger 3A001.b.1.",
+      "Vacuum electronic devices (TWTs) remain the dominant high-power RF source above 31.8 GHz where solid-state amplifiers cannot reach the power × frequency product. Discrete GaN/GaAs transistors are controlled separately under 3A001.b.3.",
   },
   {
     code: "3A001.b.3",
     jurisdiction: "EU_ANNEX_I",
-    title: "Travelling-wave tubes (TWTs) above frequency threshold",
+    title: "Discrete microwave transistors above frequency × power thresholds",
     description:
-      "Travelling-wave tubes (TWTs) operating above defined RF frequency thresholds (typically > 31 GHz) OR with average power output above defined thresholds. Spaceborne TWTAs in Ka/Ku-band high-power downlink chains, deep-space high-gain transmitters, and military SATCOM payloads.",
+      "EU Annex I 3A001.b.3 — discrete microwave transistors (including GaN and GaAs HEMTs and bipolar devices) rated for operation above frequency-banded peak-power thresholds (e.g. > 400 W at 2.7–2.9 GHz, > 60 W at 3.7–6.8 GHz, > 7 W at 16–31.8 GHz, descending into the sub-watt range above 43.5 GHz). Captures the standalone RF power-stage devices used in satellite TT&C and modular payload amplifier strings; GaN HEMTs (Wolfspeed CGHV1J, UMS GaN30) are the dominant modern technology.",
     controlReasons: ["NS"],
     crossReferenceTopic: null,
     sourceUrl: SOURCE_URL,
@@ -195,9 +179,9 @@ export const EU_ANNEX_I_CAT3_ENTRIES: ClassificationEntry[] = [
   {
     code: "3A001.b.4",
     jurisdiction: "EU_ANNEX_I",
-    title: "Monolithic microwave integrated circuits (MMICs)",
+    title: "Microwave solid-state amplifiers, assemblies and modules",
     description:
-      "Monolithic microwave integrated circuits (MMICs) — amplifiers, mixers, switches — operating above defined RF thresholds and power-add-efficiency / saturated-output-power gates. Captures the integrated RF front-end silicon used in satellite TT&C transponders and active electronically-scanned arrays (AESA).",
+      "EU Annex I 3A001.b.4 — microwave solid-state power amplifiers, and assemblies or modules containing them, rated above frequency-banded peak-power × fractional-bandwidth thresholds (e.g. > 500 W with > 15% bandwidth at 2.7–2.9 GHz, > 90 W at 3.7–6.8 GHz, descending to the milliwatt range above 75 GHz). Captures MMIC-based amplifier modules and T/R assemblies used in satellite transponders and active electronically-scanned arrays (AESA). Bare-die MMIC amplifiers fall under 3A001.b.2.",
     controlReasons: ["NS"],
     crossReferenceTopic: null,
     sourceUrl: SOURCE_URL,
@@ -206,59 +190,59 @@ export const EU_ANNEX_I_CAT3_ENTRIES: ClassificationEntry[] = [
   {
     code: "3A001.b.5",
     jurisdiction: "EU_ANNEX_I",
-    title: "Discrete microwave transistors (FETs/BJTs) above thresholds",
+    title: "Electronically or magnetically tunable bandpass / bandstop filters",
     description:
-      "Discrete microwave power transistors (FETs, bipolar) operating above defined frequency × power-output thresholds. Distinct from MMIC capture — covers the standalone power-stage devices used in modular satellite payload amplifier strings.",
+      "EU Annex I 3A001.b.5 — electronically or magnetically tunable filters having more than 5 tunable resonators capable of tuning across a 1.5:1 frequency band in less than 10 µs, with either a bandpass greater than 0.5% of centre frequency OR a bandstop less than 0.5% of centre frequency. Captures the agile pre-select / channelising filters used in wideband SIGINT and frequency-agile satellite receivers.",
     controlReasons: ["NS"],
     crossReferenceTopic: null,
     sourceUrl: SOURCE_URL,
     asOfDate: ASOF,
   },
 
-  // ─── 3A001.c — Memory ──────────────────────────────────────────────
+  // ─── 3A001.c — Acoustic wave devices ───────────────────────────────
   {
     code: "3A001.c.1",
     jurisdiction: "EU_ANNEX_I",
-    title: "Programmable-logic-based memory ICs for spacecraft",
+    title: "Surface / surface-skimming acoustic wave devices",
     description:
-      "Programmable-logic-based memory ICs (PLD-memory hybrids, including memory blocks embedded in FPGAs above gate-count threshold) when specifically designed or rated for spaceborne use. Captures the embedded-block-RAM in NanoXplore NG-LARGE and Microchip RTG4 FPGAs at the memory side.",
+      "EU Annex I 3A001.c.1 — surface-acoustic-wave and surface-skimming (shallow bulk) acoustic-wave devices having either a carrier frequency exceeding 6 GHz, or (1–6 GHz) sidelobe rejection > 65 dB / bandwidth > 250 MHz / dispersive delay > 10 µs / (max delay × bandwidth) > 100, or the equivalent delay-bandwidth products at ≤ 1 GHz. SAW filters and delay-lines used in agile satellite-receiver IF chains and radar pulse compression.",
     controlReasons: ["NS"],
-    crossReferenceTopic: "spacecraft-rad-hard-electronics",
+    crossReferenceTopic: null,
     sourceUrl: SOURCE_URL,
     asOfDate: ASOF,
   },
 
-  // ─── 3A001.d — Optoelectronic devices ───────────────────────────────
+  // ─── 3A001.d — Superconductive electronic devices ──────────────────
   {
     code: "3A001.d.1",
     jurisdiction: "EU_ANNEX_I",
-    title: "Optoelectronic detector arrays for spacecraft sensing",
+    title: "Superconductive digital circuits",
     description:
-      "Optoelectronic detector arrays (CCD, CMOS image sensors, IR focal-plane arrays, single-photon-avalanche diode arrays) above defined dark-current / quantum-efficiency / array-size thresholds. Cross-control with 6A002 for end-product spaceborne imagers. Spaceborne CMOS image sensors from CMOSIS / ams OSRAM / Teledyne e2v typically captured.",
-    controlReasons: ["NS", "MT"],
-    crossReferenceTopic: "high-resolution-eo-payloads",
+      "EU Annex I 3A001.d.1 — superconductive electronic devices that switch current using superconductive gates with a product of delay time per gate (s) × power dissipation per gate (W) of less than 10⁻¹⁴ J. Rapid-single-flux-quantum (RSFQ) and adiabatic superconductive logic used in cryogenic high-speed / low-power computing and quantum-control electronics. (Optoelectronic detector arrays and laser diodes are NOT 3A001.d — they are controlled under Cat 6, 6A002 / 6A005.)",
+    controlReasons: ["NS"],
+    crossReferenceTopic: null,
     sourceUrl: SOURCE_URL,
     asOfDate: ASOF,
   },
   {
-    code: "3A001.d.3",
+    code: "3A001.d.2",
     jurisdiction: "EU_ANNEX_I",
-    title: "Laser diodes for free-space optical communications",
+    title: "Superconductive resonant / frequency-selection circuits",
     description:
-      "Laser diodes operating above defined wavelength × power × beam-quality thresholds, when usable in inter-satellite or ground-to-space optical communication terminals. Cross-control with 5A001.f / AM-005 at the system level.",
+      "EU Annex I 3A001.d.2 — superconductive electronic devices for frequency selection that use resonant circuits with a Q-value (quality factor) exceeding 10 000. High-Q superconductive filters for low-noise cryogenic receiver front-ends and precision-timing distribution.",
     controlReasons: ["NS"],
-    crossReferenceTopic: "optical-comm-terminals",
+    crossReferenceTopic: null,
     sourceUrl: SOURCE_URL,
     asOfDate: ASOF,
   },
 
-  // ─── 3A001.e — Discrete-component devices ──────────────────────────
+  // ─── 3A001.e — High-energy storage devices & power sources ─────────
   {
     code: "3A001.e.1",
     jurisdiction: "EU_ANNEX_I",
-    title: "Solar cells and arrays for spaceborne power generation",
+    title: "High-energy primary and secondary battery cells",
     description:
-      "Solar cells (typically triple-junction GaInP/GaAs/Ge, or IMM cells) and complete solar arrays designed for spaceborne use with end-of-life efficiency ≥ 20% AND radiation-resistance above defined thresholds. Captures the dominant European satellite-PV supply (AzurSpace, Spectrolab, SolAero) for LEO/MEO/GEO platforms.",
+      "EU Annex I 3A001.e.1 — battery cells: primary cells with an energy density exceeding 550 Wh/kg (and continuous power density > 50 W/kg) OR exceeding 50 Wh/kg with continuous power density > 350 W/kg; and secondary cells with an energy density exceeding 350 Wh/kg, all measured at 20 °C. Captures high-specific-energy electrochemical cells for spacecraft and high-endurance UAV power systems. (Space-qualified solar cells/arrays are a separate control at 3A001.e.4.)",
     controlReasons: ["NS"],
     crossReferenceTopic: null,
     sourceUrl: SOURCE_URL,
@@ -267,36 +251,33 @@ export const EU_ANNEX_I_CAT3_ENTRIES: ClassificationEntry[] = [
   {
     code: "3A001.e.2",
     jurisdiction: "EU_ANNEX_I",
-    title: "High-energy density capacitors (super-/ultra-cap) for pulsed power",
+    title: "High-energy storage capacitors for pulsed power",
     description:
-      "Super-capacitors and energy-dense capacitors above defined volumetric-energy-density × pulse-discharge-rate thresholds. Captures pulsed-power conditioning capacitors in spacecraft electric-propulsion power-processor units (PPUs) and high-current launch-platform support.",
+      "EU Annex I 3A001.e.2 — energy-storage capacitors: single-shot (repetition rate < 10 Hz) with voltage rating ≥ 5 kV, energy density ≥ 250 J/kg and total energy ≥ 25 kJ; OR repetition-rated (≥ 10 Hz) with voltage rating ≥ 5 kV, energy density ≥ 50 J/kg, total energy ≥ 100 J and ≥ 10 000 charge/discharge cycles. Pulsed-power conditioning for spacecraft electric-propulsion power-processor units (PPUs) and launch-platform support.",
+    controlReasons: ["NS"],
+    crossReferenceTopic: null,
+    sourceUrl: SOURCE_URL,
+    asOfDate: ASOF,
+  },
+  {
+    code: "3A001.e.4",
+    jurisdiction: "EU_ANNEX_I",
+    title: "Space-qualified solar cells and arrays",
+    description:
+      "EU Annex I 3A001.e.4 — space-qualified solar cells, cover-glass-interconnected-cells (CIC) and panels with a minimum average efficiency exceeding 20% at an operating temperature of 28 °C (301 K) under AM0 illumination (1 367 W/m²). The dominant European satellite-PV supply (AzurSpace, Spectrolab, SolAero) for LEO/MEO/GEO platforms.",
     controlReasons: ["NS"],
     crossReferenceTopic: null,
     sourceUrl: SOURCE_URL,
     asOfDate: ASOF,
   },
 
-  // ─── 3A001.h — Frequency standards & timing ─────────────────────────
+  // ─── 3A001.h — Power semiconductor switches ────────────────────────
   {
-    code: "3A001.h.1",
+    code: "3A001.h",
     jurisdiction: "EU_ANNEX_I",
-    title:
-      "Atomic-frequency standards (rubidium, cesium, hydrogen-maser) for spaceborne PNT",
+    title: "High-temperature power semiconductor switches, diodes and modules",
     description:
-      "Atomic-frequency standards (rubidium-vapour, cesium-beam, hydrogen-maser, optical-clock) with Allan-variance ≤ 1×10⁻¹¹ at 1 s averaging time AND aging rate ≤ 1×10⁻¹¹/month, designed for spaceborne use. Captures the GNSS payload-clock segment (Galileo PHM, GPS-III RAFS, BeiDou) and long-baseline-interferometry / deep-space communications timing chains.",
-    controlReasons: ["NS"],
-    crossReferenceTopic: "gnss-receivers-imus-star-trackers",
-    sourceUrl: SOURCE_URL,
-    asOfDate: ASOF,
-    notes:
-      "Allan-variance threshold is the headline parametric — see cross-walk EU:3A001.h.1 for the typed predicate. Spectratime PHM (Galileo IOV/FOC), Frequency Electronics Inc. RAFS (GPS-IIIF), and the new ESA-funded SAFRAN ASCAR rubidium-vapour line all fall here.",
-  },
-  {
-    code: "3A001.h.2",
-    jurisdiction: "EU_ANNEX_I",
-    title: "Quartz oscillators (OCXO/TCXO) above stability thresholds",
-    description:
-      "Oven-controlled and temperature-compensated crystal oscillators (OCXO, TCXO) with frequency stability ≤ 1×10⁻⁹ over the operating temperature range AND aging rate ≤ 1×10⁻⁸/year. Spaceborne secondary-reference oscillators ride here when the atomic-clock thresholds (3A001.h.1) are not yet engaged.",
+      "EU Annex I 3A001.h — power switches, diodes or modules having all of: a maximum junction-temperature rating exceeding 488 K (215 °C); a repetitive peak off-state (blocking) voltage exceeding 300 V; and a continuous current exceeding 1 A. Wide-bandgap (SiC / GaN) high-temperature power devices for spacecraft power-conditioning units and electric-propulsion PPUs. (Atomic-frequency standards are controlled at 3A002.g, not 3A001.h.)",
     controlReasons: ["NS"],
     crossReferenceTopic: null,
     sourceUrl: SOURCE_URL,
@@ -307,9 +288,9 @@ export const EU_ANNEX_I_CAT3_ENTRIES: ClassificationEntry[] = [
   {
     code: "3A002.a",
     jurisdiction: "EU_ANNEX_I",
-    title: "RF test equipment above frequency thresholds",
+    title: "Recording equipment and real-time oscilloscopes",
     description:
-      "Spectrum analysers, signal generators, network analysers, and vector signal analysers operating above defined RF frequency thresholds (typically > 31 GHz) with phase-noise / amplitude-accuracy gates. Captures the satellite-payload ground-test segment that is itself controlled even when the device-under-test is not.",
+      "EU Annex I 3A002.a — recording equipment and specially designed test equipment therefor: instrumentation magnetic-tape recorders (> 4 MHz bandwidth), digital instrumentation data recorders / digital video recorders (> 360 Mbit/s sustained transfer rate), and real-time oscilloscopes (3A002.a.7) above defined sample-rate × bandwidth thresholds. The payload-test instrumentation layer that is itself controlled even when the device-under-test is not.",
     controlReasons: ["NS"],
     crossReferenceTopic: null,
     sourceUrl: SOURCE_URL,
@@ -318,38 +299,40 @@ export const EU_ANNEX_I_CAT3_ENTRIES: ClassificationEntry[] = [
   {
     code: "3A002.c",
     jurisdiction: "EU_ANNEX_I",
-    title: "Atomic-frequency standard test & measurement equipment",
+    title: "Signal analysers above 31.8 GHz",
     description:
-      "Test equipment specifically designed for the calibration, performance test, or aging characterisation of atomic-frequency standards captured by 3A001.h.1. Captures the Allan-variance / phase-noise measurement chains used in satellite payload clock acceptance test (PAT) at ESTEC / OHB / Thales.",
+      "EU Annex I 3A002.c — signal analysers (including spectrum and vector-signal analysers) having a 3 dB resolution bandwidth exceeding 10 MHz anywhere above 31.8 GHz, OR meeting the specified displayed-average-noise-level / real-time analysis-bandwidth thresholds. The wideband payload and SIGINT measurement segment.",
     controlReasons: ["NS"],
-    crossReferenceTopic: "gnss-receivers-imus-star-trackers",
+    crossReferenceTopic: null,
     sourceUrl: SOURCE_URL,
     asOfDate: ASOF,
   },
   {
     code: "3A002.d",
     jurisdiction: "EU_ANNEX_I",
-    title: "Radiation test equipment for spaceborne electronics qualification",
+    title: "Signal generators above frequency / phase-noise thresholds",
     description:
-      "Test equipment for the radiation qualification of microelectronic devices: cobalt-60 TID sources, proton/heavy-ion accelerators rated for SEU/SEL screening, neutron sources for SET characterisation. Captures the JANUS / RADEF / TID-50 / HCI test infrastructure used by European space-grade IC vendors.",
+      "EU Annex I 3A002.d — signal generators producing output frequencies above defined thresholds with pulse-modulation, output-power, frequency-switching-time and single-sideband phase-noise specifications (e.g. frequency switching < 100 µs, or SSB phase noise better than the listed mask). The synthesised-source side of satellite-payload and radar test benches.",
     controlReasons: ["NS"],
-    crossReferenceTopic: "spacecraft-rad-hard-electronics",
+    crossReferenceTopic: null,
     sourceUrl: SOURCE_URL,
     asOfDate: ASOF,
   },
   {
     code: "3A002.g",
     jurisdiction: "EU_ANNEX_I",
-    title: "Digital instrumentation (DSO, LA, AWG) above bandwidth thresholds",
+    title: "Atomic frequency standards (Rb / Cs / H-maser) for spaceborne PNT",
     description:
-      "Digital oscilloscopes, logic analysers, arbitrary waveform generators with sample rate × bandwidth above defined thresholds. Cross-controlled when used in production-test of 3A001 or 3A090 ICs.",
+      "EU Annex I 3A002.g — atomic frequency standards: non-space-qualified units meeting the stability thresholds, OR space-qualified caesium-beam, rubidium-vapour, hydrogen-maser or other atomic clocks with a long-term aging (drift) better than 1×10⁻¹¹/month. Captures the GNSS payload-clock segment (Galileo PHM, GPS-IIIF RAFS, BeiDou) and long-baseline-interferometry / deep-space timing chains.",
     controlReasons: ["NS"],
-    crossReferenceTopic: null,
+    crossReferenceTopic: "gnss-receivers-imus-star-trackers",
     sourceUrl: SOURCE_URL,
     asOfDate: ASOF,
+    notes:
+      "Atomic-frequency standards live at 3A002.g — they were previously mis-modelled at 3A001.h.1 (3A001.h is power semiconductor switches). Cross-walk gate is EU:3A002.g; Spectratime PHM (Galileo IOV/FOC) and Frequency Electronics RAFS (GPS-IIIF) fall here.",
   },
 
-  // ─── 3A090 / 3A091 / 3A092 — Oct 2022 AI / advanced-computing IFR ───
+  // ─── 3A090 — Oct 2022 AI / advanced-computing IFR ──────────────────
   {
     code: "3A090.a",
     jurisdiction: "EU_ANNEX_I",
@@ -376,40 +359,13 @@ export const EU_ANNEX_I_CAT3_ENTRIES: ClassificationEntry[] = [
     sourceUrl: SOURCE_URL,
     asOfDate: ASOF,
   },
-  {
-    code: "3A091",
-    jurisdiction: "EU_ANNEX_I",
-    title:
-      "Inspection equipment for advanced-computing integrated circuits (Oct 2022 IFR)",
-    description:
-      "Inspection, metrology, and test equipment specially designed for the production-line characterisation of 3A090 advanced-computing ICs: high-resolution e-beam inspection, atomic-force-microscopy metrology, EUV-mask defect-inspection. Cross-control with 3B001 lithography production equipment.",
-    controlReasons: ["NS"],
-    crossReferenceTopic: null,
-    sourceUrl: SOURCE_URL,
-    asOfDate: ASOF,
-  },
-  {
-    code: "3A092",
-    jurisdiction: "EU_ANNEX_I",
-    title: "EUV lithography equipment and components for sub-7-nm fabrication",
-    description:
-      "Extreme-ultraviolet (EUV) lithography exposure systems (typically operating at 13.5 nm wavelength) and specially-designed sub-components (mirrors, masks, sources, mask handling). ASML NXE:3400, NXE:3600D, EXE:5000 (High-NA) systems all captured. The dominant production tool for sub-7-nm logic and DRAM nodes that underpin the 3A090 AI-accelerator supply chain.",
-    controlReasons: ["NS"],
-    crossReferenceTopic: null,
-    sourceUrl: SOURCE_URL,
-    asOfDate: ASOF,
-    notes:
-      "Politically the highest-stakes item in EU Annex I Cat-3. The Netherlands had to negotiate a special export-licence régime with the US (Wassenaar+) for ASML EUV exports to China. EU-internal use is not licence-controlled; extra-EU export is.",
-  },
-
   // ─── 3A201 / 3A225 / 3A228 — Nuclear-relevant electronics ───────────
   {
     code: "3A201.a",
     jurisdiction: "EU_ANNEX_I",
-    title:
-      "Nuclear-relevant high-voltage DC capacitors (energy ≥ 1.6 µF × 5 kV)",
+    title: "Nuclear-relevant pulse-discharge capacitors",
     description:
-      "DC capacitors with capacitance × voltage² product ≥ 6.4 J AND voltage ≥ 5 kV AND service-life > 10 charge/discharge cycles per second. NSG-derived control transposed into EU Annex I. Aerospace nexus: legacy pulsed-power upper-stage ignition systems and some non-EU electric-propulsion PPU designs.",
+      "EU Annex I 3A201.a — capacitors with either: (i) a voltage rating greater than 1.4 kV, energy storage greater than 10 J, capacitance greater than 0.5 µF and series inductance less than 50 nH; OR (ii) a voltage rating greater than 750 V, capacitance greater than 0.25 µF and series inductance less than 10 nH. NSG-derived pulse-discharge control (nuclear-weapon firing-set precursor). Aerospace nexus: legacy pulsed-power upper-stage ignition and some non-EU electric-propulsion PPU designs.",
     controlReasons: ["NP"],
     crossReferenceTopic: null,
     sourceUrl: SOURCE_URL,
@@ -438,30 +394,20 @@ export const EU_ANNEX_I_CAT3_ENTRIES: ClassificationEntry[] = [
     asOfDate: ASOF,
   },
 
-  // ─── 3A501 / 3A611 — EU-autonomous Wassenaar-derived ────────────────
+  // ─── 3A501 — EU-autonomous quantum / cryogenic electronics ─────────
   {
     code: "3A501",
     jurisdiction: "EU_ANNEX_I",
     title:
-      "Cyber-surveillance integrated circuits & telecommunications equipment",
+      "Cryogenic CMOS control ICs and parametric (quantum-limited) amplifiers",
     description:
-      "EU Annex I 3A501 — integrated circuits and telecommunications equipment specially designed for the interception or analysis of telecommunications traffic. EU-autonomous control (Wassenaar Cat-5-derived but with broader scope). Predominantly cyber-surveillance — aerospace cross-control is rare but possible when satellite-based interception payloads are involved.",
-    controlReasons: ["NS", "HR"],
+      "EU Annex I 3A501 — EU-autonomous control added by the 2025 Annex I update (Delegated Regulation of 8 September 2025) on quantum-enabling electronics: integrated circuits designed to operate at cryogenic temperatures (cryogenic-CMOS qubit-control chips placed at 1–5 K and directly connected to qubits), and parametric / quantum-limited signal amplifiers (Josephson and travelling-wave parametric amplifiers) used to read out superconducting and spin qubits. Companion to the 2025 cryogenic-cooling-system and cryogenic-wafer-prober controls.",
+    controlReasons: ["NS"],
     crossReferenceTopic: null,
     sourceUrl: SOURCE_URL,
     asOfDate: ASOF,
-  },
-  {
-    code: "3A611",
-    jurisdiction: "EU_ANNEX_I",
-    title:
-      "Specially-designed electronics for military and military-aerospace use",
-    description:
-      "Electronic equipment and components specially designed for military use, including military-grade variants of items otherwise captured under 3A001. Captures the mil-spec / mil-aerospace electronics tier (anti-tamper-coated processors, military secure-boot ROMs, MIL-STD-1553B bus controllers). Cross-control with USML XI(c) for the strictly military variants.",
-    controlReasons: ["NS", "MT"],
-    crossReferenceTopic: null,
-    sourceUrl: SOURCE_URL,
-    asOfDate: ASOF,
+    notes:
+      "Previously mis-modelled as 'cyber-surveillance ICs'. The EU's cyber-surveillance interception controls live in Cat 5 (e.g. 5A001.j IP-network surveillance), not 3A501 — which is a 2025 quantum/cryogenic addition.",
   },
 
   // ═══════════════════════════════════════════════════════════════════
@@ -470,32 +416,20 @@ export const EU_ANNEX_I_CAT3_ENTRIES: ClassificationEntry[] = [
   {
     code: "3B001.a",
     jurisdiction: "EU_ANNEX_I",
-    title: "Semiconductor manufacturing equipment — deposition (CVD, PVD, ALD)",
+    title: "Epitaxial growth equipment (MOCVD / MBE)",
     description:
-      "Equipment for chemical-vapour-deposition (CVD), physical-vapour-deposition (PVD), atomic-layer-deposition (ALD) for semiconductor wafer processing above defined wafer-throughput / film-uniformity / process-temperature thresholds. Applied Materials Endura, Lam Research ALTUS, ASM PE-ALD systems all captured.",
+      "EU Annex I 3B001.a — equipment designed for epitaxial growth: metal-organic chemical-vapour-deposition (MOCVD) reactors and molecular-beam-epitaxy (MBE) systems for compound-semiconductor growth, above the specified wafer-handling / process-control thresholds. The front-end III-V and wide-bandgap epi layer for RF-power (GaN/GaAs) and photonic devices.",
     controlReasons: ["NS"],
     crossReferenceTopic: null,
     sourceUrl: SOURCE_URL,
     asOfDate: ASOF,
   },
   {
-    code: "3B001.c",
+    code: "3B001.b",
     jurisdiction: "EU_ANNEX_I",
-    title:
-      "Semiconductor lithography equipment (DUV ArF, immersion ArF, EUV pre-7-nm)",
+    title: "Ion-implantation manufacturing equipment",
     description:
-      "Deep-ultraviolet (DUV) and immersion DUV lithography exposure systems with critical-dimension capability above defined nm thresholds. Captures the ArF-immersion segment (ASML NXT:2050/2100i) that underpins production of 28/14/7 nm logic and DRAM. EUV systems sit one step higher in 3A092.",
-    controlReasons: ["NS"],
-    crossReferenceTopic: null,
-    sourceUrl: SOURCE_URL,
-    asOfDate: ASOF,
-  },
-  {
-    code: "3B001.d",
-    jurisdiction: "EU_ANNEX_I",
-    title: "Semiconductor etch equipment (RIE, ICP, ALE)",
-    description:
-      "Plasma etch equipment for semiconductor wafer processing: reactive-ion etch (RIE), inductively-coupled-plasma (ICP), atomic-layer-etch (ALE) above wafer-throughput × selectivity × CD-uniformity thresholds. Lam Research Kiyo, Tokyo Electron Tactras, Applied Materials Sym3 systems captured.",
+      "EU Annex I 3B001.b — ion-implantation manufacturing equipment having beam-energy / beam-current parameters above the listed thresholds, OR specially designed and optimised for hydrogen, helium, oxygen or silicon implantation. The dopant-introduction and layer-transfer step for advanced-node logic, SOI and power devices. Axcelis Purion, Applied Materials VIISta systems.",
     controlReasons: ["NS"],
     crossReferenceTopic: null,
     sourceUrl: SOURCE_URL,
@@ -504,20 +438,33 @@ export const EU_ANNEX_I_CAT3_ENTRIES: ClassificationEntry[] = [
   {
     code: "3B001.e",
     jurisdiction: "EU_ANNEX_I",
-    title: "Wafer ion-implantation equipment (medium- and high-energy)",
+    title: "Automatic multi-chamber central wafer-handling systems",
     description:
-      "Ion-implantation equipment for semiconductor wafer processing above defined beam-current × beam-energy × dose-uniformity thresholds. Captures the dopant-introduction step common to all advanced-node logic and analog parts. Axcelis Purion, Applied Materials VIISta systems.",
+      "EU Annex I 3B001.e — automatic loading multi-chamber central wafer-handling systems with interfaces for multiple semiconductor process tools, designed to transfer wafers under vacuum for sequential, in-vacuo multi-step processing. The cluster-tool backbone of an advanced-node fab line.",
     controlReasons: ["NS"],
     crossReferenceTopic: null,
     sourceUrl: SOURCE_URL,
     asOfDate: ASOF,
   },
   {
+    code: "3B001.f",
+    jurisdiction: "EU_ANNEX_I",
+    title: "Semiconductor lithography equipment (DUV, EUV, mask-making)",
+    description:
+      "EU Annex I 3B001.f — lithography equipment: step-and-repeat or step-and-scan exposure systems using light of wavelength less than 193 nm (immersion ArF and EUV at 13.5 nm) or capable of a minimum resolvable feature of 45 nm or less; imprint-lithography equipment; and mask/reticle-making equipment using electron- or ion-beams with FWHM spot size below 65 nm. ASML NXT immersion and NXE/EXE EUV scanners — the dominant sub-7-nm production tool underpinning the 3A090 AI-accelerator supply chain. (EUV mask substrate blanks are 3B001.j.)",
+    controlReasons: ["NS"],
+    crossReferenceTopic: null,
+    sourceUrl: SOURCE_URL,
+    asOfDate: ASOF,
+    notes:
+      "EUV lithography is 3B001.f — there is no EU '3A092'. The Netherlands operates a special export-licence régime (Wassenaar+) for ASML EUV exports; EU-internal use is not licence-controlled, extra-EU export is.",
+  },
+  {
     code: "3B001.h",
     jurisdiction: "EU_ANNEX_I",
-    title: "Wafer-bonding and 3D-stacking equipment",
+    title: "Multi-layer phase-shift masks",
     description:
-      "Direct wafer-bonding, hybrid-bonding, through-silicon-via (TSV) assembly equipment for 3D-stacked memory and logic. Captures the HBM (high-bandwidth-memory) stack assembly chain and the chiplet-bonding tooling that underpins modern AI-accelerator packages.",
+      "EU Annex I 3B001.h — multi-layer masks with a phase-shift layer designed for lithography equipment using light of a wavelength less than 245 nm. Phase-shift reticles are a resolution-enhancement enabler for advanced-node patterning.",
     controlReasons: ["NS"],
     crossReferenceTopic: null,
     sourceUrl: SOURCE_URL,
@@ -528,20 +475,8 @@ export const EU_ANNEX_I_CAT3_ENTRIES: ClassificationEntry[] = [
     jurisdiction: "EU_ANNEX_I",
     title: "Test equipment for semiconductor wafer/die characterisation",
     description:
-      "Probe stations, parametric test systems, and automated test equipment (ATE) for wafer/die-level electrical characterisation above defined throughput × accuracy thresholds. Captures Teradyne, Advantest, Tokyo Electron ATE in the production test step.",
+      "EU Annex I 3B002 — equipment specially designed for testing finished or unfinished semiconductor devices controlled by 3A001: probe stations, parametric test systems and automated test equipment (ATE) for wafer/die-level electrical characterisation. Captures Teradyne, Advantest and Tokyo Electron ATE in the production-test step.",
     controlReasons: ["NS"],
-    crossReferenceTopic: null,
-    sourceUrl: SOURCE_URL,
-    asOfDate: ASOF,
-  },
-  {
-    code: "3B991",
-    jurisdiction: "EU_ANNEX_I",
-    title:
-      "Non-specially-designed semiconductor production equipment (catch-all)",
-    description:
-      "Semiconductor manufacturing equipment not specifically captured by 3B001/3B002 but still rising to anti-terrorism control. Catch-all entry — operators should consult BAFA when the primary 3B001/.d sub-classifications fail to fit.",
-    controlReasons: ["AT"],
     crossReferenceTopic: null,
     sourceUrl: SOURCE_URL,
     asOfDate: ASOF,
@@ -649,10 +584,9 @@ export const EU_ANNEX_I_CAT3_ENTRIES: ClassificationEntry[] = [
   {
     code: "3D003",
     jurisdiction: "EU_ANNEX_I",
-    title:
-      "Physics-based simulation software for IC design (TCAD, device modelling)",
+    title: "Computational lithography software (EUV mask OPC / RET)",
     description:
-      "EU Annex I 3D003 — physics-based device-modelling and TCAD (technology-computer-aided-design) simulation software for semiconductor device development. Synopsys Sentaurus, Silvaco Atlas, Crosslight APSYS captured.",
+      "EU Annex I 3D003 — 'computational lithography' software specially designed for the development of patterns on EUV-lithography masks or reticles: optical-proximity-correction (OPC), resolution-enhancement-technology (RET), inverse-lithography and source-mask-optimisation tools (Synopsys Proteus, Siemens Calibre nmOPC for EUV). Distinct from TCAD device modelling, which sits in the 3D001 EDA layer.",
     controlReasons: ["NS"],
     crossReferenceTopic: null,
     sourceUrl: SOURCE_URL,
@@ -661,9 +595,10 @@ export const EU_ANNEX_I_CAT3_ENTRIES: ClassificationEntry[] = [
   {
     code: "3D004",
     jurisdiction: "EU_ANNEX_I",
-    title: "Software for operation of 3B002 IC test equipment",
+    title:
+      "Software for development of 3A003 spray-cooling thermal-management systems",
     description:
-      "EU Annex I 3D004 — software specially designed for the operation of 3B002 IC test equipment (ATE). Captures the test-program-generation and test-pattern libraries used in production-line and characterisation test of advanced-node parts.",
+      "EU Annex I 3D004 — software specially designed for the development of equipment specified in 3A003 (spray-cooling thermal-management systems using closed-loop fluid handling and reconditioning equipment in a sealed enclosure). The thermal-management design-software layer for high-power-density electronics.",
     controlReasons: ["NS"],
     crossReferenceTopic: null,
     sourceUrl: SOURCE_URL,
@@ -684,25 +619,14 @@ export const EU_ANNEX_I_CAT3_ENTRIES: ClassificationEntry[] = [
   {
     code: "3D101",
     jurisdiction: "EU_ANNEX_I",
-    title: "Software for MTCR-controlled electronics (3A001 missile use)",
+    title: "Software for use of 3A101.b bremsstrahlung accelerators",
     description:
-      "EU Annex I 3D101 — software for the use of items in 3A001 when those items are usable in MTCR-relevant rocket systems or unmanned air vehicles. Includes flight-software toolchains for missile-grade flight controllers and radiation-test analysis software for screening MTCR-applicable parts.",
+      "EU Annex I 3D101 — software specially designed or modified for the 'use' of equipment specified in 3A101.b (accelerators capable of delivering electromagnetic radiation produced by bremsstrahlung from accelerated electrons of 2 MeV or more, and systems containing them). MTCR-relevant control software for the radiation-effects / flash-X-ray test chain.",
     controlReasons: ["MT"],
     crossReferenceTopic: null,
     sourceUrl: SOURCE_URL,
     asOfDate: ASOF,
     mtcrCategory: "II",
-  },
-  {
-    code: "3D991",
-    jurisdiction: "EU_ANNEX_I",
-    title: "Catch-all software for 3A/3B items below specific thresholds",
-    description:
-      "EU Annex I 3D991 — software for the development, production, or use of 3A/3B items not specifically captured at the .001-.005 thresholds. Anti-terrorism control rationale; lower license-friction than 3D001 in most operator workflows.",
-    controlReasons: ["AT"],
-    crossReferenceTopic: null,
-    sourceUrl: SOURCE_URL,
-    asOfDate: ASOF,
   },
 
   // ═══════════════════════════════════════════════════════════════════
@@ -725,10 +649,9 @@ export const EU_ANNEX_I_CAT3_ENTRIES: ClassificationEntry[] = [
   {
     code: "3E002",
     jurisdiction: "EU_ANNEX_I",
-    title:
-      "Technology for development of specially-designed multi-chip integrated circuits",
+    title: "Technology for ≥ 32-bit processor-core microcircuit development",
     description:
-      "EU Annex I 3E002 — technology specifically for the development of multi-chip integrated circuits (chiplets, HBM stacks, package-on-package, 3D wafer stacks) above defined integration thresholds. Captures the advanced-packaging IP that underpins modern AI-accelerator and high-end MCU production.",
+      "EU Annex I 3E002 — technology, other than that specified in 3E001, for the development or production of a microprocessor, micro-computer or microcontroller microcircuit core having an arithmetic-logic unit with an access width of 32 bits or more, and meeting the listed performance features (3E002.a/.b/.c). The processor-core IP layer, distinct from the general 3E001 production technology.",
     controlReasons: ["NS"],
     crossReferenceTopic: null,
     sourceUrl: SOURCE_URL,
@@ -737,12 +660,11 @@ export const EU_ANNEX_I_CAT3_ENTRIES: ClassificationEntry[] = [
   {
     code: "3E003",
     jurisdiction: "EU_ANNEX_I",
-    title:
-      "Specific aerospace-electronics technology (rad-hardening, SEU mitigation)",
+    title: "Other technology for advanced electronic devices",
     description:
-      "EU Annex I 3E003 — specific technology for radiation-hardening IC design, SEU/SEL mitigation techniques (TMR triple-modular-redundancy, EDAC error-detection-and-correction, latch-up-protection circuitry), and spaceborne IC qualification. The EU pendant to MIL-PRF-38535 / MIL-STD-883 class-S testing know-how.",
-    controlReasons: ["NS", "MT"],
-    crossReferenceTopic: "spacecraft-rad-hard-electronics",
+      "EU Annex I 3E003 — 'other technology' for the development or production of: vacuum microelectronic devices; hetero-structure semiconductor devices (HEMT, HBT, quantum-well and super-lattice devices); superconductive electronic devices; substrates of diamond, silicon-on-insulator (SOI), silicon carbide or gallium oxide for electronic components; and vacuum electronic devices operating at 31.8 GHz or higher.",
+    controlReasons: ["NS"],
+    crossReferenceTopic: null,
     sourceUrl: SOURCE_URL,
     asOfDate: ASOF,
   },
@@ -772,67 +694,13 @@ export const EU_ANNEX_I_CAT3_ENTRIES: ClassificationEntry[] = [
   {
     code: "3E201",
     jurisdiction: "EU_ANNEX_I",
-    title: "Technology for nuclear-relevant electronics (3A201/.a)",
+    title: "Technology for use of 3A001.e/.g, 3A201, 3A225–3A234 electronics",
     description:
-      "EU Annex I 3E201 — technology for the development or production of 3A201 nuclear-relevant electronics (high-voltage DC capacitors and analogues). NSG-derived; aerospace cross-control is thin.",
+      "EU Annex I 3E201 — technology, per the General Technology Note, for the 'use' of equipment specified in 3A001.e.2, 3A001.e.3, 3A001.g, 3A201, and 3A225 to 3A234 (energy-storage capacitors, superconductive electromagnets, pulsed-power thyristors, and the NSG-derived nuclear-relevant electronics). NSG-derived use-technology control.",
     controlReasons: ["NP"],
     crossReferenceTopic: null,
     sourceUrl: SOURCE_URL,
     asOfDate: ASOF,
-  },
-  {
-    code: "3E991",
-    jurisdiction: "EU_ANNEX_I",
-    title: "Catch-all technology for 3A/3B items below specific thresholds",
-    description:
-      "EU Annex I 3E991 — technology for the development, production, or use of 3A/3B items not captured at the .001-.005 thresholds. Anti-terrorism control rationale. Catch-all entry — operators with electronics-technology transfers to non-EU recipients should consult BAFA when the primary 3E001-3E003 sub-classifications fail to fit.",
-    controlReasons: ["AT"],
-    crossReferenceTopic: null,
-    sourceUrl: SOURCE_URL,
-    asOfDate: ASOF,
-  },
-
-  // ═══════════════════════════════════════════════════════════════════
-  // EU-autonomous AM-prefix Cat-3 additions (Delegated Reg. 2025/2003)
-  // ═══════════════════════════════════════════════════════════════════
-  {
-    code: "AM-3A-001",
-    jurisdiction: "EU_ANNEX_I",
-    title:
-      "On-board AI neural-network accelerators for spaceborne edge inference (EU-autonomous)",
-    description:
-      "EU Annex I AM-3A-001 — neural-network accelerator integrated circuits specially designed or rated for spaceborne on-board AI inference, with TPP > 800 OR die-area-normalised throughput above defined thresholds. Captures the on-board-edge-compute generation between commercial NPUs (Coral, Hailo) and the 3A090 advanced-computing tier. EU-autonomous entry (Delegated Reg. 2025/2003).",
-    controlReasons: ["NS"],
-    crossReferenceTopic: null,
-    sourceUrl: SOURCE_DELEG_2025_2003,
-    asOfDate: ASOF,
-    notes:
-      "AM-3A-001 is the EU's forward-looking entry for on-board-AI spaceborne payloads — distinct from the 3A090 advanced-computing tier in two ways: (1) lower TPP threshold (800 vs 4800), and (2) explicit spaceborne-rating requirement. Drafted in anticipation of the on-board EO/IR inference generation captured by AM-007 at the system level.",
-  },
-  {
-    code: "AM-3A-002",
-    jurisdiction: "EU_ANNEX_I",
-    title:
-      "Quantum-key-distribution receiver hardware for spaceborne secure-comms (EU-autonomous)",
-    description:
-      "EU Annex I AM-3A-002 — single-photon-detector arrays, polarisation analysers, and quantum-state-preparation hardware specifically designed for spaceborne quantum-key-distribution (QKD) receivers / transmitters. Captures the EuroQCI / SAGA / NESS-class QKD payload hardware supply. EU-autonomous entry (Delegated Reg. 2025/2003).",
-    controlReasons: ["NS"],
-    crossReferenceTopic: null,
-    sourceUrl: SOURCE_DELEG_2025_2003,
-    asOfDate: ASOF,
-  },
-  {
-    code: "AM-3A-003",
-    jurisdiction: "EU_ANNEX_I",
-    title: "Optical-clock atomic standards for spaceborne PNT (EU-autonomous)",
-    description:
-      "EU Annex I AM-3A-003 — optical atomic clocks (Sr-87 lattice, Yb-171 ion, neutral-atom variants) specially designed for spaceborne use, with Allan-variance ≤ 1×10⁻¹⁵ at 1 s averaging time. Next-generation PNT-payload supply (anticipated for Galileo G2 second-generation and ESA in-orbit demonstrator). EU-autonomous entry (Delegated Reg. 2025/2003) supplementing the 3A001.h.1 atomic-clock control.",
-    controlReasons: ["NS"],
-    crossReferenceTopic: "gnss-receivers-imus-star-trackers",
-    sourceUrl: SOURCE_DELEG_2025_2003,
-    asOfDate: ASOF,
-    notes:
-      "Optical-clock TRL is still ≤ 5 for spaceborne hardware (2026), but the EU drafted AM-3A-003 to lock in the controls before the technology matures into commercial supply. Cross-reference with 3A001.h.1 — the rubidium/cesium/H-maser tier remains under Wassenaar Cat-3, while optical clocks now sit under EU-autonomous AM-3A-003.",
   },
 ];
 

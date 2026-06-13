@@ -1,26 +1,30 @@
 /**
  * Sprint Z32a (Tier 4) — EU Annex I Category 3 (Electronics) coverage tests.
  *
- * Verifies that the Cat-3 enumeration covers the headline-ECCN segments
- * required by the Z32a brief:
+ * Verifies that the Cat-3 enumeration covers the headline-ECCN segments,
+ * re-verified against the current 02021R0821 text (2026-06-13 base-corpus
+ * audit — see docs/CAELEX-TRADE-BASE-CORPUS-AUDIT-2026-06-13.md):
  *
- *   - 3A001.a.* (general & rad-hard ICs, incl. .a.2 TID-tolerance gate)
- *   - 3A001.b.* (discrete & power semiconductors, GaN HEMTs)
- *   - 3A001.c.* (memory)
- *   - 3A001.d.* (opto-electronic devices)
- *   - 3A001.h.* (atomic-frequency standards)
- *   - 3A090 / 3A091 / 3A092 (advanced-computing AI + EUV)
+ *   - 3A001.a.* (microprocessors a.2/a.3, ADC/DAC a.5, FPGA/CPLD a.7,
+ *                custom-function a.10, FFT a.12; rad-hard ICs = a.1 in
+ *                eu-annex-i.ts)
+ *   - 3A001.b.* (vacuum/TWT b.1, discrete transistors b.3, solid-state
+ *                amps b.4, tunable filters b.5)
+ *   - 3A001.c.* (acoustic wave devices)
+ *   - 3A001.d.* (superconductive devices)
+ *   - 3A001.e.* (batteries e.1, capacitors e.2, solar cells e.4)
+ *   - 3A001.h   (power semiconductor switches)
+ *   - 3A002.g   (atomic-frequency standards)
+ *   - 3A090 (advanced-computing AI; EUV litho tooling = 3B001.f)
  *   - 3A2xx (nuclear-relevant)
- *   - 3A501 / 3A611 (EU-autonomous cyber-surveillance + mil)
+ *   - 3A501 (EU-autonomous quantum/cryogenic electronics, 2025 update)
  *   - 3B (production equipment)
  *   - 3C (materials)
  *   - 3D (software)
  *   - 3E (technology)
- *   - AM-3A-* (EU-autonomous space-specific additions)
  *
  * Sources:
- *   - Reg. (EU) 2021/821 Annex I, Cat 3 (consolidated text)
- *   - Delegated Reg. (EU) 2025/2003 (OJ L 2025/2003)
+ *   - Reg. (EU) 2021/821 Annex I, Cat 3 (consolidated 02021R0821 text)
  *   - Z25 Tier-3 parametric attribute `radHardenedTID_krad`
  *
  * SPDX-License-Identifier: LicenseRef-Caelex-Proprietary
@@ -40,7 +44,6 @@ import { CONTROL_LIST_CROSS_WALK } from "@/lib/comply-v2/trade/classification/co
 const HEADLINE_3A001_CODES = [
   "3A001.a.2",
   "3A001.a.3",
-  "3A001.a.4",
   "3A001.a.5",
   "3A001.a.7",
   "3A001.a.10",
@@ -51,28 +54,22 @@ const HEADLINE_3A001_CODES = [
   "3A001.b.5",
   "3A001.c.1",
   "3A001.d.1",
-  "3A001.d.3",
+  "3A001.d.2",
   "3A001.e.1",
   "3A001.e.2",
-  "3A001.h.1",
-  "3A001.h.2",
+  "3A001.e.4",
+  "3A001.h",
 ] as const;
 
-const ADVANCED_COMPUTING_CODES = [
-  "3A090.a",
-  "3A090.b",
-  "3A091",
-  "3A092",
-] as const;
+const ADVANCED_COMPUTING_CODES = ["3A090.a", "3A090.b"] as const;
 
 const PRODUCTION_EQUIPMENT_CODES = [
   "3B001.a",
-  "3B001.c",
-  "3B001.d",
+  "3B001.b",
   "3B001.e",
+  "3B001.f",
   "3B001.h",
   "3B002",
-  "3B991",
 ] as const;
 
 const MATERIAL_CODES = [
@@ -91,7 +88,6 @@ const SOFTWARE_CODES = [
   "3D004",
   "3D090",
   "3D101",
-  "3D991",
 ] as const;
 
 const TECHNOLOGY_CODES = [
@@ -101,10 +97,7 @@ const TECHNOLOGY_CODES = [
   "3E090",
   "3E101",
   "3E201",
-  "3E991",
 ] as const;
-
-const AM_PREFIX_CODES = ["AM-3A-001", "AM-3A-002", "AM-3A-003"] as const;
 
 const NUCLEAR_CODES = ["3A201.a", "3A225", "3A228"] as const;
 
@@ -115,20 +108,18 @@ const ALL_CODES = [
   ...MATERIAL_CODES,
   ...SOFTWARE_CODES,
   ...TECHNOLOGY_CODES,
-  ...AM_PREFIX_CODES,
   ...NUCLEAR_CODES,
   "3A002.a",
   "3A002.c",
   "3A002.d",
   "3A002.g",
   "3A501",
-  "3A611",
 ] as const;
 
 // ─── 1. Headline 3A001 presence ──────────────────────────────────────────
 
 describe("Z32a — 3A001 headline ICs", () => {
-  it("all 18 headline 3A001 ECCNs are present", () => {
+  it("all 17 headline 3A001 ECCNs are present", () => {
     for (const code of HEADLINE_3A001_CODES) {
       const entry = findEuAnnexICat3Entry(code);
       expect(entry, `missing Cat-3 entry for ${code}`).toBeDefined();
@@ -136,24 +127,24 @@ describe("Z32a — 3A001 headline ICs", () => {
     }
   });
 
-  it("3A001.a.5 (space-grade rad-hard) carries NS + MT control reasons", () => {
+  it("3A001.a.5 (ADC/DAC) is present and NS-controlled", () => {
     const entry = findEuAnnexICat3Entry("3A001.a.5");
     expect(entry).toBeDefined();
     expect(entry?.controlReasons).toContain("NS");
-    expect(entry?.controlReasons).toContain("MT");
+    expect(entry?.title.toLowerCase()).toMatch(/converter|adc|dac/);
   });
 
-  it("3A001.h.1 (atomic-frequency standards) uses gnss-receivers-imus-star-trackers topic", () => {
-    const entry = findEuAnnexICat3Entry("3A001.h.1");
+  it("3A002.g (atomic-frequency standards) uses gnss-receivers-imus-star-trackers topic", () => {
+    const entry = findEuAnnexICat3Entry("3A002.g");
     expect(entry?.crossReferenceTopic).toBe(
       "gnss-receivers-imus-star-trackers",
     );
   });
 
-  it("3A001.b.1 (GaN/GaAs HEMTs) is captured", () => {
+  it("3A001.b.1 (vacuum electronic devices / TWTs) is captured", () => {
     const entry = findEuAnnexICat3Entry("3A001.b.1");
     expect(entry).toBeDefined();
-    expect(entry?.title.toLowerCase()).toMatch(/gan|gaas|hemt/);
+    expect(entry?.title.toLowerCase()).toMatch(/vacuum|travelling|twt/);
   });
 });
 
@@ -166,13 +157,13 @@ describe("Z32a — 3A090 advanced-computing + lithography", () => {
     expect(entry?.description).toMatch(/TPP|Total Processing Performance/);
   });
 
-  it("3A092 (EUV lithography) is captured", () => {
-    const entry = findEuAnnexICat3Entry("3A092");
+  it("3B001.f (EUV / DUV lithography) is captured", () => {
+    const entry = findEuAnnexICat3Entry("3B001.f");
     expect(entry).toBeDefined();
     expect(entry?.description).toMatch(/EUV|13\.5\s*nm/i);
   });
 
-  it("all 3A090/.b/3A091/3A092 codes are present", () => {
+  it("all 3A090.a/.b advanced-computing codes are present", () => {
     for (const code of ADVANCED_COMPUTING_CODES) {
       const entry = findEuAnnexICat3Entry(code);
       expect(entry, `missing entry for ${code}`).toBeDefined();
@@ -214,38 +205,6 @@ describe("Z32a — 3B/3C/3D/3E full enumeration", () => {
   it("3D101 + 3E101 carry MTCR-II category", () => {
     expect(findEuAnnexICat3Entry("3D101")?.mtcrCategory).toBe("II");
     expect(findEuAnnexICat3Entry("3E101")?.mtcrCategory).toBe("II");
-  });
-});
-
-// ─── 4. EU-autonomous AM additions ───────────────────────────────────────
-
-describe("Z32a — AM-3A-* EU-autonomous additions", () => {
-  it("all 3 AM-3A-* codes are present", () => {
-    for (const code of AM_PREFIX_CODES) {
-      const entry = findEuAnnexICat3Entry(code);
-      expect(entry, `missing ${code}`).toBeDefined();
-    }
-  });
-
-  it("all AM-3A-* entries cite the Delegated Reg. 2025/2003 source URL", () => {
-    for (const code of AM_PREFIX_CODES) {
-      const entry = findEuAnnexICat3Entry(code);
-      expect(entry?.sourceUrl).toMatch(/2025\/2003/);
-    }
-  });
-
-  it("AM-3A-001 (on-board AI accelerators) is captured", () => {
-    const entry = findEuAnnexICat3Entry("AM-3A-001");
-    expect(entry?.description.toLowerCase()).toMatch(
-      /neural.network|inference|on-board/,
-    );
-  });
-
-  it("AM-3A-003 (optical clocks) cross-references GNSS topic", () => {
-    const entry = findEuAnnexICat3Entry("AM-3A-003");
-    expect(entry?.crossReferenceTopic).toBe(
-      "gnss-receivers-imus-star-trackers",
-    );
   });
 });
 
@@ -402,11 +361,11 @@ describe("Z34-Cat3 — parametric cross-walk additions", () => {
     expect(typeof pred?.value).toBe("number");
   });
 
-  it("EU:3A001.a.5 exists with rad-hard predicates", () => {
+  it("EU:3A001.a.1 exists with rad-hard predicates", () => {
     const entry = CONTROL_LIST_CROSS_WALK.find(
-      (e) => e.canonicalId === "EU:3A001.a.5",
+      (e) => e.canonicalId === "EU:3A001.a.1",
     );
-    expect(entry, "EU:3A001.a.5 missing from cross-walk").toBeDefined();
+    expect(entry, "EU:3A001.a.1 missing from cross-walk").toBeDefined();
     expect(entry?.regime).toBe("EU-ANNEX-I");
     const tidPred = entry?.predicates.find(
       (p) => p.attribute === "radHardenedTID_krad",
@@ -422,20 +381,20 @@ describe("Z34-Cat3 — parametric cross-walk additions", () => {
     expect(entry?.predicates.length).toBeGreaterThan(0);
   });
 
-  it("EU:3A001.h.1 exists (atomic-frequency standard entry)", () => {
+  it("EU:3A002.g exists (atomic-frequency standard entry)", () => {
     const entry = CONTROL_LIST_CROSS_WALK.find(
-      (e) => e.canonicalId === "EU:3A001.h.1",
+      (e) => e.canonicalId === "EU:3A002.g",
     );
-    expect(entry, "EU:3A001.h.1 missing from cross-walk").toBeDefined();
+    expect(entry, "EU:3A002.g missing from cross-walk").toBeDefined();
     expect(entry?.regime).toBe("EU-ANNEX-I");
   });
 
   it("all Cat-3 cross-walk entries are tagged regime = 'EU-ANNEX-I'", () => {
     for (const id of [
       "EU:3A001.a.2",
-      "EU:3A001.a.5",
+      "EU:3A001.a.1",
       "EU:3A090.a",
-      "EU:3A001.h.1",
+      "EU:3A002.g",
     ] as const) {
       const entry = CONTROL_LIST_CROSS_WALK.find((e) => e.canonicalId === id);
       expect(entry?.regime).toBe("EU-ANNEX-I");
