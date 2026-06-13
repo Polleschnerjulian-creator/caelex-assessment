@@ -2548,8 +2548,8 @@ export const CONTROL_LIST_CROSS_WALK: ControlListEntry[] = [
   //   - 6A003.b     imaging cameras via frame-rate proxy
   //                 (signalBandwidthMHz on the read-out interface)
   //   - 6A004.a     mirrors via apertureMM threshold
-  //   - 6A005.b     semiconductor lasers via transmitPowerW
-  //   - 6A005.c.2   fiber lasers via transmitPowerW
+  //   - 6A005.d     semiconductor (diode) lasers via transmitPowerW
+  //   - 6A005.a     fiber/solid-state CW lasers via transmitPowerW
   //   - 6A006       magnetometers via itemClass + sensor-class
   //   - 6A008.j     imaging radar (SAR) via groundResolutionMeters
   //                 (the ICEYE / Capella / Umbra tripwire)
@@ -2732,22 +2732,23 @@ export const CONTROL_LIST_CROSS_WALK: ControlListEntry[] = [
   },
 
   {
-    canonicalId: "EU:6A005.b",
+    canonicalId: "EU:6A005.d",
     regime: "EU-ANNEX-I",
     category: "6",
     productGroup: "A",
     entryNumber: "005",
-    subpara: "b",
-    title: "Semiconductor lasers — high-power diode lasers (EU Cat 6)",
+    subpara: "d",
+    title: "Other lasers — semiconductor (diode) lasers (EU Cat 6)",
     predicates: [
       {
         attribute: "itemClass",
         op: "prefix",
         value: "laser.semiconductor",
       },
-      // Output-power tripwire: semiconductor lasers above 1 W CW
-      // output typically drive 6A005.b capture for industrial /
-      // comms applications. Below 1 W typically EAR99.
+      // Output-power tripwire: semiconductor diode lasers above 1 W CW
+      // output typically drive 6A005.d capture for industrial / comms
+      // applications. Below 1 W typically EAR99. Semiconductor lasers are
+      // confined to 6A005.d by the regulation's Nota Bene — never .a/.b/.c.
       {
         attribute: "transmitPowerW",
         op: "gte",
@@ -2759,29 +2760,29 @@ export const CONTROL_LIST_CROSS_WALK: ControlListEntry[] = [
     seeAlso: [
       {
         regime: "EAR-CCL",
-        id: "6A005.b",
+        id: "6A005.d",
         relationship: "analogous",
       },
       {
         regime: "WASSENAAR",
-        id: "6.A.5.b",
+        id: "6.A.5.d",
         relationship: "derived_from",
       },
     ],
-    citation: "Reg. (EU) 2021/821 Annex I, Cat. 6, 6A005.b",
+    citation: "Reg. (EU) 2021/821 Annex I, Cat. 6, 6A005.d",
     validFrom: "2021-09-09",
     notes:
-      "Captures the LiDAR illumination + laser-comm pump-diode market. The transmitPowerW threshold is the discriminator vs sub-watt telecom-grade diodes.",
+      "Re-lettered 2026-06-13 from EU:6A005.b: semiconductor lasers are ONLY specified in 6A005.d (Nota Bene to 6A005), not .a/.b/.c. Captures the LiDAR illumination + laser-comm pump-diode market. The transmitPowerW threshold is the discriminator vs sub-watt telecom-grade diodes.",
   },
 
   {
-    canonicalId: "EU:6A005.c.2",
+    canonicalId: "EU:6A005.a",
     regime: "EU-ANNEX-I",
     category: "6",
     productGroup: "A",
     entryNumber: "005",
-    subpara: "c.2",
-    title: "Fiber lasers — high-power CW (EU Cat 6)",
+    subpara: "a",
+    title: "Non-tunable CW lasers — high-power fiber/solid-state (EU Cat 6)",
     predicates: [
       {
         attribute: "itemClass",
@@ -2789,7 +2790,10 @@ export const CONTROL_LIST_CROSS_WALK: ControlListEntry[] = [
         value: "laser.fiber",
       },
       // Yb-doped fiber laser CW output threshold. ISL transmitters
-      // routinely operate at 5-20 W; this threshold catches them.
+      // routinely operate at 5-20 W; this threshold catches them. Fiber is
+      // solid-state → a non-tunable CW fiber laser is 6A005.a (the .d
+      // Nota-Bene carve-out lists semiconductor/excimer/chemical/CO/CO2/
+      // Nd:glass — fiber/solid-state is NOT carved out, so it stays .a).
       {
         attribute: "transmitPowerW",
         op: "gte",
@@ -2801,19 +2805,19 @@ export const CONTROL_LIST_CROSS_WALK: ControlListEntry[] = [
     seeAlso: [
       {
         regime: "EAR-CCL",
-        id: "6A005.c.2",
+        id: "6A005.a",
         relationship: "analogous",
       },
       {
         regime: "WASSENAAR",
-        id: "6.A.5.c.2",
+        id: "6.A.5.a",
         relationship: "derived_from",
       },
     ],
-    citation: "Reg. (EU) 2021/821 Annex I, Cat. 6, 6A005.c.2",
+    citation: "Reg. (EU) 2021/821 Annex I, Cat. 6, 6A005.a",
     validFrom: "2021-09-09",
     notes:
-      "Mynaric Condor, Tesat SCOT80 fiber-laser transmitters fall here. 'ITAR-free' marketing requires verified zero US-DNA — see Caelex De-Minimis-Calculator.",
+      "Re-lettered 2026-06-13 from EU:6A005.c.2 (an invented medium-based child): a CW fiber/solid-state laser is 6A005.a (non-tunable CW). Mynaric Condor, Tesat SCOT80 fiber-laser transmitters fall here. 'ITAR-free' marketing requires verified zero US-DNA — see Caelex De-Minimis-Calculator.",
   },
 
   {

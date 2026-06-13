@@ -72,8 +72,11 @@ const ASOF = "2026-05-23";
 // Base-corpus correctness audit (2026-06-13): re-verified the Cat-6
 // sub-paragraph lettering against the current EUR-Lex 02021R0821 /
 // Wassenaar WA-LIST text and corrected several wrong-item mislabels
-// (6A002.d, 6A002.e→.f, 6A004.b/.c/.d/.e/.f). Entries touched by the
-// audit carry this as-of date.
+// (6A002.d, 6A002.e→.f, 6A004.b/.c/.d/.e/.f) and migrated the 6A005
+// laser block from the pre-2014 medium-based scheme to the current
+// regime-based scheme (.a CW · .b pulsed · .c tunable · .d other media ·
+// .e components · .f optical equipment · .g acoustic detection).
+// Entries touched by the audit carry this as-of date.
 const ASOF_AUDIT = "2026-06-13";
 
 export const EU_ANNEX_I_CAT6_COVERAGE: ClassificationCoverage = {
@@ -87,7 +90,7 @@ export const EU_ANNEX_I_CAT6_COVERAGE: ClassificationCoverage = {
   ],
   asOfDate: ASOF,
   officialTotalEntriesApprox: 95,
-  caelexCoverageCount: 92,
+  caelexCoverageCount: 90,
 };
 
 export const EU_ANNEX_I_CAT6_ENTRIES: ClassificationEntry[] = [
@@ -577,130 +580,126 @@ export const EU_ANNEX_I_CAT6_ENTRIES: ClassificationEntry[] = [
   },
 
   // ─── 6A005 — Lasers ───────────────────────────────────────────────
-  // KNOWN FINDING (base-corpus audit 2026-06-13, NOT YET MIGRATED):
-  // the .a-.g sub-paragraphs below use the pre-2014 MEDIUM-based scheme
-  // (gas / semiconductor / solid-state / dye / free-electron / chemical /
-  // components). The current EUR-Lex 02021R0821 / Wassenaar 6A005 is
-  // REGIME-based: .a non-tunable CW, .b non-tunable pulsed, .c tunable,
-  // .d other (semiconductor/CO/CO2/excimer/chemical/Nd:glass), .e
-  // components, .f optical equipment, .g laser acoustic detection. Every
-  // laser here stays CONTROLLED under 6A005 either way (right item-family,
-  // right control status) — the inaccuracy is the sub-LETTER only, unlike
-  // the wrong-ITEM fixes applied above. Re-lettering is DEFERRED because
-  // 6A005.b + 6A005.c.2 are predicate-pinned in control-list-cross-walk.ts
-  // (transmitPowerW / fiber-5W) with pinned tests; a partial relabel would
-  // leave an incoherent half-migrated block, and a full migration is a
-  // coordinated cross-walk + test change to be verified against the
-  // golden-set. Tracked as a follow-up.
+  // MIGRATED 2026-06-13 (base-corpus audit follow-up): the .a-.g
+  // sub-paragraphs were re-lettered from the pre-2014 MEDIUM-based
+  // scheme (gas / semiconductor / solid-state / dye / free-electron /
+  // chemical / components) to the current REGIME-based EUR-Lex
+  // 02021R0821 / Wassenaar 6A005 scheme:
+  //   .a non-tunable continuous-wave (CW)   .b non-tunable pulsed
+  //   .c tunable                            .d other lasers
+  //   .e components   .f optical equipment  .g laser acoustic detection
+  // Per the regulation's Nota Bene, the media excimer / semiconductor /
+  // chemical / CO / CO2 / non-repetitive-pulsed Nd:glass are ONLY
+  // specified in 6A005.d — NOT controlled under .a/.b/.c. The invented
+  // .c.1 (pulsed Nd:YAG) and .c.2 (fiber) children were removed: pulsed
+  // solid-state is .b, CW fiber/solid-state is .a. The coupled parametric
+  // cross-walk moved in lock-step — the semiconductor-CW screen now pins
+  // EU:6A005.d, the fiber-CW screen pins EU:6A005.a (see
+  // control-list-cross-walk.ts). Every laser stays CONTROLLED under 6A005;
+  // only the sub-LETTER changed. Source: Reg. (EU) 2021/821 Annex I,
+  // Cat. 6, 6A005 (consolidated) + Wassenaar WA-LIST.
   {
     code: "6A005",
     jurisdiction: "EU_ANNEX_I",
     title: "Lasers — heading",
     description:
-      "EU Annex I Cat 6, 6A005 — heading entry for lasers (CW, pulsed, semiconductor, fiber, solid-state, gas) above defined wavelength/power thresholds. Includes ground-station uplink, ISL payloads, laser ranging, lidar.",
+      "EU Annex I Cat 6, 6A005 — heading entry for 'lasers', components and optical equipment, controlled by regime (CW / pulsed / tunable / other) plus parametric wavelength·power·energy thresholds. Includes ground-station uplink, ISL payloads, laser ranging, lidar.",
     controlReasons: ["NS"],
     crossReferenceTopic: "optical-comm-terminals",
     sourceUrl: SOURCE_URL,
-    asOfDate: ASOF,
+    asOfDate: ASOF_AUDIT,
   },
   {
     code: "6A005.a",
     jurisdiction: "EU_ANNEX_I",
-    title: "Gas lasers (CW + pulsed)",
+    title: "Non-tunable continuous-wave (CW) lasers",
     description:
-      "EU Annex I Cat 6, 6A005.a — gas lasers above defined output-power and wavelength thresholds. CO₂, excimer, argon-ion legacy systems.",
+      "EU Annex I Cat 6, 6A005.a — non-'tunable' 'continuous wave' lasers, sub-divided by output-wavelength band each with an output-power threshold. Captures CW fiber + other solid-state ISL transmitters (the dominant laser-comm class).",
     controlReasons: ["NS"],
-    crossReferenceTopic: null,
+    crossReferenceTopic: "optical-comm-terminals",
     sourceUrl: SOURCE_URL,
-    asOfDate: ASOF,
+    asOfDate: ASOF_AUDIT,
+    notes:
+      "Base-corpus audit 2026-06-13: re-lettered from the pre-2014 'gas lasers' label. The coupled cross-walk fiber-CW power screen (transmitPowerW ≥ 5 W) pins EU:6A005.a here. Semiconductor lasers are NOT .a — they are 6A005.d per the regulation's Nota Bene.",
   },
   {
     code: "6A005.b",
     jurisdiction: "EU_ANNEX_I",
-    title: "Semiconductor lasers",
+    title: "Non-tunable pulsed lasers",
     description:
-      "EU Annex I Cat 6, 6A005.b — semiconductor (diode) lasers above defined output-power and beam-quality thresholds. Drives the laser-comm + LiDAR illumination market.",
+      "EU Annex I Cat 6, 6A005.b — non-'tunable' 'pulsed' lasers, sub-divided by output-wavelength band with peak-power / pulse-energy / pulse-duration thresholds. Captures pulsed solid-state ranging lasers (e.g. repetitively-pulsed Nd:YAG satellite-laser-ranging ground stations).",
     controlReasons: ["NS"],
-    crossReferenceTopic: "optical-comm-terminals",
+    crossReferenceTopic: null,
     sourceUrl: SOURCE_URL,
-    asOfDate: ASOF,
+    asOfDate: ASOF_AUDIT,
+    notes:
+      "Base-corpus audit 2026-06-13: re-lettered from the pre-2014 'semiconductor lasers' label. The removed invented .c.1 'pulsed Nd:YAG' child is a pulsed solid-state laser captured here.",
   },
   {
     code: "6A005.c",
     jurisdiction: "EU_ANNEX_I",
-    title: "Solid-state lasers",
+    title: "Tunable lasers",
     description:
-      "EU Annex I Cat 6, 6A005.c — solid-state lasers (Nd:YAG, Yb:fiber, Ti:sapphire) above defined output-power. The dominant ISL-payload laser-class.",
-    controlReasons: ["NS"],
-    crossReferenceTopic: "optical-comm-terminals",
-    sourceUrl: SOURCE_URL,
-    asOfDate: ASOF,
-  },
-  {
-    code: "6A005.c.1",
-    jurisdiction: "EU_ANNEX_I",
-    title: "Pulsed Nd:YAG lasers above defined energy",
-    description:
-      "EU Annex I Cat 6, 6A005.c.1 — pulsed Nd:YAG lasers above defined energy/pulse + pulse-rep-rate. Used for satellite laser-ranging ground stations.",
+      "EU Annex I Cat 6, 6A005.c — 'tunable' lasers above output-power / tuning-range thresholds; includes dye + other liquid lasers (moved here from the pre-2014 6A005.d). Largely laboratory / spectroscopy.",
     controlReasons: ["NS"],
     crossReferenceTopic: null,
     sourceUrl: SOURCE_URL,
-    asOfDate: ASOF,
-  },
-  {
-    code: "6A005.c.2",
-    jurisdiction: "EU_ANNEX_I",
-    title: "Fiber lasers above defined CW output",
-    description:
-      "EU Annex I Cat 6, 6A005.c.2 — fiber lasers (Yb-doped, Er-doped) above CW output-power threshold. The dominant ISL transmitter type.",
-    controlReasons: ["NS"],
-    crossReferenceTopic: "optical-comm-terminals",
-    sourceUrl: SOURCE_URL,
-    asOfDate: ASOF,
+    asOfDate: ASOF_AUDIT,
+    notes:
+      "Base-corpus audit 2026-06-13: re-lettered from the pre-2014 'solid-state lasers' label. Per the WA restructure, dye / other liquid lasers (old 6A005.d) are now under 6A005.c.",
   },
   {
     code: "6A005.d",
     jurisdiction: "EU_ANNEX_I",
-    title: "Dye lasers and other tunable lasers",
+    title:
+      "Other lasers (semiconductor / excimer / chemical / CO / CO₂ / Nd:glass)",
     description:
-      "EU Annex I Cat 6, 6A005.d — dye + tunable lasers above output-power / tuning-range thresholds. Largely laboratory.",
+      "EU Annex I Cat 6, 6A005.d — 'other' lasers not specified by .a/.b/.c: the media the regulation's Nota Bene confines here — semiconductor (diode), excimer, chemical (HF/DF/COIL), CO, CO₂ and non-repetitive-pulsed Nd:glass lasers — above their respective thresholds. Drives the laser-comm + LiDAR diode-illumination market.",
     controlReasons: ["NS"],
-    crossReferenceTopic: null,
+    crossReferenceTopic: "optical-comm-terminals",
     sourceUrl: SOURCE_URL,
-    asOfDate: ASOF,
+    asOfDate: ASOF_AUDIT,
+    notes:
+      "Base-corpus audit 2026-06-13: re-lettered from the pre-2014 'dye/tunable lasers' label. The coupled cross-walk semiconductor-diode CW power screen (transmitPowerW ≥ 1 W) pins EU:6A005.d here — semiconductor lasers are ONLY specified in 6A005.d (Nota Bene), never .a/.b/.c.",
   },
   {
     code: "6A005.e",
     jurisdiction: "EU_ANNEX_I",
-    title: "Free-electron lasers",
+    title: "Components for 6A005 lasers",
     description:
-      "EU Annex I Cat 6, 6A005.e — free-electron lasers. Specialty research; minimal space applications.",
+      "EU Annex I Cat 6, 6A005.e — 'components' specially designed for controlled 6A005 lasers: optical mirrors, transmissive or partially-transmissive optical / electro-optical components, and other laser components above the regulation's thresholds.",
     controlReasons: ["NS"],
     crossReferenceTopic: null,
     sourceUrl: SOURCE_URL,
-    asOfDate: ASOF,
+    asOfDate: ASOF_AUDIT,
+    notes:
+      "Base-corpus audit 2026-06-13: re-lettered from the pre-2014 'free-electron lasers' label. 6A005.e = laser components (e.g. .e.2 = optical mirrors / electro-optical components specially designed for controlled lasers).",
   },
   {
     code: "6A005.f",
     jurisdiction: "EU_ANNEX_I",
-    title: "Chemical lasers (high-energy)",
+    title: "Optical equipment for lasers",
     description:
-      "EU Annex I Cat 6, 6A005.f — chemical lasers (HF, DF, COIL) above output-power threshold. Defense-oriented.",
+      "EU Annex I Cat 6, 6A005.f — laser 'optical equipment': beam-combination / phasing equipment, phase conjugators, and active-optics beam control specially designed for high-power laser systems.",
     controlReasons: ["NS"],
     crossReferenceTopic: null,
     sourceUrl: SOURCE_URL,
-    asOfDate: ASOF,
+    asOfDate: ASOF_AUDIT,
+    notes:
+      "Base-corpus audit 2026-06-13: re-lettered from the pre-2014 'chemical lasers' label (chemical lasers are now a 6A005.d medium). 6A005.f = laser optical equipment.",
   },
   {
     code: "6A005.g",
     jurisdiction: "EU_ANNEX_I",
-    title: "Specially designed laser components",
+    title: "Laser acoustic detection equipment",
     description:
-      "EU Annex I Cat 6, 6A005.g — components 'specially designed' for any 6A005 laser: pumping chambers, Q-switches, beam-quality monitors. Catches the supplier ecosystem.",
+      "EU Annex I Cat 6, 6A005.g — 'laser' acoustic detection equipment (laser-based remote acoustic / vibration sensing) above the regulation's stand-off and sensitivity thresholds.",
     controlReasons: ["NS"],
     crossReferenceTopic: null,
     sourceUrl: SOURCE_URL,
-    asOfDate: ASOF,
+    asOfDate: ASOF_AUDIT,
+    notes:
+      "Base-corpus audit 2026-06-13: re-lettered from the pre-2014 'specially designed components' label (components are now 6A005.e). 6A005.g = laser acoustic detection equipment.",
   },
 
   // ─── 6A006 — Magnetometers ─────────────────────────────────────────

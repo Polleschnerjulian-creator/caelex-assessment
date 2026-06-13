@@ -9,7 +9,7 @@
  *   2. Each entry conforms to the ClassificationEntry schema.
  *   3. The companion parametric cross-walk additions (Z34-Cat6
  *      section) are present for the SPACE-CRITICAL codes (6A002.a.4,
- *      6A002.b, 6A003.b, 6A004.a, 6A005.b, 6A005.c.2, 6A006,
+ *      6A002.b, 6A003.b, 6A004.a, 6A005.a, 6A005.d, 6A006,
  *      6A008.j).
  *   4. The helper lookup functions work end-to-end.
  *   5. Coverage metadata matches the entry count.
@@ -70,8 +70,10 @@ const Z34_CROSS_WALK_IDS = [
   "EU:6A002.b",
   "EU:6A003.b",
   "EU:6A004.a",
-  "EU:6A005.b",
-  "EU:6A005.c.2",
+  // 6A005 regime-migration (2026-06-13): fiber-CW screen → .a (non-tunable
+  // CW), semiconductor-diode CW screen → .d (the Nota-Bene 'other' media).
+  "EU:6A005.a",
+  "EU:6A005.d",
   "EU:6A006",
   "EU:6A008.j",
 ] as const;
@@ -237,21 +239,25 @@ describe("Z34-Cat6 — parametric cross-walk additions", () => {
     expect(predicate?.op).toBe("lte");
   });
 
-  it("EU:6A005.b entry uses transmitPowerW predicate", () => {
+  // Semiconductor diode lasers are confined to 6A005.d by the regulation's
+  // Nota Bene (NOT .a/.b/.c); the CW-power screen pins EU:6A005.d at ≥ 1 W.
+  it("EU:6A005.d entry (semiconductor-diode CW screen) uses transmitPowerW predicate", () => {
     const entry = CONTROL_LIST_CROSS_WALK.find(
-      (e) => e.canonicalId === "EU:6A005.b",
+      (e) => e.canonicalId === "EU:6A005.d",
     );
     const predicate = entry?.predicates.find(
       (p) => p.attribute === "transmitPowerW",
     );
-    expect(predicate, "EU:6A005.b missing transmitPowerW").toBeDefined();
+    expect(predicate, "EU:6A005.d missing transmitPowerW").toBeDefined();
     expect(predicate?.op).toBe("gte");
     expect(predicate?.value).toBe(1);
   });
 
-  it("EU:6A005.c.2 fiber laser threshold is at 5 W (ISL-range)", () => {
+  // Fiber lasers are solid-state CW → 6A005.a (non-tunable CW); the ISL-range
+  // power screen pins EU:6A005.a at ≥ 5 W.
+  it("EU:6A005.a fiber laser threshold is at 5 W (ISL-range)", () => {
     const entry = CONTROL_LIST_CROSS_WALK.find(
-      (e) => e.canonicalId === "EU:6A005.c.2",
+      (e) => e.canonicalId === "EU:6A005.a",
     );
     const predicate = entry?.predicates.find(
       (p) => p.attribute === "transmitPowerW",
