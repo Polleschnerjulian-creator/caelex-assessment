@@ -106,6 +106,24 @@ const HIGH_PAYLOAD: DatasheetApplyPayload = {
       rationale: "Rad-hardened bus components.",
     },
   ],
+  fileName: "Star-Tracker_ST400.pdf",
+};
+
+/** A star-tracker payload whose top suggestion is a MISLEADING code title. */
+const STAR_TRACKER_PAYLOAD: DatasheetApplyPayload = {
+  attributes: [{ attribute: "isRadHardened", value: true, confidence: "low" }],
+  suggestions: [
+    {
+      code: "Item-1.A.1",
+      canonicalId: "MTCR:Item-1.A.1",
+      regime: "MTCR-ANNEX",
+      // The bug: this CODE title used to become the item name.
+      title: "Complete rocket systems (incl. ballistic, SLV, sounding rockets)",
+      confidence: "LOW",
+      rationale: "0 predicate(s) matched but 2 require additional data.",
+    },
+  ],
+  fileName: "Sodern-Auriga-StarTracker.pdf",
 };
 
 const EMPTY_PAYLOAD: DatasheetApplyPayload = {
@@ -137,6 +155,37 @@ describe("AssessFlow", () => {
     expect(screen.getByText(/Optical aperture/)).toBeTruthy();
     expect(screen.getByText("9A004")).toBeTruthy();
     expect(screen.getByRole("button", { name: /Bestätigen/i })).toBeTruthy();
+  });
+
+  it("Screen 2: defaults the Artikelname to the datasheet product (file name), NEVER the matched code title", async () => {
+    render(<AssessFlow />);
+    expect(capturedOnApply).toBeTruthy();
+    act(() => capturedOnApply?.(STAR_TRACKER_PAYLOAD));
+
+    const nameInput = (await screen.findByPlaceholderText(
+      /Reaction Wheel/i,
+    )) as HTMLInputElement;
+    // The name comes from the PRODUCT (file name, sans extension, tidied),
+    // not from the misleading "Complete rocket systems…" code title.
+    expect(nameInput.value).toBe("Sodern Auriga StarTracker");
+    expect(nameInput.value).not.toContain("Complete rocket systems");
+    expect(nameInput.value).not.toContain("Item-1.A.1");
+  });
+
+  it("Screen 2: leaves the Artikelname EMPTY (placeholder) when the payload carries no file name", async () => {
+    render(<AssessFlow />);
+    // Same misleading suggestion title, but no fileName on the payload.
+    const noFileName: DatasheetApplyPayload = {
+      ...STAR_TRACKER_PAYLOAD,
+      fileName: undefined,
+    };
+    act(() => capturedOnApply?.(noFileName));
+
+    const nameInput = (await screen.findByPlaceholderText(
+      /Reaction Wheel/i,
+    )) as HTMLInputElement;
+    // Empty so the operator types the real name — NEVER the code title.
+    expect(nameInput.value).toBe("");
   });
 
   it("Screen 2 honesty fallback: empty extraction shows a manual-code prompt, no guessed Bestätigen", async () => {

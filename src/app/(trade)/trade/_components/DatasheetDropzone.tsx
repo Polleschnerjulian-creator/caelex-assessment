@@ -21,6 +21,15 @@ interface ExtractedAttribute {
 export interface DatasheetApplyPayload {
   attributes: ExtractedAttribute[];
   suggestions: Suggestion[];
+  /**
+   * The uploaded datasheet's file name (e.g. "Star-Tracker-ST400.pdf").
+   * The wizard uses it to seed the editable Artikelname from the PRODUCT
+   * (the datasheet the operator chose), never from a matched control-code
+   * title — a code title like "Complete rocket systems…" must never become
+   * the item's name. Optional so attribute-only / programmatic callers can
+   * omit it (the wizard then leaves the name field empty for the operator).
+   */
+  fileName?: string;
 }
 
 const CONFIDENCE_CLS: Record<"HIGH" | "MEDIUM" | "LOW", string> = {
@@ -39,12 +48,14 @@ export function DatasheetDropzone({
   const [error, setError] = useState<string | null>(null);
   const [attributes, setAttributes] = useState<ExtractedAttribute[]>([]);
   const [suggestions, setSuggestions] = useState<Suggestion[]>([]);
+  const [fileName, setFileName] = useState<string>("");
   const [done, setDone] = useState(false);
 
   const handleFile = useCallback(async (file: File) => {
     setBusy(true);
     setError(null);
     setDone(false);
+    setFileName(file.name);
     try {
       const form = new FormData();
       form.append("file", file);
@@ -151,7 +162,7 @@ export function DatasheetDropzone({
                 ))}
               </ul>
               <button
-                onClick={() => onApply({ attributes, suggestions })}
+                onClick={() => onApply({ attributes, suggestions, fileName })}
                 className="mt-3 inline-flex items-center gap-1.5 rounded-lg bg-trade-accent px-4 py-2 text-xs font-semibold text-white transition hover:bg-trade-accent-strong"
               >
                 <Check className="h-3.5 w-3.5" /> Übernehmen
@@ -162,7 +173,7 @@ export function DatasheetDropzone({
           {/* When no suggestions: still show Übernehmen to accept attributes-only */}
           {suggestions.length === 0 && (
             <button
-              onClick={() => onApply({ attributes, suggestions })}
+              onClick={() => onApply({ attributes, suggestions, fileName })}
               className="inline-flex items-center gap-1.5 rounded-lg border border-trade-border bg-trade-bg-panel px-4 py-2 text-xs font-semibold text-trade-text-secondary transition hover:bg-trade-hover"
             >
               <Check className="h-3.5 w-3.5" /> Attribute übernehmen

@@ -139,12 +139,23 @@ export function composeDraft(
   }
 
   // When no clean candidates exist, surface the best possible-match
-  // (downgraded confidence) so the operator gets *something* to
-  // anchor on.
-  if (proposals.length === 0 && matcherResult.possibleMatches.length > 0) {
-    proposals.push(
-      possibleToProposal(matcherResult.possibleMatches[0], extraction.evidence),
-    );
+  // (downgraded confidence) so the operator gets *something* to anchor on.
+  //
+  // RANKING SAFETY: a possible-match with ZERO matched predicates carries
+  // NO positive signal — it is a pure "cannot rule out, populate attribute
+  // X to resolve" entry (e.g. a star tracker hitting MTCR Item-1.A.1 with
+  // both rangeKm + payloadKg unknown). Such a zero-signal possible must NOT
+  // outrank a genuine corpus-keyword text match below. So we only promote a
+  // possible-match to the primary slot here when it has ≥1 MATCHED predicate
+  // (a real corroborating signal). The zero-signal possible is still
+  // surfaced — just LATER, after the keyword matches — so it can never be
+  // the primary when a real text signal exists. attributesNeeded still
+  // captures its "needs payload/range" hint either way.
+  const bestPossible = matcherResult.possibleMatches[0] ?? null;
+  const bestPossibleHasSignal =
+    bestPossible !== null && bestPossible.matchedPredicates.length >= 1;
+  if (proposals.length === 0 && bestPossibleHasSignal) {
+    proposals.push(possibleToProposal(bestPossible, extraction.evidence));
   }
 
   // Always surface the top near-miss when there are no candidates —
@@ -162,6 +173,8 @@ export function composeDraft(
   // Wassenaar, Japan METI, India SCOMET, DE Ausfuhrliste). Deduped against
   // the parametric proposals. Suggestion-only + LOW + disclaimer travels —
   // it can never be a determination, so it carries no false-negative risk.
+  // This runs BEFORE the zero-signal-possible fallback so a genuine text
+  // match (≥2 distinct datasheet tokens) ranks ABOVE a 0-predicate possible.
   if (proposals.length < 3 && extraction.rawText.trim().length > 0) {
     const seen = new Set(proposals.map((p) => p.canonicalId));
     // Require >=2 distinct datasheet tokens per entry — a single common word
@@ -172,6 +185,16 @@ export function composeDraft(
       seen.add(m.entry.canonicalId);
       proposals.push(corpusMatchToProposal(m));
     }
+  }
+
+  // Last-resort fallback: a ZERO-signal possible-match (0 matched predicates).
+  // Only surfaced when we still have nothing else to anchor on — it is the
+  // "cannot rule out, needs more data" entry, never a positive determination.
+  // It ranks BELOW any corpus-keyword text signal above by construction
+  // (we push it after the keyword loop), so a real signal always wins the
+  // primary slot. attributesNeeded already carries its actionable hint.
+  if (proposals.length === 0 && bestPossible !== null) {
+    proposals.push(possibleToProposal(bestPossible, extraction.evidence));
   }
 
   const attributesNeeded = collectAttributesNeeded(matcherResult);

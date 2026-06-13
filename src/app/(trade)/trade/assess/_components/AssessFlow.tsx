@@ -84,6 +84,27 @@ function itemFromPayload(
   return { name, description: "", ...extra };
 }
 
+/**
+ * Derive an editable item-name DEFAULT from the datasheet the operator
+ * uploaded — never from a matched control-code title.
+ *
+ * Source of truth = the uploaded datasheet's file name (the closest thing to
+ * a product name we have client-side), with the file extension stripped and
+ * the common separators normalised to spaces ("Star-Tracker_ST400.pdf" →
+ * "Star Tracker ST400"). When no file name is available (attribute-only /
+ * programmatic callers) we return "" so the input keeps its placeholder and
+ * the operator types the real name. We deliberately do NOT fall back to
+ * `suggestions[0].title`: a code title is a classification, not a name.
+ */
+function productNameFromPayload(p: DatasheetApplyPayload): string {
+  const raw = p.fileName?.trim();
+  if (!raw) return "";
+  // Strip a trailing extension (".pdf", ".PDF", etc.) then tidy separators.
+  const base = raw.replace(/\.[a-z0-9]+$/i, "");
+  const cleaned = base.replace(/[_-]+/g, " ").replace(/\s+/g, " ").trim();
+  return cleaned;
+}
+
 export function AssessFlow() {
   const [step, setStep] = useState<Step>("upload");
   const [payload, setPayload] = useState<DatasheetApplyPayload | null>(null);
@@ -110,8 +131,14 @@ export function AssessFlow() {
   function handleApply(p: DatasheetApplyPayload) {
     setPayload(p);
     setError(null);
-    // Seed an editable item name from the top suggestion's title.
-    if (!name) setName(p.suggestions[0]?.title ?? "");
+    // Seed the editable Artikelname from the PRODUCT the operator uploaded —
+    // never from a matched control-code title. A code title like "Complete
+    // rocket systems (MTCR Item-1.A.1)" is a CLASSIFICATION, not the item's
+    // name; defaulting to it mislabels e.g. a star tracker as a rocket.
+    // Best available product-name source = the uploaded datasheet's file name
+    // (sans extension). When absent, leave the field EMPTY so the placeholder
+    // prompts the operator to type the real name.
+    if (!name) setName(productNameFromPayload(p));
     setStep("classify");
   }
 
@@ -120,7 +147,14 @@ export function AssessFlow() {
     setSubmitting(true);
     setError(null);
     try {
-      const item = itemFromPayload(payload, name.trim() || suggestion.title);
+      // Persist the operator-entered name. When blank, fall back to the
+      // product name derived from the datasheet (file name) — NEVER the
+      // matched code's title, which is a classification, not the item name.
+      // A final neutral placeholder keeps the persisted item named when even
+      // the file name is absent.
+      const resolvedName =
+        name.trim() || productNameFromPayload(payload) || "Datenblatt-Artikel";
+      const item = itemFromPayload(payload, resolvedName);
       const res = await fetch("/api/trade/assess/from-datasheet", {
         method: "POST",
         headers: { "content-type": "application/json" },

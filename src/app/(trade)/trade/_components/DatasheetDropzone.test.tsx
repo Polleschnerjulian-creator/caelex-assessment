@@ -1,22 +1,30 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 
-vi.mock(
-  "lucide-react",
-  () =>
-    new Proxy(
-      {},
-      {
-        get: (_t, n: string) => {
-          const I = (p: Record<string, unknown>) => (
-            <span data-testid={`icon-${String(n)}`} {...p} />
-          );
-          I.displayName = String(n);
-          return I;
-        },
-      },
-    ),
-);
+// lucide-react stub. An explicit named-exports object (NOT a Proxy): a Proxy's
+// truthy `then` makes the module a thenable the vitest-4 runner awaits forever
+// (hang at COLLECTION), and vitest-4 rejects named imports from a Proxy. Only
+// the icons DatasheetDropzone imports are listed.
+// (Mirrors AssessFlow.test.tsx / VerdictPanel.test.tsx, commit 27fd2f84.)
+vi.mock("lucide-react", () => {
+  const icon = (name: string) => {
+    const I = (p: Record<string, unknown>) => (
+      <span data-testid={`icon-${name}`} {...p} />
+    );
+    I.displayName = name;
+    return I;
+  };
+  return {
+    FileText: icon("FileText"),
+    Sparkles: icon("Sparkles"),
+    Loader2: icon("Loader2"),
+    Check: icon("Check"),
+    // Pulled in transitively via ClassificationCoverageNote.
+    AlertTriangle: icon("AlertTriangle"),
+    CheckCircle2: icon("CheckCircle2"),
+    Info: icon("Info"),
+  };
+});
 
 import { DatasheetDropzone } from "./DatasheetDropzone";
 
