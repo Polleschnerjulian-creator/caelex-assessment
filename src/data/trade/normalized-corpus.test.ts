@@ -216,16 +216,27 @@ describe("S5: mirror architecture invariants", () => {
     }
   });
 
-  it("any mirror entry (mirrorDelta set) carries depthTier 2", () => {
-    // Foundation invariant: ANY entry the mirror adapter produces is code-level
-    // (depthTier 2). Holds vacuously before the first reference country is
-    // wired, and meaningfully once CH_GKV lands (tightened in the S5 data
-    // commit's CH-specific probe).
+  it("mirror entries (mirrorDelta set) carry depthTier 2 — and CH_GKV has landed", () => {
     const mirrors = NORMALIZED_CORPUS_UNION.filter(
       (e) => e.mirrorDelta !== undefined,
     );
+    // The first reference country (Switzerland CH_GKV) is wired, so there MUST
+    // be mirror entries, all code-level (depthTier 2).
+    expect(mirrors.length).toBeGreaterThan(0);
+    expect(mirrors.some((e) => e.regime === "CH_GKV")).toBe(true);
     for (const e of mirrors) {
       expect(e.depthTier, `${e.canonicalId} mirror depthTier`).toBe(2);
     }
+  });
+
+  it("matchByCode probe — 9A004 now ALSO resolves to a CH_GKV mirror (product win)", () => {
+    const nineA004 = NORMALIZED_CORPUS_UNION.filter((e) => e.code === "9A004");
+    const regimes = new Set(nineA004.map((e) => e.regime));
+    expect(regimes.has("CH_GKV")).toBe(true);
+    // The NONE mirror inherited the EU source's title (no re-typed control text).
+    const ch = nineA004.find((e) => e.regime === "CH_GKV")!;
+    expect(ch.mirrorsCanonicalId).toBe("EU_ANNEX_I:9A004");
+    expect(ch.mirrorDelta).toBe("NONE");
+    expect(ch.title.length).toBeGreaterThan(0);
   });
 });

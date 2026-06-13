@@ -50,6 +50,7 @@ import {
 } from "./uk-strategic";
 import { EU_CML_ENTRIES, EU_CML_AS_OF, type EuCmlEntry } from "./eu-cml";
 import type { MirrorEntry } from "./mirror-entry";
+import { CH_GKV_ENTRIES } from "./ch-gkv";
 import { EU_ANNEX_I_ENTRIES } from "./eu-annex-i";
 import { EU_ANNEX_I_CAT1_2_ENTRIES } from "./eu-annex-i-cat1-2";
 import { EU_ANNEX_I_CAT3_ENTRIES } from "./eu-annex-i-cat3";
@@ -714,12 +715,23 @@ export const NORMALIZED_CORPUS_UNION: NormalizedCorpusEntry[] = (() => {
   const baseByCanonicalId = new Map<string, NormalizedCorpusEntry>(
     baseDeduped.map((e) => [e.canonicalId, e]),
   );
-  // Mirror adapters run AGAINST the de-duped base map. The first reference
-  // country (Switzerland CH_GKV) is wired in the S5 data commit; this empty
-  // seed is the foundation hook (the adapter + base-first ordering are proven
-  // by the invariant tests).
-  const mirrors: NormalizedCorpusEntry[] = [];
-  void baseByCanonicalId; // consumed by the mirror adapters wired in the data commit
+  // Mirror adapters run AGAINST the de-duped base map (S5).
+  const mirrors: NormalizedCorpusEntry[] = [
+    // Data-Sprint S5 — Switzerland Güterkontrollverordnung (SR 946.202.1)
+    // space slice. The Swiss EKN (Exportkontrollnummer) scheme is byte-
+    // identical to the EU/Wassenaar dual-use numbering (Anhang 2 Teil 2 is the
+    // verbatim Wassenaar Dual-Use List under a Swiss cover), so each Swiss code
+    // MIRRORS the best existing union target (EU_ANNEX_I where present).
+    // depthTier 2 (code-level). REGIME_MATURITY.CH_GKV STAYS 3 — see the
+    // REGIME_MATURITY comment block for the fail-closed rationale (no Swiss SECO
+    // origin-licence logic exists yet; Gate 4.5 thin-coverage REVIEW is the only
+    // guard for CH-origin controlled exports, identical to the UK S3 decision).
+    ...adaptMirrorEntries(CH_GKV_ENTRIES, baseByCanonicalId, {
+      regime: "CH_GKV",
+      list: "Schweizer Güterkontrollverordnung (SR 946.202.1)",
+      depthTier: 2,
+    }),
+  ];
 
   // Concat base + mirrors, then de-dup the whole union (mirror canonicalIds use
   // the CH_GKV regime prefix, so they never collide with the base).
