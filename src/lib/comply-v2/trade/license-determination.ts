@@ -835,6 +835,45 @@ export function determineLicenseRequirements(
         // can mirror the existing decision without re-deriving it.
         priorRequirements: requirements,
       });
+
+      // ── Supersede the generic EU dual-use REVIEW with the module GO (§4.3) ──
+      //
+      // For an EU-origin GENERAL/GO verdict (a EUGEA, e.g. EU001, clearly
+      // covers item×destination) the module's verdict is AUTHORITATIVE for the
+      // EU-origin licence question — it must REPLACE, not stack on top of, the
+      // generic Gate-3.5 (`ACTUAL_CODE_DECLARED`) / Gate-4 (`hasEuCodes`) BAFA
+      // REVIEW for the SAME EU dual-use leg. Without this the GO row plus the
+      // surviving REQUIRED rows would aggregate back to REVIEW_NEEDED — the GO
+      // would be defeated, and the operator would see a contradictory "GO under
+      // EU001 AND individual licence required" pair.
+      //
+      // HARD INVARIANT (§4.5): only the GENERIC EU dual-use REVIEW rows are
+      // removed — never a DENIED/PROHIBITED hard prohibition (those never reach
+      // here; `originAlreadyBlocked` already short-circuits), and never a row
+      // from another authority/leg (BIS/DDTC/MTCR_REVIEW). The removed rows are
+      // exactly the generic individual-licence REVIEW the module just answered
+      // with a cited general licence — so this is a legally-backed REVIEW→GO
+      // refinement, not a false-CLEARED.
+      if (verdict.licenceType === "GENERAL") {
+        for (let i = requirements.length - 1; i >= 0; i -= 1) {
+          const r = requirements[i];
+          const isGenericEuDualUseReview =
+            (r.authority === "BAFA" ||
+              r.authority === "EU_COMPETENT_AUTHORITY") &&
+            (r.status === "REQUIRED" ||
+              r.status === "LIKELY_REQUIRED" ||
+              r.status === "EXCEPTION_MAY_APPLY") &&
+            // Gate 3.5 declared-code leg OR Gate 4 hasEuCodes leg (BAFA_ANTRAG)
+            // — the generic EU dual-use individual-licence REVIEW. The module's
+            // own GO row is not yet pushed, so this never removes itself.
+            (r.triggerCode === "ACTUAL_CODE_DECLARED" ||
+              r.licenseType === "BAFA_ANTRAG");
+          if (isGenericEuDualUseReview) {
+            requirements.splice(i, 1);
+          }
+        }
+      }
+
       for (const req of foldOriginVerdict(verdict)) {
         requirements.push(req);
       }

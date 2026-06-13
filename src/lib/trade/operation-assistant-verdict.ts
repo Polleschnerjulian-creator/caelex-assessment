@@ -169,11 +169,30 @@ function hardBlock(c: ClassificationResult): boolean {
 }
 
 function licenseRequired(c: ClassificationResult): boolean {
-  return c.licenseDetermination.requirements.some((r) =>
-    ["REQUIRED", "LIKELY_REQUIRED", "EXCEPTION_MAY_APPLY", "UNKNOWN"].includes(
-      r.status,
-    ),
-  );
+  return c.licenseDetermination.requirements.some((r) => {
+    // Origin-general-licence GO (Engine-Origin-Determination, §4.3): a per-
+    // origin module determined that a cited general/open authorisation (e.g.
+    // EUGEA EU001) COVERS this item×destination. The engine gate is already
+    // CLEARED for it. Unlike a legacy "exception MAY apply" (LICENSE_EXCEPTION,
+    // operator-verified eligibility), this is a DETERMINED GO under a general
+    // licence — its conditions ride on the requirement and are surfaced
+    // separately; it must NOT flip the line to a review. Scoped tightly to the
+    // origin-general-licence row (triggerCode + GENERAL_LICENSE licenseType),
+    // so every legacy EXCEPTION_MAY_APPLY/LICENSE_EXCEPTION cell is unchanged.
+    if (
+      r.status === "EXCEPTION_MAY_APPLY" &&
+      r.licenseType === "GENERAL_LICENSE" &&
+      r.triggerCode === "ORIGIN_GENERAL_LICENCE"
+    ) {
+      return false;
+    }
+    return [
+      "REQUIRED",
+      "LIKELY_REQUIRED",
+      "EXCEPTION_MAY_APPLY",
+      "UNKNOWN",
+    ].includes(r.status);
+  });
 }
 
 // ─── De-minimis explanation envelope (G9 — de-minimis honesty) ──────────────
