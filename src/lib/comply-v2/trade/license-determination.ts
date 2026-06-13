@@ -41,7 +41,7 @@ import {
   REGIME_MATURITY,
   type CorpusRegime,
 } from "@/data/trade/normalized-corpus";
-import type { ListId } from "./classification/order-of-review";
+import type { ListId } from "./classification/list-id";
 import { resolveOriginModule } from "./origin-determination/registry";
 import { foldOriginVerdict } from "./origin-determination/fold-origin-verdict";
 

@@ -7,7 +7,7 @@
  *
  * Pure data — kein I/O, kein Prisma, kein AI-Call.
  */
-import type { ListId } from "./order-of-review";
+import type { ListId } from "./list-id";
 import { EU27_MEMBER_STATES } from "../eu-member-states";
 
 export interface OriginRegimeRouting {
@@ -15,7 +15,7 @@ export interface OriginRegimeRouting {
   dualUsePrimary: ListId;
   /** Primäres Militärgüter-Regime; null = (noch) keines im Korpus modelliert. */
   militaryPrimary: ListId | null;
-  /** Informational, NIE primär — bestehende order-of-review-Architektur. */
+  /** Informational, NIE primär — multilaterale Regime binden nur über nationale Umsetzung. */
   multilateralBaseline: readonly ListId[];
   /** false ⇒ Fail-Closed-Regel 4.3b (REVIEW „Origin nicht unterstützt"). */
   supported: boolean;

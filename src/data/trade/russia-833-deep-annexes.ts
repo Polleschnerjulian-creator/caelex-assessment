@@ -980,11 +980,10 @@ export const RUSSIA_833_ANNEX_XXIX_ENTRIES: Russia833Entry[] = [
  * Lookup a Russia 833 entry by its canonical code. Returns undefined
  * if not found.
  *
- * Used by the order-of-review engine when a `ListMatch` carries
- * `list: "EU_ANNEX_IV"` (we route 833/2014 sanctions through the
- * existing EU_ANNEX_IV ListId since the legal authority is the same
- * regulation) and the caller needs the full entry for citation +
- * prohibition-type rendering.
+ * Used when a sanctions match carries `list: "EU_ANNEX_IV"` (we route
+ * 833/2014 sanctions through the EU_ANNEX_IV ListId since the legal
+ * authority is the same regulation) and the caller needs the full entry
+ * for citation + prohibition-type rendering.
  */
 export function findRussia833Entry(code: string): Russia833Entry | undefined {
   for (const entry of [
