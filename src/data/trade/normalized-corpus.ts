@@ -136,7 +136,27 @@ export const REGIME_MATURITY: Record<CorpusRegime, 1 | 2 | 3> = {
   WASSENAAR: 1,
   DE_ANLAGE_AL: 3,
   DE_AUSFUHRLISTE: 3,
+  // Data-Sprint S6 deepened the Japan METI Export Trade Control Order
+  // (Schedule 1, FEFTA) space slice (40 → 97 entries, edition 2026-06-13).
+  // JP_METI is dualUsePrimary for JP-origin items, but the engine has NO
+  // Japanese (METI) origin-licence logic yet, so Gate 4.5 (thin-origin REVIEW)
+  // is the ONLY guard for a JP-seat controlled export. Lifting to 2 would
+  // silently turn JP→friendly-dest dual-use into GO — the same false-CLEARED-
+  // class bug the UK S3 lesson documents (CH/NO/CA/AU/KR precedent). The
+  // deepening makes JP codes RESOLVABLE (precise chips/ratings) while verdicts
+  // stay fail-closed REVIEW.
+  // LIFT-CONDITION: raise to 2 once JP-origin METI licence determination is modelled.
   JP_METI: 3,
+  // Data-Sprint S6 deepened the India DGFT SCOMET (Schedule 2 of the ITC(HS)
+  // Classifications) space slice (32 → 72 entries, edition 2026-06-13).
+  // IN_SCOMET is dualUsePrimary for IN-origin items, but the engine has NO
+  // Indian (DGFT) origin-licence logic yet, so Gate 4.5 (thin-origin REVIEW)
+  // is the ONLY guard for an IN-seat controlled export. Lifting to 2 would
+  // silently turn IN→friendly-dest dual-use into GO — the same false-CLEARED-
+  // class bug the UK S3 lesson documents (CH/NO/CA/AU/KR precedent). The
+  // deepening makes IN codes RESOLVABLE (precise chips/ratings) while verdicts
+  // stay fail-closed REVIEW.
+  // LIFT-CONDITION: raise to 2 once IN-origin DGFT licence determination is modelled.
   IN_SCOMET: 3,
   // Data-Sprint S3 curated the UK Strategic Export Control List space slice
   // (123 verified entries: 109 dual-use + 8 ML + 6 PL, edition 2025-12-16) — yet UK_STRATEGIC is

@@ -82,14 +82,40 @@ describe("Z35-JP-METI — required code presence", () => {
     expect(tech4_1, "Schedule 2 4(1) missing").toBeDefined();
     expect(tech4_2, "Schedule 2 4(2) missing").toBeDefined();
   });
+
+  it("S6 row-faithful codes (Appended Table 1 row → Ministerial Order Article) are present", () => {
+    // row 4 / Art. 3 (rockets, UAVs, MTCR), row 9 / Art. 8 (telecom +
+    // crypto), row 10 / Art. 9 (sensors/optics), row 13 / Art. 12
+    // ("flying objects for outer space" = spacecraft + launch vehicles).
+    const S6_REQUIRED = [
+      "4(xvii)", // accel/gyro navigation usable in MTCR rockets
+      "4(iii)", // turbojet/turbofan/ramjet propulsion units
+      "9(ix)", // cryptographic equipment > 56-bit symmetric key
+      "9(v)", // electronically-scanned phased-array antennas
+      "10(iii)", // solid optical detectors designed for space use
+      "10(iv)", // remote-sensing image sensors < 200 µrad IFOV
+      "13(iv)", // spacecraft, launch vehicles, buses, payloads
+      "13(vii)", // solid rocket propulsion units > 1.1 MN·s
+    ] as const;
+    for (const code of S6_REQUIRED) {
+      const entry = JAPAN_METI_ENTRIES.find(
+        (e) => e.code === code && e.schedule === "1",
+      );
+      expect(entry, `missing S6 row-faithful code ${code}`).toBeDefined();
+      expect(entry?.asOfDate).toBe("2026-06-13");
+    }
+  });
 });
 
 // ─── 2. Schema conformance ───────────────────────────────────────────
 
 describe("Z35-JP-METI — schema conformance", () => {
-  it("entry count is within the 30-50 target window", () => {
-    expect(JAPAN_METI_ENTRIES.length).toBeGreaterThanOrEqual(30);
-    expect(JAPAN_METI_ENTRIES.length).toBeLessThanOrEqual(50);
+  it("entry count meets the S6 deepened-window minimum (>= 90)", () => {
+    // S6 deepening (2026-06-13): raised from the original 30-50 window to
+    // >= 90 row-faithful entries (legacy Wassenaar-mirror codes + new
+    // Appended Table 1 row → Ministerial Order Article codes).
+    expect(JAPAN_METI_ENTRIES.length).toBeGreaterThanOrEqual(90);
+    expect(JAPAN_METI_ENTRIES.length).toBeLessThanOrEqual(140);
   });
 
   it("coverage.caelexCoverageCount matches the array length", () => {

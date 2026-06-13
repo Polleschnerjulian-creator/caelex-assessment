@@ -140,8 +140,8 @@ describe("India SCOMET — category coverage", () => {
     ).toBeGreaterThanOrEqual(10);
   });
 
-  it("dataset has ≥ 25 entries total", () => {
-    expect(INDIA_SCOMET_ENTRIES.length).toBeGreaterThanOrEqual(25);
+  it("dataset has ≥ 70 entries total (S6 deepening)", () => {
+    expect(INDIA_SCOMET_ENTRIES.length).toBeGreaterThanOrEqual(70);
   });
 
   it("dataset spans categories 3, 4, 5, 6, 7, 8", () => {
@@ -170,17 +170,30 @@ describe("India SCOMET — licensing authority distribution", () => {
     }
   });
 
-  it("ISRO-routed entries are concentrated in Category 5 (spacecraft)", () => {
+  it("ISRO-routed entries are concentrated in the space categories (5 + 8)", () => {
     const isroEntries = findIndiaScometByAuthority("ISRO");
     expect(
       isroEntries.length,
       "expected ≥ 1 ISRO-routed entry",
     ).toBeGreaterThan(0);
-    // Most ISRO-routed entries should be in Cat 5 (spacecraft direct-application).
-    const isroCat5 = isroEntries.filter((e) => e.category === "5");
-    expect(isroCat5.length).toBeGreaterThanOrEqual(
-      Math.floor(isroEntries.length / 2),
+    // Spacecraft items live in the space-relevant categories: the missile-spine
+    // Category 5 (5A101), the file's cross-walk Cat 6 (EO sensors, SAR) and Cat 7
+    // (on-board computers), and — per the official Appendix-3 structure — the
+    // Wassenaar-aligned Category 8 (8A904 spacecraft/buses, 8A9 propulsion, 8A7
+    // navigation, 8A6 sensors). Every ISRO-routed entry must sit in {5,6,7,8};
+    // none may land in a non-space category (0,1,2,3,4).
+    const SPACE_CATS = new Set(["5", "6", "7", "8"]);
+    expect(isroEntries.every((e) => SPACE_CATS.has(e.category))).toBe(true);
+    // The overwhelming majority (≥ 80%) sit in the two space spines {5, 8}.
+    const isroSpine = isroEntries.filter(
+      (e) => e.category === "5" || e.category === "8",
     );
+    expect(isroSpine.length).toBeGreaterThanOrEqual(
+      Math.ceil(isroEntries.length * 0.8),
+    );
+    // Category 5 must still carry at least one ISRO-routed spacecraft entry.
+    const isroCat5 = isroEntries.filter((e) => e.category === "5");
+    expect(isroCat5.length).toBeGreaterThan(0);
   });
 
   it("DAE-routed entries exist for nuclear-overlap items (Cat 4)", () => {
