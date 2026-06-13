@@ -231,12 +231,6 @@ export const PANELS: Record<string, SectionPanel> = {
             href: "/trade/operations/new",
             icon: Sparkles,
           },
-          {
-            label: "Datenblatt prüfen",
-            href: "/trade/assess",
-            icon: FileText,
-            match: (p) => p.startsWith("/trade/assess"),
-          },
         ],
       },
       {
@@ -448,6 +442,12 @@ export const SIDEBAR_GROUPS: ReadonlyArray<SidebarNavGroup> = [
         icon: Workflow,
         match: (p) => p.startsWith("/trade/operations"),
         badgeKey: "operationsBlocked",
+      },
+      {
+        label: "Datenblatt prüfen",
+        href: "/trade/assess",
+        icon: FileText,
+        match: (p) => p.startsWith("/trade/assess"),
       },
       {
         label: "Screening",
