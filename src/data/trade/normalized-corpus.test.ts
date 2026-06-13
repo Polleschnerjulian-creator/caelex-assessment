@@ -151,14 +151,49 @@ describe("S0: regime maturity (fail-closed input)", () => {
     ];
     for (const r of expected) expect([1, 2, 3]).toContain(REGIME_MATURITY[r]);
   });
-  it("thin (tier-3) origin regimes — 4 after M-CH (CH_GKV left)", () => {
-    // Data-Sprint S4 lifted EU_CML 3 → 2 (set 7 → 6). M-UK (2026-06-13,
-    // Engine-Origin-Determination) lifted UK_STRATEGIC 3 → 2 (6 → 5). M-CH
-    // (2026-06-13) lifted CH_GKV 3 → 2 — the CH-origin OGB/Einzelbewilligung
-    // licence determination is now modelled (`origin-determination/ch.ts`), so
-    // CH leaves the thin set (5 → 4). CH_GKV's lift is asserted separately below.
-    for (const r of ["CA_ECL", "AU_DSGL", "KR_STRATEGIC", "NO_LIST"] as const) {
-      expect(REGIME_MATURITY[r]).toBe(3);
+  it("thin (tier-3) origin regimes among circle-A: NONE after the fan-out", () => {
+    // Data-Sprint S4 lifted EU_CML 3 → 2. M-UK (2026-06-13) lifted UK_STRATEGIC
+    // 3 → 2; M-CH (2026-06-13) lifted CH_GKV 3 → 2. The origin-determination
+    // FAN-OUT (2026-06-13) then modelled the last six circle-A origins and lifts
+    // them all 3 → 2: NO_LIST, CA_ECL, AU_DSGL, JP_METI, KR_STRATEGIC, IN_SCOMET.
+    // So EVERY circle-A dual-use primary regime now resolves a real module and is
+    // tier 2 — the circle-A tier-3 (thin) set is now EMPTY (Gate 4.5 no longer
+    // fires for any circle-A seat). Each lift is individually asserted below.
+    const CIRCLE_A_DUAL_USE_REGIMES = [
+      "EU_ANNEX_I",
+      "US_CCL",
+      "UK_STRATEGIC",
+      "CH_GKV",
+      "NO_LIST",
+      "CA_ECL",
+      "AU_DSGL",
+      "JP_METI",
+      "KR_STRATEGIC",
+      "IN_SCOMET",
+    ] as const;
+    const thin = CIRCLE_A_DUAL_USE_REGIMES.filter(
+      (r) => REGIME_MATURITY[r] === 3,
+    );
+    expect(thin).toEqual([]);
+  });
+  it("the six fan-out origins are all tier 2 (NO/CA/AU/JP/KR/IN licence determination modelled)", () => {
+    // Origin-determination fan-out (2026-06-13): each of these origins now has a
+    // registered module (`origin-determination/{no,ca,au,jp,kr,in}.ts`) that
+    // answers the per-country licence question precisely, so each leaves the thin
+    // set. NO/AU/KR/IN have NO auto-grantable general licence (their module never
+    // emits GENERAL/GO — every controlled item stays REVIEW, no false-CLEARED risk
+    // from the lift); CA (US-exemption + GEP No. 41) and JP (General Bulk Export
+    // Licence to Group A) DO emit cited GENERAL/GO for non-sensitive items, with
+    // sensitive MTCR/Annex-IV codes fail-closing to REVIEW.
+    for (const r of [
+      "NO_LIST",
+      "CA_ECL",
+      "AU_DSGL",
+      "JP_METI",
+      "KR_STRATEGIC",
+      "IN_SCOMET",
+    ] as const) {
+      expect(REGIME_MATURITY[r]).toBe(2);
     }
   });
   it("UK_STRATEGIC is tier 2 after M-UK (UK OGEL/ECJU origin-licence modelled)", () => {

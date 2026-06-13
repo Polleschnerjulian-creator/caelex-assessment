@@ -59,16 +59,53 @@ describe("resolveOriginModule", () => {
     expect(typeof mod).toBe("function");
   });
 
-  it("returns null for a supported origin with no module yet (NO — M-NO not built)", () => {
-    const routing = originRegimes("NO");
-    expect(routing.supported).toBe(true);
-    expect(resolveOriginModule(routing)).toBeNull();
+  it("returns a module for every fan-out origin (NO/CA/AU/JP/KR/IN now registered)", () => {
+    // The origin-determination fan-out (2026-06-13) registered the last six
+    // circle-A origin modules. NO no longer resolves to null — it (and CA/AU/JP/
+    // KR/IN) now flows through a real module rather than the Gate 4.5 fallback.
+    for (const iso of ["NO", "CA", "AU", "JP", "KR", "IN"]) {
+      const routing = originRegimes(iso);
+      expect(routing.supported, `${iso} supported`).toBe(true);
+      const mod = resolveOriginModule(routing);
+      expect(mod, `${iso} resolves a module`).not.toBeNull();
+      expect(typeof mod).toBe("function");
+    }
   });
 
-  it("the registry holds US_CCL + EU_ANNEX_I + UK_STRATEGIC + CH_GKV (US wrap + M-EU + M-UK + M-CH); other origins register later", () => {
+  it("every circle-A origin resolves a module — Gate 4.5 no longer the fallback for any real circle-A seat", () => {
+    // After the fan-out, all eleven golden circle-A seats (DE/FR/GB/US/CH/NO/CA/
+    // JP/AU/KR/IN) resolve a registered origin module — there is no real circle-A
+    // origin left on the Gate-4.5 thin-origin fallback. An UNsupported origin (BR)
+    // still returns null.
+    for (const iso of [
+      "DE",
+      "FR",
+      "GB",
+      "US",
+      "CH",
+      "NO",
+      "CA",
+      "JP",
+      "AU",
+      "KR",
+      "IN",
+    ]) {
+      expect(resolveOriginModule(originRegimes(iso)), `${iso}`).not.toBeNull();
+    }
+    expect(resolveOriginModule(originRegimes("BR"))).toBeNull();
+  });
+
+  it("the registry holds all 10 circle-A dual-use/military primary regimes after the fan-out", () => {
+    // US wrap + M-EU + M-UK + M-CH + the NO/CA/AU/JP/KR/IN fan-out.
     expect([...ORIGIN_MODULES.keys()].sort()).toEqual([
+      "AU_DSGL",
+      "CA_ECL",
       "CH_GKV",
       "EU_ANNEX_I",
+      "IN_SCOMET",
+      "JP_METI",
+      "KR_STRATEGIC",
+      "NO_LIST",
       "UK_STRATEGIC",
       "US_CCL",
     ]);

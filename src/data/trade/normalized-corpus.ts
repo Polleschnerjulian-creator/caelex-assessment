@@ -138,26 +138,29 @@ export const REGIME_MATURITY: Record<CorpusRegime, 1 | 2 | 3> = {
   DE_AUSFUHRLISTE: 3,
   // Data-Sprint S6 deepened the Japan METI Export Trade Control Order
   // (Schedule 1, FEFTA) space slice (40 → 97 entries, edition 2026-06-13).
-  // JP_METI is dualUsePrimary for JP-origin items, but the engine has NO
-  // Japanese (METI) origin-licence logic yet, so Gate 4.5 (thin-origin REVIEW)
-  // is the ONLY guard for a JP-seat controlled export. Lifting to 2 would
-  // silently turn JP→friendly-dest dual-use into GO — the same false-CLEARED-
-  // class bug the UK S3 lesson documents (CH/NO/CA/AU/KR precedent). The
-  // deepening makes JP codes RESOLVABLE (precise chips/ratings) while verdicts
-  // stay fail-closed REVIEW.
-  // LIFT-CONDITION: raise to 2 once JP-origin METI licence determination is modelled.
-  JP_METI: 3,
+  // LIFTED 3 → 2 on 2026-06-13 (origin-determination fan-out — METI): the
+  // JP-origin LICENCE determination is now modelled — `origin-determination/
+  // jp.ts` (General Bulk Export Licence 一般包括許可 to the Group-A states +
+  // individual-METI-licence fallback). The lift is safe (no false-CLEARED):
+  // sensitive MTCR/Annex-IV-equivalent codes (9A004/9A106.c) fail-close to
+  // REVIEW even to a Group-A state, non-Group-A destinations (IN/CN) stay REVIEW,
+  // and Gate 1.6 (RU/BY, Japan applies the EU-aligned RU sanctions) still BLOCKS
+  // upstream. The deepening already made JP codes RESOLVABLE; the module now
+  // answers the licence question precisely instead of Gate 4.5's thin REVIEW.
+  JP_METI: 2,
   // Data-Sprint S6 deepened the India DGFT SCOMET (Schedule 2 of the ITC(HS)
   // Classifications) space slice (32 → 72 entries, edition 2026-06-13).
-  // IN_SCOMET is dualUsePrimary for IN-origin items, but the engine has NO
-  // Indian (DGFT) origin-licence logic yet, so Gate 4.5 (thin-origin REVIEW)
-  // is the ONLY guard for an IN-seat controlled export. Lifting to 2 would
-  // silently turn IN→friendly-dest dual-use into GO — the same false-CLEARED-
-  // class bug the UK S3 lesson documents (CH/NO/CA/AU/KR precedent). The
-  // deepening makes IN codes RESOLVABLE (precise chips/ratings) while verdicts
-  // stay fail-closed REVIEW.
-  // LIFT-CONDITION: raise to 2 once IN-origin DGFT licence determination is modelled.
-  IN_SCOMET: 3,
+  // LIFTED 3 → 2 on 2026-06-13 (origin-determination fan-out — DGFT): the
+  // IN-origin LICENCE determination is now modelled — `origin-determination/
+  // in.ts`. India has NO item+destination-only general authorisation (the DGFT
+  // General Authorisations GAET/GAEIS/GAED are intra-company/end-use/case-by-case
+  // conditional — IN_GENERAL_LICENCES is empty), so every SCOMET-controlled item
+  // is an individual SCOMET authorisation at DGFT (INDIVIDUAL/REVIEW). The lift
+  // is SAFE with ZERO false-CLEARED risk: the module emits NO GENERAL verdict, so
+  // it only REPLACES the generic Gate-4.5 thin REVIEW with the same controlled
+  // cell's PRECISE, cited DGFT REVIEW (distribution UNCHANGED for IN cells);
+  // Gate 1.6 (RU/BY) still BLOCKS upstream.
+  IN_SCOMET: 2,
   // Data-Sprint S3 curated the UK Strategic Export Control List space slice
   // (123 verified entries: 109 dual-use + 8 ML + 6 PL, edition 2025-12-16).
   // LIFTED 3 → 2 on 2026-06-13 (M-UK, Engine-Origin-Determination): the
@@ -209,31 +212,43 @@ export const REGIME_MATURITY: Record<CorpusRegime, 1 | 2 | 3> = {
   // The maturity test's "new tier-3" set drops from 7 to 6 (EU_CML leaves it).
   EU_CML: 2,
   // Data-Sprint S5 wired the Canada Export Control List (SOR/89-202) Group-1
-  // dual-use space slice as MIRROR entries. CA_ECL is dualUsePrimary for CA-
-  // origin items, but the engine has NO Canadian (Global Affairs Canada / EIPA)
-  // origin-licence logic yet, so Gate 4.5 (thin-origin REVIEW) is the ONLY guard
-  // for a CA-seat controlled export. Lifting to 2 would silently turn CA→friendly-
-  // dest dual-use into GO — the same false-CLEARED-class bug the UK S3 lesson
-  // documents. The curated mirrors make CA codes RESOLVABLE (precise chips/ratings)
-  // while verdicts stay fail-closed REVIEW.
-  // LIFT-CONDITION: raise to 2 once CA-origin EIPA licence determination is modelled.
-  CA_ECL: 3,
+  // dual-use space slice as MIRROR entries. LIFTED 3 → 2 on 2026-06-13 (origin-
+  // determination fan-out — Global Affairs Canada): the CA-origin LICENCE
+  // determination is now modelled — `origin-determination/ca.ts` (the US permit
+  // exemption + General Export Permit No. 41 SOR/2015-200 + individual-permit
+  // fallback at Global Affairs Canada). The lift is safe (no false-CLEARED):
+  // sensitive ECL-Group-6/MTCR/Annex-IV codes (9A004/9A106.c) fail-close to
+  // REVIEW even to the US, crypto (5A002) is GEP-41-Schedule-excluded so it is
+  // REVIEW to non-US destinations, and Gate 1.6 (RU/BY via SEMA) still BLOCKS
+  // upstream. The module REPLACES Gate 4.5 for CA and returns the precise per-item
+  // verdict.
+  CA_ECL: 2,
   // Data-Sprint S5 wired the Australia Defence and Strategic Goods List (DSGL,
-  // F2024L01024) dual-use space slice as MIRROR entries. AU_DSGL is dualUsePrimary
-  // for AU-origin items, but the engine has NO Australian (Defence Export Controls)
-  // origin-licence logic yet, so Gate 4.5 (thin-origin REVIEW) is the ONLY guard
-  // for an AU-seat controlled export. Lifting to 2 would silently turn AU→friendly-
-  // dest dual-use into GO (the false-CLEARED-class bug from the UK S3 lesson).
-  // LIFT-CONDITION: raise to 2 once AU-origin DEC licence determination is modelled.
-  AU_DSGL: 3,
+  // F2024L01024) dual-use space slice as MIRROR entries. LIFTED 3 → 2 on
+  // 2026-06-13 (origin-determination fan-out — Defence Export Controls): the
+  // AU-origin LICENCE determination is now modelled — `origin-determination/
+  // au.ts`. Australia has NO item+destination-only dual-use general licence (the
+  // AUKUS licence-free environment is registration/authorised-user gated, not
+  // item×destination — AU_GENERAL_LICENCES is empty), so every controlled DSGL
+  // item is a DEC permit (INDIVIDUAL/REVIEW), incl. AU→US. The lift is SAFE with
+  // ZERO false-CLEARED risk: the module emits NO GENERAL verdict, so it only
+  // REPLACES the generic Gate-4.5 thin REVIEW with the same cell's PRECISE, cited
+  // DEC REVIEW; sensitive MTCR/Annex-IV codes fail-close; Gate 1.6 (RU/BY) still
+  // BLOCKS upstream.
+  AU_DSGL: 2,
   // Data-Sprint S5 wired the Korea Strategic Items list (MOTIE Public Notice on
-  // Trade of Strategic Items) dual-use space slice as MIRROR entries. KR_STRATEGIC
-  // is dualUsePrimary for KR-origin items, but the engine has NO Korean (MOTIE /
-  // KOSTI) origin-licence logic yet, so Gate 4.5 (thin-origin REVIEW) is the ONLY
-  // guard for a KR-seat controlled export. Lifting to 2 would silently turn KR→
-  // friendly-dest dual-use into GO (the false-CLEARED-class bug from the UK S3 lesson).
-  // LIFT-CONDITION: raise to 2 once KR-origin MOTIE licence determination is modelled.
-  KR_STRATEGIC: 3,
+  // Trade of Strategic Items) dual-use space slice as MIRROR entries. LIFTED
+  // 3 → 2 on 2026-06-13 (origin-determination fan-out — MOTIE): the KR-origin
+  // LICENCE determination is now modelled — `origin-determination/kr.ts`. Korea
+  // has NO item+destination-only general licence (the comprehensive licence is an
+  // exporter-specific 자율준수무역거래자 / CP-certified privilege, not derivable
+  // from item×destination — KR_GENERAL_LICENCES is empty), so every controlled
+  // strategic item is an individual MOTIE licence (INDIVIDUAL/REVIEW). The lift is
+  // SAFE with ZERO false-CLEARED risk: the module emits NO GENERAL verdict, so it
+  // only REPLACES the generic Gate-4.5 thin REVIEW with the same cell's PRECISE,
+  // cited MOTIE REVIEW; sensitive MTCR/Annex-IV codes fail-close with the case-by-
+  // case citation; Gate 1.6 (RU/BY, Korea's near-total ban) still BLOCKS upstream.
+  KR_STRATEGIC: 2,
   // Data-Sprint S5 wired the Switzerland GKV (SR 946.202.1) dual-use space slice
   // as MIRROR entries. LIFTED 3 → 2 on 2026-06-13 (M-CH, Engine-Origin-
   // Determination): the CH-origin LICENCE determination is now modelled —
@@ -265,13 +280,19 @@ export const REGIME_MATURITY: Record<CorpusRegime, 1 | 2 | 3> = {
   CH_GKV: 2,
   // Data-Sprint S5 wired the Norway dual-use list — Liste II / Vedlegg II of
   // FOR-2013-06-19-718 (flerbruksvarer), administered by the DEKSA under the MFA —
-  // as MIRROR entries. NO_LIST is dualUsePrimary for NO-origin items, but the
-  // engine has NO Norwegian (DEKSA) origin-licence logic yet, so Gate 4.5
-  // (thin-origin REVIEW) is the ONLY guard for a NO-seat controlled export.
-  // Lifting to 2 would silently turn NO→friendly-dest dual-use into GO (the
-  // false-CLEARED-class bug from the UK S3 lesson).
-  // LIFT-CONDITION: raise to 2 once NO-origin DEKSA licence determination is modelled.
-  NO_LIST: 3,
+  // as MIRROR entries. LIFTED 3 → 2 on 2026-06-13 (origin-determination fan-out —
+  // Norwegian MFA/Utenriksdepartementet): the NO-origin LICENCE determination is
+  // now modelled — `origin-determination/no.ts`. Norway has NO item+destination-
+  // only self-executing dual-use general/global licence (verified DEKSA/MFA
+  // finding; the only "general"-named instrument is the defence-only/EEA-only/
+  // registration-based general transfer licence — NO_GENERAL_LICENCES is empty),
+  // so every controlled Liste-II item is an individual MFA licence (INDIVIDUAL/
+  // REVIEW). The lift is SAFE with ZERO false-CLEARED risk: the module emits NO
+  // GENERAL verdict, so it only REPLACES the generic Gate-4.5 thin REVIEW with the
+  // same cell's PRECISE, cited MFA REVIEW; sensitive MTCR/Annex-IV codes fail-
+  // close; Gate 1.6 (RU/BY, Norway applies the EU-aligned sanctions) still BLOCKS
+  // upstream.
+  NO_LIST: 2,
 };
 
 /**
@@ -821,10 +842,9 @@ export const NORMALIZED_CORPUS_UNION: NormalizedCorpusEntry[] = (() => {
     // identical to the EU/Wassenaar dual-use numbering (Anhang 2 Teil 2 is the
     // verbatim Wassenaar Dual-Use List under a Swiss cover), so each Swiss code
     // MIRRORS the best existing union target (EU_ANNEX_I where present).
-    // depthTier 2 (code-level). REGIME_MATURITY.CH_GKV STAYS 3 — see the
-    // REGIME_MATURITY comment block for the fail-closed rationale (no Swiss SECO
-    // origin-licence logic exists yet; Gate 4.5 thin-coverage REVIEW is the only
-    // guard for CH-origin controlled exports, identical to the UK S3 decision).
+    // depthTier 2 (code-level). REGIME_MATURITY.CH_GKV is 2 (M-CH modelled the
+    // Swiss SECO origin-licence determination — `origin-determination/ch.ts`);
+    // see the REGIME_MATURITY comment block above for the lift rationale.
     ...adaptMirrorEntries(CH_GKV_ENTRIES, baseByCanonicalId, {
       regime: "CH_GKV",
       list: "Schweizer Güterkontrollverordnung (SR 946.202.1)",
@@ -833,8 +853,9 @@ export const NORMALIZED_CORPUS_UNION: NormalizedCorpusEntry[] = (() => {
     // Data-Sprint S5 fan-out — Norway Liste II (Vedlegg II of FOR-2013-06-19-718).
     // Norway adopts the EU/Wassenaar dual-use list verbatim under a Norwegian
     // cover, so each NO code MIRRORS its EU_ANNEX_I base. REGIME_MATURITY.NO_LIST
-    // STAYS 3 — see the REGIME_MATURITY comment block (no DEKSA origin-licence
-    // logic; Gate 4.5 thin-coverage REVIEW is the only guard for NO-origin exports).
+    // is 2 (origin-determination fan-out modelled the NO-origin MFA licence
+    // determination — `origin-determination/no.ts`); see the REGIME_MATURITY
+    // comment block above for the lift rationale.
     ...adaptMirrorEntries(NO_LIST_ENTRIES, baseByCanonicalId, {
       regime: "NO_LIST",
       list: "Norwegen Liste II (Flerbruksvarer)",
@@ -843,7 +864,9 @@ export const NORMALIZED_CORPUS_UNION: NormalizedCorpusEntry[] = (() => {
     // Data-Sprint S5 fan-out — Canada Export Control List (SOR/89-202), Group 1
     // (the Wassenaar Dual-Use List under a Canadian cover). Each CA item number
     // MIRRORS its EU_ANNEX_I base (same scope, only the "1-x.A.y." printed number
-    // differs). REGIME_MATURITY.CA_ECL STAYS 3 — no EIPA origin-licence logic yet.
+    // differs). REGIME_MATURITY.CA_ECL is 2 (origin-determination fan-out modelled
+    // the CA-origin Global Affairs Canada licence determination —
+    // `origin-determination/ca.ts`); see the REGIME_MATURITY comment block above.
     ...adaptMirrorEntries(CA_ECL_ENTRIES, baseByCanonicalId, {
       regime: "CA_ECL",
       list: "Canada Export Control List (SOR/89-202)",
@@ -851,8 +874,10 @@ export const NORMALIZED_CORPUS_UNION: NormalizedCorpusEntry[] = (() => {
     }),
     // Data-Sprint S5 fan-out — Australia Defence and Strategic Goods List (DSGL,
     // F2024L01024). The DSGL Part 2 dual-use list shares the Wassenaar/EU numbering,
-    // so each AU code MIRRORS its EU_ANNEX_I base. REGIME_MATURITY.AU_DSGL STAYS 3 —
-    // no Defence Export Controls origin-licence logic yet.
+    // so each AU code MIRRORS its EU_ANNEX_I base. REGIME_MATURITY.AU_DSGL is 2
+    // (origin-determination fan-out modelled the AU-origin Defence Export Controls
+    // licence determination — `origin-determination/au.ts`); see the
+    // REGIME_MATURITY comment block above.
     ...adaptMirrorEntries(AU_DSGL_ENTRIES, baseByCanonicalId, {
       regime: "AU_DSGL",
       list: "Australia Defence and Strategic Goods List",
@@ -861,7 +886,9 @@ export const NORMALIZED_CORPUS_UNION: NormalizedCorpusEntry[] = (() => {
     // Data-Sprint S5 fan-out — Korea Strategic Items (MOTIE Public Notice on the
     // Trade of Strategic Items). Korea's dual-use list adopts the multilateral/EU
     // numbering, so each KR code MIRRORS its EU_ANNEX_I base. REGIME_MATURITY.
-    // KR_STRATEGIC STAYS 3 — no MOTIE origin-licence logic yet.
+    // KR_STRATEGIC is 2 (origin-determination fan-out modelled the KR-origin MOTIE
+    // licence determination — `origin-determination/kr.ts`); see the
+    // REGIME_MATURITY comment block above.
     ...adaptMirrorEntries(KR_STRATEGIC_ENTRIES, baseByCanonicalId, {
       regime: "KR_STRATEGIC",
       list: "Korea Strategic Items (MOTIE)",

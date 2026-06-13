@@ -23,11 +23,19 @@ import { usOriginModule } from "./us";
 import { euOriginModule } from "./eu";
 import { ukOriginModule } from "./uk";
 import { chOriginModule } from "./ch";
+import { noOriginModule } from "./no";
+import { caOriginModule } from "./ca";
+import { auOriginModule } from "./au";
+import { jpOriginModule } from "./jp";
+import { krOriginModule } from "./kr";
+import { inOriginModule } from "./in";
 
 /**
  * Registered per-origin licence modules, keyed by `CorpusRegime`. Modules
  * register as they are built. Phase F holds ONLY US_CCL — the behaviour-
- * identical US wrap (F4). The M-* phases add EU/UK/CH/NO/CA/AU/JP/KR/IN.
+ * identical US wrap (F4). The M-* phases add EU/UK/CH then the fan-out
+ * NO/CA/AU/JP/KR/IN — so EVERY circle-A origin now resolves a real module
+ * (Gate 4.5 no longer fires for any circle-A seat).
  */
 export const ORIGIN_MODULES = new Map<CorpusRegime, OriginLicenceModule>([
   // US dual-use primary regime (EAR_CCL → US_CCL). Wraps the engine's existing
@@ -49,6 +57,43 @@ export const ORIGIN_MODULES = new Map<CorpusRegime, OriginLicenceModule>([
   // export; sensitive MTCR/Annex-IV-equivalent codes (9A004/9A106.c) fail-close
   // to REVIEW (no false-CLEARED); see `ch.ts` + the wiring.
   ["CH_GKV", chOriginModule],
+  // ── Fan-out (2026-06-13): the remaining six circle-A origins ────────────────
+  // Norway (NO_LIST). NO has NO item+destination-only dual-use general licence
+  // (verified DEKSA/MFA finding — NO_GENERAL_LICENCES is empty), so every
+  // controlled Liste-II item is an individual MFA licence (INDIVIDUAL/REVIEW);
+  // sensitive MTCR/Annex-IV codes fail-close. Authority = Norwegian MFA
+  // (Utenriksdepartementet); see `no.ts`.
+  ["NO_LIST", noOriginModule],
+  // Canada (CA_ECL). TWO general permits: the US permit exemption (CA→US
+  // non-sensitive ECL goods GO) + GEP No. 41 (SOR/2015-200, non-sensitive
+  // non-crypto dual-use to the s.2 ally set GO); else an individual permit at
+  // Global Affairs Canada (REVIEW). Sensitive ECL-Group-6/MTCR codes fail-close
+  // even to the US; see `ca.ts`.
+  ["CA_ECL", caOriginModule],
+  // Australia (AU_DSGL). AU has NO item+destination-only dual-use general licence
+  // (the AUKUS licence-free environment is registration/authorised-user gated —
+  // AU_GENERAL_LICENCES is empty), so every controlled DSGL item is a DEC permit
+  // (INDIVIDUAL/REVIEW), incl. AU→US; sensitive codes fail-close. Authority =
+  // Defence Export Controls (DEC); see `au.ts`.
+  ["AU_DSGL", auOriginModule],
+  // Japan (JP_METI). ONE general licence: the General Bulk Export Licence
+  // (一般包括許可) to the Group-A states (Export Trade Control Order Anlage 3,
+  // incl. KR restored 2023) → GENERAL/GO for non-sensitive dual-use; else an
+  // individual METI licence (REVIEW). Sensitive MTCR/Annex-IV codes fail-close;
+  // see `jp.ts`.
+  ["JP_METI", jpOriginModule],
+  // South Korea (KR_STRATEGIC). KR has NO item+destination-only general licence
+  // (the comprehensive licence is an exporter-specific 자율준수무역거래자 / CP
+  // privilege — KR_GENERAL_LICENCES is empty), so every controlled strategic item
+  // is an individual MOTIE licence (INDIVIDUAL/REVIEW); sensitive codes fail-close
+  // with the MTCR case-by-case citation; see `kr.ts`.
+  ["KR_STRATEGIC", krOriginModule],
+  // India (IN_SCOMET). IN has NO item+destination-only general authorisation
+  // (the DGFT General Authorisations are intra-company/end-use conditional —
+  // IN_GENERAL_LICENCES is empty), so every SCOMET-controlled item is an
+  // individual SCOMET authorisation at DGFT (INDIVIDUAL/REVIEW); sensitive codes
+  // fail-close. Authority = DGFT; see `in.ts`.
+  ["IN_SCOMET", inOriginModule],
 ]);
 
 /**

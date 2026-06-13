@@ -21,6 +21,7 @@ import { evaluateItemSignals } from "../property-trigger-engine";
 import { originRegimes } from "../classification/origin-regime-map";
 import { ORIGIN_MODULES } from "./registry";
 import { ukOriginModule } from "./uk";
+import { REGIME_MATURITY } from "@/data/trade/normalized-corpus";
 import type { OriginDeterminationInput, OriginLicenceModule } from "./types";
 
 const GB_ORIGIN = originRegimes("GB"); // dualUsePrimary = UK_STRATEGIC
@@ -136,13 +137,59 @@ describe("F5 — origin stage wiring (mock GO module under UK_STRATEGIC)", () =>
 });
 
 describe("F5 — fallback intact when no module is registered", () => {
-  it("NO + controlled item + NO module → Gate 4.5 thin-origin REVIEW", () => {
-    // NO (NO_LIST maturity 3, NO registered module) still falls back to the
-    // Gate 4.5 fail-closed REVIEW — proving the no-module fallback path is
-    // intact. (GB used to test this, but M-UK registered a real UK module + lifted
-    // UK_STRATEGIC to 2; CH then took over until M-CH registered a real CH module
-    // + lifted CH_GKV to 2 — so both now flow through their module, not Gate 4.5.
-    // Norway is the next-built circle-A origin still on the thin fallback.)
+  // After the origin-determination fan-out (2026-06-13) EVERY circle-A origin
+  // has a registered module + maturity 2, so NO real circle-A origin still hits
+  // the Gate 4.5 thin-origin fallback. To keep the fallback PATH under test —
+  // without deleting coverage — we build a SYNTHETIC thin origin: force NO_LIST
+  // back to maturity 3 AND remove its module for the duration of one test, then
+  // restore both. (NO used to be the natural thin example; the fan-out lifted
+  // it, so we simulate the no-module-tier-3 condition the gate guards.)
+  const SYNTH_THIN_REGIME = "NO_LIST" as const;
+  const realNoModule = ORIGIN_MODULES.get(SYNTH_THIN_REGIME);
+  const realNoMaturity = REGIME_MATURITY[SYNTH_THIN_REGIME];
+
+  it("SYNTHETIC thin origin (NO_LIST forced tier-3, module removed) → Gate 4.5 thin-origin REVIEW (fallback path intact)", () => {
+    // Simulate a supported origin whose primary dual-use regime is tier-3 AND has
+    // no registered module — the exact condition Gate 4.5 guards (fail-closed
+    // REVIEW). We mutate the live REGIME_MATURITY + ORIGIN_MODULES, run, restore.
+    REGIME_MATURITY[SYNTH_THIN_REGIME] = 3;
+    ORIGIN_MODULES.delete(SYNTH_THIN_REGIME);
+    try {
+      const det = determineLicenseRequirements(
+        evaluateItemSignals({
+          apertureMeters: null,
+          rangeKm: null,
+          payloadKg: null,
+          isRadHardened: null,
+          isMilSpec: null,
+          isAntiJam: null,
+          eccnEU: "9A004",
+        }),
+        null,
+        "JP",
+        undefined,
+        undefined,
+        { eccnEU: "9A004", eccnUS: null, usmlCategory: null },
+        originRegimes("NO"), // NO → NO_LIST (now forced tier-3, no module) → Gate 4.5
+      );
+      expect(det.gate).toBe("REVIEW_NEEDED");
+      expect(
+        det.requirements.find((r) => r.triggerCode === "THIN_ORIGIN_REGIME"),
+      ).toBeDefined();
+    } finally {
+      // Restore the REAL fan-out state (maturity 2 + the NO module) — never leave
+      // NO_LIST tier-3/unregistered, which would corrupt later tests.
+      REGIME_MATURITY[SYNTH_THIN_REGIME] = realNoMaturity;
+      if (realNoModule) ORIGIN_MODULES.set(SYNTH_THIN_REGIME, realNoModule);
+    }
+  });
+
+  it("FAN-OUT: the REAL NO origin no longer hits Gate 4.5 (NO_LIST tier 2 + noOriginModule)", () => {
+    // The fan-out lifted NO_LIST to 2 and registered noOriginModule. A declared
+    // 9A004 (sensitive) NO→JP now flows through the NO module's individual-MFA
+    // verdict (INDIVIDUAL → ORIGIN_INDIVIDUAL_LICENCE row → REVIEW), NOT Gate 4.5.
+    // No THIN_ORIGIN_REGIME row, and no GO (9A004 is sensitive + NO has no general
+    // licence). Proves the fan-out closed the thin fallback for the real origin.
     const det = determineLicenseRequirements(
       evaluateItemSignals({
         apertureMeters: null,
@@ -158,12 +205,50 @@ describe("F5 — fallback intact when no module is registered", () => {
       undefined,
       undefined,
       { eccnEU: "9A004", eccnUS: null, usmlCategory: null },
-      originRegimes("NO"), // NO_LIST maturity 3, no module → Gate 4.5 fallback
+      originRegimes("NO"),
+      "NO",
     );
     expect(det.gate).toBe("REVIEW_NEEDED");
     expect(
       det.requirements.find((r) => r.triggerCode === "THIN_ORIGIN_REGIME"),
+    ).toBeUndefined();
+    expect(
+      det.requirements.find(
+        (r) => r.triggerCode === "ORIGIN_INDIVIDUAL_LICENCE",
+      ),
     ).toBeDefined();
+  });
+
+  it("FAN-OUT: a CA general-permit-eligible item flows through caOriginModule → GENERAL/GO supersede", () => {
+    // CA + 1C010 (non-sensitive, NOT crypto) → DE: GEP No. 41 covers it → the CA
+    // module's GENERAL/GO supersedes the generic EU dual-use REVIEW (intra-EU dest
+    // = Gate 3.5 dual-use leg does not fire) → CLEARED. Proves a fan-out origin
+    // WITH a general licence (CA/JP) folds its GO, not just REVIEW.
+    const det = determineLicenseRequirements(
+      evaluateItemSignals({
+        apertureMeters: null,
+        rangeKm: null,
+        payloadKg: null,
+        isRadHardened: null,
+        isMilSpec: null,
+        isAntiJam: null,
+        eccnEU: "1C010",
+      }),
+      null,
+      "DE",
+      undefined,
+      undefined,
+      { eccnEU: "1C010", eccnUS: null, usmlCategory: null },
+      originRegimes("CA"),
+      "CA",
+    );
+    expect(det.gate).toBe("CLEARED");
+    expect(
+      det.requirements.find((r) => r.triggerCode === "ORIGIN_GENERAL_LICENCE"),
+    ).toBeDefined();
+    expect(
+      det.requirements.find((r) => r.triggerCode === "THIN_ORIGIN_REGIME"),
+    ).toBeUndefined();
   });
 
   it("M-UK: GB + controlled item flows through the real UK module (no Gate 4.5)", () => {

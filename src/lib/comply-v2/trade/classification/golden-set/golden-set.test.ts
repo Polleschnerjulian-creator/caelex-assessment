@@ -358,6 +358,171 @@ const EXACT: Record<string, Verdict> = {
   //     VOR dem Origin-Modul, das Modul wird übersprungen.
   "ground-tt-c|CH|RU": "BLOCKED", // 5A002 (OGB-fähig) → RU: Gate 1.6 schlägt OGB
   "sat-bus|CH|RU": "BLOCKED", // 9A004 → RU: Gate 1.6 (origin-unabhängig)
+
+  // ── FAN-OUT (Engine-Origin-Determination §4.3): NO/CA/AU/JP/KR/IN ────────────
+  //
+  // Die letzten sechs circle-A-Origins erhalten je ein eigenes Origin-Modul
+  // (`origin-determination/{no,ca,au,jp,kr,in}.ts`). REGIME_MATURITY der sechs
+  // ist auf 2 gehoben — Gate 4.5 (Thin-Origin-REVIEW) feuert für KEINEN circle-A-
+  // Sitz mehr. Daher sind die untenstehenden EXPLIZITEN Pins das Sicherheitsnetz,
+  // das früher Gate 4.5 + der Thin-Origin-Invariant-Test waren: JEDE sensible
+  // Zelle (sat-bus 9A004 / apogee-engine 9A106 × jedes der sechs Origins) wird
+  // hier explizit auf REVIEW (bzw. BLOCKED nach RU) festgeschrieben, sodass ein
+  // versehentliches false-CLEARED auf MTCR-/Anhang-IV-Trägerraketen-Technik
+  // sofort als Test-Failure auffällt.
+  //
+  // ── (n) NORWAY (NO_LIST → noOriginModule) ──────────────────────────────────
+  // Norwegen hat KEINE auf Code×Ziel selbst-ausführende Dual-Use-General-/Sammel-
+  // genehmigung (verifizierter DEKSA/MFA-Befund — NO_GENERAL_LICENCES leer). Jedes
+  // kontrollierte Liste-II-Gut ist eine individuelle MFA-Genehmigung → REVIEW; das
+  // einzige GO ist das genuin unkontrollierte reaction-wheel. Sensible Codes
+  // (9A004/9A106) fail-closen. Quelle: FOR-2013-06-19-718 Liste II + DEKSA.
+  "sat-bus|NO|DE": "REVIEW", // 9A004 (sensibel) NO→DE: Einzel-MFA-Genehmigung
+  "sat-bus|NO|US": "REVIEW", // 9A004 NO→US: kein GO (keine NO-General-Lizenz)
+  "sat-bus|NO|JP": "REVIEW", // 9A004 NO→JP
+  "sat-bus|NO|IN": "REVIEW", // 9A004 NO→IN
+  "sat-bus|NO|CN": "REVIEW", // 9A004 NO→CN
+  "sat-bus|NO|RU": "BLOCKED", // 9A004 NO→RU: Gate 1.6 (Norwegen EU-aligned)
+  "apogee-engine|NO|DE": "REVIEW", // 9A106 (bare-parent fail-close) NO→DE
+  "apogee-engine|NO|US": "REVIEW", // 9A106 NO→US
+  "apogee-engine|NO|JP": "REVIEW", // 9A106 NO→JP
+  "apogee-engine|NO|IN": "REVIEW", // 9A106 NO→IN
+  "apogee-engine|NO|CN": "REVIEW", // 9A106 NO→CN
+  "apogee-engine|NO|RU": "BLOCKED", // 9A106 NO→RU: Gate 1.6
+  "star-tracker|NO|DE": "REVIEW", // 7A004 NO→DE: kein GO-Pfad (Einzel-MFA)
+  "ground-tt-c|NO|US": "REVIEW", // 5A002 NO→US: kein GO (keine NO-General-Lizenz)
+  "prepreg|NO|JP": "REVIEW", // 1C010 NO→JP: kein GO
+  //
+  // ── (o) CANADA (CA_ECL → caOriginModule) ───────────────────────────────────
+  // ZWEI General-Permits: die US-Befreiung (CA→US für nicht-sensible ECL-Güter) +
+  // GEP No. 41 (SOR/2015-200, nicht-sensibel, nicht-Krypto, an die s.2-Allierten-
+  // Liste). Krypto (5A002) ist GEP-41-Schedule-13-ausgeschlossen → nur CA→US per
+  // US-Befreiung GO, sonst REVIEW. Sensible ECL-Group-6/MTCR-Codes (9A004/9A106)
+  // fail-closen AUCH in die USA. Quelle: Export Controls Handbook (US-Befreiung) +
+  // GEP No. 41 SOR/2015-200.
+  "star-tracker|CA|US": "GO", // 7A004 CA→US: US-Befreiung (nicht sensibel)
+  "star-tracker|CA|DE": "GO", // 7A004 CA→DE: GEP No. 41 (DE in s.2-Liste)
+  "star-tracker|CA|JP": "GO", // 7A004 CA→JP: GEP No. 41 (JP in s.2-Liste)
+  "ground-tt-c|CA|US": "GO", // 5A002 CA→US: US-Befreiung ("no permit to the US" für Krypto)
+  "ground-tt-c|CA|DE": "REVIEW", // 5A002 CA→DE: GEP-41-Schedule-13-ausgeschlossen (Krypto) → Einzelpermit
+  "ground-tt-c|CA|JP": "REVIEW", // 5A002 CA→JP: Krypto Schedule-13 → Einzelpermit
+  "flight-sw|CA|US": "GO", // 9D001 CA→US: US-Befreiung
+  "flight-sw|CA|DE": "GO", // 9D001 CA→DE: GEP No. 41
+  "flight-sw|CA|JP": "GO", // 9D001 CA→JP: GEP No. 41
+  "prepreg|CA|US": "GO", // 1C010 CA→US: US-Befreiung
+  "prepreg|CA|DE": "GO", // 1C010 CA→DE: GEP No. 41
+  "prepreg|CA|JP": "GO", // 1C010 CA→JP: GEP No. 41
+  "star-tracker|CA|IN": "REVIEW", // 7A004 CA→IN: weder US noch GEP-41-Ziel → Einzelpermit
+  "star-tracker|CA|CN": "REVIEW", // 7A004 CA→CN: weder US noch GEP-41-Ziel → Einzelpermit
+  "sat-bus|CA|US": "REVIEW", // 9A004 (sensibel, ECL Group 6 / nicht US-befreit) CA→US: fail-closed
+  "sat-bus|CA|DE": "REVIEW", // 9A004 CA→DE: sensibel, GEP-41 s.3(2)(e) ≥300 km MTCR
+  "sat-bus|CA|JP": "REVIEW", // 9A004 CA→JP: sensibel
+  "sat-bus|CA|CN": "REVIEW", // 9A004 CA→CN
+  "sat-bus|CA|RU": "BLOCKED", // 9A004 CA→RU: Gate 1.6 (Kanada SEMA)
+  "apogee-engine|CA|US": "REVIEW", // 9A106 (bare-parent fail-close) CA→US: fail-closed auch in die USA
+  "apogee-engine|CA|DE": "REVIEW", // 9A106 CA→DE
+  "apogee-engine|CA|JP": "REVIEW", // 9A106 CA→JP
+  "apogee-engine|CA|CN": "REVIEW", // 9A106 CA→CN
+  "apogee-engine|CA|RU": "BLOCKED", // 9A106 CA→RU: Gate 1.6
+  "radhard-obc|CA|DE": "REVIEW", // 3A001.a.1 CA→DE: US/BIS-Bein bleibt → REVIEW (CA-Modul übersteuert es nie)
+  "ground-tt-c|CA|RU": "BLOCKED", // 5A002 CA→RU: Gate 1.6 schlägt jede CA-General-Lizenz
+  //
+  // ── (p) AUSTRALIA (AU_DSGL → auOriginModule) ───────────────────────────────
+  // Australien hat KEINE auf Code×Ziel selbst-ausführende Dual-Use-General-Lizenz
+  // (das AUKUS-„licence-free environment" ist registrierungs-/authorised-user-
+  // gebunden, nicht item×destination — AU_GENERAL_LICENCES leer). Jedes
+  // kontrollierte DSGL-Gut ist eine DEC-Genehmigung → REVIEW, AUCH AU→US (das
+  // AUKUS-Env kippt 7A004/5A002/9D001/1C010 NICHT auf GO). Sensible Codes fail-
+  // closen. Quelle: DSGL F2024L01024 + defence.gov.au licence-free-environment +
+  // F2024L01100 (Excluded List).
+  "sat-bus|AU|DE": "REVIEW", // 9A004 (sensibel) AU→DE
+  "sat-bus|AU|US": "REVIEW", // 9A004 AU→US: kein AUKUS-GO (registrierungsgebunden)
+  "sat-bus|AU|JP": "REVIEW", // 9A004 AU→JP
+  "sat-bus|AU|IN": "REVIEW", // 9A004 AU→IN
+  "sat-bus|AU|CN": "REVIEW", // 9A004 AU→CN
+  "sat-bus|AU|RU": "BLOCKED", // 9A004 AU→RU: Gate 1.6 (Australien RU-Sanktionen)
+  "apogee-engine|AU|DE": "REVIEW", // 9A106 (bare-parent fail-close) AU→DE
+  "apogee-engine|AU|US": "REVIEW", // 9A106 AU→US
+  "apogee-engine|AU|JP": "REVIEW", // 9A106 AU→JP
+  "apogee-engine|AU|IN": "REVIEW", // 9A106 AU→IN
+  "apogee-engine|AU|CN": "REVIEW", // 9A106 AU→CN
+  "apogee-engine|AU|RU": "BLOCKED", // 9A106 AU→RU: Gate 1.6
+  "star-tracker|AU|US": "REVIEW", // 7A004 AU→US: DEC-Permit, KEIN AUKUS-GO (Ehrlichkeits-Pin)
+  "ground-tt-c|AU|DE": "REVIEW", // 5A002 AU→DE: DEC-Permit
+  "flight-sw|AU|JP": "REVIEW", // 9D001 AU→JP: DEC-Permit
+  //
+  // ── (q) JAPAN (JP_METI → jpOriginModule) ───────────────────────────────────
+  // EINE General-Lizenz: die General Bulk Export Licence (一般包括許可) an die
+  // Group-A-Staaten (Export Trade Control Order Anlage 3, inkl. KR seit 2023) →
+  // GENERAL/GO für nicht-sensible Dual-Use-Güter; sonst Einzel-METI-Lizenz. IN/CN
+  // sind NICHT Group A → REVIEW. Sensible MTCR/Anhang-IV-Codes fail-closen auch an
+  // Group A. Quelle: METI 2023-06-27 (Group A) + METI-Hub.
+  "star-tracker|JP|DE": "GO", // 7A004 JP→DE: General Bulk (DE Group A)
+  "star-tracker|JP|US": "GO", // 7A004 JP→US: General Bulk (US Group A)
+  "ground-tt-c|JP|DE": "GO", // 5A002 JP→DE: General Bulk
+  "ground-tt-c|JP|US": "GO", // 5A002 JP→US: General Bulk
+  "flight-sw|JP|DE": "GO", // 9D001 JP→DE: General Bulk
+  "flight-sw|JP|US": "GO", // 9D001 JP→US: General Bulk
+  "prepreg|JP|DE": "GO", // 1C010 JP→DE: General Bulk
+  "prepreg|JP|US": "GO", // 1C010 JP→US: General Bulk
+  "star-tracker|JP|IN": "REVIEW", // 7A004 JP→IN: IN nicht Group A → Einzel-METI
+  "star-tracker|JP|CN": "REVIEW", // 7A004 JP→CN: CN nicht Group A → Einzel-METI
+  "sat-bus|JP|DE": "REVIEW", // 9A004 (sensibel) JP→DE: fail-closed auch an Group A
+  "sat-bus|JP|US": "REVIEW", // 9A004 JP→US: fail-closed auch an Group A
+  "sat-bus|JP|IN": "REVIEW", // 9A004 JP→IN
+  "sat-bus|JP|CN": "REVIEW", // 9A004 JP→CN
+  "sat-bus|JP|RU": "BLOCKED", // 9A004 JP→RU: Gate 1.6 (Japan RU-Sanktionen)
+  "apogee-engine|JP|DE": "REVIEW", // 9A106 (bare-parent fail-close) JP→DE
+  "apogee-engine|JP|US": "REVIEW", // 9A106 JP→US
+  "apogee-engine|JP|IN": "REVIEW", // 9A106 JP→IN
+  "apogee-engine|JP|CN": "REVIEW", // 9A106 JP→CN
+  "apogee-engine|JP|RU": "BLOCKED", // 9A106 JP→RU: Gate 1.6
+  "radhard-obc|JP|DE": "REVIEW", // 3A001.a.1 JP→DE: US/BIS-Bein bleibt → REVIEW
+  "ground-tt-c|JP|RU": "BLOCKED", // 5A002 JP→RU: Gate 1.6 schlägt General Bulk
+  //
+  // ── (r) SOUTH KOREA (KR_STRATEGIC → krOriginModule) ────────────────────────
+  // Korea hat KEINE auf Code×Ziel selbst-ausführende General-Lizenz (die
+  // Comprehensive-/포괄수출허가 ist ein exporteur-spezifisches 자율준수무역거래자-
+  // Vorrecht — KR_GENERAL_LICENCES leer). Jedes kontrollierte Strategie-Gut ist
+  // eine individuelle MOTIE-Genehmigung → REVIEW; sensible Codes fail-closen mit
+  // der MTCR-case-by-case-Quelle. Quelle: Public Notice on Trade of Strategic
+  // Items + easylaw.go.kr Lizenztypen.
+  "sat-bus|KR|DE": "REVIEW", // 9A004 (sensibel) KR→DE
+  "sat-bus|KR|US": "REVIEW", // 9A004 KR→US
+  "sat-bus|KR|JP": "REVIEW", // 9A004 KR→JP
+  "sat-bus|KR|IN": "REVIEW", // 9A004 KR→IN
+  "sat-bus|KR|CN": "REVIEW", // 9A004 KR→CN
+  "sat-bus|KR|RU": "BLOCKED", // 9A004 KR→RU: Gate 1.6 (Korea Beinahe-Totalverbot)
+  "apogee-engine|KR|DE": "REVIEW", // 9A106 (bare-parent fail-close) KR→DE
+  "apogee-engine|KR|US": "REVIEW", // 9A106 KR→US
+  "apogee-engine|KR|JP": "REVIEW", // 9A106 KR→JP
+  "apogee-engine|KR|IN": "REVIEW", // 9A106 KR→IN
+  "apogee-engine|KR|CN": "REVIEW", // 9A106 KR→CN
+  "apogee-engine|KR|RU": "BLOCKED", // 9A106 KR→RU: Gate 1.6
+  "star-tracker|KR|US": "REVIEW", // 7A004 KR→US: kein GO-Pfad (Einzel-MOTIE)
+  "ground-tt-c|KR|JP": "REVIEW", // 5A002 KR→JP: Einzel-MOTIE
+  "prepreg|KR|DE": "REVIEW", // 1C010 KR→DE: Einzel-MOTIE
+  //
+  // ── (s) INDIA (IN_SCOMET → inOriginModule) ─────────────────────────────────
+  // Indien hat KEINE auf Code×Ziel selbst-ausführende General-Autorisierung (die
+  // DGFT-General-Authorisations GAET/GAEIS/GAED sind intra-company/end-use/case-
+  // by-case-bedingt — IN_GENERAL_LICENCES leer). Jedes SCOMET-kontrollierte Gut
+  // ist eine individuelle SCOMET-Autorisierung bei der DGFT → REVIEW; sensible
+  // Codes fail-closen. IN ist als Ziel hier ausgelassen (IN-Sitz). Quelle: DGFT
+  // SCOMET-Liste (Notification No. 25, 02.09.2024) + FTDR Act 1992.
+  "sat-bus|IN|DE": "REVIEW", // 9A004 (sensibel) IN→DE
+  "sat-bus|IN|US": "REVIEW", // 9A004 IN→US
+  "sat-bus|IN|JP": "REVIEW", // 9A004 IN→JP
+  "sat-bus|IN|CN": "REVIEW", // 9A004 IN→CN
+  "sat-bus|IN|RU": "BLOCKED", // 9A004 IN→RU: Gate 1.6
+  "apogee-engine|IN|DE": "REVIEW", // 9A106 (bare-parent fail-close) IN→DE
+  "apogee-engine|IN|US": "REVIEW", // 9A106 IN→US
+  "apogee-engine|IN|JP": "REVIEW", // 9A106 IN→JP
+  "apogee-engine|IN|CN": "REVIEW", // 9A106 IN→CN
+  "apogee-engine|IN|RU": "BLOCKED", // 9A106 IN→RU: Gate 1.6
+  "star-tracker|IN|DE": "REVIEW", // 7A004 IN→DE: individuelle SCOMET-Autorisierung
+  "ground-tt-c|IN|US": "REVIEW", // 5A002 IN→US: individuelle SCOMET-Autorisierung
+  "prepreg|IN|JP": "REVIEW", // 1C010 IN→JP: individuelle SCOMET-Autorisierung
 };
 
 // ─── Item-Klassifizierbarkeit (Kontrollverdacht) ──────────────────────────
@@ -556,45 +721,55 @@ function measureDistribution(): {
   return { total, ...counts };
 }
 
-describe("GOLDEN SET — Origin-Determination (Phase F + M-EU + M-UK + M-CH)", () => {
-  it("Verteilung nach M-CH: 744 = 106 GO / 364 REVIEW / 274 BLOCKED", () => {
+describe("GOLDEN SET — Origin-Determination (Phase F + M-EU + M-UK + M-CH + NO/CA/AU/JP/KR/IN fan-out)", () => {
+  it("Verteilung nach Fan-out: 744 = 124 GO / 346 REVIEW / 274 BLOCKED", () => {
     // Verlauf: Phase F (nur US-Wrap, no-op) 74/396/274 → M-EU (EUGEA EU001 +
     // Member→NCA) 90/380/274 → M-UK (OGEL EU-Mitgliedstaaten + SIEL bei der ECJU)
-    // 94/376/274 → M-CH (CH-Origin-Modul: OGB „ordentliche Generalausfuhr-
-    // bewilligung" GKV Art. 12 + Einzelbewilligung-Fallback beim SECO) 106/364/274.
+    // 94/376/274 → M-CH (OGB GKV Art. 12 + Einzelbewilligung beim SECO) 106/364/274
+    // → FAN-OUT (NO/CA/AU/JP/KR/IN Origin-Module) 124/346/274.
     //
-    // M-CH verschiebt GENAU 12 Zellen bewusst REVIEW→GO: vier OGB-fähige (NICHT
-    // sensible) Dual-Use-Items aus einem CH-Sitz an die DREI Anhang-7-Partner-
-    // staaten der Matrix (DE/US/JP):
-    //   • star-tracker|CH|{DE,US,JP} (7A004), ground-tt-c|CH|{DE,US,JP} (5A002),
-    //     flight-sw|CH|{DE,US,JP} (9D001), prepreg|CH|{DE,US,JP} (1C010)
-    //     → GO unter der OGB (4 Items × 3 Partnerstaaten = 12 Zellen).
-    // Jede Lockerung ist durch die OGB (GKV Art. 12(1) — Anhang 2 Teil 2 nach
-    // Anhang-7-Partnerstaaten) belegt — KEIN false-CLEARED. Belegt + gepinnt in
-    // EXACT (i)+(j). Anders als die EU/UK-OGEL deckt die OGB AUCH US/JP (beide
-    // auf Anhang 7), daher 3 Partner-Ziele statt nur DE.
+    // Der Fan-out verschiebt GENAU 18 Zellen bewusst REVIEW→GO — alle durch eine
+    // ZITIERTE General-Lizenz belegt, KEIN false-CLEARED:
     //
-    // WAS BEWUSST NICHT auf GO kippt (fail-closed):
-    //   • sat-bus|CH|* (9A004) + apogee-engine|CH|* (9A106): besonders sensible
-    //     MTCR/Anhang-IV-äquivalente Güter; die GKV führt KEINEN geschriebenen
-    //     Ausschluss-Katalog → eine OGB-Deckung ist nicht bestätigbar →
-    //     fail-closed Einzelbewilligung/REVIEW selbst an einen Partnerstaat (das
-    //     load-bearing Pin, jetzt vom CH-Modul produziert statt Gate 4.5).
-    //   • radhard-obc|CH|* (eccnUS 3A001.a.1): bleibt REVIEW — die OGB deckt zwar
-    //     das CH-Bein (3A001 ist NICHT sensibel), aber 3A001.a.1 ist ein US-ECCN,
-    //     sodass das US-EAR-Bein unabhängig eine de-minimis-/EAR-Prüfung verlangt
-    //     (UNKNOWN/BIS). Das CH-Modul übersteuert NIE ein US/BIS-Bein — ehrlicher
-    //     REVIEW, kein false-CLEARED.
-    //   • CH→IN/CN für kontrollierte Items: bleibt REVIEW (Einzelbewilligung — IN
-    //     und CN sind NICHT auf Anhang 7; die AGB nach Art. 13 ist exporteur-
-    //     spezifisch und hier nicht automatisch erteilbar; die 11-Staaten-
-    //     Erweiterung Anhang 7 ab 1. Juli 2026 ist NICHT modelliert).
-    // BLOCKED unverändert (274): kein Hartverbot (Embargo/RU-BY/ITAR) berührt;
-    // sat-bus|CH|RU bleibt BLOCKED (Gate 1.6 vorgelagert, EU-aligned).
+    //   CANADA (CA, +10): zwei General-Permits.
+    //     • US-Befreiung (Export Controls Handbook): CA→US für nicht-sensible
+    //       ECL-Güter → star-tracker|CA|US, ground-tt-c|CA|US (Krypto in die USA
+    //       permit-frei), flight-sw|CA|US, prepreg|CA|US (4 Zellen).
+    //     • GEP No. 41 (SOR/2015-200): nicht-sensible, nicht-Krypto Dual-Use an die
+    //       s.2-Allierten (DE/JP unter den Matrix-Zielen) → star-tracker|CA|{DE,JP},
+    //       flight-sw|CA|{DE,JP}, prepreg|CA|{DE,JP} (6 Zellen). Krypto (5A002) ist
+    //       GEP-41-Schedule-13-AUSGESCHLOSSEN → ground-tt-c|CA|{DE,JP} bleibt REVIEW.
+    //
+    //   JAPAN (JP, +8): General Bulk Export Licence (一般包括許可) an die
+    //     Group-A-Staaten (METI Anlage 3). DE/US sind Group A (JP-als-Ziel
+    //     ausgelassen; IN/CN NICHT Group A) → die vier nicht-sensiblen Items
+    //     (7A004/5A002/9D001/1C010) × {DE,US} = 8 Zellen GO. Quelle: METI 2023-06-27.
+    //
+    // WAS BEWUSST NICHT auf GO kippt (fail-closed — die load-bearing Sicherheit):
+    //   • NORWAY/AUSTRALIA/KOREA/INDIA: KEINE auf Code×Ziel selbst-ausführende
+    //     General-Lizenz (NO/AU/KR/IN_GENERAL_LICENCES leer — verifizierte Befunde:
+    //     NO MFA-Einzel, AU AUKUS-registrierungsgebunden, KR exporteur-spezifische
+    //     Comprehensive, IN DGFT-Einzel). Jedes kontrollierte Gut bleibt REVIEW;
+    //     das EINZIGE GO je Origin ist das genuin unkontrollierte reaction-wheel.
+    //     0 neue GO-Zellen aus diesen vier — exakt der ehrliche, wertvolle Befund
+    //     (manche Origins haben schlicht keine auto-erteilbare General-Lizenz).
+    //   • sat-bus (9A004) + apogee-engine (9A106) aus JEDEM der sechs Origins:
+    //     besonders sensible MTCR/Anhang-IV-äquivalente Güter → fail-closed REVIEW
+    //     an JEDES Ziel (auch CA→US, JP→Group-A), BLOCKED nach RU (Gate 1.6). Jede
+    //     dieser 11 sat-bus- + 11 apogee-Zellen je Origin ist oben in EXACT explizit
+    //     gepinnt — das Sicherheitsnetz, das früher Gate 4.5 war.
+    //   • radhard-obc (eccnUS 3A001.a.1) aus CA/JP: bleibt REVIEW — das CA/JP-Bein
+    //     wäre zwar General-Lizenz-fähig, aber das unabhängige US/BIS-Bein wird vom
+    //     Origin-Modul NIE übersteuert.
+    //   • CA→IN/CN, JP→IN/CN für kontrollierte Items: REVIEW (IN/CN nicht in der
+    //     GEP-41-Liste bzw. nicht Group A).
+    // BLOCKED unverändert (274): kein Hartverbot (Embargo/RU-BY/ITAR) berührt; jede
+    // kontrollierte *→RU-Zelle bleibt BLOCKED (Gate 1.6 vorgelagert), jede
+    // hall-thruster/eo-* ITAR-Zelle bleibt unverändert.
     expect(measureDistribution()).toEqual({
       total: 744,
-      GO: 106,
-      REVIEW: 364,
+      GO: 124,
+      REVIEW: 346,
       BLOCKED: 274,
     });
   });
@@ -645,34 +820,84 @@ describe("GOLDEN SET — Invarianten", () => {
     }
   });
 
-  it("genau diese 6 thin origins (dualUsePrimary maturity 3): NO,CA,JP,AU,KR,IN", () => {
-    // M-UK (2026-06-13) hob UK_STRATEGIC 3 → 2 (GB verließ den Thin-Set, 8 → 7).
-    // M-CH (2026-06-13) hob CH_GKV 3 → 2 (CH-Origin-OGB/Einzelbewilligung-Logik
-    // modelliert), sodass CH den Thin-Set verlässt (7 → 6).
+  it("KEIN circle-A-Origin ist mehr dünn (dualUsePrimary maturity 3) nach dem Fan-out", () => {
+    // Verlauf des Thin-Sets: M-UK (2026-06-13) hob UK_STRATEGIC 3 → 2 (GB verließ
+    // den Thin-Set, 8 → 7). M-CH (2026-06-13) hob CH_GKV 3 → 2 (7 → 6). Der
+    // ORIGIN-DETERMINATION-FAN-OUT (2026-06-13) modellierte die letzten sechs
+    // circle-A-Origins (NO/CA/AU/JP/KR/IN) und hob sie alle 3 → 2 — der circle-A-
+    // Thin-Set ist jetzt LEER. Gate 4.5 (Thin-Origin-REVIEW) feuert für KEINEN
+    // realen circle-A-Sitz mehr; das frühere Sicherheitsnetz (Gate 4.5 +
+    // Thin-Origin-Invariant) ist durch die EXPLIZITEN sensiblen EXACT-Pins je
+    // Origin ersetzt (siehe der Fan-out-Block oben in EXACT).
     const thin = ORIGINS.filter((o) => isThinOrigin(o)).sort();
-    expect(thin).toEqual(["AU", "CA", "IN", "JP", "KR", "NO"]);
-    // DE/FR (EU_ANNEX_I maturity 2) + US (US_CCL maturity 2) + GB (UK_STRATEGIC
-    // maturity 2 nach M-UK) + CH (CH_GKV maturity 2 nach M-CH) sind NICHT dünn.
-    expect(isThinOrigin("DE")).toBe(false);
-    expect(isThinOrigin("FR")).toBe(false);
-    expect(isThinOrigin("US")).toBe(false);
-    expect(isThinOrigin("GB")).toBe(false);
-    expect(isThinOrigin("CH")).toBe(false);
+    expect(thin).toEqual([]);
+    // Alle elf golden circle-A-Sitze sind NICHT dünn (alle maturity 2).
+    for (const o of ORIGINS) {
+      expect(isThinOrigin(o), `${o} darf nicht dünn sein`).toBe(false);
+    }
   });
 
-  it("Fail-Closed: thin origin × control-suspicious ist NIE GO (über die ganze Matrix)", () => {
-    for (const item of GOLDEN_ITEMS) {
-      if (!itemLooksControlled(item)) continue;
-      for (const origin of ORIGINS) {
-        if (!isThinOrigin(origin)) continue;
+  it("Fail-Closed-Ersatz: JEDE sensible MTCR/Anhang-IV-Zelle (sat-bus/apogee × NO/CA/AU/JP/KR/IN) ist nie-GO (REVIEW non-RU, BLOCKED RU)", () => {
+    // Da kein circle-A-Origin mehr dünn ist, kann der alte Thin-Origin-Invariant-
+    // Test (thin × controlled ⇒ nie GO) nicht mehr feuern. Diese Invariante TRITT
+    // AN SEINE STELLE und behält die Schutz-Bedeutung für die SECHS FAN-OUT-Origins
+    // (NO/CA/AU/JP/KR/IN — die Origins, deren Modul jetzt das Verdict liefert): sie
+    // verlangt für die ZWEI sensiblen Golden-Items (sat-bus 9A004 = space launch
+    // vehicle, apogee-engine 9A106 = TVC, beide Anhang-IV/MTCR), dass kein Fan-out-
+    // Origin-Modul sie je auf GO kippt — REVIEW zu jedem nicht-RU-Ziel, BLOCKED nach
+    // RU. Dies ist die direkte no-false-CLEARED-Garantie auf Trägerraketen-Technik
+    // aus einem Fan-out-Sitz.
+    //
+    // SCOPE-HINWEIS: bewusst NICHT über DE/FR — eine innergemeinschaftliche
+    // Verbringung (z. B. FR→DE) von 9A004/9A106 ist KEINE Ausfuhr aus dem EU-
+    // Zollgebiet und daher rechtlich frei (GO); das ist bestehendes, korrektes
+    // M-EU-Verhalten (Pin `sat-bus|FR|DE = GO`), kein Modul-false-CLEARED. Die
+    // Fan-out-Origins sind Nicht-EU/Drittland-Sitze, für die jede Ausfuhr ein
+    // Ausfuhrfall ist — dort gilt die strikte nie-GO-Garantie auf die sensiblen
+    // Codes.
+    const FAN_OUT = ["NO", "CA", "AU", "JP", "KR", "IN"] as const;
+    for (const id of ["sat-bus", "apogee-engine"] as const) {
+      const item = GOLDEN_ITEMS.find((i) => i.id === id)!;
+      expect(item, `${id} muss existieren`).toBeDefined();
+      for (const origin of FAN_OUT) {
         for (const dest of DESTS) {
           if (origin === dest.iso) continue;
           const v = runPipeline(item, origin, dest.iso);
-          expect(
-            v,
-            `${item.id}|${origin}|${dest.iso} — thin+controlled darf nie GO`,
-          ).not.toBe("GO");
+          if (dest.iso === "RU") {
+            expect(v, `${id}|${origin}|RU muss BLOCKED sein (Gate 1.6)`).toBe(
+              "BLOCKED",
+            );
+          } else {
+            expect(
+              v,
+              `${id}|${origin}|${dest.iso} — sensibles MTCR/Anhang-IV-Gut darf nie GO sein`,
+            ).not.toBe("GO");
+          }
         }
+      }
+    }
+  });
+
+  it("Fail-Closed: kontrolliertes Gut ist NIE GO nach CN und NIE non-BLOCKED nach RU (über die ganze Matrix)", () => {
+    // Ersetzt + erweitert die frühere Thin-Origin-Invariante: für JEDES
+    // kontrollverdächtige Item × JEDES Origin muss CN nicht-GO und RU BLOCKED sein.
+    // Das ist die origin-unabhängige Boden-Garantie, die unabhängig von der
+    // Maturity gilt und ein versehentliches false-CLEARED über ein General-Lizenz-
+    // Modul (CA/JP) an ein sensibles Ziel sofort als Failure zeigt.
+    // CN/RU are never themselves circle-A ORIGINS (the matrix exporters), so
+    // every origin→CN / origin→RU pair below is a genuine export case — no
+    // self-shipment guard needed.
+    for (const item of GOLDEN_ITEMS) {
+      if (!itemLooksControlled(item)) continue;
+      for (const origin of ORIGINS) {
+        expect(
+          runPipeline(item, origin, "CN"),
+          `${item.id}|${origin}|CN — kontrolliert darf nie GO`,
+        ).not.toBe("GO");
+        expect(
+          runPipeline(item, origin, "RU"),
+          `${item.id}|${origin}|RU — kontrolliert muss BLOCKED (Gate 1.6)`,
+        ).toBe("BLOCKED");
       }
     }
   });

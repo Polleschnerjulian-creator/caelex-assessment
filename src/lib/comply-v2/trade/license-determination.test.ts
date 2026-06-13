@@ -1053,7 +1053,9 @@ describe("Gate 4.5 — thin origin-regime coverage (fail-closed)", () => {
     multilateralBaseline: ["WASSENAAR", "MTCR", "NSG", "AG"],
     supported: true,
   };
-  /** JP = JP_METI, maturity 3, supported */
+  /** JP = JP_METI, maturity 2 after the fan-out (jpOriginModule registered),
+   * supported. The General Bulk Export Licence to Group-A states is now modelled,
+   * so JP no longer hits Gate 4.5 — see the JP fan-out tests below. */
   const JP_ORIGIN: OriginRegimeRouting = {
     dualUsePrimary: "JP_METI",
     militaryPrimary: null,
@@ -1278,7 +1280,13 @@ describe("Gate 4.5 — thin origin-regime coverage (fail-closed)", () => {
     expect(withUndefined).toEqual(legacy);
   });
 
-  it("JP origin (JP_METI maturity 3) + declared ECCN → REQUIRES_REVIEW with JP reason", () => {
+  it("JP origin (fan-out, JP_METI maturity 2) + declared non-sensitive ECCN → US: General Bulk Licence GENERAL/GO supersedes the generic REVIEW (CLEARED), NOT Gate 4.5", () => {
+    // The origin-determination fan-out (2026-06-13) lifted JP_METI 3 → 2 and
+    // registered jpOriginModule. 9A515.a is NOT on the sensitive MTCR/Annex-IV
+    // floor and the US is a Group-A state → the JP module returns GENERAL/GO under
+    // the General Bulk Export Licence (一般包括許可). For a non-EU destination the
+    // generic dual-use REVIEW is superseded by the module's cited GO → CLEARED.
+    // No THIN_ORIGIN_REGIME (Gate 4.5 no longer fires for JP).
     const det = determineLicenseRequirements(
       evalWith(),
       null,
@@ -1287,15 +1295,42 @@ describe("Gate 4.5 — thin origin-regime coverage (fail-closed)", () => {
       undefined,
       { eccnEU: null, eccnUS: "9A515.a", usmlCategory: null },
       JP_ORIGIN,
+      "JP",
     );
-    expect(det.gate).not.toBe("CLEARED");
-    const thinReq = det.requirements.find(
-      (r) => r.triggerCode === "THIN_ORIGIN_REGIME",
+    expect(det.gate).toBe("CLEARED");
+    expect(
+      det.requirements.some((r) => r.triggerCode === "THIN_ORIGIN_REGIME"),
+    ).toBe(false);
+    const general = det.requirements.find(
+      (r) => r.triggerCode === "ORIGIN_GENERAL_LICENCE",
     );
-    expect(thinReq).toBeDefined();
-    expect(thinReq!.reason).toMatch(
-      /JP.*nicht tief|Japan.*nicht tief|noch nicht tief.*JP|JP_METI/i,
+    expect(general).toBeDefined();
+    expect(general!.reason).toMatch(/Bulk|Group-A|METI|一般包括許可/i);
+  });
+
+  it("JP origin (fan-out) + declared non-sensitive ECCN → IN (NOT Group A): individual METI licence (REVIEW), NOT Gate 4.5", () => {
+    // India is NOT a Group-A state → the General Bulk Export Licence does not
+    // apply; the JP module returns INDIVIDUAL/REVIEW (個別許可 at METI), folded as
+    // ORIGIN_INDIVIDUAL_LICENCE → REVIEW_NEEDED. No THIN_ORIGIN_REGIME.
+    const det = determineLicenseRequirements(
+      evalWith(),
+      null,
+      "IN",
+      undefined,
+      undefined,
+      { eccnEU: null, eccnUS: "9A515.a", usmlCategory: null },
+      JP_ORIGIN,
+      "JP",
     );
+    expect(det.gate).toBe("REVIEW_NEEDED");
+    expect(
+      det.requirements.some((r) => r.triggerCode === "THIN_ORIGIN_REGIME"),
+    ).toBe(false);
+    const indiv = det.requirements.find(
+      (r) => r.triggerCode === "ORIGIN_INDIVIDUAL_LICENCE",
+    );
+    expect(indiv).toBeDefined();
+    expect(indiv!.reason).toMatch(/METI|Group-A|Einzel/i);
   });
 
   it("GB origin + NO control signals (EAR99-like, no declared codes, CLEAN_EVAL) → unchanged vs without origin (gate must NOT blanket-review)", () => {
