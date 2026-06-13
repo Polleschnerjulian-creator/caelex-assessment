@@ -631,9 +631,9 @@ export const WASSENAAR_CAT6_9_ENTRIES: WassenaarEntry[] = [
     code: "9.A.4.b",
     list: "DUL",
     category: "9",
-    title: "Stages of SLVs",
+    title: "Spacecraft",
     description:
-      "First/second/upper stages, integrated propulsion modules. Stage-separation, intertank, payload-fairing hardware.",
+      "Complete 'spacecraft' (satellites and other spacecraft) — communications, Earth-observation, navigation, and science platforms. CORRECTION (2026-06-13 base-corpus audit): the prior 'stages of SLVs' text was a mislabel. Official WA/EU 9A004.b = 'spacecraft'. Launch-vehicle stages are not 9A004.b — they fall under 9A004.a (the SLV) or 9A010 (LV components/structures).",
     euAnnexIRef: "9A004.b",
     earCclRef: "9A004.b",
     sourceUrl: SOURCE_URL,
@@ -765,42 +765,53 @@ export const WASSENAAR_CAT6_9_ENTRIES: WassenaarEntry[] = [
     asOfDate: ASOF,
   },
 
-  // ─── 9.A.7 — Ground equipment for SLVs / spacecraft ─────────────
+  // ─── 9.A.7 — Solid rocket propulsion systems ────────────────────
+  // CORRECTION (2026-06-13 base-corpus audit): the prior .a-.c text
+  // labelled these as launch-vehicle ground support / spacecraft AIT /
+  // satellite-control ground stations. That is WRONG — the SAME error
+  // class as the S5 9A006 fix (ground/spacecraft content grafted onto a
+  // propulsion code). Official WA 9.A.7 (= EU 9A007 / CCL 9A007) is
+  // "Solid rocket propulsion systems"; .a-.c are propulsion thresholds
+  // (total impulse, specific impulse, mass-fraction/solid-loading).
+  // Ground/AIT equipment is not 9A007: terrestrial spacecraft equipment
+  // is 9A004.f (already in this file), GSE/test rigs are largely
+  // uncontrolled. Source: Wassenaar WA-LIST 9.A.7 / EU 2021/821 9A007.
   {
     code: "9.A.7.a",
     list: "DUL",
     category: "9",
-    title: "Launch-vehicle ground support equipment (GSE)",
+    title: "Solid rocket propulsion systems (total impulse > 1.1 MNs)",
     description:
-      "Specialized GSE — cryogenic-propellant loaders, integrated-launch-control consoles, payload-fairing AIT equipment.",
+      "Solid rocket propulsion systems with a total impulse capacity exceeding 1.1 MNs. Part of WA/EU 9A007 'solid rocket propulsion systems'.",
     euAnnexIRef: "9A007.a",
     earCclRef: "9A007.a",
     sourceUrl: SOURCE_URL,
-    asOfDate: ASOF,
+    asOfDate: ASOF_S5,
   },
   {
     code: "9.A.7.b",
     list: "DUL",
     category: "9",
-    title: "Spacecraft AIT (assembly, integration, test) equipment",
+    title: "Solid rocket propulsion systems (specific impulse ≥ 2.4 kNs/kg)",
     description:
-      "Thermal-vacuum chambers, vibration tables, EMI/EMC anechoic chambers, mass-properties measurement equipment.",
+      "Solid rocket propulsion systems with a specific impulse of 2.4 kNs/kg or more (nozzle exit expanding to sea-level ambient, chamber pressure 7 MPa). Part of WA/EU 9A007 'solid rocket propulsion systems'.",
     euAnnexIRef: "9A007.b",
     earCclRef: "9A007.b",
     sourceUrl: SOURCE_URL,
-    asOfDate: ASOF,
+    asOfDate: ASOF_S5,
   },
   {
     code: "9.A.7.c",
     list: "DUL",
     category: "9",
-    title: "Satellite-control ground stations",
+    title:
+      "Solid rocket propulsion systems (mass fraction > 88%, solid loading > 86%)",
     description:
-      "Ground-control consoles, telemetry/tracking/command (TT&C) equipment, mission-operations-center hardware.",
+      "Solid rocket propulsion systems with stage mass fractions exceeding 88% and propellant solid loadings exceeding 86%. Part of WA/EU 9A007 'solid rocket propulsion systems'.",
     euAnnexIRef: "9A007.c",
     earCclRef: "9A007.c",
     sourceUrl: SOURCE_URL,
-    asOfDate: ASOF,
+    asOfDate: ASOF_S5,
   },
 
   // NOTE (CORRECTED 2026-06-13): The former "9.A.11.a/.b/.c — UAVs"
