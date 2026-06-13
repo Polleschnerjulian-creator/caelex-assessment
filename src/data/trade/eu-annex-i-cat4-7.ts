@@ -80,6 +80,12 @@ const SOURCE_DELEG_2025_2003 =
 
 const ASOF = "2026-05-23";
 
+// Base-corpus correctness audit (2026-06-13): re-verified Cat-4 + Cat-7
+// sub-paragraph lettering against current EUR-Lex 02021R0821 / Wassenaar
+// WA-LIST (HK STC cat_4/cat_7 mirror). Corrected wrong-item mislabels;
+// touched entries carry this as-of date.
+const ASOF_AUDIT = "2026-06-13";
+
 // ═══════════════════════════════════════════════════════════════════
 // COVERAGE METADATA
 // ═══════════════════════════════════════════════════════════════════
@@ -94,7 +100,7 @@ export const EU_ANNEX_I_CAT4_COVERAGE: ClassificationCoverage = {
   ],
   asOfDate: ASOF,
   officialTotalEntriesApprox: 35,
-  caelexCoverageCount: 17,
+  caelexCoverageCount: 15,
 };
 
 export const EU_ANNEX_I_CAT7_COVERAGE: ClassificationCoverage = {
@@ -131,20 +137,21 @@ export const EU_ANNEX_I_CAT4_ENTRIES: ClassificationEntry[] = [
       "Header — operators classify against the most-specific sub-entry that applies. The General Computer Note (Note 2 to Cat. 4) governs the threshold below which a computer ceases to be a Cat-4 capture.",
   },
   {
-    code: "4A001.a",
+    code: "4A001.a.1",
     jurisdiction: "EU_ANNEX_I",
-    title: "Electronic computers designed/modified for low/high temperature",
+    title:
+      "Electronic computers rated for operation below -45 °C or above +85 °C",
     description:
-      "Electronic computers and related equipment specially designed/modified to operate below -45 deg C or above +85 deg C (extended environmental range — spaceborne and military-aviation tripwire).",
+      "Electronic computers and related equipment rated for operation at an ambient temperature below 228 K (-45 °C) or above 358 K (+85 °C) — the extended-environmental-range tripwire (spaceborne / military-aviation).",
     controlReasons: ["NS", "MT"],
     crossReferenceTopic: "spacecraft-rad-hard-electronics",
     sourceUrl: SOURCE_URL,
-    asOfDate: ASOF,
+    asOfDate: ASOF_AUDIT,
     notes:
-      "Space-relevant: every flight computer that runs across the LEO/MEO temperature swing or the launch-vehicle thermal envelope sits here unless the standard-temperature carve-out applies.",
+      "Base-corpus audit 2026-06-13: 4A001.a.1 is the TEMPERATURE sub-paragraph (the radiation entry is 4A001.a.2). Every flight computer across the LEO/MEO thermal swing or launch-vehicle envelope sits here unless the standard-temperature carve-out applies.",
   },
   {
-    code: "4A001.a.1",
+    code: "4A001.a.2",
     jurisdiction: "EU_ANNEX_I",
     title: "Computers rated for total ionizing dose ≥ 5×10⁵ rad(Si)",
     description:
@@ -152,21 +159,13 @@ export const EU_ANNEX_I_CAT4_ENTRIES: ClassificationEntry[] = [
     controlReasons: ["NS", "MT"],
     crossReferenceTopic: "spacecraft-rad-hard-electronics",
     sourceUrl: SOURCE_URL,
-    asOfDate: ASOF,
+    asOfDate: ASOF_AUDIT,
     notes:
-      "RAD750 (BAE Systems), GR740 (Cobham Gaisler), LEON4-FT, Mongoose-V — the canonical spaceborne flight-computer ECCN. Falls in parallel with 3A001.a.1 (rad-hard ICs that go INTO the computer).",
+      "Base-corpus audit 2026-06-13: radiation hardening is 4A001.a.2 (was mislabelled 4A001.a.1, which is the temperature sub-paragraph). RAD750 (BAE), GR740 (Cobham Gaisler), LEON4-FT, Mongoose-V — the canonical spaceborne flight-computer ECCN. Parallels 3A001.a.1 (rad-hard ICs inside the computer).",
   },
-  {
-    code: "4A001.b",
-    jurisdiction: "EU_ANNEX_I",
-    title: "Mil-spec ruggedized computers (vibration / shock / EMP)",
-    description:
-      "Electronic computers specially designed/modified for military-spec ruggedization — extreme shock, vibration, EMP resistance, or NBC (nuclear-biological-chemical) survivability.",
-    controlReasons: ["NS", "MT"],
-    crossReferenceTopic: null,
-    sourceUrl: SOURCE_URL,
-    asOfDate: ASOF,
-  },
+  // 4A001.b — REMOVED (base-corpus audit 2026-06-13): official 4A001.b is
+  // deleted (L.N. 45/2010). The "mil-spec ruggedized computers" content was a
+  // phantom — military ruggedization is not a 4A001.b dual-use control.
   {
     code: "4A003",
     jurisdiction: "EU_ANNEX_I",
@@ -180,53 +179,47 @@ export const EU_ANNEX_I_CAT4_ENTRIES: ClassificationEntry[] = [
     notes:
       "4A003 is the historical Wassenaar high-performance-computing gate. Sub-entries .a-.g use APP (Adjusted Peak Performance) thresholds in weighted TeraFLOPS.",
   },
-  {
-    code: "4A003.a",
-    jurisdiction: "EU_ANNEX_I",
-    title: "Digital computers with APP above Wassenaar threshold",
-    description:
-      "Digital computers having an 'Adjusted Peak Performance' (APP) exceeding the current Wassenaar threshold (historically 29 Weighted TeraFLOPS, periodically updated). The headline HPC capture.",
-    controlReasons: ["NS"],
-    crossReferenceTopic: null,
-    sourceUrl: SOURCE_URL,
-    asOfDate: ASOF,
-    notes:
-      "APP is the Wassenaar-derived weighted-FLOPS metric. The exact threshold value is reset by Wassenaar plenary decisions; check current value at classification time.",
-  },
+  // 4A003.a — REMOVED (base-corpus audit 2026-06-13): official 4A003.a is
+  // repealed. The "Adjusted Peak Performance" HPC threshold it described now
+  // lives at 4A003.b (> 70 Weighted TeraFLOPS) — relocated below.
   {
     code: "4A003.b",
     jurisdiction: "EU_ANNEX_I",
-    title: "Electronic assemblies for aggregation into high-APP computers",
+    title: "Digital computers with APP exceeding 70 Weighted TeraFLOPS",
     description:
-      "Electronic assemblies specially designed for being aggregated into systems whose APP would exceed the threshold of 4A003.a — captures GPU racks, accelerator boards, server blades.",
+      "'Digital computers' having an 'Adjusted Peak Performance' (APP) exceeding 70 Weighted TeraFLOPS (WT) — the headline high-performance-computing capture. (The exact WT value is reset by Wassenaar plenary decisions; verify at classification time.)",
     controlReasons: ["NS"],
     crossReferenceTopic: null,
     sourceUrl: SOURCE_URL,
-    asOfDate: ASOF,
+    asOfDate: ASOF_AUDIT,
+    notes:
+      "Base-corpus audit 2026-06-13: corrected from an 'assemblies for aggregation' mislabel. Official 4A003.b = digital computers above the APP (> 70 WT) gate; the aggregation-assemblies item is 4A003.c.",
   },
   {
     code: "4A003.c",
     jurisdiction: "EU_ANNEX_I",
-    title: "Computers with simultaneous-pulse triple-redundancy architectures",
+    title: "Electronic assemblies for aggregating processors above 4A003.b",
     description:
-      "Computers using simultaneous-pulse-triple-redundancy (SPTR) or equivalent triple-modular-redundancy architectures for fault tolerance — captures spaceborne TMR flight computers above defined thresholds.",
-    controlReasons: ["NS", "MT"],
-    crossReferenceTopic: "spacecraft-rad-hard-electronics",
+      "'Electronic assemblies' specially designed or modified for enhancing performance by aggregation of processors so that the 'APP' of the aggregation exceeds the limit in 4A003.b. Captures GPU racks, accelerator boards, server blades built into above-threshold clusters.",
+    controlReasons: ["NS"],
+    crossReferenceTopic: null,
     sourceUrl: SOURCE_URL,
-    asOfDate: ASOF,
+    asOfDate: ASOF_AUDIT,
+    notes:
+      "Base-corpus audit 2026-06-13: corrected from a 'simultaneous-pulse triple-redundancy (SPTR/TMR)' mislabel. Official 4A003.c = processor-aggregation assemblies that push aggregate APP past the 4A003.b limit.",
   },
   {
     code: "4A004",
     jurisdiction: "EU_ANNEX_I",
-    title: "Computers with cooling above defined thresholds",
+    title: "Systolic array, neural, and optical computers",
     description:
-      "Computers, electronic assemblies, and related cooling equipment specially designed to operate above defined heat-dissipation thresholds (typically aggregate ≥ 1 kW/rack with active liquid or two-phase cooling).",
+      "Computers, and specially designed related equipment / electronic assemblies / components therefor, of any of the following architectures: 'systolic array computers'; 'neural computers'; 'optical computers'.",
     controlReasons: ["NS"],
     crossReferenceTopic: null,
     sourceUrl: SOURCE_URL,
-    asOfDate: ASOF,
+    asOfDate: ASOF_AUDIT,
     notes:
-      "Captures liquid-cooled HPC racks, immersion-cooled GPU farms. Relevant for ground-based AI training infrastructure used by EO operators.",
+      "Base-corpus audit 2026-06-13: corrected from a 'cooling-threshold computers' mislabel. Official 4A004 = systolic-array / neural / optical computers (architecture classes), not a heat-dissipation gate.",
   },
   {
     code: "4A090",
@@ -407,26 +400,28 @@ export const EU_ANNEX_I_CAT7_ENTRIES: ClassificationEntry[] = [
   {
     code: "7A002.b",
     jurisdiction: "EU_ANNEX_I",
-    title: "Spinning-mass / mechanical gyros above thresholds",
+    title: "Gyros specified to function above 100 g linear acceleration",
     description:
-      "Spinning-mass mechanical gyros (dynamically-tuned, floated-rate-integrating) with drift-rate stability above defined thresholds. Legacy technology; rarely flown new but still in some heritage platforms.",
+      "Gyros or angular-rate sensors specified to function at linear-acceleration levels exceeding 100 g — the sole criterion (no separate performance gate). High-g-survivable rate sensing for gun-hard / launch-shock environments.",
     controlReasons: ["NS", "MT"],
     crossReferenceTopic: "gnss-receivers-imus-star-trackers",
     sourceUrl: SOURCE_URL,
-    asOfDate: ASOF,
+    asOfDate: ASOF_AUDIT,
+    notes:
+      "Base-corpus audit 2026-06-13: corrected from a 'spinning-mass mechanical gyros' mislabel. Official 7A002.b = gyros functioning above 100 g linear acceleration (technology-neutral).",
   },
   {
     code: "7A006",
     jurisdiction: "EU_ANNEX_I",
-    title: "Airborne / spaceborne altimeters above defined accuracy",
+    title: "Airborne altimeters (non-4.2–4.4 GHz) with power management or PSK",
     description:
-      "Airborne / spaceborne altimeters operating at frequencies other than 4.2-4.4 GHz, OR with accuracy of better than +/- 3% of altitude across the operating range. Captures radar altimeters for landers + entry-descent-landing systems.",
+      "Airborne altimeters operating at frequencies other than 4.2-4.4 GHz inclusive and having either: (a) 'power management'; or (b) using phase-shift-key modulation. (There is no ±-accuracy criterion in 7A006.)",
     controlReasons: ["NS", "MT"],
     crossReferenceTopic: null,
     sourceUrl: SOURCE_URL,
-    asOfDate: ASOF,
+    asOfDate: ASOF_AUDIT,
     notes:
-      "Radar altimeters on EDL platforms (ExoMars, JAXA SLIM, Astrobotic Peregrine) and high-precision airborne altimeters fire here. Spaceborne radiometric altimeters above the accuracy gate are direct hits.",
+      "Base-corpus audit 2026-06-13: corrected the trigger — official 7A006 fires on power management OR phase-shift-key modulation (outside 4.2–4.4 GHz), NOT on an 'accuracy better than ±3%' figure (which was not in the regulation).",
   },
 
   // ─── 7A — MTCR-derived navigation hardware ───────────────────────
@@ -487,14 +482,16 @@ export const EU_ANNEX_I_CAT7_ENTRIES: ClassificationEntry[] = [
     code: "7A106",
     jurisdiction: "EU_ANNEX_I",
     title:
-      "Radar / radio-frequency altimeters for MTCR-Cat-I delivery vehicles",
+      "Radar / laser-radar altimeters for space launch vehicles / sounding rockets",
     description:
-      "Radar altimeters specially designed for MTCR-Cat-I delivery vehicles — incl. terrain-following / terrain-correlation radar above defined accuracy thresholds for reentry-vehicle guidance.",
+      "Altimeters, other than those controlled by 7A006, of radar or laser-radar type, designed or modified for use in space launch vehicles controlled by 9A004 or sounding rockets controlled by 9A104.",
     controlReasons: ["MT"],
     crossReferenceTopic: null,
     sourceUrl: SOURCE_URL,
-    asOfDate: ASOF,
+    asOfDate: ASOF_AUDIT,
     mtcrCategory: "II",
+    notes:
+      "Base-corpus audit 2026-06-13: corrected from a 'radar altimeters for missiles / reentry guidance' mislabel. Official 7A106 cites 9A004 SLVs / 9A104 sounding rockets, not missiles.",
   },
 
   // ─── 7B — Test, Inspection, Production Equipment ─────────────────
@@ -526,27 +523,29 @@ export const EU_ANNEX_I_CAT7_ENTRIES: ClassificationEntry[] = [
   {
     code: "7B002",
     jurisdiction: "EU_ANNEX_I",
-    title: "Equipment for characterising / aligning inertial sensors",
+    title: "Equipment for characterising ring-laser-gyro mirrors",
     description:
-      "Equipment specially designed for characterising mirrors / signal-path optics for ring-laser-gyro (RLG) production, AND for aligning rate / acceleration sensors in flight INS units.",
+      "Equipment specially designed to characterise mirrors for ring 'laser' gyros: scatterometers measuring scatter losses ≤ 10 ppm, and profilometers measuring surfaces with accuracy ≤ 0.5 nm.",
     controlReasons: ["NS", "MT"],
     crossReferenceTopic: null,
     sourceUrl: SOURCE_URL,
-    asOfDate: ASOF,
+    asOfDate: ASOF_AUDIT,
     notes:
-      "RLG-specific production gear (laser-block lapping fixtures, optical-quality cavity inspection) plus the alignment test benches for full INS units (Honeywell IRS, Safran SIGMA series).",
+      "Base-corpus audit 2026-06-13: narrowed from a 'characterising RLG mirrors AND aligning INS sensors' over-scope. Official 7B002 = RLG-mirror characterisation only (scatterometers/profilometers); INS alignment is not in scope.",
   },
   {
     code: "7B003",
     jurisdiction: "EU_ANNEX_I",
-    title: "Equipment for production of 7A101-7A106 (MTCR-grade)",
+    title: "Equipment for the production of equipment specified in 7A",
     description:
-      "Test, inspection, and production equipment specially designed for the development or production of 7A101-7A106-controlled MTCR-grade navigation hardware. MTCR-Cat-II equivalent — strong-presumption-of-denial gate.",
-    controlReasons: ["MT"],
+      "Equipment specially designed for the 'production' of equipment specified in 7A — e.g. gyro tuning-test equipment, gyro motor-mass dynamic-balance machines, gyro/accelerometer alignment fixtures, fibre-optic-gyro coil-winding machines. Covers ALL of Category 7A, not only the MTCR 7A1xx items.",
+    controlReasons: ["NS", "MT"],
     crossReferenceTopic: null,
     sourceUrl: SOURCE_URL,
-    asOfDate: ASOF,
+    asOfDate: ASOF_AUDIT,
     mtcrCategory: "II",
+    notes:
+      "Base-corpus audit 2026-06-13: corrected the scope — official 7B003 = production equipment for the whole 7A family, not a MTCR-only (7A101–7A106) gate.",
   },
 
   // ─── 7D — Software ───────────────────────────────────────────────
@@ -580,26 +579,29 @@ export const EU_ANNEX_I_CAT7_ENTRIES: ClassificationEntry[] = [
   {
     code: "7D003",
     jurisdiction: "EU_ANNEX_I",
-    title: "Other software for use of 7A nav hardware",
+    title:
+      "Other navigation software (performance-improvement, hybrid, helicopter FCS)",
     description:
-      "Other software specially designed for the use of 7A001-7A006 navigation hardware — flight-software libraries, sensor-fusion runtimes, calibration-coefficient management.",
+      "Other 'software' as follows: (a) software improving the operational performance or reducing the navigational error of systems to the levels of 7A003/7A004/7A008; (b) 'source code' for hybrid integrated systems combining a navigation heading with flight-control, Doppler/sonar/satellite/data-base-referenced-navigation data; (e) CAD 'software' for the development of helicopter active flight-control systems.",
     controlReasons: ["NS"],
     crossReferenceTopic: null,
     sourceUrl: SOURCE_URL,
-    asOfDate: ASOF,
+    asOfDate: ASOF_AUDIT,
+    notes:
+      "Base-corpus audit 2026-06-13: corrected from a generic 'other software for use of 7A hardware' mislabel to the official 7D003 sub-scopes (performance-improvement, hybrid-system source code, helicopter-FCS CAD).",
   },
   {
     code: "7D004",
     jurisdiction: "EU_ANNEX_I",
-    title: "Source code for INS / Kalman-filter / FDIR algorithms",
+    title: "Source code for flight-management / active-flight-control systems",
     description:
-      "Source code implementing inertial-navigation algorithms, Kalman filtering at navigation-grade precision, fault-detection-isolation-recovery (FDIR) for INS, and integrated GNSS-INS coupling. The structural capture for nav-software IP.",
+      "'Source code' incorporating 'development' 'technology' controlled by 7E004, for any of: digital flight-management systems; integrated propulsion + flight-control systems; fly-by-wire / fly-by-light systems; fault-tolerant / reconfigurable active flight-control systems; air-data systems; 3-D aircraft displays. Excludes common computer utilities.",
     controlReasons: ["NS", "MT"],
-    crossReferenceTopic: "gnss-receivers-imus-star-trackers",
+    crossReferenceTopic: null,
     sourceUrl: SOURCE_URL,
-    asOfDate: ASOF,
+    asOfDate: ASOF_AUDIT,
     notes:
-      "Source-code IP entry. Open-source nav stacks (e.g. NASA Core Flight System, ESA Sirius) walk the publicly-available carve-out; proprietary integrated INS/GPS code from Honeywell, Northrop, Safran is direct 7D004 capture.",
+      "Base-corpus audit 2026-06-13: corrected from an 'INS / Kalman / FDIR / GNSS-INS source code' mislabel. Official 7D004 = source code (incorporating 7E004 technology) for flight-management / active-flight-control systems.",
   },
 
   // ─── 7E — Technology ─────────────────────────────────────────────
@@ -642,27 +644,29 @@ export const EU_ANNEX_I_CAT7_ENTRIES: ClassificationEntry[] = [
   {
     code: "7E004",
     jurisdiction: "EU_ANNEX_I",
-    title: "Technology for development of GNSS anti-jam / anti-spoof features",
+    title: "Technology for active flight-control systems",
     description:
-      "Technology required for the development of GNSS receivers controlled by 7A005 — anti-jam adaptive-antenna design, anti-spoof authentication algorithms, multi-constellation fusion know-how, Galileo PRS / GPS M-code integration.",
+      "Other 'technology' for the 'development' of active flight-control systems and avionics: air-data systems, 3-D displays, electric/electro-hydrostatic actuators for primary flight control, optical-sensor flight-control arrays, database-referenced-navigation (DBRN) underwater systems; fly-by-wire / fly-by-light functional and integration technology; and helicopter multi-axis fly-by-wire / circulation-control / variable-geometry-rotor controls.",
     controlReasons: ["NS", "MT"],
-    crossReferenceTopic: "gnss-receivers-imus-star-trackers",
+    crossReferenceTopic: null,
     sourceUrl: SOURCE_URL,
-    asOfDate: ASOF,
+    asOfDate: ASOF_AUDIT,
     notes:
-      "Particularly sensitive for the EU PRS (Galileo Public Regulated Service) and US GPS M-code receiver IP — both are subject to elevated EU member-state and US ITAR controls respectively.",
+      "Base-corpus audit 2026-06-13: corrected from a 'GNSS anti-jam / anti-spoof technology' mislabel — that is unrelated to 7E004. Official 7E004 = active-flight-control-system development technology.",
   },
   {
     code: "7E101",
     jurisdiction: "EU_ANNEX_I",
-    title: "Technology for MTCR-related 7A1xx items",
+    title: "Use technology for 7A001–7A006 / 7A101–7A106 / 7B001–7B003 items",
     description:
-      "Technology required for the development, production, or use of 7A101-7A106 MTCR-grade navigation hardware. Per the General Technology Note, deemed-export capture for MTCR-driven know-how.",
+      "Technology according to the General Technology Note for the 'use' of equipment controlled by 7A001 to 7A006, 7A101 to 7A106, 7A115 to 7A117, 7B001 to 7B003, and 7B102 to 7B103. Note the verb is 'use' (not development/production) and the scope INCLUDES the Wassenaar 7A001–7A006 baseline, not only the MTCR 7A1xx items.",
     controlReasons: ["MT"],
     crossReferenceTopic: "gnss-receivers-imus-star-trackers",
     sourceUrl: SOURCE_URL,
-    asOfDate: ASOF,
+    asOfDate: ASOF_AUDIT,
     mtcrCategory: "II",
+    notes:
+      "Base-corpus audit 2026-06-13: corrected from a 'dev/production/use of 7A101–7A106 (MTCR-only)' mislabel. Official 7E101 = USE technology spanning 7A001–7A006 + 7A101–7A106 + 7A115–7A117 + 7B001–7B003.",
   },
 ];
 

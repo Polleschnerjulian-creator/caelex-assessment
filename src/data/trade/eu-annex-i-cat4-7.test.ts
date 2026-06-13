@@ -34,11 +34,9 @@ import { CONTROL_LIST_CROSS_WALK } from "@/lib/comply-v2/trade/classification/co
 
 const CAT4_HARDWARE_CODES = [
   "4A001",
-  "4A001.a",
   "4A001.a.1",
-  "4A001.b",
+  "4A001.a.2",
   "4A003",
-  "4A003.a",
   "4A003.b",
   "4A003.c",
   "4A004",
@@ -115,8 +113,8 @@ describe("Z34-Cat4-7 — Cat 4 (Computers) presence", () => {
     );
   });
 
-  it("4A001.a.1 (rad-hard ≥ 5×10⁵ rad(Si)) is captured and carries NS+MT", () => {
-    const entry = findEuAnnexICat4Entry("4A001.a.1");
+  it("4A001.a.2 (rad-hard ≥ 5×10⁵ rad(Si)) is captured and carries NS+MT", () => {
+    const entry = findEuAnnexICat4Entry("4A001.a.2");
     expect(entry).toBeDefined();
     expect(entry?.controlReasons).toContain("NS");
     expect(entry?.controlReasons).toContain("MT");
@@ -323,8 +321,8 @@ describe("Z34-Cat4-7 — reason-for-control semantics", () => {
     }
   });
 
-  it("rad-hard 4A001.a / 4A001.a.1 entries carry both NS and MT", () => {
-    for (const code of ["4A001.a", "4A001.a.1"]) {
+  it("4A001.a.1 (temperature) / 4A001.a.2 (radiation) entries carry both NS and MT", () => {
+    for (const code of ["4A001.a.1", "4A001.a.2"]) {
       const entry = findEuAnnexICat4Entry(code);
       expect(entry?.controlReasons).toContain("NS");
       expect(entry?.controlReasons).toContain("MT");
@@ -492,7 +490,8 @@ describe("Z34-Cat4-7 — helper functions", () => {
 
   it("findEuAnnexICat4EntriesByPrefix returns all 4A003 entries", () => {
     const entries = findEuAnnexICat4EntriesByPrefix("4A003");
-    expect(entries.length).toBeGreaterThanOrEqual(4);
+    // 4A003, 4A003.b, 4A003.c — 4A003.a removed (repealed) in the 2026-06-13 audit.
+    expect(entries.length).toBeGreaterThanOrEqual(3);
     for (const e of entries) {
       expect(e.code === "4A003" || e.code.startsWith("4A003.")).toBe(true);
     }
