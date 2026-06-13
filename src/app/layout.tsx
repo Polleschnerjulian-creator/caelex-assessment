@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Inter, JetBrains_Mono, Geist } from "next/font/google";
+import localFont from "next/font/local";
 import "./globals.css";
 import Providers from "@/components/Providers";
 import PublicLayout from "@/components/layout/PublicLayout";
@@ -29,6 +30,27 @@ const jetbrainsMono = JetBrains_Mono({
 const geist = Geist({
   subsets: ["latin"],
   variable: "--font-geist",
+  display: "swap",
+});
+
+// Elms Sans (Medium 500) — the Caelex Passage brand wordmark face. Not in the
+// next/font/google registry, so self-hosted via next/font/local from the
+// official Google Fonts woff2 (open-licensed; latin + latin-ext subsets). No
+// runtime Google connection — bundled at build, same posture as Geist/Inter.
+const elmsSans = localFont({
+  src: [
+    {
+      path: "./fonts/ElmsSans-Medium-latin.woff2",
+      weight: "500",
+      style: "normal",
+    },
+    {
+      path: "./fonts/ElmsSans-Medium-latinext.woff2",
+      weight: "500",
+      style: "normal",
+    },
+  ],
+  variable: "--font-elms",
   display: "swap",
 });
 
@@ -182,7 +204,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${inter.variable} ${jetbrainsMono.variable} ${geist.variable}`}
+      className={`${inter.variable} ${jetbrainsMono.variable} ${geist.variable} ${elmsSans.variable}`}
       suppressHydrationWarning
     >
       <head>

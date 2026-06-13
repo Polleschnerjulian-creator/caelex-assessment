@@ -189,23 +189,25 @@ export function TradeSidebar({ org, badgeCounts }: Props) {
         fontFamily: sidebarFont,
       }}
     >
-      {/* Brand — workspace wordmark (org name in big modern type) */}
+      {/* Brand — Passage product wordmark (Elms Sans Medium 500). The
+          org/workspace name still appears in the top-bar breadcrumb. */}
       <div className="flex h-[72px] items-center px-4">
         <Link
           href="/trade"
           className="block transition-opacity hover:opacity-80"
-          aria-label={`${org.name} — Overview`}
+          aria-label={`${org.name} — Passage — Overview`}
         >
           <span
             className="block leading-none"
             style={{
+              fontFamily: "var(--font-elms), var(--font-inter), sans-serif",
               fontSize: "28px",
-              fontWeight: 600,
-              letterSpacing: "-0.025em",
+              fontWeight: 500,
+              letterSpacing: "-0.02em",
               color: "rgba(255, 255, 255, 0.96)",
             }}
           >
-            {org.name}
+            Passage
           </span>
         </Link>
       </div>

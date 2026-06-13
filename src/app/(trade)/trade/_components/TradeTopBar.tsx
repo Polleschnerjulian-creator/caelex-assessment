@@ -50,36 +50,17 @@ export function TradeTopBar({ org }: { org: { id: string; name: string } }) {
         href="/trade"
         aria-label={`${org.name} — Passage`}
         title="Passage"
-        className="hidden place-items-center transition-opacity hover:opacity-90 md:grid"
+        className="hidden items-center transition-opacity hover:opacity-80 md:inline-flex"
         style={{
-          width: 28,
-          height: 28,
-          borderRadius: 8,
-          background: "linear-gradient(160deg, #26282f, #141519)",
-          boxShadow: "0 1px 2px rgba(0,0,0,.15)",
+          fontFamily: "var(--font-elms), var(--font-inter), sans-serif",
+          fontSize: "19px",
+          fontWeight: 500,
+          letterSpacing: "-0.02em",
+          color: "var(--trade-text-primary)",
+          lineHeight: 1,
         }}
       >
-        <svg
-          width="15"
-          height="15"
-          viewBox="0 0 24 24"
-          fill="none"
-          aria-hidden="true"
-        >
-          <path
-            d="M5 19 L13 5 M11 19 L19 5"
-            stroke="#fff"
-            strokeWidth="2.2"
-            strokeLinecap="round"
-          />
-          <path
-            d="M4 12 H20"
-            stroke="#fff"
-            strokeWidth="2.2"
-            strokeLinecap="round"
-            opacity=".55"
-          />
-        </svg>
+        Passage
       </Link>
 
       {/* Breadcrumb — org / active section */}
