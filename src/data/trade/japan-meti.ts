@@ -561,11 +561,13 @@ export const JAPAN_METI_ENTRIES: JapanMetiEntry[] = [
     title: "Quantum cryptography (QKD) equipment",
     description:
       "Quantum-key-distribution hardware. Includes NICT's Micius-class space-to-ground QKD experiments + commercial follow-on programmes.",
-    euAnnexIRef: "5A002.f",
-    earCclRef: "5A002.f",
-    wassenaarRef: "5.A.2.f",
+    euAnnexIRef: "5A002.c",
+    earCclRef: "5A002.c",
+    wassenaarRef: "5.A.2.c",
     sourceUrl: METI_SCHEDULE_1_URL,
     asOfDate: ASOF,
+    notes:
+      "QKD = 5A002.c in the harmonised Wassenaar/EU/US Cat-5-Part-2 letter scheme ('Designed or modified to use quantum cryptography'). Corrected from the dangling 5A002.f (5A002 ends at .e in EU Reg 2021/821 Annex I / corrected eu-annex-i-cat5.ts; the legacy .f slot was a phantom). US CCL ECCN 5A002.c likewise controls QKD. Sources: EU Reg (EU) 2021/821 Annex I Cat 5 Pt 2 (EUR-Lex CELEX 02021R0821); US CCL ECCN 5A002.c.",
   },
   {
     code: "11(7)",
@@ -573,12 +575,14 @@ export const JAPAN_METI_ENTRIES: JapanMetiEntry[] = [
     category: "telecommunications",
     title: "Cryptanalytic equipment",
     description:
-      "Equipment for cryptanalysis or for designing cryptanalytic algorithms. Rare in pure space-sector operator inventories but applies to SIGINT-class ground stations.",
-    euAnnexIRef: "5A002.c",
-    earCclRef: "5A002.c",
-    wassenaarRef: "5.A.2.c",
+      "Equipment designed or modified to perform 'cryptanalytic functions' — defeating cryptographic mechanisms to derive confidential variables or sensitive data (clear text, passwords, keys). Rare in pure space-sector operator inventories but applies to SIGINT-class ground stations.",
+    euAnnexIRef: "5A004",
+    earCclRef: "5A004",
+    wassenaarRef: "5.A.4",
     sourceUrl: METI_SCHEDULE_1_URL,
     asOfDate: ASOF,
+    notes:
+      "Cryptanalytic functions moved OUT of 5A002 to the standalone 5A004 entry in the 2018-plenary Wassenaar restructure (EU/US/Wassenaar harmonised). Corrected from the old 5A002.c, which now controls QKD, NOT cryptanalysis (a wrong-item ref). US CCL ECCN 5A004 ('Designed or modified to perform cryptanalytic functions', formerly 5A002.a.2) matches. Sources: EU Reg (EU) 2021/821 Annex I 5A004 (corrected eu-annex-i-cat5.ts); US CCL ECCN 5A004; Wassenaar 2018 Plenary impl. (BIS Final Rule 2019-05-23).",
   },
 
   // ═══════════════════════════════════════════════════════════════════
