@@ -20,6 +20,7 @@ import { LIST_ID_TO_CORPUS_REGIME } from "../license-determination";
 import type { CorpusRegime } from "@/data/trade/normalized-corpus";
 import type { OriginLicenceModule } from "./types";
 import { usOriginModule } from "./us";
+import { euOriginModule } from "./eu";
 
 /**
  * Registered per-origin licence modules, keyed by `CorpusRegime`. Modules
@@ -30,6 +31,10 @@ export const ORIGIN_MODULES = new Map<CorpusRegime, OriginLicenceModule>([
   // US dual-use primary regime (EAR_CCL → US_CCL). Wraps the engine's existing
   // EAR/ITAR/de-minimis decision — see `us.ts`.
   ["US_CCL", usOriginModule],
+  // EU dual-use primary regime (EU_ANNEX_I). EUGEA (EU001) + member→NCA — the
+  // friendly-destination general licence supersedes the generic Gate-3.5/Gate-4
+  // EU REVIEW for EU001-eligible items; see `eu.ts` + the wiring's supersede.
+  ["EU_ANNEX_I", euOriginModule],
 ]);
 
 /**

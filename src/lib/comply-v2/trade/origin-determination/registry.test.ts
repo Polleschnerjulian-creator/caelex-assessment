@@ -33,13 +33,27 @@ describe("resolveOriginModule", () => {
     expect(resolveOriginModule(routing)).toBeNull();
   });
 
-  it("returns null for a supported EU origin with no module yet (DE)", () => {
+  it("returns the EU module for a supported EU origin (DE, registered in M-EU)", () => {
     const routing = originRegimes("DE");
+    expect(routing.supported).toBe(true);
+    const mod = resolveOriginModule(routing);
+    expect(mod).not.toBeNull();
+    expect(typeof mod).toBe("function");
+  });
+
+  it("returns the EU module for every EU member origin (FR, IT, NL — same EU_ANNEX_I regime)", () => {
+    for (const iso of ["FR", "IT", "NL"]) {
+      expect(resolveOriginModule(originRegimes(iso)), `${iso}`).not.toBeNull();
+    }
+  });
+
+  it("returns null for a supported origin with no module yet (CH — M-CH not built)", () => {
+    const routing = originRegimes("CH");
     expect(routing.supported).toBe(true);
     expect(resolveOriginModule(routing)).toBeNull();
   });
 
-  it("the registry holds only US_CCL in Phase F (others register later)", () => {
-    expect([...ORIGIN_MODULES.keys()]).toEqual(["US_CCL"]);
+  it("the registry holds US_CCL + EU_ANNEX_I (US wrap + M-EU); other origins register later", () => {
+    expect([...ORIGIN_MODULES.keys()].sort()).toEqual(["EU_ANNEX_I", "US_CCL"]);
   });
 });
