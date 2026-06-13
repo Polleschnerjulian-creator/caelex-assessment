@@ -1,22 +1,50 @@
+import type { ReactNode } from "react";
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { render, screen, waitFor } from "@testing-library/react";
 
-vi.mock(
-  "lucide-react",
-  () =>
-    new Proxy(
-      {},
-      {
-        get: (_t, n: string) => {
-          const I = (p: Record<string, unknown>) => (
-            <span data-testid={`icon-${n}`} {...p} />
-          );
-          I.displayName = n;
-          return I;
-        },
-      },
-    ),
-);
+// next/link must be stubbed (tests/setup.tsx mocks next/navigation + next/image
+// but not next/link). VerdictPanel renders <Link>; the real App-Router next/link
+// runs a `useIntersection` prefetch effect that calls `new IntersectionObserver`,
+// which throws against the jsdom IntersectionObserver stub. Same children-only
+// stub the sibling new/page.test.tsx uses — these tests never assert on a link.
+vi.mock("next/link", () => ({
+  default: ({ children }: { children: ReactNode }) => <>{children}</>,
+}));
+
+// lucide-react stub. Two vitest-4 constraints rule out the catch-all `Proxy`
+// pattern used elsewhere in the trade tests, so we enumerate the icons
+// VerdictPanel imports explicitly — the same shape the passing sibling tests use
+// (e.g. src/app/verify/VerifyAnchorClient.test.tsx):
+//   1. A Proxy get-trap returns a truthy function for EVERY key — including
+//      `then` — which makes the mocked module's namespace look like a thenable.
+//      Vitest's module runner awaits that namespace while resolving the import
+//      and calls its `then`, but the icon stub ignores the resolve/reject
+//      callbacks, so the promise never settles: the whole FILE hangs at
+//      COLLECTION (0% CPU, no test ever runs), on both node 20 and node 24.
+//   2. Vitest 4 validates named imports against a mock's enumerable exports; a
+//      Proxy reports none, so `import { Loader2 }` throws "No Loader2 export".
+// An explicit object has real keys and no `then`, sidestepping both. Only the
+// icons VerdictPanel itself imports are needed — its icon-using children
+// (ClassificationPanel/ExplainedPanel/WasJetztPanel) are stubbed below.
+vi.mock("lucide-react", () => {
+  const icon = (name: string) => {
+    const I = (p: Record<string, unknown>) => (
+      <span data-testid={`icon-${name}`} {...p} />
+    );
+    I.displayName = name;
+    return I;
+  };
+  return {
+    CheckCircle2: icon("CheckCircle2"),
+    AlertTriangle: icon("AlertTriangle"),
+    XCircle: icon("XCircle"),
+    Loader2: icon("Loader2"),
+    RefreshCw: icon("RefreshCw"),
+    ShieldCheck: icon("ShieldCheck"),
+    ShieldAlert: icon("ShieldAlert"),
+    Info: icon("Info"),
+  };
+});
 vi.mock("@/components/trade/ClassificationPanel", () => ({
   ClassificationPanel: () => <div data-testid="classification-panel" />,
 }));
@@ -107,7 +135,12 @@ describe("VerdictPanel", () => {
       json: async () => GO,
     });
     render(<VerdictPanel operationId="op1" />);
-    await waitFor(() => expect(screen.getByText(/Darf liefern/)).toBeTruthy());
+    // Match the headline specifically: the GO liability note (LIABILITY_COPY
+    // .goNote) also begins with "Darf liefern", so a bare /Darf liefern/ is
+    // ambiguous. The "— keine Genehmigung" tail is unique to the headline.
+    await waitFor(() =>
+      expect(screen.getByText(/Darf liefern — keine Genehmigung/)).toBeTruthy(),
+    );
     expect(fetch).toHaveBeenCalledWith("/api/trade/operations/op1/assess");
   });
   it("renders pendenzen + an inline screen action for a review verdict", async () => {
@@ -119,7 +152,10 @@ describe("VerdictPanel", () => {
     await waitFor(() =>
       expect(screen.getByText(/Genehmigung nötig/)).toBeTruthy(),
     );
-    expect(screen.getByText(/BAFA-Antrag/)).toBeTruthy();
+    // Match the pendenz label specifically: the "form" step summary also
+    // contains "BAFA-Antrag" ("BAFA-Antrag vorbereiten"), so scope to the
+    // "(ELAN-K2)" that is unique to the pendenz.
+    expect(screen.getByText(/BAFA-Antrag \(ELAN-K2\)/)).toBeTruthy();
     expect(screen.getByRole("button", { name: /screenen/i })).toBeTruthy();
   });
   it("renders 'Bewertet unter' line with assessedUnder value when present", async () => {
