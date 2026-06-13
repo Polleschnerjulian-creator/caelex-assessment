@@ -20,7 +20,7 @@ import {
 import { evaluateItemSignals } from "../property-trigger-engine";
 import { originRegimes } from "../classification/origin-regime-map";
 import { ORIGIN_MODULES } from "./registry";
-import type { OriginLicenceModule } from "./types";
+import type { OriginDeterminationInput, OriginLicenceModule } from "./types";
 
 const GB_ORIGIN = originRegimes("GB"); // dualUsePrimary = UK_STRATEGIC
 
@@ -138,6 +138,94 @@ describe("F5 — fallback intact when no module is registered", () => {
     expect(
       det.requirements.find((r) => r.triggerCode === "THIN_ORIGIN_REGIME"),
     ).toBeDefined();
+  });
+
+  it("threads the EXPORTER seat (not the destination) into the module input", () => {
+    // The latent foot-gun: the engine used to populate
+    // OriginDeterminationInput.exporterSeat with the DESTINATION country.
+    // A capturing mock module under EU_ANNEX_I (DE's dualUsePrimary) proves the
+    // engine now hands the module the real SEAT ("DE"), never the destination.
+    let captured: OriginDeterminationInput | undefined;
+    const CAPTURE_MODULE: OriginLicenceModule = (input) => {
+      captured = input;
+      return {
+        outcome: "GO",
+        licenceType: "NONE",
+        authority: "MOCK-NCA",
+        reasons: ["capture only"],
+        citations: ["https://mock.gov/capture"],
+      };
+    };
+    ORIGIN_MODULES.set("EU_ANNEX_I", CAPTURE_MODULE);
+    try {
+      determineLicenseRequirements(
+        evaluateItemSignals({
+          apertureMeters: null,
+          rangeKm: null,
+          payloadKg: null,
+          isRadHardened: null,
+          isMilSpec: null,
+          isAntiJam: null,
+          eccnEU: "9A004",
+        }),
+        null,
+        "JP", // destination
+        undefined,
+        undefined,
+        { eccnEU: "9A004", eccnUS: null, usmlCategory: null },
+        originRegimes("DE"), // exporterOrigin (DE → EU_ANNEX_I)
+        "DE", // exporterSeat — the real seat ISO-2
+      );
+      expect(captured).toBeDefined();
+      // The seat must be the EXPORTER's seat, NOT the destination.
+      expect(captured!.exporterSeat).toBe("DE");
+      expect(captured!.exporterSeat).not.toBe("JP");
+      // Destination is carried separately and correctly.
+      expect(captured!.destinationCountry).toBe("JP");
+    } finally {
+      ORIGIN_MODULES.delete("EU_ANNEX_I");
+    }
+  });
+
+  it("leaves exporterSeat undefined when no seat is supplied (fail-closed)", () => {
+    // Callers without operation context (items-route preview) omit the seat.
+    // The module must receive undefined — never a fabricated/destination seat.
+    let captured: OriginDeterminationInput | undefined;
+    const CAPTURE_MODULE: OriginLicenceModule = (input) => {
+      captured = input;
+      return {
+        outcome: "GO",
+        licenceType: "NONE",
+        authority: "MOCK-NCA",
+        reasons: ["capture only"],
+        citations: ["https://mock.gov/capture"],
+      };
+    };
+    ORIGIN_MODULES.set("EU_ANNEX_I", CAPTURE_MODULE);
+    try {
+      determineLicenseRequirements(
+        evaluateItemSignals({
+          apertureMeters: null,
+          rangeKm: null,
+          payloadKg: null,
+          isRadHardened: null,
+          isMilSpec: null,
+          isAntiJam: null,
+          eccnEU: "9A004",
+        }),
+        null,
+        "JP",
+        undefined,
+        undefined,
+        { eccnEU: "9A004", eccnUS: null, usmlCategory: null },
+        originRegimes("DE"),
+        // exporterSeat omitted → must surface as undefined, NOT "JP".
+      );
+      expect(captured).toBeDefined();
+      expect(captured!.exporterSeat).toBeUndefined();
+    } finally {
+      ORIGIN_MODULES.delete("EU_ANNEX_I");
+    }
   });
 
   it("no exporterOrigin → byte-identical legacy behaviour (no origin stage)", () => {

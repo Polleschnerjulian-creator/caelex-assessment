@@ -79,8 +79,13 @@ export interface OriginDeterminationInput {
   destinationCountry: string;
   /** From origin-regime-map (seat country → primary regimes). */
   exporterOrigin: OriginRegimeRouting;
-  /** Exporter-seat ISO-2 (for the EU member-state → NCA resolution). */
-  exporterSeat: string;
+  /**
+   * The exporter seat ISO-2 if known, else undefined — modules must treat
+   * undefined fail-closed (do NOT assume a seat). Used for the EU
+   * member-state → NCA resolution (the upcoming M-EU module). NEVER the
+   * destination country.
+   */
+  exporterSeat: string | undefined;
   screeningContext?: ScreeningContextLike;
   /**
    * The engine's OWN requirements computed so far (the hard-prohibition gates

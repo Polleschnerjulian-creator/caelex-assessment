@@ -273,6 +273,18 @@ export function determineLicenseRequirements(
    * preserves byte-identical pre-Task-7 behaviour for all existing callers.
    */
   exporterOrigin?: OriginRegimeRouting,
+  /**
+   * The exporter's seat ISO-2, when known (the same value fed to
+   * `originRegimes(seat)` upstream). Threaded into `OriginDeterminationInput`
+   * for modules that resolve an EU member-state → NCA (the upcoming M-EU
+   * module). This MUST be the EXPORTER's seat, never the destination country.
+   *
+   * Additive + verdict-neutral in Phase F (the only registered module, US,
+   * ignores `exporterSeat`). Callers without a seat (items-route preview,
+   * classify-item without operation context) leave it undefined — modules
+   * must treat an unknown seat fail-closed, never assume one.
+   */
+  exporterSeat?: string,
 ): LicenseDetermination {
   const requirements: LicenseRequirement[] = [];
   const nextSteps: string[] = [];
@@ -815,7 +827,9 @@ export function determineLicenseRequirements(
         },
         destinationCountry: (destinationCountry ?? "").trim().toUpperCase(),
         exporterOrigin,
-        exporterSeat: (destinationCountry ?? "").trim().toUpperCase(), // seat unknown here; modules that need it read exporterOrigin
+        // The EXPORTER's seat ISO-2 (NOT the destination). Undefined when the
+        // caller has no operation context — modules must handle that fail-closed.
+        exporterSeat: exporterSeat ?? undefined,
         screeningContext,
         // Hand the module the engine's OWN requirements so a wrap (e.g. US)
         // can mirror the existing decision without re-deriving it.

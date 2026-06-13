@@ -143,6 +143,11 @@ export async function assessOperation(
   let resolvedExporterOrigin:
     | import("@/lib/comply-v2/trade/classification/origin-regime-map").OriginRegimeRouting
     | undefined;
+  // The resolved exporter seat ISO-2 (the same value fed to originRegimes()).
+  // Threaded into the origin-determination stage so modules resolving an EU
+  // member-state → NCA see the SEAT, never the destination. Undefined for
+  // null/unparseable seats → legacy behavior.
+  let resolvedExporterSeat: string | undefined;
 
   try {
     const org = await prisma.organization.findUnique({
@@ -157,6 +162,11 @@ export async function assessOperation(
       originNotice =
         "Exporteur-Sitz im Org-Profil nicht gesetzt — Bewertung nimmt EU-Standard an";
     } else {
+      // Capture the resolved seat for the origin-determination stage. This is
+      // the EXPORTER's seat ISO-2 (the same value fed to originRegimes below),
+      // NOT the destination. Set for any resolved seat — modules treat an
+      // unsupported/unmodelled seat fail-closed.
+      resolvedExporterSeat = seat;
       const regime = originRegimes(seat);
       if (regime.supported) {
         // Case 1: supported seat — set assessedUnder, no Pendenz, forward regime
@@ -202,6 +212,10 @@ export async function assessOperation(
             // Only set when seat resolved AND regime.supported (Case 1).
             // Undefined for null/unsupported seats → legacy behavior.
             exporterOrigin: resolvedExporterOrigin,
+            // Thread the REAL exporter seat ISO-2 (NOT the destination) into
+            // the origin-determination stage. Set for any resolved seat;
+            // undefined for null/unparseable seats → legacy behavior.
+            exporterSeat: resolvedExporterSeat,
           },
         );
       } catch (err) {

@@ -76,6 +76,13 @@ export interface ClassifyOptions {
    * byte-identical behaviour for all other callers.
    */
   exporterOrigin?: OriginRegimeRouting;
+  /**
+   * The exporter's seat ISO-2 (the same value fed to `originRegimes(seat)`
+   * upstream), threaded into the origin-determination stage for modules that
+   * resolve an EU member-state → NCA. NEVER the destination country. Undefined
+   * when the caller has no operation context (e.g. item-level preview).
+   */
+  exporterSeat?: string;
 }
 
 // ─── Helpers ──────────────────────────────────────────────────────────
@@ -145,6 +152,9 @@ export function classifyItemForOperation(
     },
     // S0 Task 7: forward exporter origin to Gate 4.5 when provided.
     opts.exporterOrigin,
+    // Thread the real exporter seat ISO-2 (NOT the destination) into the
+    // origin-determination stage. Undefined for callers without a seat.
+    opts.exporterSeat,
   );
 
   // DCW-1: recognise the item's DECLARED control codes against the full
