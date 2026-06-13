@@ -434,14 +434,22 @@ const RULES: TriggerRule[] = [
       reason:
         "Description contains electric-propulsion keywords (Hall thruster, ion thruster, FEEP, PPT).",
       topicSlug: "hall-thrusters-electric-propulsion",
+      // CORRECTED 2026-06-13: electric propulsion is 9A004.f (→ 9A515 for
+      // licensing), NOT 9A011 (= ramjet/scramjet/combined-cycle). The ITAR
+      // XV(e)(2) leg (itar:true) is unchanged — it is the hard-block anchor.
       suggestedCodes: [
         {
           jurisdiction: "EU_ANNEX_I",
-          code: "9A011",
+          code: "9A004.f",
           mtcrCatI: false,
           itar: false,
         },
-        { jurisdiction: "US_CCL", code: "9A011", mtcrCatI: false, itar: false },
+        {
+          jurisdiction: "US_CCL",
+          code: "9A004.f",
+          mtcrCatI: false,
+          itar: false,
+        },
         { jurisdiction: "USML", code: "XV(e)(2)", mtcrCatI: false, itar: true },
         {
           jurisdiction: "MTCR_ANNEX",
@@ -453,7 +461,7 @@ const RULES: TriggerRule[] = [
       confidence: "LOW",
       requiresHumanReview: true,
       advisory:
-        "Low confidence — keyword match only. Verify Isp and thrust thresholds against 9A011 parameters. PCU/PPU (power-conditioning unit) is often the ITAR-controlled component. US-origin PCUs trigger De-minimis rule.",
+        "Low confidence — keyword match only. Verify Isp and thrust thresholds against 9A004.f parameters (thrust > 300 mN AND Isp > 1,500 s, OR input power > 15 kW). PCU/PPU (power-conditioning unit) is often the ITAR-controlled component. US-origin PCUs trigger De-minimis rule.",
     }),
   },
 
@@ -666,7 +674,8 @@ const RULES: TriggerRule[] = [
   //
   // 2024 IFR explicitly added electric thrusters ≥400 mN thrust as a
   // 9A515 sub-category. Below 400 mN typically stays at the lower
-  // 9A011 / EU 9A011 classification.
+  // 9A004.f / EU 9A004.f electric-propulsion classification.
+  // (CORRECTED 2026-06-13: EP is 9A004.f, not 9A011 = ramjet/scramjet.)
   //
   // Trigger via description keyword + (optional) thrust mention. We
   // can't extract numeric thrust without a dedicated signal, so this
@@ -699,10 +708,15 @@ const RULES: TriggerRule[] = [
       topicSlug: "hall-thrusters-electric-propulsion",
       suggestedCodes: [
         { jurisdiction: "US_CCL", code: "9A515", mtcrCatI: false, itar: false },
-        { jurisdiction: "US_CCL", code: "9A011", mtcrCatI: false, itar: false },
+        {
+          jurisdiction: "US_CCL",
+          code: "9A004.f",
+          mtcrCatI: false,
+          itar: false,
+        },
         {
           jurisdiction: "EU_ANNEX_I",
-          code: "9A011",
+          code: "9A004.f",
           mtcrCatI: false,
           itar: false,
         },
@@ -716,7 +730,7 @@ const RULES: TriggerRule[] = [
       confidence: "MEDIUM",
       requiresHumanReview: true,
       advisory:
-        "Verify actual thrust ≥400 mN against 9A515 sub-paragraph threshold. Lower-power electric propulsion (e.g. CubeSat-class FEEP / PPT typically <50 mN) remains at 9A011. US-origin PCU/PPU remains a common De-minimis trigger.",
+        "Verify actual thrust ≥400 mN against 9A515 sub-paragraph threshold. Lower-power electric propulsion (e.g. CubeSat-class FEEP / PPT typically <50 mN) remains at 9A004.f. US-origin PCU/PPU remains a common De-minimis trigger.",
     }),
   },
 

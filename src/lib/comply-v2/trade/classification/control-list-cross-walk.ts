@@ -1712,14 +1712,22 @@ export const CONTROL_LIST_CROSS_WALK: ControlListEntry[] = [
     notes:
       "The 2025/2003 Delegated Regulation did not modify 9A008. Carbon-carbon throats remain the most common screening boundary — re-evaluate any throat with density ≥ 1.85 g/cm³ for MTCR Cat-I escalation.",
   },
+  // CORRECTION (2026-06-13): the parametric electric-propulsion predicate
+  // formerly lived under canonicalId "EU:9A011" — but 9A011 is ramjet/
+  // scramjet/combined-cycle engines (Wassenaar 9.A.11), NOT electric
+  // propulsion. EP sits in the 9A004 spacecraft on-board family (CCL
+  // 9A004.f → 9A515). The EP predicate is therefore re-keyed to
+  // "EU:9A004.f" (same predicates, no loosening); a separate "EU:9A011"
+  // ramjet/scramjet entry follows below.
   {
-    canonicalId: "EU:9A011",
+    canonicalId: "EU:9A004.f",
     regime: "EU-ANNEX-I",
     category: "9",
     productGroup: "A",
-    entryNumber: "011",
+    entryNumber: "004",
+    subpara: "f (electric propulsion)",
     title:
-      "Electric / plasma propulsion systems — Hall-effect, ion, FEEP, PPT (EU Cat 9)",
+      "Electric / plasma propulsion systems — Hall-effect, ion, FEEP, PPT (EU Cat 9, 9A004.f)",
     predicates: [
       {
         attribute: "itemClass",
@@ -1743,11 +1751,18 @@ export const CONTROL_LIST_CROSS_WALK: ControlListEntry[] = [
         id: "XV(e)(11)(iv)",
         relationship: "successor",
         notes:
-          "USML XV(e)(11)(iv) controls EP with thrust > 300 mN AND Isp > 1,500 s, OR input power > 15 kW. EU 9A011 is the EU pendant and uses the Isp ≥ 1,500 s capture threshold.",
+          "USML XV(e)(11)(iv) controls EP with thrust > 300 mN AND Isp > 1,500 s, OR input power > 15 kW. EU 9A004.f is the EU pendant and uses the Isp ≥ 1,500 s capture threshold.",
       },
       {
         regime: "EAR-CCL",
-        id: "9A011",
+        id: "9A004.f",
+        relationship: "analogous",
+        notes:
+          "CCL 9A004.f electric propulsion; items under 9A004.b–.f are controlled via 9A515 for licensing (23 Oct 2024 IFR).",
+      },
+      {
+        regime: "EAR-CCL",
+        id: "9A515.x-ep",
         relationship: "analogous",
       },
       {
@@ -1757,10 +1772,54 @@ export const CONTROL_LIST_CROSS_WALK: ControlListEntry[] = [
       },
     ],
     citation:
-      "Reg. (EU) 2021/821 Annex I, Cat. 9, 9A011 (consolidated as of 2025/2003)",
+      "Reg. (EU) 2021/821 Annex I, Cat. 9, 9A004 (electric-propulsion clause; CCL 9A004.f → 9A515 per 23 Oct 2024 IFR)",
     validFrom: "2021-09-09",
     notes:
-      "Disjunctive thresholds: capture by Isp ≥ 1,500 s; alternative input-power path (≥ 15 kW) is handled via the see-also USML XV(e)(11)(iv)-power-path entry. PCUs/PPUs from US fabs trigger De-minimis even when the thruster itself is EU-origin.",
+      "Disjunctive thresholds: capture by Isp ≥ 1,500 s; alternative input-power path (≥ 15 kW) is handled via the see-also USML XV(e)(11)(iv)-power-path entry. PCUs/PPUs from US fabs trigger De-minimis even when the thruster itself is EU-origin. Re-keyed from the former EU:9A011 mislabel.",
+  },
+  {
+    canonicalId: "EU:9A011",
+    regime: "EU-ANNEX-I",
+    category: "9",
+    productGroup: "A",
+    entryNumber: "011",
+    title:
+      "Ramjet, scramjet or combined-cycle engines & specially designed components (EU Cat 9)",
+    predicates: [
+      {
+        attribute: "itemClass",
+        op: "prefix",
+        value: "propulsion.airbreathing",
+      },
+    ],
+    reasonsForControl: ["WA", "MT"],
+    licenseExceptions: ["EU001"],
+    seeAlso: [
+      {
+        regime: "WASSENAAR",
+        id: "9.A.11",
+        relationship: "analogous",
+        notes:
+          "Wassenaar 9.A.11 = ramjet/scramjet/combined-cycle engines + specially designed components.",
+      },
+      {
+        regime: "EAR-CCL",
+        id: "9A011",
+        relationship: "analogous",
+      },
+      {
+        regime: "EU-ANNEX-I",
+        id: "9A103",
+        relationship: "analogous",
+        notes:
+          "9A103 controls MTCR-relevant ramjet/scramjet/combined-cycle SUBSYSTEMS; 9A111 controls pulse-jet engines.",
+      },
+    ],
+    citation:
+      "Reg. (EU) 2021/821 Annex I, Cat. 9, 9A011 (ramjet/scramjet/combined-cycle — Wassenaar 9.A.11)",
+    validFrom: "2021-09-09",
+    notes:
+      "CORRECTED 2026-06-13: 9A011 is air-breathing (ramjet/scramjet/combined-cycle) propulsion, NOT electric propulsion. The former electric-propulsion predicate was re-keyed to EU:9A004.f above.",
   },
   {
     canonicalId: "EU:9A012",

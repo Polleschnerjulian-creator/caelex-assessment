@@ -384,7 +384,7 @@ export const USML_ENTRIES: ClassificationEntry[] = [
     jurisdiction: "USML",
     title: "Electric propulsion systems (USML)",
     description:
-      "Electric propulsion systems specifically designed for USML XV spacecraft. Commercial Hall thrusters not meeting USML performance criteria may fall under ECCN 9A011.",
+      "Electric propulsion systems specifically designed for USML XV spacecraft. Commercial Hall thrusters not meeting USML performance criteria may fall under ECCN 9A004.f (controlled via 9A515 for licensing).",
     controlReasons: ["NS"],
     crossReferenceTopic: "hall-thrusters-electric-propulsion",
     sourceUrl: SOURCE_BASE,

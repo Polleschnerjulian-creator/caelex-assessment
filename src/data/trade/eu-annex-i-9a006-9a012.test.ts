@@ -108,23 +108,45 @@ describe("Z24a — schema conformance", () => {
 // ─── 3. Parametric thresholds for 9A011 + 9A012 ───────────────────────
 
 describe("Z24a — parametric thresholds for 9A011 + 9A012", () => {
-  it("EU:9A011 entry exists in the parametric cross-walk with Isp threshold", () => {
+  it("EU:9A004.f electric-propulsion entry exists in the parametric cross-walk with Isp threshold", () => {
+    // CORRECTED 2026-06-13: the electric-propulsion Isp predicate used to
+    // live under EU:9A011, but 9A011 = ramjet/scramjet/combined-cycle
+    // (Wassenaar 9.A.11). EP sits in the 9A004 family (9A004.f → 9A515).
     const entry = CONTROL_LIST_CROSS_WALK.find(
-      (e) => e.canonicalId === "EU:9A011",
+      (e) => e.canonicalId === "EU:9A004.f",
     );
-    expect(entry, "missing EU:9A011 in CONTROL_LIST_CROSS_WALK").toBeDefined();
+    expect(
+      entry,
+      "missing EU:9A004.f in CONTROL_LIST_CROSS_WALK",
+    ).toBeDefined();
     expect(entry?.predicates.length).toBeGreaterThan(0);
 
-    // EP capture: itemClass + IspSeconds threshold
+    // EP capture: itemClass propulsion.electric + IspSeconds threshold
     const ispPredicate = entry?.predicates.find(
       (p) => p.attribute === "IspSeconds",
     );
     expect(
       ispPredicate,
-      "EU:9A011 missing IspSeconds parametric predicate",
+      "EU:9A004.f missing IspSeconds parametric predicate",
     ).toBeDefined();
     expect(ispPredicate?.op).toBe("gte");
     expect(typeof ispPredicate?.value).toBe("number");
+  });
+
+  it("EU:9A011 entry exists and is keyed to ramjet/scramjet (NOT electric propulsion)", () => {
+    const entry = CONTROL_LIST_CROSS_WALK.find(
+      (e) => e.canonicalId === "EU:9A011",
+    );
+    expect(entry, "missing EU:9A011 in CONTROL_LIST_CROSS_WALK").toBeDefined();
+    expect(entry?.predicates.length).toBeGreaterThan(0);
+    // 9A011 must NOT carry an electric-propulsion (IspSeconds) predicate.
+    const ispPredicate = entry?.predicates.find(
+      (p) => p.attribute === "IspSeconds",
+    );
+    expect(
+      ispPredicate,
+      "EU:9A011 must NOT carry an electric-propulsion Isp predicate (ramjet/scramjet scope)",
+    ).toBeUndefined();
   });
 
   it("EU:9A012 entry exists in the parametric cross-walk with MTCR Cat-I range+payload thresholds", () => {

@@ -75,7 +75,7 @@ export const EU_ANNEX_I_COVERAGE: ClassificationCoverage = {
   ],
   asOfDate: ASOF,
   officialTotalEntriesApprox: 11000,
-  caelexCoverageCount: 68,
+  caelexCoverageCount: 69,
 };
 
 export const EU_ANNEX_I_ENTRIES: ClassificationEntry[] = [
@@ -295,6 +295,26 @@ export const EU_ANNEX_I_ENTRIES: ClassificationEntry[] = [
       "Isar Spectrum, RFA One, HyImpulse SL1 all fall here. MTCR Cat. I → strong-presumption-of-denial.",
   },
   {
+    // CORRECTION (2026-06-13): electric propulsion does NOT sit under 9A011
+    // (9A011 = ramjet/scramjet/combined-cycle engines per Wassenaar 9.A.11).
+    // Electric/plasma/ion propulsion sits in the 9A004 spacecraft on-board
+    // family — CCL 9A004.f (electric/plasma propulsion). Per the 23 Oct 2024
+    // IFR, items described under 9A004.b–.f are themselves controlled under
+    // 9A515 for licensing. This is the corrected EU home for Hall-effect,
+    // gridded-ion, FEEP and PPT thrusters formerly mislabelled as 9A011.
+    code: "9A004.f",
+    jurisdiction: "EU_ANNEX_I",
+    title: "Electric / plasma propulsion systems (Hall-effect, ion, FEEP, PPT)",
+    description:
+      "Electric (plasma / ion) propulsion systems for spacecraft — Hall-effect thrusters, gridded ion thrusters, field-emission electric propulsion (FEEP) and pulsed-plasma thrusters (PPT) — that provide thrust > 300 mN AND specific impulse > 1,500 s, OR operate at input power > 15 kW. Sub-paragraph of the 9A004 spacecraft on-board-systems family; for export-licensing purposes items under 9A004.b–.f are controlled via 9A515. US-origin power-conditioning / power-processing units (PCU/PPU) are a common De-minimis trigger even when the thruster itself is EU-origin.",
+    controlReasons: ["NS", "MT"],
+    crossReferenceTopic: "hall-thrusters-electric-propulsion",
+    sourceUrl: SOURCE_BASE,
+    asOfDate: ASOF,
+    notes:
+      "Corrected home for electric propulsion (was erroneously labelled 9A011 = ramjet/scramjet). Thresholds mirror USML XV(e)(11)(iv) / CCL 9A004.f → 9A515. See parametric cross-walk ECCN:9A515.x-ep and ECCN:9A515.g.electric-propulsion for the typed predicates.",
+  },
+  {
     code: "9A005",
     jurisdiction: "EU_ANNEX_I",
     title: "Liquid-propellant rocket propulsion systems",
@@ -369,13 +389,15 @@ export const EU_ANNEX_I_ENTRIES: ClassificationEntry[] = [
   {
     code: "9A011",
     jurisdiction: "EU_ANNEX_I",
-    title: "Electric propulsion (Hall-effect, ion, FEEP, PPT)",
+    title: "Ramjet, scramjet or combined-cycle engines & components",
     description:
-      "Electric propulsion systems for spacecraft: Hall-effect thrusters, gridded ion thrusters, field-emission thrusters, pulsed plasma thrusters above defined Isp / thrust thresholds. Typical capture threshold: specific impulse ≥ 1,500 s OR input power ≥ 15 kW — see parametric cross-walk EU:9A011 for the typed predicates.",
+      "Ramjet, scramjet or combined-cycle engines (combining two or more of gas-turbine, ramjet/scramjet and rocket-engine cycles, e.g. turbine-based or rocket-based combined-cycle), and specially designed parts and components therefor. Air-breathing / hypersonic access-to-space propulsion. Mirrors Wassenaar 9.A.11. (Pulse-jet engines are controlled separately under 9A111; MTCR-relevant ramjet/scramjet SUBSYSTEMS additionally fall under 9A103.)",
     controlReasons: ["NS", "MT"],
-    crossReferenceTopic: "hall-thrusters-electric-propulsion",
+    crossReferenceTopic: "rocket-propulsion-liquid-engines",
     sourceUrl: SOURCE_BASE,
     asOfDate: ASOF,
+    notes:
+      "CORRECTED 2026-06-13: previously mislabelled as electric propulsion. True scope per Wassenaar 9.A.11 / CCL 9A011 / EU Reg. 2021/821 Annex I 9A011 = ramjet/scramjet/combined-cycle engines + specially designed components. Electric propulsion (Hall-effect, ion, FEEP, PPT) was moved to its correct home 9A004.f.",
   },
   {
     code: "9A012",

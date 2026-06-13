@@ -72,6 +72,10 @@ export const GOLDEN_ITEMS: readonly GoldenItem[] = [
     description: "Hall thruster, Xenon, 5 kW, 0.3 N Schub",
     attributes: {},
     // Undeklariert: "hall thruster"-Keyword triggert Rule 8 (electric propulsion).
+    // Kontroll-Anker = ITAR USML XV(e)(2) (itar:true) → itarBlock → hardBlock;
+    // alle 62 Zellen BLOCKED. Die 2026-06-13-Korrektur (9A011 = ramjet/scramjet;
+    // EP → 9A004.f) ließ diese Zellen UNVERÄNDERT (EP-Block lief nie über 9A011),
+    // Verteilung blieb 74/396/274 — keine Lockerung. S5-verify-Befund.
   },
   {
     id: "apogee-engine",

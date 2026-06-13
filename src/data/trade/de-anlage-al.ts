@@ -117,11 +117,14 @@ export const DE_ANLAGE_AL_ENTRIES: ClassificationEntry[] = [
     mtcrCategory: "I",
   },
   {
-    code: "9A011",
+    // KORRIGIERT 2026-06-13: Elektrische Antriebe gehören zu 9A004.f (EU
+    // Annex I / CCL 9A004.f → 9A515), NICHT zu 9A011. 9A011 =
+    // Ramjet/Scramjet/Combined-Cycle-Triebwerke (Wassenaar 9.A.11).
+    code: "9A004.f",
     jurisdiction: "DE_ANLAGE_AL",
     title: "Elektrische Antriebe für Raumfahrzeuge (EU-harmonisiert)",
     description:
-      "Anlage AL 9A011 = EU Annex I 9A011. Hall-Effekt-Triebwerke, Gittertriebwerke, FEEP, PPT für Raumfahrzeuge. BAFA-Auskunft empfohlen wenn PCU/PPU aus US-Fertigung.",
+      "Anlage AL 9A004.f = EU Annex I 9A004.f. Hall-Effekt-Triebwerke, Gittertriebwerke, FEEP, PPT für Raumfahrzeuge (Schub > 300 mN UND Isp > 1.500 s, ODER Eingangsleistung > 15 kW). BAFA-Auskunft empfohlen wenn PCU/PPU aus US-Fertigung.",
     controlReasons: ["NS", "MT"],
     crossReferenceTopic: "hall-thrusters-electric-propulsion",
     sourceUrl: SOURCE_BASE,

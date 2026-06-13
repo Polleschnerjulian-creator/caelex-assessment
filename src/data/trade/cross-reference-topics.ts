@@ -73,8 +73,8 @@ export const CROSS_REFERENCE_TOPICS: CrossReferenceTopic[] = [
     description:
       "Electric propulsion (Hall-effect thrusters, gridded ion thrusters, FEEP, PPT, magnetoplasmadynamic). PCUs/PPUs often US-origin → De-minimis trigger.",
     codes: [
-      "EU_ANNEX_I:9A011",
-      "US_CCL:9A011",
+      "EU_ANNEX_I:9A004.f",
+      "US_CCL:9A004.f",
       "USML:XV(e)(2)",
       "MTCR_ANNEX:9A106",
     ],

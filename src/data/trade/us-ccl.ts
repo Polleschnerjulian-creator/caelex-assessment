@@ -246,11 +246,14 @@ export const US_CCL_ENTRIES: ClassificationEntry[] = [
     asOfDate: ASOF,
   },
   {
-    code: "9A011",
+    // CORRECTED 2026-06-13: electric propulsion is CCL 9A004.f (controlled
+    // via 9A515 for licensing per the 23 Oct 2024 IFR), NOT 9A011 — 9A011 =
+    // ramjet/scramjet/combined-cycle engines (Wassenaar 9.A.11).
+    code: "9A004.f",
     jurisdiction: "US_CCL",
-    title: "Electric propulsion systems",
+    title: "Electric / plasma propulsion systems (9A004.f)",
     description:
-      "Hall-effect thrusters, gridded ion thrusters, FEEP, PPT above defined specific-impulse / thrust thresholds. US-origin PCUs/PPUs are a common De-minimis trigger.",
+      "Hall-effect thrusters, gridded ion thrusters, FEEP, PPT providing thrust > 300 mN AND specific impulse > 1,500 s, OR input power > 15 kW. Items under 9A004.b–.f are controlled via 9A515 for licensing. US-origin PCUs/PPUs are a common De-minimis trigger.",
     controlReasons: ["NS", "MT"],
     crossReferenceTopic: "hall-thrusters-electric-propulsion",
     sourceUrl: SOURCE_BASE,

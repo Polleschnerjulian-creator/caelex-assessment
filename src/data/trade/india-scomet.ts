@@ -275,9 +275,11 @@ export const INDIA_SCOMET_ENTRIES: IndiaScometEntry[] = [
     title: "Spacecraft propulsion subsystems (chemical, electric)",
     description:
       "Spacecraft chemical thrusters (monoprop, biprop), Hall-effect thrusters, gridded ion thrusters, electric propulsion power processing units (PPUs). MTCR Cat II for systems usable on launch vehicles.",
-    euAnnexIRef: "9A011",
+    // CORRECTED 2026-06-13: electric propulsion = EU 9A004.f / Wassenaar 9.A.4,
+    // NOT 9A011 (= ramjet/scramjet/combined-cycle). US side already 9A515.f.
+    euAnnexIRef: "9A004.f",
     earCclRef: "9A515.f",
-    wassenaarRef: "9A011",
+    wassenaarRef: "9.A.4",
     mtcrRef: "9.A.6",
     sourceUrl: DGFT_SCOMET_URL,
     asOfDate: INDIA_SCOMET_AS_OF,

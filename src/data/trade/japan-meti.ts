@@ -322,9 +322,11 @@ export const JAPAN_METI_ENTRIES: JapanMetiEntry[] = [
     title: "Electric propulsion systems (Hall-effect, ion, RIT)",
     description:
       "Hall-effect thrusters, gridded ion engines (Kaufman, RIT), pulsed-plasma thrusters above specific-impulse thresholds.",
-    euAnnexIRef: "9A011",
-    earCclRef: "9A011",
-    wassenaarRef: "9.A.11",
+    // CORRECTED 2026-06-13: EP maps to EU 9A004.f / CCL 9A004.f (→ 9A515) and
+    // Wassenaar 9.A.4, NOT 9.A.11 (= ramjet/scramjet/combined-cycle engines).
+    euAnnexIRef: "9A004.f",
+    earCclRef: "9A004.f",
+    wassenaarRef: "9.A.4",
     sourceUrl: METI_SCHEDULE_1_URL,
     asOfDate: ASOF,
     notes:
