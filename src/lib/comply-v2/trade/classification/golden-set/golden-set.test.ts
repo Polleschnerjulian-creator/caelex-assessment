@@ -220,14 +220,20 @@ const EXACT: Record<string, Verdict> = {
   "flight-sw|DE|IN": "REVIEW", // 9D001 → IN: kein EU001-Ziel → Einzelantrag NCA
   "prepreg|DE|IN": "REVIEW", // 1C010 → IN: kein EU001-Ziel → Einzelantrag NCA
   //
-  // (c) FAIL-CLOSED (§4.5, kein false-CLEARED): Annex-II-Section-I-Ausschluss
-  //     (MTCR-Trägertechnik) ist von EU001 NICHT gedeckt → REVIEW selbst an ein
-  //     EU001-Ziel. Belegt: Annex II EU001 Part 1 (Section I exclusion list:
-  //     u. a. 9A004-Trägerfamilie, 9A005-9A011, 9A101-9A119, 9A106).
-  "sat-bus|DE|US": "REVIEW", // 9A004 (Section I) → US: KEIN EU001 → Einzelantrag NCA
-  "sat-bus|DE|JP": "REVIEW", // 9A004 (Section I) → JP: KEIN EU001
-  "apogee-engine|DE|US": "REVIEW", // 9A106 (MTCR, Section I) → US: KEIN EU001
-  "apogee-engine|DE|JP": "REVIEW", // 9A106 (MTCR, Section I) → JP: KEIN EU001
+  // (c) FAIL-CLOSED (§4.5, kein false-CLEARED): Annex-II-Section-I-Ausschluss ist
+  //     von EU001 NICHT gedeckt → REVIEW selbst an ein EU001-Ziel. Section I
+  //     (Art. 12(6)(a), OJ L 206 p. 443) = "alle in Anhang IV genannten Güter"
+  //     + 13 explizite Codes. 9A004 (space launch vehicles) UND 9A106.c (thrust-
+  //     vector control) stehen BEIDE in Anhang IV (Teil I, MTCR-Technik, OJ L 206
+  //     p. 451-452) → über die Anhang-IV-Klausel von EU001 ausgeschlossen. Die
+  //     M-EU-Korrektur 2026-06-13 (exakte 2021/821-Section-I-Liste statt der
+  //     stale 42-Präfix-428/2009-Liste) LOCKERT diese beiden NICHT — der REVIEW
+  //     bleibt fail-closed, jetzt auf der korrekten Anhang-IV-Rechtsgrundlage.
+  //     Belegt: Reg (EU) 2021/821 Annex II Section I + Annex IV (eu.ts).
+  "sat-bus|DE|US": "REVIEW", // 9A004 (Anhang IV) → US: KEIN EU001 → Einzelantrag NCA
+  "sat-bus|DE|JP": "REVIEW", // 9A004 (Anhang IV) → JP: KEIN EU001
+  "apogee-engine|DE|US": "REVIEW", // 9A106(.c) (Anhang IV, MTCR) → US: KEIN EU001
+  "apogee-engine|DE|JP": "REVIEW", // 9A106(.c) (Anhang IV, MTCR) → JP: KEIN EU001
   //
   // (d) Innergemeinschaftlich bleibt GO — EU-Dual-Use (außer Annex IV) bewegt
   //     sich frei im Unionszollgebiet; keine Ausfuhrgenehmigung. Belegt:

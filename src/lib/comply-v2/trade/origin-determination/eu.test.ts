@@ -130,6 +130,141 @@ describe("euOriginModule — fail-closed: Section I exclusions never GO (no fals
   });
 });
 
+describe("euOriginModule — EXACT official Section I (Reg (EU) 2021/821 Annex II, Art. 12(6)(a)) (M-EU 2026-06-13)", () => {
+  // Helper: assert a code's EU001 verdict to an EU001 destination (US).
+  const verdictToUS = (code: string) =>
+    euOriginModule(
+      input({ eccnEU: code, eccnUS: null, usmlCategory: null }, "US"),
+    ).outcome;
+
+  describe("PART (2) — the 13 EXPLICIT Article-12(6)(a) codes are excluded (REVIEW, never GO)", () => {
+    // Verbatim from OJ L 206 p. 443 (cross-verified vs BAFA Annex II).
+    for (const code of [
+      "0C001",
+      "0C002",
+      "0D001",
+      "0E001",
+      "1A102",
+      "1C351",
+      "1C353",
+      "1C354",
+      "1C450.a.1",
+      "1C450.a.2",
+      "7E104",
+      "9A009.a",
+      "9A117",
+    ]) {
+      it(`${code} → US: REVIEW (Section I explicit code)`, () => {
+        expect(verdictToUS(code)).toBe("REVIEW");
+      });
+    }
+  });
+
+  describe("PART (1) — Annex IV members are excluded (the 'all items in Annex IV' clause)", () => {
+    // A representative cross-section of Annex IV (OJ L 206 p. 449-456) member
+    // codes that the OLD stale list happened to also catch, but now via the
+    // CORRECT Annex IV basis: 9A004/9A106.c (MTCR launch tech) is THE load-
+    // bearing fail-closed pin (golden sat-bus / apogee-engine).
+    for (const code of [
+      "9A004", // space launch vehicles
+      "9A005", // liquid rocket propulsion
+      "9A104", // sounding rockets
+      "9A116", // reentry vehicles
+      "9A119", // individual rocket stages
+      "9D101", // software for 9B116
+      "9E101", // tech for 9A104/9A105.a/9A106.c/...
+      "9E102", // tech for the launch-vehicle family
+      "1C001", // stealth materials (Annex IV)
+      "1C101", // reduced-observables (Annex IV)
+      "6B108", // radar XS systems usable for missiles
+      "7A117", // guidance sets usable in missiles
+      "3A229", // high-current pulse generators
+      "5A004.a", // cryptanalytic equipment
+    ]) {
+      it(`${code} → US: REVIEW (Annex IV member)`, () => {
+        expect(verdictToUS(code)).toBe("REVIEW");
+      });
+    }
+
+    it("9A106.c (thrust-vector control, Annex IV) → US: REVIEW", () => {
+      expect(verdictToUS("9A106.c")).toBe("REVIEW");
+    });
+
+    it("bare 9A106 → US: REVIEW (parent ambiguous over the .c Annex IV sub-item, fail-closed)", () => {
+      expect(verdictToUS("9A106")).toBe("REVIEW");
+    });
+  });
+
+  describe("LOOSENED — codes the stale 428/2009-basis list WRONGLY excluded, now EU001-GO to friendly dest", () => {
+    // None of these are on the 13-code list NOR in Annex IV (verified against
+    // the OJ Annex IV member list) → they are EU001-eligible. The old curation
+    // over-excluded them on a stale Reg 428/2009 Annex IIg basis.
+    for (const code of [
+      "9A101", // MTCR rocket motors — NOT in 2021/821 Annex IV, NOT on the 13-code list
+      "9A102",
+      "9A103",
+      "9A107",
+      "9A109",
+      "9A110",
+      "9A111",
+      "9A115",
+      "9A118",
+      "9D102", // software — not an Annex IV member
+      "9D103",
+      "9D104",
+      "1A002", // composite structures — not Annex IV, not on the 13-code list
+      "1C350", // CW precursors (1C350) — NOT 1C351/1C353/1C354, NOT Annex IV
+      "1C352",
+      "1C227", // not on Section I
+      "1C240",
+    ]) {
+      it(`${code} → US: GENERAL/GO under EU001 (off Section I)`, () => {
+        const v = euOriginModule(
+          input({ eccnEU: code, eccnUS: null, usmlCategory: null }, "US"),
+        );
+        expect(v.outcome, `${code} must be GO`).toBe("GO");
+        expect(v.licenceType).toBe("GENERAL");
+        expect(v.generalLicence?.id).toBe("EU001");
+      });
+    }
+
+    it("5A001.f and 5A001.j are off Section I → EU001-GO (stale list wrongly excluded them)", () => {
+      // ground-station/telecom sub-items: NOT on the 13-code list, NOT in
+      // Annex IV (Annex IV Cat-5 is only the cryptanalysis 5A004.a/5D002/5E002).
+      for (const code of ["5A001.f", "5A001.j"]) {
+        const v = euOriginModule(
+          input({ eccnEU: code, eccnUS: null, usmlCategory: null }, "US"),
+        );
+        expect(v.outcome, `${code} must be GO`).toBe("GO");
+        expect(v.generalLicence?.id).toBe("EU001");
+      }
+    });
+  });
+
+  describe("SUB-PRECISION — sub-suffixed exclusions match only their branch", () => {
+    it("9A009.a is excluded (REVIEW) but 9A009.b is NOT on Section I → GO", () => {
+      expect(verdictToUS("9A009.a")).toBe("REVIEW"); // explicit code
+      // 9A009.b (e.g. a different hybrid-propulsion sub-item) is not listed and
+      // not an Annex IV member → EU001-eligible.
+      expect(verdictToUS("9A009.b")).toBe("GO");
+    });
+
+    it("1C450.a.1 / 1C450.a.2 excluded; a bare 1C450 (e.g. .b) is NOT on Section I → GO", () => {
+      expect(verdictToUS("1C450.a.1")).toBe("REVIEW");
+      expect(verdictToUS("1C450.a.2")).toBe("REVIEW");
+      // 1C450.b.* is a different CW-precursor branch, NOT on the explicit list
+      // and NOT in Annex IV → EU001-eligible.
+      expect(verdictToUS("1C450.b")).toBe("GO");
+    });
+
+    it("matchesCode boundary: 9A106 does not spuriously catch a hypothetical 9A1060", () => {
+      // Boundary safety — only exact or dotted-sub matches count. (9A1060 is
+      // not a real code; this guards the matcher against raw startsWith.)
+      expect(verdictToUS("9A1060")).toBe("GO");
+    });
+  });
+});
+
 describe("euOriginModule — uncontrolled item → NONE/GO", () => {
   it("no EU control code → NONE/GO (no licence requirement)", () => {
     const v = euOriginModule(
