@@ -58,6 +58,29 @@ vi.mock("../../_components/DatasheetDropzone", () => ({
   },
 }));
 
+// Task 7 — isolate the verdict step from its heavy children:
+//   - PartyPicker does its own async /api/trade/parties search (AsyncSearchPicker
+//     debounce/effect). We stub it to expose `onSelect` so the test can pick a
+//     buyer without exercising that machinery.
+//   - VerdictPanel fetches /[id]/assess on mount (its own effect). We stub it to
+//     a marker that echoes the operationId it was mounted with, so the test can
+//     assert the wizard created the operation and handed VerdictPanel the right
+//     id WITHOUT running VerdictPanel's own fetch (which would otherwise wedge
+//     the runner on an unmocked GET). The real VerdictPanel is pinned by its own
+//     sibling test (VerdictPanel.test.tsx).
+let capturedOnParty: ((p: { id: string }) => void) | null = null;
+vi.mock("../../operations/new/_components/PartyPicker", () => ({
+  PartyPicker: ({ onSelect }: { onSelect: (p: { id: string }) => void }) => {
+    capturedOnParty = onSelect;
+    return <div data-testid="party-picker" />;
+  },
+}));
+vi.mock("../../operations/new/_components/VerdictPanel", () => ({
+  VerdictPanel: ({ operationId }: { operationId: string }) => (
+    <div data-testid="verdict-panel" data-operation-id={operationId} />
+  ),
+}));
+
 import { AssessFlow } from "./AssessFlow";
 
 const HIGH_PAYLOAD: DatasheetApplyPayload = {
@@ -92,6 +115,7 @@ const EMPTY_PAYLOAD: DatasheetApplyPayload = {
 
 beforeEach(() => {
   capturedOnApply = null;
+  capturedOnParty = null;
   vi.stubGlobal("fetch", vi.fn());
 });
 afterEach(() => vi.unstubAllGlobals());
@@ -269,6 +293,88 @@ describe("AssessFlow", () => {
 
     await waitFor(() =>
       expect(screen.getByTestId("assess-verdict-step")).toBeTruthy(),
+    );
+  });
+
+  // ── Task 7: Screen 4 — single verdict ───────────────────────────────────
+  /** Drive upload → confirm → landscape → choose `country` → verdict step. */
+  async function advanceToVerdict(country = "US") {
+    await advanceToLandscape();
+    await waitFor(() => expect(screen.getByText(country)).toBeTruthy());
+    fireEvent.click(screen.getByRole("button", { name: new RegExp(country) }));
+    await waitFor(() =>
+      expect(screen.getByTestId("assess-verdict-step")).toBeTruthy(),
+    );
+  }
+
+  it("Screen 4: a buyer + 'Prüfen' creates the operation (ship-to = chosen) + a line, then mounts VerdictPanel", async () => {
+    await advanceToVerdict("US");
+
+    // Pick the screened buyer via the (stubbed) PartyPicker.
+    expect(screen.getByTestId("party-picker")).toBeTruthy();
+    expect(capturedOnParty).toBeTruthy();
+    act(() => capturedOnParty?.({ id: "party-1" }));
+
+    // The next two POSTs: create-operation → create-line.
+    const f = fetch as ReturnType<typeof vi.fn>;
+    f.mockResolvedValueOnce({
+      ok: true,
+      status: 201,
+      json: async () => ({ operation: { id: "op-new" } }),
+    }).mockResolvedValueOnce({ ok: true, status: 201, json: async () => ({}) });
+
+    fireEvent.click(screen.getByRole("button", { name: /Darf ich liefern/i }));
+
+    // Operation created with the chosen destination as ship-to.
+    await waitFor(() =>
+      expect(fetch).toHaveBeenCalledWith(
+        "/api/trade/operations",
+        expect.objectContaining({ method: "POST" }),
+      ),
+    );
+    const opCall = f.mock.calls.find((c) => c[0] === "/api/trade/operations");
+    const opBody = JSON.parse((opCall![1] as RequestInit).body as string);
+    expect(opBody.shipToCountry).toBe("US");
+    expect(opBody.counterpartyId).toBe("party-1");
+
+    // A line is added for the persisted item under the new operation id.
+    await waitFor(() =>
+      expect(fetch).toHaveBeenCalledWith(
+        "/api/trade/operations/op-new/lines",
+        expect.objectContaining({ method: "POST" }),
+      ),
+    );
+    const lineCall = f.mock.calls.find(
+      (c) => c[0] === "/api/trade/operations/op-new/lines",
+    );
+    const lineBody = JSON.parse((lineCall![1] as RequestInit).body as string);
+    expect(lineBody.itemId).toBe("item-new");
+
+    // The existing VerdictPanel is mounted with the new operation id — no
+    // verdict is synthesised here; it fetches /[id]/assess itself.
+    await waitFor(() =>
+      expect(screen.getByTestId("verdict-panel")).toBeTruthy(),
+    );
+    expect(
+      screen.getByTestId("verdict-panel").getAttribute("data-operation-id"),
+    ).toBe("op-new");
+  });
+
+  it("Screen 4: the assess button is disabled until a buyer is chosen", async () => {
+    await advanceToVerdict("US");
+    const btn = screen.getByRole("button", {
+      name: /Darf ich liefern/i,
+    }) as HTMLButtonElement;
+    expect(btn.disabled).toBe(true);
+    act(() => capturedOnParty?.({ id: "party-1" }));
+    await waitFor(() =>
+      expect(
+        (
+          screen.getByRole("button", {
+            name: /Darf ich liefern/i,
+          }) as HTMLButtonElement
+        ).disabled,
+      ).toBe(false),
     );
   });
 });
