@@ -33,11 +33,12 @@
  * Greece, Ireland, Italy, Japan, Canada, Luxembourg, New Zealand, Netherlands,
  * Norway, Austria, Poland, Portugal, Sweden, Spain, South Korea, Czech Republic,
  * Turkey, Ukraine, Hungary, United Kingdom, USA. CRITICAL: India is NOT on the
- * list, and the 11-state expansion (Iceland + 10 EU members: BG already on /
- * actually CY/EE/HR/LV/LT/MT/RO/SK/SI + IS) takes effect only 1 JULY 2026 — at
- * the 2026-06-13 as-of those 11 are NOT yet partner states, so a CH→IS or
- * CH→Cyprus dual-use export still needs an Einzelbewilligung (do NOT model the
- * future list — fail-closed to the in-force Anhang 7).
+ * list, and the 10-state expansion (Iceland IS + 9 EU members CY/EE/HR/LV/LT/MT/
+ * RO/SK/SI — NB the secondary press wrongly lumps BG in, but BG is ALREADY a
+ * partner) takes effect only 1 JULY 2026 — at the 2026-06-13 as-of those 10 are
+ * NOT yet partner states, so a CH→IS or CH→Cyprus dual-use export still needs an
+ * Einzelbewilligung (do NOT model the future list — fail-closed to the in-force
+ * Anhang 7).
  *
  * The AGB (Art. 13, ausserordentliche Generalausfuhrbewilligung) covers the same
  * Anhang 2/3/5 goods to states NOT on Anhang 7, but it is EXPORTER-SPECIFIC
@@ -134,8 +135,8 @@ export const CH_OGB_AS_OF = "2026-06-13";
  * South Korea (KR), Czech Republic (CZ), Turkey (TR), Ukraine (UA), Hungary (HU),
  * United Kingdom (GB), United States of America (US).
  *
- * NOTE (fail-closed to the in-force list): the 11-state expansion (Iceland IS +
- * the EU members CY/EE/HR/LV/LT/MT/RO/SK/SI) takes effect only 1 JULY 2026 — it
+ * NOTE (fail-closed to the in-force list): the 10-state expansion (Iceland IS +
+ * 9 EU members CY/EE/HR/LV/LT/MT/RO/SK/SI) takes effect only 1 JULY 2026 — it
  * is NOT modelled here (the as-of is 2026-06-13). India (IN) is NOT on the list.
  * A CH→non-partner dual-use export needs an Einzelbewilligung.
  */
