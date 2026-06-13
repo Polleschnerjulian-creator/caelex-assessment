@@ -5,10 +5,11 @@
  * full engine — the engine-level supersede/override behaviour is proven in
  * `wiring.test.ts` + the golden set. Per MW2:
  *   • a SCOMET-controlled item × ANY destination → INDIVIDUAL/REVIEW (an
- *     individual SCOMET authorisation at the DGFT). India's General
- *     Authorisations (GAET intra-company technology transfer, GAEIS
- *     information-security, GAED drones) require per-shipment/end-use/end-user
- *     facts an item+destination-only input cannot establish → NOT auto-grantable
+ *     individual SCOMET authorisation at the DGFT). India's general
+ *     authorisations (GAICT intra-company transfer, GAET telecom items, GAEIS
+ *     information-security, GAED civilian drones) require per-shipment/end-use/
+ *     end-user/intra-company facts an item+destination-only input cannot
+ *     establish → NOT auto-grantable
  *     here; their non-coverage falls through to the INDIVIDUAL/REVIEW default
  *     (mirrors how M-EU treats EU002-008, M-UK the narrow OGELs, M-CH the AGB).
  *     So — correctly — there is NO general-licence GO on the golden spine for an
@@ -42,13 +43,16 @@
  *     the space spine sits in Category 5 (Aerospace/MTCR) and Category 8
  *     (Wassenaar dual-use, incl. 8A904 spacecraft/SLV/bus = EU 9A004).
  *   • KEY (the reason there is no general-licence GO): MOST SCOMET exports
- *     require an INDIVIDUAL authorisation. The DGFT General Authorisations are
- *     narrow + condition-heavy: GAET = intra-company transfer of SCOMET
- *     technology/software (needs an intra-company relationship); GAEIS =
- *     information-security items (needs end-use/end-user facts); GAED = drones
- *     below MTCR Cat I (DGFT case-by-case review). NONE is grantable on
- *     item+destination facts ALONE → all controlled IN-origin space-spine
- *     exports fall to an individual SCOMET licence (REVIEW).
+ *     require an INDIVIDUAL authorisation. The DGFT general authorisations are
+ *     narrow + condition-heavy: GAICT = Global Authorisation for Intra-Company
+ *     Transfer (PN 07.09.2024; 36 selected items / 41 countries / 3-yr, needs a
+ *     parent-subsidiary relationship + ICP; its item list excludes Cat-5
+ *     aerospace / 9A004-class); GAET = Telecommunication items (SCOMET Cat 8A5
+ *     Part 1); GAEIS = information-security items (Cat 8A5 Part 2, needs
+ *     end-use/end-user facts); GAED = civilian drones, range ≤25 km AND payload
+ *     ≤25 kg (Notif. 14/2023-DGFT). NONE is grantable on item+destination facts
+ *     ALONE → all controlled IN-origin space-spine exports fall to an individual
+ *     SCOMET licence (REVIEW).
  *   • Sensitive Category 5 (MTCR) / 9A004 / 9A106 → individual authorisation,
  *     with DRDO/DAE/ISRO inter-ministerial clearance; never a general-licence GO.
  *   Sources: DGFT SCOMET List (Foreign Trade Policy Schedule-2 Appendix 3,
@@ -76,8 +80,8 @@ function input(
 }
 
 describe("inOriginModule — controlled item → INDIVIDUAL/REVIEW (SCOMET licence at DGFT)", () => {
-  // India's General Authorisations (GAET/GAEIS/GAED) are intra-company/end-use/
-  // case-by-case conditional → not auto-grantable from item+destination alone →
+  // India's general authorisations (GAICT/GAET/GAEIS/GAED) are intra-company/
+  // end-use/registration conditional → not auto-grantable from item+destination alone →
   // every SCOMET-controlled space-spine export is an individual authorisation.
   for (const dest of ["DE", "US", "JP", "CN"]) {
     it(`5A002 (cryptography / Cat 8 info-security) → ${dest}: INDIVIDUAL/REVIEW at DGFT`, () => {
@@ -234,7 +238,7 @@ describe("inOriginModule — no general-licence GO anywhere on the golden spine"
 
 describe("M-IN — data integrity", () => {
   it("there are NO item+destination-only general licences (the honest IN posture)", () => {
-    // India's GAET/GAEIS/GAED all require per-shipment/end-use facts → none can
+    // India's GAICT/GAET/GAEIS/GAED all require per-shipment/end-use/intra-company facts → none can
     // be auto-granted here → the curated general-licence list is intentionally
     // empty. This pins the design decision (an accidental addition would fail
     // the golden-spine sweep above too).

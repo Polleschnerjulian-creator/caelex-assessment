@@ -28,19 +28,27 @@
  * Unlike the EU (EUGEA EU001), the UK (the EU-member-states OGEL) and CH (the
  * OGB), India has NO general/open authorisation that an item × destination input
  * ALONE makes auto-grantable for the space spine. MOST SCOMET exports require an
- * INDIVIDUAL authorisation. The DGFT General Authorisations that DO exist are
- * narrow + condition-heavy and turn on per-shipment / end-use / end-user facts
- * this module's input cannot establish:
- *   • GAET (General Authorisation for Export of Technology) — INTRA-COMPANY
- *     transfer of SCOMET software/technology to a foreign subsidiary/parent;
- *     needs an intra-company relationship + registered exporter (not an
- *     item+destination fact).
- *   • GAEIS (General Authorisation for Export of Information Security items) —
- *     Category 8 (information-security / cryptography) items only, conditional on
- *     end-use / end-user and registration (not auto-grantable from the code +
- *     destination alone).
- *   • GAED (General Authorisation for Export of Drones) — UAVs below MTCR Cat I,
- *     subject to DGFT case-by-case review (a discretionary end-use assessment).
+ * INDIVIDUAL authorisation. The DGFT general/open authorisations that DO exist
+ * are narrow + condition-heavy and turn on per-shipment / end-use / end-user /
+ * intra-company facts this module's input cannot establish:
+ *   • GAICT (Global Authorisation for Intra-Company Transfer, DGFT Public Notice
+ *     07.09.2024) — the intra-company instrument: transfer of 36 selected SCOMET
+ *     items to affiliates in 41 countries, 3-year validity, conditional on a
+ *     parent-subsidiary/affiliated relationship + an Internal Compliance
+ *     Programme. Its 36-item list does NOT include Cat-5 aerospace or
+ *     9A004-class spacecraft/launch vehicles — so the space spine is out of
+ *     scope AND it is not an item+destination-only fact.
+ *   • GAET (General Authorisation for Export of Telecommunication items, SCOMET
+ *     Category 8A5 Part 1) — telecom items only, conditional on end-use/end-user
+ *     and registration (NOT "technology", NOT the intra-company instrument, and
+ *     not auto-grantable from code + destination alone).
+ *   • GAEIS (General Authorisation for Export of Information Security items,
+ *     SCOMET Category 8A5 Part 2) — info-security / cryptography items only,
+ *     conditional on end-use / end-user and registration (not auto-grantable
+ *     from the code + destination alone).
+ *   • GAED (General Authorisation for Export of certain Drones, Notification
+ *     14/2023-DGFT) — civilian UAVs with range ≤ 25 km AND payload ≤ 25 kg,
+ *     excluding software/technology; no space-spine item qualifies.
  * Like the EU's EU002-008, the UK's narrow OGELs and the Swiss AGB, their
  * non-coverage simply falls through to the INDIVIDUAL/REVIEW default — the
  * operator can still claim them manually at the DGFT once the per-shipment facts
@@ -331,10 +339,11 @@ function inControlledCode(c: ClassificationLike): string | null {
 /**
  * All curated IN general licences (space-relevant) — INTENTIONALLY EMPTY.
  *
- * India's General Authorisations (GAET intra-company technology transfer, GAEIS
- * information-security, GAED drones) all require per-shipment / end-use /
- * end-user facts an item+destination-only input cannot establish, so NONE is
- * auto-grantable here (see the file header). Their non-coverage falls through to
+ * India's general/open authorisations (GAICT intra-company transfer, GAET
+ * telecom items, GAEIS information-security, GAED civilian drones) all require
+ * per-shipment / end-use / end-user / intra-company facts an item+destination-only
+ * input cannot establish, so NONE is auto-grantable here (see the file header for
+ * the exact instruments). Their non-coverage falls through to
  * the INDIVIDUAL/REVIEW default (the operator can still claim them manually at
  * the DGFT). Keeping this empty pins the honest IN posture: every SCOMET-
  * controlled space-spine export is an individual authorisation (REVIEW), never a
@@ -347,7 +356,7 @@ export const IN_GENERAL_LICENCES: readonly GeneralLicence[] = [];
  *   1. item not SCOMET-controlled → NONE/GO.
  *   2. SCOMET-controlled → INDIVIDUAL/REVIEW = individual SCOMET authorisation at
  *      the DGFT (there is no item+destination-only general authorisation that
- *      covers the space spine — GAET/GAEIS/GAED are conditional, not modelled
+ *      covers the space spine — GAICT/GAET/GAEIS/GAED are conditional, not modelled
  *      here; the sensitive MTCR/Annex-IV-equivalent codes additionally carry the
  *      fail-closed floor annotation).
  *
@@ -381,8 +390,9 @@ export const inOriginModule = (
 
   // 2. SCOMET-controlled → INDIVIDUAL/REVIEW = individual SCOMET authorisation at
   //    the DGFT. There is no item+destination-only general authorisation: the
-  //    DGFT General Authorisations (GAET/GAEIS/GAED) are intra-company / end-use
-  //    / case-by-case conditional and not auto-grantable here, so every
+  //    DGFT general authorisations (GAICT intra-company / GAET telecom / GAEIS
+  //    info-security / GAED civilian drones) are intra-company / end-use /
+  //    registration conditional and not auto-grantable here, so every
   //    controlled space-spine export needs an individual licence. The most-
   //    sensitive MTCR/Annex-IV-equivalent codes (9A004/9A106.c) additionally sit
   //    on the fail-closed floor — they could never clear under any future
@@ -390,7 +400,7 @@ export const inOriginModule = (
   const sensitive = isSensitiveExcluded(code);
   const sensitiveNote = sensitive
     ? ` Code ${code} ist ein besonders sensibles MTCR/Anhang-IV-äquivalentes Gut (SCOMET Cat 5/8A9) — eine General-Authorisation kommt dafür ohnehin nicht in Betracht; DRDO/DAE/ISRO-Mitbeteiligung im Inter-Ministerial-Working-Group-Verfahren ist üblich.`
-    : ` Die DGFT-General-Authorisations (GAET intra-company Technologie-Transfer, GAEIS Informationssicherheit, GAED Drohnen) sind bedingungs-/endverwendungsabhängig und aus Item×Ziel allein nicht automatisch erteilbar.`;
+    : ` Die DGFT-General-Authorisations (GAICT konzerninterner Transfer, GAET Telekommunikation, GAEIS Informationssicherheit, GAED zivile Drohnen) sind bedingungs-/endverwendungs-/konzernabhängig und aus Item×Ziel allein nicht automatisch erteilbar.`;
   return {
     outcome: "REVIEW",
     licenceType: "INDIVIDUAL",
