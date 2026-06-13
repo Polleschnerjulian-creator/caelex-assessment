@@ -11,6 +11,7 @@ import {
   CH_GKV_COVERAGE,
   CH_GKV_AS_OF,
   getChGkvSourceCitation,
+  findChGkvEntry,
 } from "./ch-gkv";
 
 describe("CH_GKV (Switzerland Güterkontrollverordnung) — space slice", () => {
@@ -103,5 +104,10 @@ describe("CH_GKV (Switzerland Güterkontrollverordnung) — space slice", () => 
     const cite = getChGkvSourceCitation();
     expect(cite).toContain("946.202.1");
     expect(cite).toContain("fedlex.admin.ch");
+  });
+
+  it("findChGkvEntry resolves known code and returns undefined for bogus code", () => {
+    expect(findChGkvEntry("9A004")).toBeDefined();
+    expect(findChGkvEntry("BOGUS_DOES_NOT_EXIST")).toBeUndefined();
   });
 });

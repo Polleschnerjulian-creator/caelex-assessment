@@ -494,6 +494,12 @@ export const CH_GKV_COVERAGE: ChGkvCoverage = {
 // the count can never drift from the data (the test asserts they match).
 CH_GKV_COVERAGE.caelexCoverageCount = CH_GKV_ENTRIES.length;
 
+/** Case-insensitive exact-code lookup — mirrors findUkStrategicEntry / findEuCmlEntry. */
+export function findChGkvEntry(nationalCode: string): MirrorEntry | undefined {
+  const needle = nationalCode.trim().toUpperCase();
+  return CH_GKV_ENTRIES.find((e) => e.nationalCode.toUpperCase() === needle);
+}
+
 /** Short citation for UI / provenance surfaces. */
 export function getChGkvSourceCitation(): string {
   return `Güterkontrollverordnung (GKV), SR ${CH_GKV_COVERAGE.srNumber}, Stand am ${CH_GKV_EDITION_DATE} (Verordnung vom ${CH_GKV_ADOPTION_DATE}). ${GKV_SOURCE_URL}`;

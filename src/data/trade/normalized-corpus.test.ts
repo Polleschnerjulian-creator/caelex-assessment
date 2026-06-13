@@ -194,6 +194,9 @@ describe("S0: regime maturity (fail-closed input)", () => {
 
 describe("S5: mirror architecture invariants", () => {
   it("no dangling mirror — every mirrorsCanonicalId resolves within the union", () => {
+    // This test guards UNION-WIDE post-build consistency (all mirrors resolve in the flat union).
+    // The adapter's throw (in adaptMirrorEntries) guards BASE-ONLY resolution at import time —
+    // so a hypothetical mirror→mirror chain would throw at module load rather than fail here gracefully.
     const ids = new Set(NORMALIZED_CORPUS_UNION.map((e) => e.canonicalId));
     for (const e of NORMALIZED_CORPUS_UNION) {
       if (e.mirrorsCanonicalId) {

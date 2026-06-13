@@ -171,6 +171,11 @@ export const REGIME_MATURITY: Record<CorpusRegime, 1 | 2 | 3> = {
   CA_ECL: 3,
   AU_DSGL: 3,
   KR_STRATEGIC: 3,
+  // CH_GKV is dualUsePrimary for CH-origin items; the engine has NO Swiss (SECO)
+  // origin-licence logic yet, so Gate 4.5 (thin-origin REVIEW) is the ONLY guard
+  // for a CH-seat controlled export. Lifting to 2 would silently turn CH→friendly-
+  // dest dual-use into GO — the same false-CLEARED-class bug the UK S3 lesson documents.
+  // LIFT-CONDITION: raise to 2 once CH-origin SECO licence determination is modelled.
   CH_GKV: 3,
   NO_LIST: 3,
 };
