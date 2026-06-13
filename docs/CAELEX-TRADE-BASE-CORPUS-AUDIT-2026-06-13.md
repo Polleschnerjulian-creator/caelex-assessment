@@ -34,15 +34,15 @@ added before a wrong/phantom one is removed.
 
 ## Status summary
 
-| file                          | findings                                            | status                                                                  |
-| ----------------------------- | --------------------------------------------------- | ----------------------------------------------------------------------- |
-| `wassenaar-cat6-9.ts` (Cat 9) | 4 wrong-item                                        | ✅ DONE — commit `a833a0e4`                                             |
-| `eu-annex-i-cat6.ts` (Cat 6)  | 6 wrong-item + 6A005 scheme                         | ✅ DONE — commit `5352c0ea` (6A005 regime migration handled separately) |
-| `eu-annex-i.ts` (Cat 9 main)  | Cat-9 clean (S5); 2 cross-cutting Cat-5             | ⏳ pending (with Cat-5 batch)                                           |
-| `eu-annex-i-cat4-7.ts`        | ~14 wrong-item + 2 phantom                          | ⏳ pending                                                              |
-| `eu-annex-i-cat1-2.ts`        | 3 wrong-item                                        | ⏳ pending                                                              |
-| `eu-annex-i-cat3.ts`          | ~35 (systematic 3A001/3A002/3B001 shift) + phantoms | ✅ DONE — commit `6ca5b87f`                                             |
-| `eu-annex-i-cat5.ts`          | ~16 (systematic 5A001/5A002 rotation) + phantoms    | ⏳ pending                                                              |
+| file                          | findings                                            | status                                                                          |
+| ----------------------------- | --------------------------------------------------- | ------------------------------------------------------------------------------- |
+| `wassenaar-cat6-9.ts` (Cat 9) | 4 wrong-item                                        | ✅ DONE — commit `a833a0e4`                                                     |
+| `eu-annex-i-cat6.ts` (Cat 6)  | 6 wrong-item + 6A005 scheme                         | ✅ DONE — commit `5352c0ea` (6A005 regime migration handled separately)         |
+| `eu-annex-i.ts` (Cat 9 main)  | Cat-9 clean (S5); 2 cross-cutting Cat-5             | ✅ DONE — commit `25902b7d` (5A001.d + 5A001.f corrected; see Fix-2 note below) |
+| `eu-annex-i-cat4-7.ts`        | ~14 wrong-item + 2 phantom                          | ✅ DONE — commit `278928da`                                                     |
+| `eu-annex-i-cat1-2.ts`        | 3 wrong-item                                        | ✅ DONE — commit `b12a2f9f`                                                     |
+| `eu-annex-i-cat3.ts`          | ~35 (systematic 3A001/3A002/3B001 shift) + phantoms | ✅ DONE — commit `6ca5b87f`                                                     |
+| `eu-annex-i-cat5.ts`          | ~16 (systematic 5A001/5A002 rotation) + phantoms    | ✅ DONE — commit `25902b7d`                                                     |
 
 **Root-cause pattern:** the Cat-3/4/5/7 enumeration files were authored from a
 _misaligned reference_ — sub-paragraph descriptions are real control items but
@@ -199,6 +199,44 @@ legislation.gov.uk 2019/2199 + 2018/1922 + SIPRI Wassenaar.
 Cross-cutting in `eu-annex-i.ts`: `5A001.b` ("phased-array >31.8 GHz" → likely
 5A001.d) and `5A001.f` ("free-space optical" → likely jamming) need the same
 5A001 structure resolved; fixed with this batch.
+
+**✅ Fix-2 resolution (audit-wrap, commit `25902b7d`).** Verified the 2
+cross-cutting Cat-5 entries in `eu-annex-i.ts` against official 5A001 +
+the corrected `eu-annex-i-cat5.ts`. **Both are now correct** — they were
+re-homed to the official letters in the Cat-5 batch:
+
+- The phased-array entry now sits at **`5A001.d`** ("Electronically
+  steerable phased-array antennas above 31.8 GHz") — the official 5A001.d
+  scope, not the 5A001.b advanced-radio parent. ✅
+- **`5A001.f`** now reads "Mobile telecommunications interception /
+  jamming equipment" (the official 5A001.f scope, HR-flagged
+  cyber-surveillance) — NOT free-space optical comms. Optical
+  inter-satellite-link terminals correctly live at the EU-autonomous
+  **AM-005** entry in the same file. ✅
+
+Both carry the `Base-corpus audit 2026-06-13` note and match the official
+EU Reg (EU) 2021/821 Annex I Cat 5 Part 1 structure (EUR-Lex CELEX
+02021R0821) and the corrected `eu-annex-i-cat5.ts` 5A001 grid. No further
+edit required — row marked done.
+
+**✅ Japan-METI 5A002 cross-ref wrap (audit-wrap).** With 5A002 corrected
+to end at `.e` (phantom `.f`/`.g` removed) and cryptanalytic relocated to
+the standalone `5A004`, two `japan-meti.ts` Cat-5 cross-refs were stale:
+
+- "Quantum cryptography (QKD) equipment" pointed `euAnnexIRef` +
+  `earCclRef` at the now-deleted **`5A002.f`** (dangling phantom) →
+  corrected to **`5A002.c`** (the official QKD letter; harmonised across
+  Wassenaar/EU/US — US CCL ECCN 5A002.c likewise controls QKD).
+  `wassenaarRef` `5.A.2.f` → `5.A.2.c`.
+- "Cryptanalytic equipment" pointed at **`5A002.c`** — which is now QKD,
+  a wrong-item ref → corrected to **`5A004`** (cryptanalytic functions
+  moved out of 5A002 in the 2018-plenary restructure; US CCL ECCN 5A004,
+  formerly 5A002.a.2). `wassenaarRef` `5.A.2.c` → `5.A.4`.
+
+Sources: EU Reg (EU) 2021/821 Annex I Cat 5 Pt 2 (EUR-Lex CELEX
+02021R0821); US CCL ECCNs 5A002.c + 5A004 (BIS Final Rule 2019-05-23
+implementing the WA 2018 Plenary); cross-checked against the corrected
+`eu-annex-i-cat5.ts`.
 
 ---
 
