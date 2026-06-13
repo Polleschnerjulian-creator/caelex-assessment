@@ -315,7 +315,7 @@ export const CH_GKV_ENTRIES: MirrorEntry[] = [
 
   // ════════════════════════════════════════════════════════════════════════
   // Anhang 2 Teil 2 — Category 6 (Sensors & Lasers) — EO/IR payloads, star
-  // trackers, laser ranging, MTCR-shadowed detectors/radar (6A107/6A108).
+  // trackers, laser ranging, MTCR-shadowed gravimeters/radar (6A107/6A108).
   // ════════════════════════════════════════════════════════════════════════
   {
     nationalCode: "6A002",
@@ -470,7 +470,7 @@ export const CH_GKV_COVERAGE: ChGkvCoverage = {
     "Anhang 2 Teil 2 — Category 9 (aerospace & propulsion: launch vehicles, " +
     "spacecraft, propulsion, MTCR-shadowed 9A1xx), Category 5 part 1 (5A001 " +
     "telecom), Category 6 (6A002/6A003/6A004/6A008 sensors+lasers, 6A107/6A108 " +
-    "MTCR detectors/radar) and Category 7 (7A001/7A002/7A003 inertial+IMU, " +
+    "MTCR gravimeters/radar) and Category 7 (7A001/7A002/7A003 inertial+IMU, " +
     "7A101/7A103/7A104 MTCR flight-control) — as MIRROR entries that adopt the " +
     "Wassenaar/EU dual-use numbering one-to-one (Swiss EKN === EU code) plus the " +
     "Anhang 4 (strategic) + Anhang 5 (national-control) headlines as the genuine " +

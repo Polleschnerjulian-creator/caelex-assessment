@@ -326,7 +326,7 @@ export const AU_DSGL_ENTRIES: MirrorEntry[] = [
 
   // ════════════════════════════════════════════════════════════════════════
   // Part 2 — Category 6 (Sensors & Lasers) — EO/IR payloads, cameras, radar,
-  // MTCR-shadowed detectors/radar (6A107/6A108).
+  // MTCR-shadowed gravimeters/radar (6A107/6A108).
   // ════════════════════════════════════════════════════════════════════════
   {
     nationalCode: "6A002",
@@ -482,7 +482,7 @@ export const AU_DSGL_COVERAGE: AuDsglCoverage = {
     "codes of Part 2 — Category 9 (aerospace & propulsion: launch vehicles, " +
     "spacecraft, propulsion, MTCR-shadowed 9A1xx), Category 5 part 1 (5A001 " +
     "telecom, 5A002 information security), Category 6 (6A002/6A003/6A004/6A008 " +
-    "sensors+cameras+radar, 6A107/6A108 MTCR detectors/radar) and Category 7 " +
+    "sensors+cameras+radar, 6A107/6A108 MTCR gravimeters/radar) and Category 7 " +
     "(7A001/7A002/7A003/7A004/7A005 inertial+IMU+star-tracker+GNSS, 7A101/7A103/" +
     "7A104 MTCR flight-control) — as MIRROR entries that adopt the Wassenaar/EU " +
     "dual-use numbering one-to-one (AU DSGL code === EU code) plus the Part 1 " +

@@ -1,5 +1,6 @@
 /**
- * Wassenaar Arrangement — Cat 6 (Sensors/Lasers) + Cat 9 (Aerospace).
+ * Wassenaar Arrangement — Cat 6 (Sensors/Lasers) + Cat 7 (Navigation/
+ * Avionics) + Cat 9 (Aerospace).
  *
  * The Wassenaar Arrangement is the 42-state multilateral export-control
  * regime that establishes the BASELINE control language from which
@@ -17,7 +18,7 @@
  *     (materials), D (software), E (technology). Mirrors map 1:1 into
  *     EU Annex I and US CCL Category numbers.
  *
- * This file: aerospace-relevant subsets of Cat 6 + Cat 9 only.
+ * This file: aerospace-relevant subsets of Cat 6 + Cat 7 + Cat 9.
  *
  * Why "first-class": Caelex Trade previously referenced Wassenaar as a
  * `seeAlso` cross-walk relationship only — there was no primary dataset
@@ -32,11 +33,19 @@
  *   - **6.A.3** Cameras (gated, framing, streak)
  *   - **6.A.5** Lasers (CW + pulsed, fiber, semiconductor)
  *   - **6.A.8** Radar (incl. SAR)
+ *   - **7.A.1-5** Navigation/avionics: accelerometers, gyros, IMU/INS,
+ *                 star trackers, controlled GNSS receivers (satellite ADCS/GNC)
+ *   - **7.D.1**   Software for development/production of 7.A items
+ *   - **7.E.1**   Technology for development of 7.A items
  *   - **9.A.1** Aero gas turbines
  *   - **9.A.4-7** Spacecraft, launch vehicles, propulsion, ground equipment
  *   - **9.A.11** UAVs
  *   - **9.D.1-4** Aerospace software
  *   - **9.E.1-3** Aerospace technology
+ *
+ * Out of scope here: Cat 3 rad-hard microelectronics (3.A.1 / 3.A.2,
+ * EU 3A001/3A002) — covered, if at all, by a dedicated Cat-3 dataset,
+ * not this aerospace Cat 6/7/9 file.
  *
  * Coverage descriptors are terse-and-paraphrased. No verbatim
  * regulatory text. Consult the source URL for authoritative language.
@@ -721,9 +730,9 @@ export const WASSENAAR_CAT6_9_ENTRIES: WassenaarEntry[] = [
     code: "9.A.6.f",
     list: "DUL",
     category: "9",
-    title: "Spacecraft solar arrays and deployment mechanisms",
+    title: "Propellant storage systems (capillary / positive-expulsion)",
     description:
-      "Multi-junction GaAs solar arrays + deployment mechanisms above efficiency/power-density thresholds.",
+      "Propellant storage systems for liquid rocket propulsion using the principle of capillary containment or positive expulsion (i.e. with flexible bladders). Part of WA/EU 9.A.6 'liquid rocket propulsion systems & components'.",
     euAnnexIRef: "9A006.f",
     earCclRef: "9A006.f",
     sourceUrl: SOURCE_URL,
@@ -733,9 +742,9 @@ export const WASSENAAR_CAT6_9_ENTRIES: WassenaarEntry[] = [
     code: "9.A.6.g",
     list: "DUL",
     category: "9",
-    title: "Radiation-hardened space electronics",
+    title: "Liquid propellant injectors (small-orifice)",
     description:
-      "Rad-hard ASICs, FPGAs, processors above TID + SEL thresholds. The space-qualified-microelectronics workhorse.",
+      "Liquid propellant injectors with individual orifices of 0.381 mm or smaller in diameter (or 1.14 x 10⁻³ cm² or smaller in area for non-circular orifices) and specially designed for liquid rocket engines. Part of WA/EU 9.A.6 'liquid rocket propulsion systems & components'.",
     euAnnexIRef: "9A006.g",
     earCclRef: "9A006.g",
     sourceUrl: SOURCE_URL,

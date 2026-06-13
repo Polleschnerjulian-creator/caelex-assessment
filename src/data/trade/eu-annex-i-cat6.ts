@@ -877,9 +877,9 @@ export const EU_ANNEX_I_CAT6_ENTRIES: ClassificationEntry[] = [
   {
     code: "6A107",
     jurisdiction: "EU_ANNEX_I",
-    title: "Detectors specially designed for MTCR rocket systems",
+    title: "Gravity meters and gravity gradiometers usable in missiles",
     description:
-      "EU Annex I Cat 6, 6A107 — detectors specially designed for use with MTCR rocket systems above defined performance.",
+      "EU Annex I Cat 6, 6A107 — gravity meters (gravimeters), other than those specified in 6A007.b, designed or modified for airborne or marine use with a static or operational accuracy of 0.7 mGal or less and a time-to-steady-state registration of two minutes or less; plus components specially designed for gravity meters (6A007.b / 6A107.a) and gravity gradiometers (6A007.c). The MTCR-derived shadow of the civil 6A007 — gravity-sensing usable in 'missiles'. NOT detectors (detectors usable in MTCR systems are 6A102).",
     controlReasons: ["MT"],
     crossReferenceTopic: null,
     sourceUrl: SOURCE_URL,

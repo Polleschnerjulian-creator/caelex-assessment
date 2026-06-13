@@ -20,15 +20,19 @@
  *   • Annex 2  — STRATEGIC ITEMS (the control lists). Categories **1–9** are
  *                the DUAL-USE items administered by MOTIE; Category **10** is
  *                the solely-nuclear NSG-trigger leg (NSSC/KINAC-administered).
- *                Annex 2 is built on **the European Union list of dual-use
- *                items, which is itself based on the Wassenaar Arrangement
- *                control-list system** — so the Korean dual-use codes use the
- *                SAME category-digit + letter + three-digit numbering as the
- *                EU/Wassenaar scheme (e.g. 9A004, 5A001, 6A008). SIPRI: "the
- *                third [letter] and fifth (numeric) character represent the
- *                category of the items … [the list maps] to the European Union
- *                (EU) list of dual-use items (which is based on the Wassenaar
- *                Arrangement control list system)".
+ *                Korea's coding method is **similar to** the European Union
+ *                list of dual-use items (which is itself based on the Wassenaar
+ *                Arrangement control-list system) — so the Korean dual-use
+ *                codes use the SAME five-character alphanumeric structure as the
+ *                EU/Wassenaar scheme (e.g. 9A004, 5A001, 6A008). SIPRI: "Items
+ *                in the list are assigned a five-character alphanumeric code;
+ *                the fourth (alphabetic) character and the fifth (numeric)
+ *                character represent the category of the items; and the third
+ *                (numeric) character indicates the relevant export control
+ *                regime. South Korea's current coding method is thus similar to
+ *                that used in the European Union (EU) list of dual-use items
+ *                (which is based on the Wassenaar Arrangement control list
+ *                system)".
  *   • Annex 3  — MUNITIONS items (the Wassenaar munitions list leg) —
  *                military, not the space dual-use slice.
  *   • Annex 4+ — catch-all / WMD end-use ("situational licence") and the
@@ -38,9 +42,10 @@
  *                of the multilateral regimes — the genuine Korea-only layer.
  *
  * ─── WHY THIS IS A MIRROR FILE, NOT A RE-CURATED CODE LIST ────────────────
- * Annex 2 Categories 1–9 IS the EU/Wassenaar dual-use list under a Korean
- * cover. A Korean Annex-2 "9A004" IS the Wassenaar/EU "9A004" — same code, same
- * scope (SIPRI confirms Annex 2 is structured on the EU dual-use list). So each
+ * Annex 2 Categories 1–9 closely follow the EU/Wassenaar dual-use list under a
+ * Korean cover. A Korean Annex-2 "9A004" mirrors the Wassenaar/EU "9A004" —
+ * same code, same scope (SIPRI: Korea's coding method is "similar to" the EU
+ * dual-use list, which is based on the Wassenaar control-list system). So each
  * Korean space code is declared as a MIRROR of the BEST existing union target —
  * "EU_ANNEX_I:<code>" wherever that code is curated in the EU corpus — and
  * INHERITS the source title/description/controlReason while carrying the KOREAN
@@ -53,9 +58,10 @@
  * JS-gated portal, and the consolidated English control list is not freely
  * published code-by-code. We therefore curate ONLY where BOTH of the following
  * hold, and EXCLUDE (in KR_STRATEGIC_COVERAGE.excluded) otherwise:
- *   (a) the structural fact that Annex 2 adopts the EU/Wassenaar dual-use
- *       numbering verbatim is established by an OFFICIAL/authoritative source
- *       (the SIPRI national-system brief + MOTIE/KOSTI English overviews); AND
+ *   (a) the structural fact that Annex 2 closely follows (uses coding similar
+ *       to) the EU/Wassenaar dual-use numbering is established by an OFFICIAL/
+ *       authoritative source (the SIPRI national-system brief + MOTIE/KOSTI
+ *       English overviews); AND
  *   (b) the multilateral target code is ALREADY CURATED in the Caelex base
  *       corpus (an "EU_ANNEX_I:<code>" that resolves), grep-verified before
  *       being written here — the adapter throws on any dangling mirror.
@@ -63,7 +69,7 @@
  * the rad-hard microelectronics 3A001/3A002, which are known-absent), we
  * EXCLUDE it honestly rather than invent a Korean code or point at a fabricated
  * canonicalId. We do NOT copy EU text and claim it is the verified Korean text;
- * the NONE entries assert ONLY the verbatim-adoption STRUCTURE that the source
+ * the NONE entries assert ONLY the similar-coding STRUCTURE that the source
  * establishes, inheriting the EU sibling's text for the underlying control.
  *
  * ─── MATURITY (DELIBERATELY KEPT THIN) ────────────────────────────────────
@@ -111,9 +117,10 @@ export const KR_STRATEGIC_LEGAL_BASIS =
  * Every dual-use code below was VERIFIED present in the EU Annex I corpus (the
  * `EU_ANNEX_I:<code>` target it mirrors) before being written here — the
  * adapter throws on any dangling mirror, and curation grepped the EU corpus
- * files for each code. Korea's Annex-2 code is byte-identical to the EU code
- * (Annex 2 Categories 1–9 adopt the EU/Wassenaar dual-use numbering), so
- * `nationalCode === <the EU code>` for the NONE entries — the distinction lives
+ * files for each code. Korea's Annex-2 code string mirrors the EU code
+ * (Annex 2 Categories 1–9 use coding similar to the EU/Wassenaar dual-use
+ * numbering — SIPRI), so `nationalCode === <the EU code>` for the NONE entries
+ * at the code-string level — the distinction lives
  * in the regime (KR_STRATEGIC vs EU_ANNEX_I), the source URL (yestrade vs
  * EUR-Lex) and the as-of date.
  */
@@ -318,7 +325,7 @@ export const KR_STRATEGIC_ENTRIES: MirrorEntry[] = [
 
   // ════════════════════════════════════════════════════════════════════════
   // Annex 2 — Category 6 (Sensors & Lasers) — EO/IR payloads, optics, radar,
-  // MTCR-shadowed detectors/radar (6A107/6A108).
+  // MTCR-shadowed gravimeters/radar (6A107/6A108).
   // ════════════════════════════════════════════════════════════════════════
   {
     nationalCode: "6A002",
@@ -489,15 +496,15 @@ export const KR_STRATEGIC_COVERAGE: KrStrategicCoverage = {
     "(aerospace & propulsion: launch vehicles, spacecraft, propulsion, " +
     "MTCR-shadowed 9A1xx, plus 9D/9E software+technology), Category 5 part 1 " +
     "(5A001 telecom), Category 6 (6A002/6A003/6A004/6A008 sensors+optics+radar, " +
-    "6A107/6A108 MTCR detectors/radar) and Category 7 (7A001/7A002/7A003 " +
+    "6A107/6A108 MTCR gravimeters/radar) and Category 7 (7A001/7A002/7A003 " +
     "inertial+gyro+IMU, 7A101/7A103/7A104 MTCR flight-control) — as MIRROR " +
-    "entries that adopt the EU/Wassenaar dual-use numbering one-to-one (Korean " +
-    "Annex-2 code === EU code, per the SIPRI structural finding) plus the " +
+    "entries that use coding similar to the EU/Wassenaar dual-use numbering " +
+    "(Korean Annex-2 code string === EU code, per the SIPRI structural finding) plus the " +
     "Category 10 (solely-nuclear), Annex 3 (munitions) and the 2024 unilateral " +
     "national-control headlines as the genuine Korea-only layer (NATIONAL_ONLY). " +
     "HONESTY CAVEAT (Spec §4.5): official English per-code text is JS-gated and " +
-    "not freely published code-by-code; NONE entries assert ONLY the verbatim " +
-    "EU/Wassenaar-adoption STRUCTURE the source establishes and inherit the EU " +
+    "not freely published code-by-code; NONE entries assert ONLY the similar-coding " +
+    "EU/Wassenaar STRUCTURE the source establishes and inherit the EU " +
     "sibling's text — codes whose multilateral target is not curated in the base " +
     "are EXCLUDED below rather than fabricated.",
   excluded: [

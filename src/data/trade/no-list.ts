@@ -321,7 +321,7 @@ export const NO_LIST_ENTRIES: MirrorEntry[] = [
 
   // ════════════════════════════════════════════════════════════════════════
   // Liste II — Category 6 (Sensors & Lasers) — EO/IR payloads, cameras, radar
-  // (6A008 SAR), MTCR-shadowed detectors/radar (6A107/6A108).
+  // (6A008 SAR), MTCR-shadowed gravimeters/radar (6A107/6A108).
   // ════════════════════════════════════════════════════════════════════════
   {
     nationalCode: "6A002",
@@ -469,7 +469,7 @@ export const NO_LIST_COVERAGE: NoListCoverage = {
     "relevant DUAL-USE codes of Liste II — Category 9 (aerospace & propulsion: " +
     "launch vehicles, spacecraft, propulsion, MTCR-shadowed 9A1xx), Category 5 " +
     "part 1 (5A001 telecom), Category 6 (6A002/6A003/6A008 sensors+SAR, " +
-    "6A107/6A108 MTCR detectors/radar) and Category 7 (7A001/7A003/7A005 " +
+    "6A107/6A108 MTCR gravimeters/radar) and Category 7 (7A001/7A003/7A005 " +
     "inertial+GNSS, 7A101/7A103/7A104 MTCR guidance) — as MIRROR entries that " +
     "adopt the EU Reg. (EU) 2021/821 Annex I numbering one-to-one (Norwegian " +
     "Liste-II code === EU code) plus the Liste I (military) + Liste III " +
