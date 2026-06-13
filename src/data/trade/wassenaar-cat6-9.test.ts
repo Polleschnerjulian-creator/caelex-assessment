@@ -33,11 +33,15 @@ import {
 
 describe("Wassenaar Cat 6 + 9 — dataset presence", () => {
   it("ships a non-empty dataset", () => {
-    expect(WASSENAAR_CAT6_9_ENTRIES.length).toBeGreaterThanOrEqual(60);
+    // Raised in Data-Sprint S5 (Cat-9 deepening + Cat 6/7 space gaps):
+    // base 70 + 42 verified WA-LIST (25) 1 Corr. entries = 112.
+    expect(WASSENAAR_CAT6_9_ENTRIES.length).toBeGreaterThanOrEqual(110);
   });
 
-  it("ships within the documented 60-80-entry target", () => {
-    expect(WASSENAAR_CAT6_9_ENTRIES.length).toBeLessThanOrEqual(80);
+  it("ships within the documented entry-count target", () => {
+    // Soft upper bound — leaves headroom for further verified mirrors
+    // without inviting unbounded scope creep.
+    expect(WASSENAAR_CAT6_9_ENTRIES.length).toBeLessThanOrEqual(140);
   });
 
   it("every entry has the required fields", () => {
@@ -220,6 +224,61 @@ describe("Wassenaar Cat 6 + 9 — sub-category breadth", () => {
   it("ships aerospace technology (9.E) entries", () => {
     const present = WASSENAAR_CAT6_9_ENTRIES.some((e) =>
       e.code.startsWith("9.E"),
+    );
+    expect(present).toBe(true);
+  });
+
+  // ─── S5 enrichment breadth ──────────────────────────────────────
+  it("ships Cat 7 (navigation & avionics) entries", () => {
+    const cat7 = WASSENAAR_CAT6_9_ENTRIES.filter((e) => e.category === "7");
+    expect(cat7.length).toBeGreaterThan(0);
+  });
+
+  it("ships 7.A.4 (star trackers) — spacecraft fine-attitude sensor", () => {
+    const present = WASSENAAR_CAT6_9_ENTRIES.some((e) =>
+      e.code.startsWith("7.A.4"),
+    );
+    expect(present).toBe(true);
+  });
+
+  it("ships 7.A.3 (inertial measurement / INS) entries", () => {
+    const present = WASSENAAR_CAT6_9_ENTRIES.some((e) =>
+      e.code.startsWith("7.A.3"),
+    );
+    expect(present).toBe(true);
+  });
+
+  it("ships 9.A.8 (solid-rocket-motor components) entries", () => {
+    const present = WASSENAAR_CAT6_9_ENTRIES.some((e) =>
+      e.code.startsWith("9.A.8"),
+    );
+    expect(present).toBe(true);
+  });
+
+  it("ships 9.A.9 (hybrid rocket propulsion) entries", () => {
+    const present = WASSENAAR_CAT6_9_ENTRIES.some((e) =>
+      e.code.startsWith("9.A.9"),
+    );
+    expect(present).toBe(true);
+  });
+
+  it("ships 9.A.10 (launch-vehicle/spacecraft structures) entries", () => {
+    const present = WASSENAAR_CAT6_9_ENTRIES.some((e) =>
+      e.code.startsWith("9.A.10"),
+    );
+    expect(present).toBe(true);
+  });
+
+  it("ships 9.A.12 (real WA-LIST UAV) entries", () => {
+    const present = WASSENAAR_CAT6_9_ENTRIES.some((e) =>
+      e.code.startsWith("9.A.12"),
+    );
+    expect(present).toBe(true);
+  });
+
+  it("ships aerospace test/production equipment (9.B) entries", () => {
+    const present = WASSENAAR_CAT6_9_ENTRIES.some((e) =>
+      e.code.startsWith("9.B"),
     );
     expect(present).toBe(true);
   });

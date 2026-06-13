@@ -52,6 +52,18 @@ const SOURCE_URL = "https://www.wassenaar.org/control-lists/";
 const ASOF = "2026-05-23";
 
 /**
+ * Data-Sprint S5 enrichment (Cat-9 deepening + space-relevant Cat 6/7
+ * gaps). Verified against the current public list — WA-LIST (25) 1 Corr.
+ * "List of Dual-Use Goods and Technologies and Munitions List", dated
+ * 15-01-2026 (December 2025 Plenary) — re-confirmed code-by-code on the
+ * date below. The control-lists hub redirects to whichever WA-LIST is
+ * current; we keep the durable hub URL as the canonical source per the
+ * file convention but pin the exact list edition + page-verified codes
+ * in this comment for provenance.
+ */
+const ASOF_S5 = "2026-06-13";
+
+/**
  * One Wassenaar Arrangement control-list entry.
  *
  * Distinct from `ClassificationEntry` (the national-list schema)
@@ -969,6 +981,555 @@ export const WASSENAAR_CAT6_9_ENTRIES: WassenaarEntry[] = [
     earCclRef: "6E003",
     sourceUrl: SOURCE_URL,
     asOfDate: ASOF,
+  },
+
+  // ═══════════════════════════════════════════════════════════════════
+  // DATA-SPRINT S5 ENRICHMENT — verified against WA-LIST (25) 1 Corr.
+  // (15-01-2026). New, non-duplicate codes only. Existing entries above
+  // are left untouched.
+  // ═══════════════════════════════════════════════════════════════════
+
+  // ─── 6.A.2 — Optical-sensor support components (space gaps) ───────
+  {
+    code: "6.A.2.d",
+    list: "DUL",
+    category: "6",
+    title: "Special support components for optical sensors",
+    description:
+      "Space-qualified cryocoolers; non-space cryocoolers cooling below 218 K (MTTF/MTBF >2,500 h, or JT minicoolers <8 mm bore); and optical sensing fibres modified to be acoustically/thermally/inertially/EM/radiation sensitive. Enables cooled IR space payloads.",
+    euAnnexIRef: "6A002.d",
+    earCclRef: "6A002.d",
+    sourceUrl: SOURCE_URL,
+    asOfDate: ASOF_S5,
+  },
+  {
+    code: "6.A.2.f",
+    list: "DUL",
+    category: "6",
+    title: "Read-Out Integrated Circuits (ROIC) for focal-plane arrays",
+    description:
+      "ROICs specially designed for the focal-plane arrays controlled in 6.A.2.a.3. — the silicon readout layer bonded under an IR detector array that extracts and multiplexes detector charge. Civil-automotive ROICs are excluded.",
+    euAnnexIRef: "6A002.f",
+    earCclRef: "6A002.f",
+    sourceUrl: SOURCE_URL,
+    asOfDate: ASOF_S5,
+  },
+
+  // ─── 6.A.4 — Optical equipment (deformable mirrors for ADCS/lasercom) ─
+  {
+    code: "6.A.4.a",
+    list: "DUL",
+    category: "6",
+    title: "Optical mirrors — deformable mirrors above threshold",
+    description:
+      "Deformable mirrors with active aperture >10 mm having either a mechanical resonant frequency ≥750 Hz with >200 actuators, or a Laser-Induced Damage Threshold above specified CW/pulsed levels. Adaptive-optics + high-power laser-comm beam control.",
+    euAnnexIRef: "6A004.a",
+    earCclRef: "6A004.a",
+    sourceUrl: SOURCE_URL,
+    asOfDate: ASOF_S5,
+  },
+
+  // ═══════════════════════════════════════════════════════════════════
+  // CAT 7 — NAVIGATION & AVIONICS (new category; satellite ADCS / GNC).
+  // The attitude-determination + navigation hardware satellites carry.
+  // ═══════════════════════════════════════════════════════════════════
+  {
+    code: "7.A.1",
+    list: "DUL",
+    category: "7",
+    title: "Accelerometers above bias/scale-factor stability thresholds",
+    description:
+      "Linear accelerometers with bias stability <130 µg/yr or scale-factor stability <130 ppm/yr (≤15 g class); higher-g classes with tighter repeatability; and any unit designed for inertial navigation/guidance functioning above 100 g. Excludes vibration/shock-only units.",
+    euAnnexIRef: "7A001",
+    earCclRef: "7A001",
+    sourceUrl: SOURCE_URL,
+    asOfDate: ASOF_S5,
+  },
+  {
+    code: "7.A.2",
+    list: "DUL",
+    category: "7",
+    title: "Gyros and angular-rate sensors above performance thresholds",
+    description:
+      "Gyros/angular-rate sensors functioning ≤100 g with bias stability <0.5°/h or angle-random-walk ≤0.0035°/√h (low-rate class), tighter bands for high-rate class, or any unit functioning above 100 g. Reaction-wheel + ADCS rate sensing for spacecraft.",
+    euAnnexIRef: "7A002",
+    earCclRef: "7A002",
+    sourceUrl: SOURCE_URL,
+    asOfDate: ASOF_S5,
+  },
+  {
+    code: "7.A.3",
+    list: "DUL",
+    category: "7",
+    title: "Inertial measurement equipment / systems (IMU, INS, IRU)",
+    description:
+      "IMUs/INSs/IRSs/AHRSs providing position or heading without positional-aiding references above specified accuracy, or providing acceleration/angular-rate data to those accuracies. Excludes units certified for civil-aircraft use. Spacecraft + launch-vehicle GNC.",
+    euAnnexIRef: "7A003",
+    earCclRef: "7A003",
+    sourceUrl: SOURCE_URL,
+    asOfDate: ASOF_S5,
+  },
+  {
+    code: "7.A.4",
+    list: "DUL",
+    category: "7",
+    title: "Star trackers and specially designed components",
+    description:
+      "Star trackers (stellar attitude sensors / gyro-astro compasses) with specified azimuth accuracy ≤20 arc-seconds across the equipment lifetime, plus specially designed optical heads, baffles, and data-processing units. The primary spacecraft fine-attitude sensor.",
+    euAnnexIRef: "7A004",
+    earCclRef: "7A004",
+    sourceUrl: SOURCE_URL,
+    asOfDate: ASOF_S5,
+  },
+  {
+    code: "7.A.5",
+    list: "DUL",
+    category: "7",
+    title: "Satellite-navigation receiving equipment (controlled features)",
+    description:
+      "GNSS receivers employing a decryption algorithm designed/modified for government use to access ranging codes, or employing adaptive (null-steering) antenna systems. Anti-jam/anti-spoof navigation; military variants route via ML11.",
+    euAnnexIRef: "7A005",
+    earCclRef: "7A005",
+    sourceUrl: SOURCE_URL,
+    asOfDate: ASOF_S5,
+  },
+  {
+    code: "7.D.1",
+    list: "DUL",
+    category: "7",
+    title: "Software for development/production of 7.A navigation items",
+    description:
+      "Per the General Software Note: software specially designed or modified for the development or production of the inertial/navigation/avionics equipment in Cat 7.A.",
+    euAnnexIRef: "7D001",
+    earCclRef: "7D001",
+    sourceUrl: SOURCE_URL,
+    asOfDate: ASOF_S5,
+  },
+  {
+    code: "7.E.1",
+    list: "DUL",
+    category: "7",
+    title: "Technology for development of 7.A navigation items",
+    description:
+      "Per the General Technology Note: technology required for the development of the controlled accelerometers, gyros, IMU/INS, star trackers and GNSS receivers in Cat 7.A. Deemed-export capture for ADCS/GNC know-how.",
+    euAnnexIRef: "7E001",
+    earCclRef: "7E001",
+    sourceUrl: SOURCE_URL,
+    asOfDate: ASOF_S5,
+  },
+
+  // ═══════════════════════════════════════════════════════════════════
+  // CAT 9 ENRICHMENT — real WA-LIST (25) structure not yet captured.
+  // ═══════════════════════════════════════════════════════════════════
+
+  // ─── 9.A.2 / 9.A.3 — marine turbines + aero-turbine assemblies ────
+  {
+    code: "9.A.2",
+    list: "DUL",
+    category: "9",
+    title: "Marine gas turbine engines above power + fuel-economy thresholds",
+    description:
+      "Liquid-fuelled marine gas turbines with maximum continuous power ≥24,245 kW (ISO 3977-2 steady-state) AND corrected specific fuel consumption ≤0.219 kg/kWh at 35% power, plus specially designed assemblies/components. Includes aero-derivative units adapted for ship propulsion/power.",
+    euAnnexIRef: "9A002",
+    earCclRef: "9A002",
+    sourceUrl: SOURCE_URL,
+    asOfDate: ASOF_S5,
+  },
+  {
+    code: "9.A.3",
+    list: "DUL",
+    category: "9",
+    title: "Aero gas turbine assemblies/components with controlled technology",
+    description:
+      "Specially designed assemblies or components incorporating the hot-section technologies of 9.E.3.a/.h/.i/.k for engines specified in 9.A.1, or for engines whose design/production origin is non-Wassenaar or unknown to the maker.",
+    euAnnexIRef: "9A003",
+    earCclRef: "9A003",
+    sourceUrl: SOURCE_URL,
+    asOfDate: ASOF_S5,
+  },
+
+  // ─── 9.A.4 — spacecraft sub-paragraphs (real .d-.h) ──────────────
+  {
+    code: "9.A.4.d",
+    list: "DUL",
+    category: "9",
+    title: "Spacecraft mission equipment incorporating controlled sensors",
+    description:
+      "Payload (mission) equipment incorporating controlled Cat 3/5/6/9 items — e.g. controlled focal-plane arrays (6.A.2.a), imaging sensors (6.A.2.b), radar items (6.A.8.d/.e/.k/.l), or spacecraft structures (9.A.10.c). The EO/SAR/SIGINT-payload capture.",
+    euAnnexIRef: "9A004.d",
+    earCclRef: "9A004.d",
+    sourceUrl: SOURCE_URL,
+    asOfDate: ASOF_S5,
+  },
+  {
+    code: "9.A.4.e",
+    list: "DUL",
+    category: "9",
+    title: "Spacecraft on-board systems — C&DH, payload data, AOCS",
+    description:
+      "On-board systems/equipment specially designed for spacecraft performing command-and-telemetry data handling, payload data handling, or attitude-and-orbit control (sensing + actuation). Military variants route via ML11.c.",
+    euAnnexIRef: "9A004.e",
+    earCclRef: "9A004.e",
+    sourceUrl: SOURCE_URL,
+    asOfDate: ASOF_S5,
+  },
+  {
+    code: "9.A.4.f",
+    list: "DUL",
+    category: "9",
+    title: "Terrestrial (ground) equipment for spacecraft — TT&C + simulators",
+    description:
+      "Telemetry/telecommand equipment for frame-sync/error-correction health monitoring and command formatting to the spacecraft bus, plus simulators specially designed for verification of operational procedures (command-sequence confirmation, training, rehearsals, analysis).",
+    euAnnexIRef: "9A004.f",
+    earCclRef: "9A004.f",
+    sourceUrl: SOURCE_URL,
+    asOfDate: ASOF_S5,
+  },
+  {
+    code: "9.A.4.g",
+    list: "DUL",
+    category: "9",
+    title: "Aircraft modified as air-launch platforms",
+    description:
+      "Aircraft specially designed or modified to be air-launch platforms for space launch vehicles or sub-orbital craft (e.g. carrier aircraft for horizontally-launched small launchers).",
+    euAnnexIRef: "9A004.g",
+    earCclRef: "9A004.g",
+    sourceUrl: SOURCE_URL,
+    asOfDate: ASOF_S5,
+  },
+  {
+    code: "9.A.4.h",
+    list: "DUL",
+    category: "9",
+    title: "Sub-orbital craft",
+    description:
+      "Sub-orbital craft (vehicles reaching space without completing an orbit). The home for sub-orbital tourism/research vehicles and sub-orbital UAVs.",
+    euAnnexIRef: "9A004.h",
+    earCclRef: "9A004.h",
+    sourceUrl: SOURCE_URL,
+    asOfDate: ASOF_S5,
+  },
+
+  // ─── 9.A.6.h — one-piece carbon-carbon thrust chambers ───────────
+  {
+    code: "9.A.6.h",
+    list: "DUL",
+    category: "9",
+    title: "One-piece carbon-carbon thrust chambers / exit cones",
+    description:
+      "One-piece carbon-carbon liquid-rocket thrust chambers or exit cones with density >1.4 g/cm³ AND tensile strength >48 MPa. (Note: this S5 entry captures the real 9.A.6.h sub-paragraph for liquid-propulsion components.)",
+    euAnnexIRef: "9A006.h",
+    earCclRef: "9A006.h",
+    sourceUrl: SOURCE_URL,
+    asOfDate: ASOF_S5,
+  },
+
+  // ─── 9.A.7 — solid rocket propulsion systems (real .d/.e) ────────
+  {
+    code: "9.A.7.d",
+    list: "DUL",
+    category: "9",
+    title: "Solid rocket propulsion systems — incorporating 9.A.8 components",
+    description:
+      "Solid rocket propulsion systems controlled by virtue of incorporating any of the specially designed solid-motor components of 9.A.8 (insulation/bonding, large composite cases, high-thrust nozzles, TVC systems).",
+    euAnnexIRef: "9A007.d",
+    earCclRef: "9A007.d",
+    sourceUrl: SOURCE_URL,
+    asOfDate: ASOF_S5,
+  },
+  {
+    code: "9.A.7.e",
+    list: "DUL",
+    category: "9",
+    title: "Solid rocket propulsion — direct-bonded insulation/bonding",
+    description:
+      "Solid rocket propulsion systems using direct-bonded motor designs whose insulation and propellant-bonding system provides a strong mechanical bond or a chemical-migration barrier between propellant and case insulation.",
+    euAnnexIRef: "9A007.e",
+    earCclRef: "9A007.e",
+    sourceUrl: SOURCE_URL,
+    asOfDate: ASOF_S5,
+  },
+
+  // ─── 9.A.8 — components for solid rocket propulsion systems ───────
+  {
+    code: "9.A.8.a",
+    list: "DUL",
+    category: "9",
+    title: "Solid-motor insulation and propellant-bonding systems (liners)",
+    description:
+      "Insulation and propellant-bonding systems using liners to provide a strong mechanical bond or a chemical-migration barrier between the solid propellant and case insulation material.",
+    euAnnexIRef: "9A008.a",
+    earCclRef: "9A008.a",
+    sourceUrl: SOURCE_URL,
+    asOfDate: ASOF_S5,
+  },
+  {
+    code: "9.A.8.b",
+    list: "DUL",
+    category: "9",
+    title: "Filament-wound composite motor cases above threshold",
+    description:
+      "Filament-wound composite solid-motor cases exceeding 0.61 m in diameter, or with a structural efficiency ratio (PV/W = burst pressure × volume / vessel weight) exceeding 25 km.",
+    euAnnexIRef: "9A008.b",
+    earCclRef: "9A008.b",
+    sourceUrl: SOURCE_URL,
+    asOfDate: ASOF_S5,
+  },
+  {
+    code: "9.A.8.c",
+    list: "DUL",
+    category: "9",
+    title: "Solid-rocket nozzles above thrust / erosion thresholds",
+    description:
+      "Nozzles with thrust levels exceeding 45 kN, or nozzle-throat erosion rates of less than 0.075 mm/s.",
+    euAnnexIRef: "9A008.c",
+    earCclRef: "9A008.c",
+    sourceUrl: SOURCE_URL,
+    asOfDate: ASOF_S5,
+  },
+  {
+    code: "9.A.8.d",
+    list: "DUL",
+    category: "9",
+    title: "Thrust-vector-control systems for solid motors",
+    description:
+      "Movable-nozzle or secondary-fluid-injection TVC systems capable of omni-axial movement exceeding ±5°, angular vector rotations ≥20°/s, or angular vector accelerations ≥40°/s².",
+    euAnnexIRef: "9A008.d",
+    earCclRef: "9A008.d",
+    sourceUrl: SOURCE_URL,
+    asOfDate: ASOF_S5,
+  },
+
+  // ─── 9.A.9 — hybrid rocket propulsion systems ────────────────────
+  {
+    code: "9.A.9.a",
+    list: "DUL",
+    category: "9",
+    title: "Hybrid rocket propulsion — total impulse >1.1 MNs",
+    description:
+      "Hybrid rocket propulsion systems with total impulse capacity exceeding 1.1 MN·s. (HyImpulse SR75-class and larger hybrids fall here on impulse.)",
+    euAnnexIRef: "9A009.a",
+    earCclRef: "9A009.a",
+    sourceUrl: SOURCE_URL,
+    asOfDate: ASOF_S5,
+  },
+  {
+    code: "9.A.9.b",
+    list: "DUL",
+    category: "9",
+    title: "Hybrid rocket propulsion — thrust >220 kN vacuum",
+    description:
+      "Hybrid rocket propulsion systems with thrust levels exceeding 220 kN in vacuum exit conditions.",
+    euAnnexIRef: "9A009.b",
+    earCclRef: "9A009.b",
+    sourceUrl: SOURCE_URL,
+    asOfDate: ASOF_S5,
+  },
+
+  // ─── 9.A.10 — components/structures for launch vehicles + spacecraft ─
+  {
+    code: "9.A.10.a",
+    list: "DUL",
+    category: "9",
+    title: "Composite launch-vehicle components >10 kg",
+    description:
+      "Components and structures each exceeding 10 kg, specially designed for launch vehicles and made from controlled composites — fibrous/filamentary materials with controlled resins, metal-matrix composites, or ceramic-matrix composites. Weight cut-off does not apply to nose cones.",
+    euAnnexIRef: "9A010.a",
+    earCclRef: "9A010.a",
+    sourceUrl: SOURCE_URL,
+    asOfDate: ASOF_S5,
+  },
+  {
+    code: "9.A.10.b",
+    list: "DUL",
+    category: "9",
+    title: "Composite components for launch-vehicle propulsion systems",
+    description:
+      "Components and structures specially designed for the launch-vehicle propulsion systems of 9.A.5–9.A.9, manufactured from controlled fibrous/filamentary, metal-matrix, or ceramic-matrix composite materials.",
+    euAnnexIRef: "9A010.b",
+    earCclRef: "9A010.b",
+    sourceUrl: SOURCE_URL,
+    asOfDate: ASOF_S5,
+  },
+  {
+    code: "9.A.10.c",
+    list: "DUL",
+    category: "9",
+    title: "Active structural-control / isolation systems for spacecraft",
+    description:
+      "Structural components and isolation systems specially designed to actively control the dynamic response or distortion of spacecraft structures (e.g. active vibration isolation for high-stability optical payloads).",
+    euAnnexIRef: "9A010.c",
+    earCclRef: "9A010.c",
+    sourceUrl: SOURCE_URL,
+    asOfDate: ASOF_S5,
+  },
+  {
+    code: "9.A.10.d",
+    list: "DUL",
+    category: "9",
+    title:
+      "Pulsed liquid rocket engines — high thrust-to-weight, fast response",
+    description:
+      "Pulsed liquid rocket engines with thrust-to-weight ratio ≥1 kN/kg AND a response time (time to reach 90% of rated thrust from start-up) of less than 30 ms. Reaction-control / divert-and-attitude engines.",
+    euAnnexIRef: "9A010.d",
+    earCclRef: "9A010.d",
+    sourceUrl: SOURCE_URL,
+    asOfDate: ASOF_S5,
+  },
+
+  // ─── 9.A.11 — ramjet / scramjet / combined-cycle engines ─────────
+  {
+    code: "9.A.11",
+    list: "DUL",
+    category: "9",
+    title: "Ramjet, scramjet or combined-cycle engines",
+    description:
+      "Ramjet, scramjet, or combined-cycle engines (combining two or more of gas-turbine, ramjet/scramjet, and rocket engine types) and specially designed components therefor. Hypersonic + air-breathing access-to-space propulsion.",
+    euAnnexIRef: "9A011",
+    earCclRef: "9A011",
+    sourceUrl: SOURCE_URL,
+    asOfDate: ASOF_S5,
+  },
+
+  // ─── 9.A.12 — UAVs (real WA-LIST codes) ──────────────────────────
+  {
+    code: "9.A.12.a",
+    list: "DUL",
+    category: "9",
+    title: "UAVs / unmanned airships — out-of-natural-vision flight",
+    description:
+      "UAVs or unmanned airships designed for controlled flight beyond the operator's natural vision, with endurance ≥30 min (and gust-tolerant take-off/flight at ≥46.3 km/h) or endurance ≥1 hour. The dual-use long-endurance UAV baseline.",
+    euAnnexIRef: "9A012.a",
+    earCclRef: "9A012.a",
+    sourceUrl: SOURCE_URL,
+    asOfDate: ASOF_S5,
+  },
+  {
+    code: "9.A.12.b",
+    list: "DUL",
+    category: "9",
+    title: "UAV-related equipment and components",
+    description:
+      "Equipment/components specially designed to convert a manned aircraft/airship into a UAV per 9.A.12.a, and air-breathing reciprocating/rotary IC engines specially designed or modified to propel UAVs at altitudes above 15,240 m (50,000 ft).",
+    euAnnexIRef: "9A012.b",
+    earCclRef: "9A012.b",
+    sourceUrl: SOURCE_URL,
+    asOfDate: ASOF_S5,
+  },
+
+  // ─── 9.B — test, inspection and production equipment ─────────────
+  {
+    code: "9.B.1",
+    list: "DUL",
+    category: "9",
+    title: "Single-crystal / directional-solidification casting equipment",
+    description:
+      "Manufacturing equipment, tooling or fixtures: directional-solidification or single-crystal casting (or additive-manufacturing) equipment designed for superalloys, and casting tooling for refractory-metal/ceramic turbine blades, vanes or tip-shrouds (cores, shells, combined units).",
+    euAnnexIRef: "9B001",
+    earCclRef: "9B001",
+    sourceUrl: SOURCE_URL,
+    asOfDate: ASOF_S5,
+  },
+  {
+    code: "9.B.5",
+    list: "DUL",
+    category: "9",
+    title:
+      "Control/instrumentation for high-Mach wind tunnels and flow devices",
+    description:
+      "Real-time control systems, instrumentation, or automated data-acquisition equipment specially designed for wind tunnels ≥Mach 1.2, flow-simulation devices exceeding Mach 5 (hot-shot, plasma-arc, shock tubes/tunnels, light-gas guns), or devices simulating Reynolds numbers >25×10⁶.",
+    euAnnexIRef: "9B005",
+    earCclRef: "9B005",
+    sourceUrl: SOURCE_URL,
+    asOfDate: ASOF_S5,
+  },
+  {
+    code: "9.B.7",
+    list: "DUL",
+    category: "9",
+    title: "Non-destructive rocket-motor integrity inspection equipment",
+    description:
+      "Equipment specially designed for inspecting rocket-motor integrity using NDT techniques other than planar x-ray or basic physical/chemical analysis.",
+    euAnnexIRef: "9B007",
+    earCclRef: "9B007",
+    sourceUrl: SOURCE_URL,
+    asOfDate: ASOF_S5,
+  },
+  {
+    code: "9.B.10",
+    list: "DUL",
+    category: "9",
+    title: "Production equipment for 9.A.12 UAVs",
+    description:
+      "Equipment specially designed for the production of the unmanned aerial vehicles and related items specified in 9.A.12.",
+    euAnnexIRef: "9B010",
+    earCclRef: "9B010",
+    sourceUrl: SOURCE_URL,
+    asOfDate: ASOF_S5,
+  },
+
+  // ─── 9.D.5 — operation software for spacecraft on-board/ground ───
+  {
+    code: "9.D.5",
+    list: "DUL",
+    category: "9",
+    title: "Operation software for spacecraft on-board / ground systems",
+    description:
+      "Software specially designed or modified for the operation of the spacecraft on-board systems (9.A.4.e) or terrestrial TT&C/simulator equipment (9.A.4.f). Mission-operations + flight software.",
+    euAnnexIRef: "9D005",
+    earCclRef: "9D005",
+    sourceUrl: SOURCE_URL,
+    asOfDate: ASOF_S5,
+  },
+
+  // ─── 9.E.3 sub-paragraphs — specific aero-turbine know-how ───────
+  {
+    code: "9.E.3.c",
+    list: "DUL",
+    category: "9",
+    title: "Cooling-hole manufacturing technology for turbine components",
+    description:
+      "Technology required to manufacture cooling holes in turbine components incorporating 9.E.3.a.1/.a.2/.a.5 technologies, with controlled cross-sectional area, hole-shape ratio and incidence angle (laser, water-jet, ECM or EDM methods). Excludes straight-through cylindrical holes.",
+    euAnnexIRef: "9E003.c",
+    earCclRef: "9E003.c",
+    sourceUrl: SOURCE_URL,
+    asOfDate: ASOF_S5,
+  },
+  {
+    code: "9.E.3.h",
+    list: "DUL",
+    category: "9",
+    title: "FADEC (Full Authority Digital Engine Control) technology",
+    description:
+      "Technology for gas-turbine FADEC systems: deriving functional requirements, control/diagnostic components, and control-law algorithms (incl. source code) unique to the FADEC and used to regulate engine thrust or shaft power. Excludes civil-published integration data.",
+    euAnnexIRef: "9E003.h",
+    earCclRef: "9E003.h",
+    sourceUrl: SOURCE_URL,
+    asOfDate: ASOF_S5,
+  },
+  {
+    code: "9.E.3.i",
+    list: "DUL",
+    category: "9",
+    title: "Adjustable-flow-path-system technology for gas turbines",
+    description:
+      "Technology for adjustable flow-path systems that maintain engine stability for gas-generator/fan/power turbines or propelling nozzles — functional requirements, unique components, and control-law algorithms (incl. source code). Excludes inlet guide vanes, variable-pitch fans, etc.",
+    euAnnexIRef: "9E003.i",
+    earCclRef: "9E003.i",
+    sourceUrl: SOURCE_URL,
+    asOfDate: ASOF_S5,
+  },
+  {
+    code: "9.E.3.k",
+    list: "DUL",
+    category: "9",
+    title: "Sustained-supersonic-cruise propulsion technology",
+    description:
+      "Technology (not in 9.E.3.a/.h/.i) for developing propulsion inlet/exhaust systems, reheat systems, active thermal-management systems, oil-free engine rotor supports, or compression-system heat-removal systems enabling aircraft to cruise at ≥Mach 1 for >30 minutes.",
+    euAnnexIRef: "9E003.k",
+    earCclRef: "9E003.k",
+    sourceUrl: SOURCE_URL,
+    asOfDate: ASOF_S5,
   },
 ];
 
