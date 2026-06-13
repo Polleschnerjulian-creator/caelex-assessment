@@ -181,6 +181,64 @@ function buildOperationContext(
   };
 }
 
+/**
+ * W2 (Spec §4.6) — the Engine-Origin-Determination licence detail, surfaced.
+ * The engine's `foldOriginVerdict` rides the per-line requirements with a
+ * `triggerCode` of ORIGIN_GENERAL_LICENCE / ORIGIN_INDIVIDUAL_LICENCE /
+ * ORIGIN_PROHIBITED (carrying the general-licence id + conditions, the NCA, or
+ * the prohibition). This lifts that into a compact operation-level descriptor so
+ * the verdict shows WHICH licence governs — e.g. a GO *under a named general
+ * licence + its conditions*, not just the bare verdict colour.
+ */
+type OriginLicence =
+  | { kind: "general"; label: string; conditions: string[]; authority: string }
+  | { kind: "individual"; authority: string }
+  | { kind: "prohibited"; authority: string };
+
+/** Pull the NCA name out of the engine's "Exporteur-Sitz (X)" jurisdiction tag. */
+function originAuthority(jurisdiction: string): string {
+  const m = /Exporteur-Sitz \(([^)]+)\)/.exec(jurisdiction);
+  return m ? m[1] : jurisdiction;
+}
+
+/**
+ * The most-restrictive origin licence across the operation's lines
+ * (prohibited > individual > general) so the rendered detail tracks the verdict
+ * severity. Returns null when no origin module ran (unknown / unsupported seat →
+ * the generic EU path, where the existing "Bewertet unter" line is the answer).
+ */
+function deriveOriginLicence(lines: LineView[]): OriginLicence | null {
+  const reqs = lines.flatMap(
+    (l) => l.classification?.licenseDetermination?.requirements ?? [],
+  );
+  const prohibited = reqs.find((r) => r.triggerCode === "ORIGIN_PROHIBITED");
+  if (prohibited) {
+    return {
+      kind: "prohibited",
+      authority: originAuthority(prohibited.jurisdiction),
+    };
+  }
+  const individual = reqs.find(
+    (r) => r.triggerCode === "ORIGIN_INDIVIDUAL_LICENCE",
+  );
+  if (individual) {
+    return {
+      kind: "individual",
+      authority: originAuthority(individual.jurisdiction),
+    };
+  }
+  const general = reqs.find((r) => r.triggerCode === "ORIGIN_GENERAL_LICENCE");
+  if (general) {
+    return {
+      kind: "general",
+      label: general.applicableException?.label ?? "General-/Sammelgenehmigung",
+      conditions: general.applicableException?.conditions ?? [],
+      authority: originAuthority(general.jurisdiction),
+    };
+  }
+  return null;
+}
+
 export function VerdictPanel({ operationId }: { operationId: string }) {
   const [assessment, setAssessment] = useState<Assessment | null>(null);
   const [opContext, setOpContext] = useState<OperationContext | null>(null);
@@ -258,6 +316,9 @@ export function VerdictPanel({ operationId }: { operationId: string }) {
   }
   if (!assessment) return null;
 
+  // W2 — the Engine-Origin-Determination licence detail for the verdict header.
+  const originLicence = deriveOriginLicence(assessment.lines);
+
   return (
     <section className="space-y-5" data-testid="verdict-panel">
       <div
@@ -287,6 +348,50 @@ export function VerdictPanel({ operationId }: { operationId: string }) {
           </span>
         )}
       </div>
+
+      {/* W2 (Spec §4.6) — origin licence detail. Surfaces WHICH licence the
+          Engine-Origin-Determination found: a named general licence (+ its
+          conditions) for a GO, the individual-at-NCA path for a REVIEW, or the
+          prohibition. Crucially this renders for a GO too — so "GO under EU001 /
+          OGEL / OGB / GEP-41 / Bulk Licence + Auflagen" is visible, not a bare
+          green. Self-hides when no origin module ran (generic EU path). */}
+      {originLicence && (
+        <div
+          className="flex flex-wrap items-start gap-x-2 gap-y-0.5 text-small text-trade-text-muted"
+          data-testid="origin-licence-line"
+        >
+          <ShieldCheck className="mt-0.5 h-3.5 w-3.5 shrink-0 text-trade-text-muted/70" />
+          {originLicence.kind === "general" ? (
+            <span>
+              Lizenz:{" "}
+              <span className="font-medium text-trade-text-primary">
+                {originLicence.label}
+              </span>{" "}
+              ({originLicence.authority})
+              {originLicence.conditions.length > 0 && (
+                <span className="text-trade-text-muted/70">
+                  {" "}
+                  — Auflagen: {originLicence.conditions.join("; ")}
+                </span>
+              )}
+            </span>
+          ) : originLicence.kind === "individual" ? (
+            <span>
+              Lizenz:{" "}
+              <span className="font-medium text-trade-text-primary">
+                Einzelgenehmigung bei {originLicence.authority}
+              </span>
+            </span>
+          ) : (
+            <span>
+              <span className="font-medium text-trade-text-primary">
+                Kein Genehmigungsweg
+              </span>{" "}
+              ({originLicence.authority})
+            </span>
+          )}
+        </div>
+      )}
 
       {/* Liability framing (tier 1/2) — directly under the verdict, as
           prominent as the verdict itself. GO = honest green note; REVIEW =
