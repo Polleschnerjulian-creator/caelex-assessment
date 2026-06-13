@@ -41,7 +41,7 @@ added before a wrong/phantom one is removed.
 | `eu-annex-i.ts` (Cat 9 main)  | Cat-9 clean (S5); 2 cross-cutting Cat-5             | ⏳ pending (with Cat-5 batch)                                           |
 | `eu-annex-i-cat4-7.ts`        | ~14 wrong-item + 2 phantom                          | ⏳ pending                                                              |
 | `eu-annex-i-cat1-2.ts`        | 3 wrong-item                                        | ⏳ pending                                                              |
-| `eu-annex-i-cat3.ts`          | ~35 (systematic 3A001/3A002/3B001 shift) + phantoms | ⏳ pending                                                              |
+| `eu-annex-i-cat3.ts`          | ~35 (systematic 3A001/3A002/3B001 shift) + phantoms | ✅ DONE — commit `6ca5b87f`                                             |
 | `eu-annex-i-cat5.ts`          | ~16 (systematic 5A001/5A002 rotation) + phantoms    | ⏳ pending                                                              |
 
 **Root-cause pattern:** the Cat-3/4/5/7 enumeration files were authored from a
@@ -111,7 +111,7 @@ wrong-item; left pending closer reading.
 | 1C011 | …incl. metal-oxidant mixtures                                                               | Zr/Mg powders, boron ≥85%, guanidine nitrate, nitroguanidine — **no metal-oxidant mixtures** (those → Military List) | over-scope         |
 | 1D002 | organic/metal-matrix composite dev software                                                 | organic, metal **or carbon-matrix** laminates/composites (title drops carbon-matrix)                                 | omission           |
 
-## ⏳ Cat 3 (`eu-annex-i-cat3.ts`) — ~35 mislabels (systematic shift)
+## ✅ DONE — Cat 3 (`eu-annex-i-cat3.ts`) — ~35 mislabels (systematic shift, commit `6ca5b87f`)
 
 Headline: the **3A001.a sub-paragraph grid is positionally misassigned**, and
 3A002 (a/c/d/g), 3B001 (a/c/d/e/h), 3D003/3D004, 3E002/3E003/3E201 carry
@@ -150,6 +150,26 @@ wrong-item descriptions. Verified against HK STC cat_3 + Trade Hub + EUR-Lex.
 
 Phantom / unconfirmed-in-EU: `3A611`, `3A091`, `3A092`, `3B991`, `3D991`,
 `3E991`, `AM-3A-001/002/003` (EU uses numeric codes, not `AM-` prefixes).
+
+**Applied 2026-06-13 (commit `6ca5b87f`) — independent re-confirmation vs
+current `02021R0821` extended the table:**
+
+- **3A001.c.1** was ALSO wrong (labelled "memory ICs"; official `3A001.c` =
+  surface/skimming **acoustic-wave devices**) — the audit table missed it;
+  corrected.
+- **3A001.b.3 / b.4** were also shifted (TWT and MMIC at the wrong letters);
+  the whole `.b` grid was re-aligned to official letters (b.1 vacuum/TWT,
+  b.3 discrete transistors, b.4 solid-state amps/modules, b.5 tunable filters).
+- **3A001.e.4** (space solar cells) added as the relocation target for the
+  displaced solar content (e.1 corrected to batteries).
+- **3A002.g = atomic frequency standards** confirmed against the Federal
+  Register Wassenaar rulemaking — a convenient mirror's auto-summary
+  mislabelled `.g`; the audit table was right and the mirror was wrong.
+- **3B001** restructured to correct codes (c→f litho incl. EUV, d→b ion
+  implant) rather than leaving "not used" stubs; coverage-positive.
+- Cross-walk `EU:3A001.a.5`→`EU:3A001.a.1` (rad-hard) and
+  `EU:3A001.h.1`→`EU:3A002.g` (atomic clocks); predicates unchanged so the
+  golden-set distribution held at exactly 74 / 396 / 274. Coverage 61→51.
 
 ## ⏳ Cat 5 (`eu-annex-i-cat5.ts`) — ~16 mislabels (systematic rotation)
 
