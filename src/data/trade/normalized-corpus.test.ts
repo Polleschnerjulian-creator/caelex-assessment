@@ -191,3 +191,41 @@ describe("S0: regime maturity (fail-closed input)", () => {
     expect(REGIME_MATURITY.MTCR_ANNEX).toBe(1);
   });
 });
+
+describe("S5: mirror architecture invariants", () => {
+  it("no dangling mirror — every mirrorsCanonicalId resolves within the union", () => {
+    const ids = new Set(NORMALIZED_CORPUS_UNION.map((e) => e.canonicalId));
+    for (const e of NORMALIZED_CORPUS_UNION) {
+      if (e.mirrorsCanonicalId) {
+        expect(
+          ids.has(e.mirrorsCanonicalId),
+          `${e.canonicalId} mirrors "${e.mirrorsCanonicalId}", which must EXIST in the union (no dangling)`,
+        ).toBe(true);
+      }
+    }
+  });
+
+  it("every MODIFIED / NATIONAL_ONLY entry carries its own non-empty description", () => {
+    for (const e of NORMALIZED_CORPUS_UNION) {
+      if (e.mirrorDelta === "MODIFIED" || e.mirrorDelta === "NATIONAL_ONLY") {
+        expect(
+          e.description.trim().length,
+          `${e.canonicalId} (${e.mirrorDelta}) must have its own description`,
+        ).toBeGreaterThan(0);
+      }
+    }
+  });
+
+  it("any mirror entry (mirrorDelta set) carries depthTier 2", () => {
+    // Foundation invariant: ANY entry the mirror adapter produces is code-level
+    // (depthTier 2). Holds vacuously before the first reference country is
+    // wired, and meaningfully once CH_GKV lands (tightened in the S5 data
+    // commit's CH-specific probe).
+    const mirrors = NORMALIZED_CORPUS_UNION.filter(
+      (e) => e.mirrorDelta !== undefined,
+    );
+    for (const e of mirrors) {
+      expect(e.depthTier, `${e.canonicalId} mirror depthTier`).toBe(2);
+    }
+  });
+});

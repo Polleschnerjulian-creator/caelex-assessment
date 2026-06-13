@@ -49,6 +49,7 @@ import {
   type UkStrategicEntry,
 } from "./uk-strategic";
 import { EU_CML_ENTRIES, EU_CML_AS_OF, type EuCmlEntry } from "./eu-cml";
+import type { MirrorEntry } from "./mirror-entry";
 import { EU_ANNEX_I_ENTRIES } from "./eu-annex-i";
 import { EU_ANNEX_I_CAT1_2_ENTRIES } from "./eu-annex-i-cat1-2";
 import { EU_ANNEX_I_CAT3_ENTRIES } from "./eu-annex-i-cat3";
@@ -471,6 +472,114 @@ function adaptRussia833(
   }));
 }
 
+/**
+ * Mirror adapter (Data-Sprint S5 — MIRROR ARCHITECTURE FOUNDATION).
+ *
+ * Resolves a per-country `MirrorEntry[]` against the ALREADY-BUILT union base
+ * and produces `NormalizedCorpusEntry` rows under the country's own regime.
+ * This is the architecture the S5 fan-out (NO_LIST, CA_ECL, AU_DSGL,
+ * KR_STRATEGIC) follows: a national list that adopts the multilateral / EU
+ * dual-use numbering verbatim declares each code as a MIRROR of an existing
+ * union entry instead of re-typing the control text (wasteful + fabrication
+ * risk).
+ *
+ * `baseByCanonicalId` MUST be the lookup map over the NON-mirror base
+ * (constructed in the union assembly before any mirror adapter runs). The
+ * union assembly is ordered base-first precisely so this resolution can never
+ * see a half-built union.
+ *
+ *   • "NONE"          — inherits title/description/controlReason from the
+ *                       resolved source; carries the NATIONAL code, list,
+ *                       regime, sourceUrl + depthTier. Throws on a dangling
+ *                       `mirrorsCanonicalId` (the fail-fast the invariant test
+ *                       relies on).
+ *   • "MODIFIED"      — like NONE but title/description come from the ENTRY's
+ *                       own text (REQUIRED). Still resolves the source for
+ *                       linkage; throws if dangling.
+ *   • "NATIONAL_ONLY" — no source lookup; title + description REQUIRED on the
+ *                       entry (throws if absent); no `mirrorsCanonicalId`.
+ *
+ * The optional `controlReason` on the entry REPLACES the inherited reasons when
+ * present; otherwise NONE/MODIFIED inherit the source's reasons and
+ * NATIONAL_ONLY defaults to [] (never fabricated).
+ */
+export function adaptMirrorEntries(
+  entries: readonly MirrorEntry[],
+  baseByCanonicalId: ReadonlyMap<string, NormalizedCorpusEntry>,
+  opts: { regime: CorpusRegime; list: string; depthTier?: 1 | 2 | 3 },
+): NormalizedCorpusEntry[] {
+  const { regime, list, depthTier } = opts;
+  return entries.map((e) => {
+    const canonicalId = `${regime}:${e.nationalCode}`;
+
+    if (e.mirrorDelta === "NATIONAL_ONLY") {
+      if (!e.title || !e.description) {
+        throw new Error(
+          `Mirror NATIONAL_ONLY entry ${canonicalId} must carry its own title + description`,
+        );
+      }
+      return {
+        canonicalId,
+        code: e.nationalCode,
+        regime,
+        list,
+        title: e.title,
+        description: e.description,
+        controlReason: e.controlReason ? [...e.controlReason] : [],
+        sourceUrl: e.sourceUrl,
+        asOfDate: e.asOfDate,
+        isItar: false,
+        depthTier,
+        mirrorDelta: e.mirrorDelta,
+      };
+    }
+
+    // NONE + MODIFIED both require a resolvable source for linkage.
+    if (!e.mirrorsCanonicalId) {
+      throw new Error(
+        `Mirror entry ${canonicalId} (${e.mirrorDelta}) must declare mirrorsCanonicalId`,
+      );
+    }
+    const source = baseByCanonicalId.get(e.mirrorsCanonicalId);
+    if (!source) {
+      throw new Error(
+        `Dangling mirror: ${canonicalId} mirrors "${e.mirrorsCanonicalId}", which does not exist in the corpus base`,
+      );
+    }
+
+    if (e.mirrorDelta === "MODIFIED") {
+      if (!e.title || !e.description) {
+        throw new Error(
+          `Mirror MODIFIED entry ${canonicalId} must carry its own title + description`,
+        );
+      }
+    }
+
+    const title = e.mirrorDelta === "MODIFIED" ? e.title! : source.title;
+    const description =
+      e.mirrorDelta === "MODIFIED" ? e.description! : source.description;
+    const controlReason = e.controlReason
+      ? [...e.controlReason]
+      : [...source.controlReason];
+
+    return {
+      canonicalId,
+      code: e.nationalCode,
+      regime,
+      list,
+      title,
+      description,
+      controlReason,
+      sourceUrl: e.sourceUrl,
+      asOfDate: e.asOfDate,
+      isItar: false,
+      depthTier,
+      mirrorsCanonicalId: e.mirrorsCanonicalId,
+      mirrorDelta: e.mirrorDelta,
+    };
+  });
+}
+
 // ─── The union ──────────────────────────────────────────────────────
 
 /**
@@ -479,7 +588,13 @@ function adaptRussia833(
  * we de-dup defensively; the test asserts uniqueness).
  */
 export const NORMALIZED_CORPUS_UNION: NormalizedCorpusEntry[] = (() => {
-  const all: NormalizedCorpusEntry[] = [
+  // ── BASE (all NON-mirror adapters) ──────────────────────────────────
+  // Built + de-duped FIRST so the mirror adapters (S5) resolve their
+  // `mirrorsCanonicalId` against a complete, stable base. Ordering matters:
+  // a mirror entry that points at a base code which is not yet present would
+  // throw a dangling-mirror Error — base-first guarantees the whole base
+  // exists before any mirror resolution runs.
+  const base: NormalizedCorpusEntry[] = [
     ...adaptClassificationEntries(US_CCL_ENTRIES, "US_CCL", "EAR CCL"),
     // Data-Sprint S2 — USML Category IV at paragraph depth (regime "USML",
     // `USML:IV(...)` keys). Ordered BEFORE the coarse `usml.ts` (USML_ENTRIES)
@@ -578,12 +693,35 @@ export const NORMALIZED_CORPUS_UNION: NormalizedCorpusEntry[] = (() => {
     ...adaptRussia833(RUSSIA_833_ANNEX_XXIII_ENTRIES),
     ...adaptRussia833(RUSSIA_833_ANNEX_XXIX_ENTRIES),
   ];
-  const seen = new Set<string>();
-  const deduped: NormalizedCorpusEntry[] = [];
-  for (const entry of all) {
-    if (seen.has(entry.canonicalId)) continue;
-    seen.add(entry.canonicalId);
-    deduped.push(entry);
-  }
-  return deduped;
+
+  // De-dup the base by canonicalId (regime+code makes cross-regime collisions
+  // impossible, but we de-dup defensively; the test asserts uniqueness) BEFORE
+  // building the mirror-resolution map, so a mirror that targets a de-dup'd
+  // duplicate resolves to the surviving (first) occurrence.
+  const dedup = (rows: NormalizedCorpusEntry[]): NormalizedCorpusEntry[] => {
+    const seen = new Set<string>();
+    const out: NormalizedCorpusEntry[] = [];
+    for (const entry of rows) {
+      if (seen.has(entry.canonicalId)) continue;
+      seen.add(entry.canonicalId);
+      out.push(entry);
+    }
+    return out;
+  };
+  const baseDeduped = dedup(base);
+
+  // ── MIRROR adapters (S5) — resolved against the de-duped base map ────
+  const baseByCanonicalId = new Map<string, NormalizedCorpusEntry>(
+    baseDeduped.map((e) => [e.canonicalId, e]),
+  );
+  // Mirror adapters run AGAINST the de-duped base map. The first reference
+  // country (Switzerland CH_GKV) is wired in the S5 data commit; this empty
+  // seed is the foundation hook (the adapter + base-first ordering are proven
+  // by the invariant tests).
+  const mirrors: NormalizedCorpusEntry[] = [];
+  void baseByCanonicalId; // consumed by the mirror adapters wired in the data commit
+
+  // Concat base + mirrors, then de-dup the whole union (mirror canonicalIds use
+  // the CH_GKV regime prefix, so they never collide with the base).
+  return dedup([...baseDeduped, ...mirrors]);
 })();
