@@ -39,7 +39,8 @@
  *   - **7.E.1**   Technology for development of 7.A items
  *   - **9.A.1** Aero gas turbines
  *   - **9.A.4-7** Spacecraft, launch vehicles, propulsion, ground equipment
- *   - **9.A.11** UAVs
+ *   - **9.A.11** Ramjet / scramjet / combined-cycle engines
+ *   - **9.A.12** UAVs (non-military)
  *   - **9.D.1-4** Aerospace software
  *   - **9.E.1-3** Aerospace technology
  *
@@ -154,7 +155,7 @@ export const WASSENAAR_CAT6_9_ENTRIES: WassenaarEntry[] = [
     title:
       "Unmanned aerial vehicles (UAVs) specially designed for military use",
     description:
-      "Combat UAVs, target drones, military reconnaissance UAVs. Military-grade UAVs flow here from ML; dual-use UAVs flow from DUL 9.A.11.",
+      "Combat UAVs, target drones, military reconnaissance UAVs. Military-grade UAVs flow here from ML; dual-use UAVs flow from DUL 9.A.12.",
     sourceUrl: SOURCE_URL,
     asOfDate: ASOF,
   },
@@ -802,43 +803,15 @@ export const WASSENAAR_CAT6_9_ENTRIES: WassenaarEntry[] = [
     asOfDate: ASOF,
   },
 
-  // ─── 9.A.11 — UAVs (dual-use) ───────────────────────────────────
-  {
-    code: "9.A.11.a",
-    list: "DUL",
-    category: "9",
-    title: "UAVs and unmanned airships — endurance ≥30 min",
-    description:
-      "UAVs with autonomous flight-control + endurance ≥30 min at ≥300 km range. Below ML10.c military threshold.",
-    euAnnexIRef: "9A011.a",
-    earCclRef: "9A011.a",
-    sourceUrl: SOURCE_URL,
-    asOfDate: ASOF,
-  },
-  {
-    code: "9.A.11.b",
-    list: "DUL",
-    category: "9",
-    title: "UAV autonomous flight-control systems",
-    description:
-      "GPS/INS-aided autopilots, vision-based-navigation systems specially designed for autonomous UAV flight.",
-    euAnnexIRef: "9A011.b",
-    earCclRef: "9A011.b",
-    sourceUrl: SOURCE_URL,
-    asOfDate: ASOF,
-  },
-  {
-    code: "9.A.11.c",
-    list: "DUL",
-    category: "9",
-    title: "UAV swarming + command-link equipment",
-    description:
-      "Multi-UAV coordination systems, anti-jam C2 links, BVLOS C2 ground stations.",
-    euAnnexIRef: "9A011.c",
-    earCclRef: "9A011.c",
-    sourceUrl: SOURCE_URL,
-    asOfDate: ASOF,
-  },
+  // NOTE (CORRECTED 2026-06-13): The former "9.A.11.a/.b/.c — UAVs"
+  // sub-entries that lived here were a mislabel. Wassenaar 9.A.11
+  // (EU 9A011 / CCL 9A011) = ramjet/scramjet/combined-cycle engines
+  // (see the 9.A.11 entry below), NOT UAVs. Non-military UAVs are
+  // Wassenaar 9.A.12 (EU 9A012 / CCL 9A012) — correctly carried by
+  // the 9.A.12.a/.b entries further down (real WA-LIST codes). The
+  // mislabeled UAV duplicates were removed rather than re-coded:
+  // 9.A.12.a/.b already exist and 9.A.12 has no official .c.
+  // Source: BIS Commerce Control List / Wassenaar WA-LIST, Cat. 9.
 
   // ─── 9.D — Software ─────────────────────────────────────────────
   {

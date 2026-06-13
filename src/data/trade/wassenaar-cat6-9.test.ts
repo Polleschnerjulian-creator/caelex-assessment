@@ -33,9 +33,12 @@ import {
 
 describe("Wassenaar Cat 6 + 9 — dataset presence", () => {
   it("ships a non-empty dataset", () => {
-    // Raised in Data-Sprint S5 (Cat-9 deepening + Cat 6/7 space gaps):
-    // base 70 + 42 verified WA-LIST (25) 1 Corr. entries = 112.
-    expect(WASSENAAR_CAT6_9_ENTRIES.length).toBeGreaterThanOrEqual(110);
+    // Raised in Data-Sprint S5 (Cat-9 deepening + Cat 6/7 space gaps).
+    // 2026-06-13: removed 3 mislabeled 9.A.11.a/.b/.c UAV duplicates
+    // (UAVs = 9.A.12, already correctly covered) — corpus now 109
+    // entries. Floor lowered from 110 to track the corrected corpus;
+    // this is a data-correctness fix, not a coverage regression.
+    expect(WASSENAAR_CAT6_9_ENTRIES.length).toBeGreaterThanOrEqual(109);
   });
 
   it("ships within the documented entry-count target", () => {
@@ -207,7 +210,7 @@ describe("Wassenaar Cat 6 + 9 — sub-category breadth", () => {
     expect(present).toBe(true);
   });
 
-  it("ships 9.A.11 (UAVs) entries", () => {
+  it("ships 9.A.11 (ramjet/scramjet/combined-cycle engines) entries", () => {
     const present = WASSENAAR_CAT6_9_ENTRIES.some((e) =>
       e.code.startsWith("9.A.11"),
     );
