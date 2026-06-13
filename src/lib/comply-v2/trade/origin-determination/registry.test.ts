@@ -27,10 +27,14 @@ describe("resolveOriginModule", () => {
     expect(resolveOriginModule(routing)).toBeNull();
   });
 
-  it("returns null for a supported origin with no module yet (GB)", () => {
+  it("returns the UK module for a GB-origin routing (registered in M-UK)", () => {
+    // M-UK registered the UK module under UK_STRATEGIC (GB's dual-use + military
+    // primary regime). GB no longer resolves to null / Gate 4.5.
     const routing = originRegimes("GB");
     expect(routing.supported).toBe(true);
-    expect(resolveOriginModule(routing)).toBeNull();
+    const mod = resolveOriginModule(routing);
+    expect(mod).not.toBeNull();
+    expect(typeof mod).toBe("function");
   });
 
   it("returns the EU module for a supported EU origin (DE, registered in M-EU)", () => {
@@ -53,7 +57,11 @@ describe("resolveOriginModule", () => {
     expect(resolveOriginModule(routing)).toBeNull();
   });
 
-  it("the registry holds US_CCL + EU_ANNEX_I (US wrap + M-EU); other origins register later", () => {
-    expect([...ORIGIN_MODULES.keys()].sort()).toEqual(["EU_ANNEX_I", "US_CCL"]);
+  it("the registry holds US_CCL + EU_ANNEX_I + UK_STRATEGIC (US wrap + M-EU + M-UK); other origins register later", () => {
+    expect([...ORIGIN_MODULES.keys()].sort()).toEqual([
+      "EU_ANNEX_I",
+      "UK_STRATEGIC",
+      "US_CCL",
+    ]);
   });
 });

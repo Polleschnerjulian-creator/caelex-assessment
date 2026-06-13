@@ -21,6 +21,7 @@ import type { CorpusRegime } from "@/data/trade/normalized-corpus";
 import type { OriginLicenceModule } from "./types";
 import { usOriginModule } from "./us";
 import { euOriginModule } from "./eu";
+import { ukOriginModule } from "./uk";
 
 /**
  * Registered per-origin licence modules, keyed by `CorpusRegime`. Modules
@@ -35,6 +36,11 @@ export const ORIGIN_MODULES = new Map<CorpusRegime, OriginLicenceModule>([
   // friendly-destination general licence supersedes the generic Gate-3.5/Gate-4
   // EU REVIEW for EU001-eligible items; see `eu.ts` + the wiring's supersede.
   ["EU_ANNEX_I", euOriginModule],
+  // UK dual-use + military primary regime (UK_STRATEGIC). OGEL (Export of
+  // Dual-Use items to EU Member States) + SIEL fallback at the ECJU — the
+  // OGEL GENERAL/GO supersedes the generic Gate-3.5/Gate-4 REVIEW for an
+  // OGEL-eligible GB→EU-member dual-use export; see `uk.ts` + the wiring.
+  ["UK_STRATEGIC", ukOriginModule],
 ]);
 
 /**

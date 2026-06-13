@@ -248,20 +248,55 @@ const EXACT: Record<string, Verdict> = {
   //     Override (kein EU001 nach RU, kein false-CLEARED über ein Embargo).
   "ground-tt-c|DE|RU": "BLOCKED", // 5A002 (EU001-fähig) → RU: Gate 1.6 schlägt EU001
   "star-tracker|DE|RU": "BLOCKED", // 7A004 (EU001-fähig) → RU: Gate 1.6 schlägt EU001
-  // S3-Gefahren-Pin: GB-Sitz, deklariertes 9A004, intra-EU-Ziel (DE).
-  // Dies MUSS REVIEW bleiben. Begründung: ein UK→EU-Dual-Use-Transfer ist
-  // post-Brexit lizenzpflichtig (ECJU) — es ist KEIN intra-EU-Freiverkehr
-  // mehr. In dieser party-losen Pipeline kommt der REVIEW aus Gate 4.5
-  // (Thin-Origin): GB.dualUsePrimary = UK_STRATEGIC, REGIME_MATURITY 3, und
-  // sat-bus ist kontrollverdächtig (deklariertes 9A004). Gate 3.5 feuert für
-  // DE-Ziel NICHT (intra-EU), Gate 1.6 nur für RU/BY — Gate 4.5 ist also der
-  // EINZIGE Wächter. Würde S3 die Maturity (entgegen der Controller-
-  // Amendment) auf 2 heben, verstummte Gate 4.5 und diese Zelle kippte
-  // STILL auf GO (false-CLEARED-Klasse). Der Pin sperrt genau diesen
-  // verfrühten Maturity-Lift, bis UK-Origin-Lizenzlogik existiert
-  // (Engine-Phase, post-S7). Vgl. den REGIME_MATURITY-Kommentarblock in
-  // `normalized-corpus.ts`.
-  "sat-bus|GB|DE": "REVIEW",
+
+  // ── M-UK (Engine-Origin-Determination §4.3): GB-Origin OGEL/SIEL-Verdicts ──
+  //
+  // Für einen GB-Sitz bestimmt das UK-Modul (`origin-determination/uk.ts`) die
+  // echte Lizenz-Antwort: post-Brexit ist ein UK→EU-Dual-Use-Transfer
+  // lizenzpflichtig (KEIN intra-EU-Freiverkehr mehr) und wird über die OGEL
+  // „Export of Dual-Use items to EU Member States" (ECJU) bzw. — wo keine OGEL
+  // greift — über eine SIEL (Standard Individual Export Licence) abgewickelt.
+  // Quelle je Zelle: gov.uk OGEL-Text (16 Dez 2025) Schedule 1 (Annex I außer
+  // Annex IIg) + Schedule 2 (EU-Mitgliedstaaten + Kanalinseln + Island);
+  // Annex IIg = retained Reg (EC) 428/2009 Annex IIg (legislation.gov.uk).
+  //
+  // (f) GO unter der OGEL — OGEL-fähiges (NICHT auf Annex IIg) Dual-Use-Gut an
+  //     einen OGEL-Schedule-2-EU-Mitgliedstaat (DE). Die OGEL ist deutlich
+  //     SCHMALER als EU001: sie deckt NUR EU-Mitgliedstaaten/Kanalinseln/Island,
+  //     NICHT die nahen Verbündeten (US/JP/…). Daher greift sie für GB→DE, aber
+  //     NICHT für GB→US/JP. Belegt: OGEL Schedule 1+2.
+  "star-tracker|GB|DE": "GO", // 7A004 GB→DE: OGEL (nicht Annex IIg, DE in Schedule 2)
+  "ground-tt-c|GB|DE": "GO", // 5A002 GB→DE: OGEL
+  "flight-sw|GB|DE": "GO", // 9D001 GB→DE: OGEL (Entwicklungs-SW, nicht 9D101-104)
+  "prepreg|GB|DE": "GO", // 1C010 GB→DE: OGEL (Faserstoff, nicht Annex IIg)
+  //
+  // (g) SIEL-REVIEW — kein OGEL-Ziel (US/JP/IN/CN sind NICHT in OGEL Schedule 2;
+  //     es gibt KEINE UK-OGEL für die nahen Verbündeten) → Einzelausfuhr-
+  //     genehmigung (SIEL) bei der ECJU. Belegt: gov.uk OGEL-Sammlung (keine
+  //     allgemeine Dual-Use-OGEL für US/JP/…).
+  "star-tracker|GB|US": "REVIEW", // 7A004 GB→US: kein UK-OGEL-Ziel → SIEL
+  "ground-tt-c|GB|JP": "REVIEW", // 5A002 GB→JP: kein UK-OGEL-Ziel → SIEL
+  //
+  // (h) FAIL-CLOSED (§4.5, kein false-CLEARED): Annex-IIg-Ausschluss ist von
+  //     KEINER UK-OGEL gedeckt → SIEL/REVIEW selbst an einen EU-Mitgliedstaat.
+  //     Annex IIg = „alle in Annex IV genannten Güter" + 13 explizite Codes.
+  //     9A004 (space launch vehicles) UND 9A106.c (thrust-vector control) stehen
+  //     BEIDE in Annex IV (legislation.gov.uk/eur/2009/428/annex/IV) → über die
+  //     Annex-IV-Klausel der OGEL ausgeschlossen.
+  //
+  //     S3-GEFAHREN-PIN, REFRAMED (M-UK 2026-06-13): sat-bus|GB|DE MUSS REVIEW
+  //     bleiben. FRÜHER (vor M-UK) kam dieser REVIEW aus Gate 4.5 (Thin-Origin,
+  //     UK_STRATEGIC REGIME_MATURITY 3) und der Pin sperrte einen VERFRÜHTEN
+  //     Maturity-Lift, der die Zelle still auf GO hätte kippen lassen. JETZT
+  //     EXISTIERT das UK-Modul: REGIME_MATURITY UK_STRATEGIC ist 2, Gate 4.5
+  //     feuert für GB nicht mehr — der REVIEW kommt nun aus dem UK-MODUL selbst,
+  //     das für 9A004 (Annex IV → Annex IIg) eine SIEL bei der ECJU zurückgibt
+  //     (KEINE OGEL, kein false-CLEARED). Der Pin verifiziert damit jetzt das
+  //     korrekte UK-Modul-Verdict statt eine Lift-Sperre. Vgl. den
+  //     REGIME_MATURITY-Kommentarblock in `normalized-corpus.ts`.
+  "sat-bus|GB|DE": "REVIEW", // 9A004 (Annex IV → Annex IIg) GB→DE: UK-Modul → SIEL
+  "apogee-engine|GB|DE": "REVIEW", // 9A106 (Annex IV) GB→DE: UK-Modul → SIEL
+  "sat-bus|GB|US": "REVIEW", // 9A004 GB→US: Annex IIg UND kein OGEL-Ziel → SIEL
 };
 
 // ─── Item-Klassifizierbarkeit (Kontrollverdacht) ──────────────────────────
@@ -460,22 +495,39 @@ function measureDistribution(): {
   return { total, ...counts };
 }
 
-describe("GOLDEN SET — Origin-Determination (Phase F + M-EU)", () => {
-  it("Verteilung nach M-EU: 744 = 90 GO / 380 REVIEW / 274 BLOCKED", () => {
-    // Vor M-EU war die Verteilung 74/396/274 (Phase F, nur US-Wrap, no-op).
-    // M-EU (EU-Origin-Modul: EUGEA EU001 + Member→NCA) verschiebt 16 Zellen
-    // bewusst REVIEW→GO: vier EU001-fähige Dual-Use-Items (7A004 star-tracker,
-    // 5A002 ground-tt-c, 9D001 flight-sw, 1C010 prepreg) aus zwei EU-Sitzen
-    // (DE, FR) an die zwei EU001-Ziele der Matrix (US, JP) = 4×2×2 = 16. Jede
-    // dieser Lockerungen ist durch EU001 (Reg (EU) 2021/821 Annex II EU001
-    // Part 1+2) belegt — KEIN false-CLEARED. BLOCKED unverändert (274): kein
-    // Hartverbot (Embargo/RU-BY/Annex-IV/ITAR) wurde berührt. Die Section-I-
-    // Ausschlüsse (9A004 sat-bus, 9A106 apogee-engine) bleiben fail-closed
-    // REVIEW selbst an EU001-Ziele. Belegt + gepinnt in EXACT (a)-(d).
+describe("GOLDEN SET — Origin-Determination (Phase F + M-EU + M-UK)", () => {
+  it("Verteilung nach M-UK: 744 = 94 GO / 376 REVIEW / 274 BLOCKED", () => {
+    // Verlauf: Phase F (nur US-Wrap, no-op) 74/396/274 → M-EU (EUGEA EU001 +
+    // Member→NCA) 90/380/274 → M-UK (UK-Origin-Modul: OGEL „Export of Dual-Use
+    // items to EU Member States" + SIEL-Fallback bei der ECJU) 94/376/274.
+    //
+    // M-UK verschiebt GENAU 4 Zellen bewusst REVIEW→GO: vier OGEL-fähige (NICHT
+    // auf Annex IIg gelistete) Dual-Use-Items aus einem GB-Sitz an einen
+    // OGEL-Schedule-2-EU-Mitgliedstaat (DE) der Matrix:
+    //   • star-tracker|GB|DE (7A004), ground-tt-c|GB|DE (5A002),
+    //     flight-sw|GB|DE (9D001), prepreg|GB|DE (1C010) → GO unter der OGEL.
+    // Jede Lockerung ist durch die OGEL (gov.uk OGEL-Text 16 Dez 2025,
+    // Schedule 1 „Annex I außer Annex IIg" + Schedule 2 „EU-Mitgliedstaaten")
+    // belegt — KEIN false-CLEARED. Belegt + gepinnt in EXACT (f).
+    //
+    // WAS BEWUSST NICHT auf GO kippt (fail-closed):
+    //   • sat-bus|GB|DE (9A004) + apogee-engine|GB|DE (9A106): in Annex IV →
+    //     Annex-IIg-ausgeschlossen → SIEL/REVIEW selbst an einen EU-Mitgliedstaat
+    //     (das load-bearing Pin, jetzt vom UK-Modul produziert statt Gate 4.5).
+    //   • radhard-obc|GB|DE (eccnUS 3A001.a.1): bleibt REVIEW — die OGEL deckt
+    //     zwar das UK-Bein (3A001 ist NICHT auf Annex IIg), aber 3A001.a.1 ist
+    //     ein US-ECCN, sodass das US-EAR-Bein unabhängig eine
+    //     de-minimis-/EAR-Prüfung verlangt (UNKNOWN/BIS). Das UK-Modul
+    //     übersteuert NIE ein US/BIS-Bein — ehrlicher REVIEW, kein false-CLEARED.
+    //   • GB→US/JP/IN/CN für kontrollierte Items: bleibt REVIEW (SIEL — es gibt
+    //     KEINE UK-OGEL für die nahen Verbündeten; ein UK→US/JP-Dual-Use-Export
+    //     ist post-Brexit weiterhin lizenzpflichtig).
+    // BLOCKED unverändert (274): kein Hartverbot (Embargo/RU-BY/ITAR) berührt;
+    // sat-bus|GB|RU bleibt BLOCKED (Gate 1.6 vorgelagert).
     expect(measureDistribution()).toEqual({
       total: 744,
-      GO: 90,
-      REVIEW: 380,
+      GO: 94,
+      REVIEW: 376,
       BLOCKED: 274,
     });
   });
@@ -526,13 +578,17 @@ describe("GOLDEN SET — Invarianten", () => {
     }
   });
 
-  it("genau diese 8 thin origins (dualUsePrimary maturity 3): GB,CH,NO,CA,JP,AU,KR,IN", () => {
+  it("genau diese 7 thin origins (dualUsePrimary maturity 3): CH,NO,CA,JP,AU,KR,IN", () => {
+    // M-UK (2026-06-13) hob UK_STRATEGIC 3 → 2 (UK-Origin-OGEL/SIEL-Lizenzlogik
+    // modelliert), sodass GB den Thin-Set verlässt (8 → 7).
     const thin = ORIGINS.filter((o) => isThinOrigin(o)).sort();
-    expect(thin).toEqual(["AU", "CA", "CH", "GB", "IN", "JP", "KR", "NO"]);
-    // DE/FR (EU_ANNEX_I maturity 2) + US (US_CCL maturity 2) sind NICHT dünn.
+    expect(thin).toEqual(["AU", "CA", "CH", "IN", "JP", "KR", "NO"]);
+    // DE/FR (EU_ANNEX_I maturity 2) + US (US_CCL maturity 2) + GB (UK_STRATEGIC
+    // maturity 2 nach M-UK) sind NICHT dünn.
     expect(isThinOrigin("DE")).toBe(false);
     expect(isThinOrigin("FR")).toBe(false);
     expect(isThinOrigin("US")).toBe(false);
+    expect(isThinOrigin("GB")).toBe(false);
   });
 
   it("Fail-Closed: thin origin × control-suspicious ist NIE GO (über die ganze Matrix)", () => {

@@ -151,11 +151,13 @@ describe("S0: regime maturity (fail-closed input)", () => {
     ];
     for (const r of expected) expect([1, 2, 3]).toContain(REGIME_MATURITY[r]);
   });
-  it("not-yet-curated regimes are tier 3 (forces REVIEW) — 6 after S4 (EU_CML left)", () => {
-    // Data-Sprint S4 lifted EU_CML 3 → 2, so the "still headline" set drops from
-    // 7 to 6. EU_CML's lift is asserted separately below.
+  it("thin (tier-3) origin regimes — 5 after M-UK (UK_STRATEGIC left)", () => {
+    // Data-Sprint S4 lifted EU_CML 3 → 2 (set 7 → 6). M-UK (2026-06-13,
+    // Engine-Origin-Determination) lifted UK_STRATEGIC 3 → 2 — the UK-origin
+    // OGEL/SIEL licence determination is now modelled (`origin-determination/
+    // uk.ts`), so GB leaves the thin set (6 → 5). UK_STRATEGIC's lift is
+    // asserted separately below.
     for (const r of [
-      "UK_STRATEGIC",
       "CA_ECL",
       "AU_DSGL",
       "KR_STRATEGIC",
@@ -164,6 +166,18 @@ describe("S0: regime maturity (fail-closed input)", () => {
     ] as const) {
       expect(REGIME_MATURITY[r]).toBe(3);
     }
+  });
+  it("UK_STRATEGIC is tier 2 after M-UK (UK OGEL/ECJU origin-licence modelled)", () => {
+    // M-UK (Engine-Origin-Determination, 2026-06-13) modelled the UK-origin
+    // licence determination — `origin-determination/uk.ts`: the OGEL (Export of
+    // Dual-Use items to EU Member States) GENERAL/GO supersede + the SIEL
+    // fallback at the ECJU. The lift is safe (no false-CLEARED): Annex-IIg-
+    // excluded items (9A004/9A106.c, Annex IV) stay SIEL/REVIEW, non-OGEL
+    // destinations (US/JP/IN/CN) stay SIEL/REVIEW, and Gate 1.6 (RU/BY) still
+    // BLOCKS upstream. The golden pin `sat-bus|GB|DE = REVIEW` now comes from
+    // the UK module's SIEL verdict (not Gate 4.5). See the REGIME_MATURITY
+    // comment block in normalized-corpus.ts.
+    expect(REGIME_MATURITY.UK_STRATEGIC).toBe(2);
   });
   it("USML_XV stays tier 1, EU_ANNEX_I tier 2", () => {
     expect(REGIME_MATURITY.USML_XV).toBe(1);

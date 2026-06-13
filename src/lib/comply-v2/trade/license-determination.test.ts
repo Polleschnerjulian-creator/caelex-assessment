@@ -1061,7 +1061,12 @@ describe("Gate 4.5 — thin origin-regime coverage (fail-closed)", () => {
     supported: true,
   };
 
-  it("GB origin + declared EU dual-use ECCN → outcome NOT CLEARED, reason mentions UK and thin coverage", () => {
+  it("GB origin (M-UK) + declared EU dual-use ECCN → US: UK module SIEL/REVIEW (no UK OGEL to the US), NOT Gate 4.5", () => {
+    // M-UK: GB (UK_STRATEGIC maturity 2 + registered module) NO LONGER hits
+    // Gate 4.5. 9A515.a is NOT on Annex IIg, but US is NOT an OGEL Schedule-2
+    // destination (there is no UK OGEL covering general dual-use to the close
+    // allies) → the UK module returns INDIVIDUAL/REVIEW (SIEL at the ECJU),
+    // folded as ORIGIN_INDIVIDUAL_LICENCE. Outcome NOT CLEARED; no THIN_ORIGIN.
     const det = determineLicenseRequirements(
       evalWith(),
       null,
@@ -1070,13 +1075,89 @@ describe("Gate 4.5 — thin origin-regime coverage (fail-closed)", () => {
       undefined,
       { eccnEU: "9A515.a", eccnUS: null, usmlCategory: null },
       GB_ORIGIN,
+      "GB",
     );
     expect(det.gate).not.toBe("CLEARED");
-    const thinReq = det.requirements.find(
-      (r) => r.triggerCode === "THIN_ORIGIN_REGIME",
+    expect(
+      det.requirements.some((r) => r.triggerCode === "THIN_ORIGIN_REGIME"),
+    ).toBe(false);
+    const indiv = det.requirements.find(
+      (r) => r.triggerCode === "ORIGIN_INDIVIDUAL_LICENCE",
     );
-    expect(thinReq).toBeDefined();
-    expect(thinReq!.reason).toMatch(/UK.*nicht tief|noch nicht tief/i);
+    expect(indiv).toBeDefined();
+    expect(indiv!.reason).toMatch(/SIEL|ECJU/i);
+  });
+
+  it("GB origin (M-UK) + declared EU dual-use ECCN → DE: OGEL GENERAL/GO supersedes the generic REVIEW (CLEARED)", () => {
+    // 9A515.a is NOT on Annex IIg and DE is an OGEL Schedule-2 destination →
+    // the UK module returns GENERAL/GO under the OGEL (Export of Dual-Use items
+    // to EU Member States). For an intra-EU destination Gate 3.5's dual-use leg
+    // does not fire, so the OGEL GO leaves the gate CLEARED. The deliberate,
+    // cited REVIEW→GO refinement (post-Brexit UK→EU is OGEL-covered).
+    const det = determineLicenseRequirements(
+      evalWith(),
+      null,
+      "DE",
+      undefined,
+      undefined,
+      { eccnEU: "9A515.a", eccnUS: null, usmlCategory: null },
+      GB_ORIGIN,
+      "GB",
+    );
+    const ogel = det.requirements.find(
+      (r) => r.triggerCode === "ORIGIN_GENERAL_LICENCE",
+    );
+    expect(ogel).toBeDefined();
+    expect(ogel!.licenseType).toBe("GENERAL_LICENSE");
+    expect(ogel!.applicableException?.code).toBe("OGEL_DUAL_USE_EU");
+    expect(det.gate).toBe("CLEARED");
+  });
+
+  it("GB origin (M-UK) safety pin: 9A004 (Annex IIg/Annex IV) → DE stays REVIEW (SIEL, NOT OGEL)", () => {
+    // THE load-bearing fail-closed pin. 9A004 (space launch vehicle) is in
+    // Annex IV → Annex-IIg-excluded → no OGEL even to an EU member → SIEL/REVIEW
+    // at the ECJU. No false-CLEARED on a sensitive MTCR launch item.
+    const det = determineLicenseRequirements(
+      evalWith(),
+      null,
+      "DE",
+      undefined,
+      undefined,
+      { eccnEU: "9A004", eccnUS: null, usmlCategory: null },
+      GB_ORIGIN,
+      "GB",
+    );
+    expect(
+      det.requirements.some((r) => r.triggerCode === "ORIGIN_GENERAL_LICENCE"),
+    ).toBe(false);
+    const indiv = det.requirements.find(
+      (r) => r.triggerCode === "ORIGIN_INDIVIDUAL_LICENCE",
+    );
+    expect(indiv).toBeDefined();
+    expect(indiv!.status).toBe("REQUIRED");
+    expect(indiv!.reason).toMatch(/Annex IIg/);
+    expect(det.gate).toBe("REVIEW_NEEDED");
+  });
+
+  it("GB origin (M-UK) safety pin: 9A004 → RU stays BLOCKED (Gate 1.6 overrides the UK module)", () => {
+    // The UK module runs AFTER Gate 1.6 and is SKIPPED when it blocks. A GB
+    // export of an EU-dual-use item (9A004) to RU is prohibited by Gate 1.6
+    // (all-origins scope) — no OGEL GO row, verdict stays BLOCKED.
+    const det = determineLicenseRequirements(
+      evalWith(),
+      null,
+      "RU",
+      undefined,
+      undefined,
+      { eccnEU: "9A004", eccnUS: null, usmlCategory: null },
+      GB_ORIGIN,
+      "GB",
+    );
+    expect(det.gate).toBe("BLOCKED");
+    expect(det.embargoBlock).toBe(true);
+    expect(
+      det.requirements.some((r) => r.triggerCode === "ORIGIN_GENERAL_LICENCE"),
+    ).toBe(false);
   });
 
   it("DE origin (M-EU) + declared EU001-eligible ECCN → EU001 GO supersedes the generic Gate-3.5 BAFA REVIEW", () => {
@@ -1275,7 +1356,7 @@ describe("Gate 4.5 — thin origin-regime coverage (fail-closed)", () => {
   // must still arm THIN_ORIGIN_REGIME for a GB-seated exporter with an ITAR-signal item.
   // Gate 3.5 also fires independently (ACTUAL_USML_DECLARED → DDTC REQUIRED), so both guards
   // are present in the same result. Asserting both here documents the dual-guard invariant.
-  it("GB origin + declared usmlCategory (no eccnEU/eccnUS) → THIN_ORIGIN_REGIME (UK_STRATEGIC mil-leg) AND Gate-3.5 DDTC requirement both present", () => {
+  it("GB origin (M-UK) + declared usmlCategory (no eccnEU/eccnUS) → Gate-3.5 DDTC requirement (no THIN_ORIGIN, no UK OGEL)", () => {
     const det = determineLicenseRequirements(
       evalWith(),
       null,
@@ -1284,20 +1365,25 @@ describe("Gate 4.5 — thin origin-regime coverage (fail-closed)", () => {
       undefined,
       { eccnEU: null, eccnUS: null, usmlCategory: "XV(f)" },
       GB_ORIGIN,
+      "GB",
     );
-    // Gate 4.5 military leg fires: UK_STRATEGIC is tier 3, hasDeclaredUsml is true
-    const thinReq = det.requirements.find(
-      (r) => r.triggerCode === "THIN_ORIGIN_REGIME",
-    );
-    expect(thinReq).toBeDefined();
-    expect(thinReq!.reason).toMatch(/UK[-_ ]?STRATEGIC|UK-Kontrollliste/i);
-    // Gate 3.5 DDTC guard fires independently (ITAR attaches to the item regardless of origin)
+    // M-UK: GB no longer hits Gate 4.5. The UK module deliberately does NOT model
+    // USML/ITAR items (ukControlledCode excludes usmlCategory — ITAR is US law,
+    // handled by the upstream DDTC gate), so it returns NONE and folds nothing.
+    expect(
+      det.requirements.some((r) => r.triggerCode === "THIN_ORIGIN_REGIME"),
+    ).toBe(false);
+    expect(
+      det.requirements.some((r) => r.triggerCode === "ORIGIN_GENERAL_LICENCE"),
+    ).toBe(false);
+    // Gate 3.5 DDTC guard fires independently (ITAR attaches to the item
+    // regardless of origin) — this is the non-clearance guard for a USML item.
     const ddtcReq = det.requirements.find(
       (r) => r.triggerCode === "ACTUAL_USML_DECLARED",
     );
     expect(ddtcReq).toBeDefined();
     expect(ddtcReq!.authority).toBe("DDTC");
-    // Verdict must not be CLEARED — two independent non-clearance guards active
+    // Verdict must not be CLEARED — the DDTC guard is active.
     expect(det.gate).not.toBe("CLEARED");
   });
 });

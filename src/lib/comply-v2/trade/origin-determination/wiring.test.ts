@@ -20,6 +20,7 @@ import {
 import { evaluateItemSignals } from "../property-trigger-engine";
 import { originRegimes } from "../classification/origin-regime-map";
 import { ORIGIN_MODULES } from "./registry";
+import { ukOriginModule } from "./uk";
 import type { OriginDeterminationInput, OriginLicenceModule } from "./types";
 
 const GB_ORIGIN = originRegimes("GB"); // dualUsePrimary = UK_STRATEGIC
@@ -61,10 +62,15 @@ function gbDualUse(dest: string): LicenseDetermination {
 
 describe("F5 — origin stage wiring (mock GO module under UK_STRATEGIC)", () => {
   beforeEach(() => {
+    // Temporarily swap the real UK module for a mock that ALWAYS says GENERAL/GO
+    // (so this block can prove the wiring's supersede + the upstream-override
+    // safety pin independently of the UK module's own legal logic).
     ORIGIN_MODULES.set("UK_STRATEGIC", MOCK_GO_MODULE);
   });
   afterEach(() => {
-    ORIGIN_MODULES.delete("UK_STRATEGIC");
+    // Restore the REAL UK module (M-UK registered it permanently) — never leave
+    // UK_STRATEGIC unregistered, which would corrupt later tests/files.
+    ORIGIN_MODULES.set("UK_STRATEGIC", ukOriginModule);
   });
 
   it("module replaces Gate 4.5: folds its GENERAL verdict, no thin-origin REVIEW", () => {
@@ -130,13 +136,49 @@ describe("F5 — origin stage wiring (mock GO module under UK_STRATEGIC)", () =>
 });
 
 describe("F5 — fallback intact when no module is registered", () => {
-  it("GB + controlled item + NO module → Gate 4.5 thin-origin REVIEW", () => {
-    // No mock registered here → GB (UK_STRATEGIC maturity 3) falls back to the
-    // Gate 4.5 fail-closed REVIEW (REGIME_MATURITY unchanged in Phase F).
+  it("CH + controlled item + NO module → Gate 4.5 thin-origin REVIEW", () => {
+    // CH (CH_GKV maturity 3, NO registered module) still falls back to the
+    // Gate 4.5 fail-closed REVIEW — proving the no-module fallback path is
+    // intact. (GB used to test this, but M-UK registered a real UK module +
+    // lifted UK_STRATEGIC to 2, so GB now flows through the module, not Gate 4.5
+    // — see the M-UK wiring test below.)
+    const det = determineLicenseRequirements(
+      evaluateItemSignals({
+        apertureMeters: null,
+        rangeKm: null,
+        payloadKg: null,
+        isRadHardened: null,
+        isMilSpec: null,
+        isAntiJam: null,
+        eccnEU: "9A004",
+      }),
+      null,
+      "JP",
+      undefined,
+      undefined,
+      { eccnEU: "9A004", eccnUS: null, usmlCategory: null },
+      originRegimes("CH"), // CH_GKV maturity 3, no module → Gate 4.5 fallback
+    );
+    expect(det.gate).toBe("REVIEW_NEEDED");
+    expect(
+      det.requirements.find((r) => r.triggerCode === "THIN_ORIGIN_REGIME"),
+    ).toBeDefined();
+  });
+
+  it("M-UK: GB + controlled item flows through the real UK module (no Gate 4.5)", () => {
+    // After M-UK, GB (UK_STRATEGIC maturity 2 + registered module) NO LONGER
+    // hits Gate 4.5. A declared 9A004 (Annex IV → Annex IIg-excluded) GB→JP
+    // (a non-OGEL destination) → the UK module's SIEL verdict (INDIVIDUAL),
+    // folded as an ORIGIN_INDIVIDUAL_LICENCE row → REVIEW. No THIN_ORIGIN_REGIME.
     const det = gbDualUse("JP");
     expect(det.gate).toBe("REVIEW_NEEDED");
     expect(
       det.requirements.find((r) => r.triggerCode === "THIN_ORIGIN_REGIME"),
+    ).toBeUndefined();
+    expect(
+      det.requirements.find(
+        (r) => r.triggerCode === "ORIGIN_INDIVIDUAL_LICENCE",
+      ),
     ).toBeDefined();
   });
 
@@ -260,10 +302,18 @@ describe("F5 — fallback intact when no module is registered", () => {
           r.triggerCode === "ORIGIN_INDIVIDUAL_LICENCE",
       ),
     ).toBeUndefined();
-    // The withOrigin path DID add the thin-origin REVIEW (proves origin matters).
+    // The withOrigin (GB) path DID add an origin-licence requirement (the UK
+    // module's SIEL for 9A004→JP) — proving the origin stage fires only with an
+    // origin. After M-UK, GB no longer hits Gate 4.5, so the proof is the
+    // folded ORIGIN_INDIVIDUAL_LICENCE row rather than THIN_ORIGIN_REGIME.
     expect(
       withOrigin.requirements.find(
         (r) => r.triggerCode === "THIN_ORIGIN_REGIME",
+      ),
+    ).toBeUndefined();
+    expect(
+      withOrigin.requirements.find(
+        (r) => r.triggerCode === "ORIGIN_INDIVIDUAL_LICENCE",
       ),
     ).toBeDefined();
   });

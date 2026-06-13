@@ -159,26 +159,33 @@ export const REGIME_MATURITY: Record<CorpusRegime, 1 | 2 | 3> = {
   // LIFT-CONDITION: raise to 2 once IN-origin DGFT licence determination is modelled.
   IN_SCOMET: 3,
   // Data-Sprint S3 curated the UK Strategic Export Control List space slice
-  // (123 verified entries: 109 dual-use + 8 ML + 6 PL, edition 2025-12-16) — yet UK_STRATEGIC is
-  // DELIBERATELY KEPT AT TIER 3, overriding the plan's "→ 2" parameter.
+  // (123 verified entries: 109 dual-use + 8 ML + 6 PL, edition 2025-12-16).
+  // LIFTED 3 → 2 on 2026-06-13 (M-UK, Engine-Origin-Determination): the
+  // UK-origin LICENCE determination is now modelled — `origin-determination/
+  // uk.ts` (OGEL "Export of Dual-Use items to EU Member States" + SIEL fallback
+  // at the ECJU). The lift-condition documented below is satisfied.
   //
-  // WHY (fail-closed safety, not a data gap): the curated corpus makes UK
-  // codes RESOLVABLE (a declared 9A004 from a GB seat now yields
-  // `UK_STRATEGIC:9A004` chips in classification), but the determination
-  // engine has NO UK-origin LICENCE logic yet. Post-Brexit, a UK→EU dual-use
-  // export REQUIRES a UK (ECJU) licence in its own right; Gate 4.5
-  // (thin-origin REVIEW) is currently the ONLY guard that produces a review
-  // for a GB-seat controlled export. Lifting maturity to 2 would silence
-  // Gate 4.5, and — because Gate 3.5's dual-use leg does not fire for an
-  // intra-EU destination — a GB→DE declared-9A004 cell would silently become
-  // GO: a false-CLEARED-class bug. Keeping Tier 3 means GB customers get
-  // precise UK ratings/chips in classification while their verdicts stay
-  // fail-closed REVIEW until the licence engine exists.
-  //
-  // LIFT-CONDITION: raise to 2 only once UK-origin licence determination is
-  // modelled (engine phase, post-S7). The golden-set EXACT pin
-  // `sat-bus|GB|DE = REVIEW` guards this invariant against a premature lift.
-  UK_STRATEGIC: 3,
+  // WHY THE LIFT IS NOW SAFE (no false-CLEARED): the original Tier-3 hold
+  // existed because Gate 4.5 (thin-origin REVIEW) was the ONLY guard for a
+  // GB-seat controlled export — lifting then would have silenced Gate 4.5 and
+  // let a GB→DE declared-9A004 cell silently become GO (Gate 3.5's dual-use leg
+  // does not fire for an intra-EU destination). With M-UK that gap is CLOSED:
+  // the UK module REPLACES Gate 4.5 for GB and returns the precise per-item
+  // verdict —
+  //   • OGEL-eligible (NOT Annex IIg) dual-use → an OGEL Schedule-2 destination
+  //     (EU-27 + Channel Islands + Iceland) → GENERAL/GO under the OGEL
+  //     (the deliberate, cited REVIEW→GO refinement);
+  //   • Annex-IIg-excluded item (9A004/9A106.c are in Annex IV) → SIEL/REVIEW
+  //     even to an EU member — so `sat-bus|GB|DE` STAYS REVIEW (now produced by
+  //     the UK module's SIEL verdict, not Gate 4.5); and
+  //   • any item → a non-OGEL destination (US/JP/IN/CN — there is NO UK OGEL to
+  //     the close allies) → SIEL/REVIEW.
+  // Hard destination prohibitions (Gate 1.6 RU/BY etc.) still run UPSTREAM and
+  // are never overridable (`sat-bus|GB|RU` stays BLOCKED). The golden-set pin
+  // `sat-bus|GB|DE = REVIEW` is now backed by the UK module rather than guarding
+  // against a premature lift — see the reframed comment block in
+  // `golden-set.test.ts`.
+  UK_STRATEGIC: 2,
   // Data-Sprint S4 curated the EU Common Military List space slice (25 verified
   // entries across 10 ML positions, edition OJ C/2026/1640 adopted 2026-02-23)
   // and LIFTS EU_CML 3 → 2 — the plan's parameter, PROVEN safe (unlike the UK
