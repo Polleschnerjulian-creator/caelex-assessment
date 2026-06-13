@@ -69,6 +69,13 @@ const SOURCE_URL =
 
 const ASOF = "2026-05-23";
 
+// Base-corpus correctness audit (2026-06-13): re-verified the Cat-6
+// sub-paragraph lettering against the current EUR-Lex 02021R0821 /
+// Wassenaar WA-LIST text and corrected several wrong-item mislabels
+// (6A002.d, 6A002.e→.f, 6A004.b/.c/.d/.e/.f). Entries touched by the
+// audit carry this as-of date.
+const ASOF_AUDIT = "2026-06-13";
+
 export const EU_ANNEX_I_CAT6_COVERAGE: ClassificationCoverage = {
   jurisdiction: "EU_ANNEX_I",
   scope:
@@ -287,24 +294,28 @@ export const EU_ANNEX_I_CAT6_ENTRIES: ClassificationEntry[] = [
   {
     code: "6A002.d",
     jurisdiction: "EU_ANNEX_I",
-    title: "Specialty equipment (reticles, masks, gratings)",
+    title: "Support components: cryocoolers + optical sensing fibres",
     description:
-      "EU Annex I Cat 6, 6A002.d — specialty optical components: precision reticles, photolithographic masks, diffraction gratings for spaceborne and high-res commercial use.",
+      "EU Annex I Cat 6, 6A002.d — 'support' components for optical sensors: space-qualified and non-space-qualified cryocoolers (cooling source below 218 K) and optical sensing fibres specially fabricated for acoustic, thermal, inertial, electromagnetic, or radiation sensitivity.",
     controlReasons: ["NS"],
     crossReferenceTopic: null,
     sourceUrl: SOURCE_URL,
-    asOfDate: ASOF,
+    asOfDate: ASOF_AUDIT,
+    notes:
+      "Base-corpus audit 2026-06-13: corrected from a 'reticles / masks / gratings' mislabel — those are not 6A002.d. Official 6A002.d = cryocoolers + optical sensing fibres.",
   },
   {
-    code: "6A002.e",
+    code: "6A002.f",
     jurisdiction: "EU_ANNEX_I",
     title: "Read-out integrated circuits (ROICs) for FPAs",
     description:
-      "EU Annex I Cat 6, 6A002.e — read-out integrated circuits 'specially designed' for the .a.4 focal-plane arrays. Captures custom ROICs from Teledyne, Hamamatsu, Lynred.",
+      "EU Annex I Cat 6, 6A002.f — read-out integrated circuits 'specially designed' for the 6A002.a.4 focal-plane arrays. Captures custom ROICs from Teledyne, Hamamatsu, Lynred.",
     controlReasons: ["NS"],
     crossReferenceTopic: "high-resolution-eo-payloads",
     sourceUrl: SOURCE_URL,
-    asOfDate: ASOF,
+    asOfDate: ASOF_AUDIT,
+    notes:
+      "Base-corpus audit 2026-06-13: ROICs are 6A002.f, not 6A002.e (official 6A002.e is repealed). Code letter corrected; scope unchanged.",
   },
 
   // ─── 6A003 — Cameras and imaging systems ──────────────────────────
@@ -502,60 +513,85 @@ export const EU_ANNEX_I_CAT6_ENTRIES: ClassificationEntry[] = [
   {
     code: "6A004.b",
     jurisdiction: "EU_ANNEX_I",
-    title: "Optical components (mid-IR/IR + space-grade)",
+    title: "Optical components — ZnSe / ZnS",
     description:
-      "EU Annex I Cat 6, 6A004.b — optical components (Ge, ZnSe, sapphire) for IR/mid-IR transmission and space-grade applications.",
+      "EU Annex I Cat 6, 6A004.b — zinc-selenide (ZnSe) or zinc-sulphide (ZnS) optical components transmitting in the 3–25 µm band, above the regulation's volume / dimensional thresholds.",
     controlReasons: ["NS"],
     crossReferenceTopic: null,
     sourceUrl: SOURCE_URL,
-    asOfDate: ASOF,
+    asOfDate: ASOF_AUDIT,
+    notes:
+      "Base-corpus audit 2026-06-13: tightened from a 'Ge / ZnSe / sapphire' wording that conflated 6C004 optical materials. 6A004.b is specifically ZnSe/ZnS.",
   },
   {
     code: "6A004.c",
     jurisdiction: "EU_ANNEX_I",
-    title: "Optical control equipment",
+    title: "Space-qualified components for optical systems",
     description:
-      "EU Annex I Cat 6, 6A004.c — gimbals, pointing mounts, scanning mirrors above acceleration / accuracy thresholds. Laser-comm pointing assemblies fall here.",
+      "EU Annex I Cat 6, 6A004.c — space-qualified components for optical systems: lightweighted substrates, raw or processed substrates with optical coatings, mirror segments for large-aperture assemblies, and composites with very low thermal expansion.",
     controlReasons: ["NS"],
-    crossReferenceTopic: "optical-comm-terminals",
+    crossReferenceTopic: "high-resolution-eo-payloads",
     sourceUrl: SOURCE_URL,
-    asOfDate: ASOF,
+    asOfDate: ASOF_AUDIT,
+    notes:
+      "Base-corpus audit 2026-06-13: corrected from an 'optical control equipment / gimbals' mislabel. 6A004.c = space-qualified optical components; optical control equipment is 6A004.d.",
   },
   {
     code: "6A004.d",
     jurisdiction: "EU_ANNEX_I",
-    title: "Optical assemblies for spaceborne imaging",
+    title: "Optical control equipment",
     description:
-      "EU Annex I Cat 6, 6A004.d — fully assembled spaceborne imaging optical units (telescope assemblies, baffles). The 'space-telescope tube' entry.",
+      "EU Annex I Cat 6, 6A004.d — optical control equipment: surface-figure / orientation maintenance systems, beam-steering mirror stages, resonator alignment equipment, and gimbals above the regulation's slew-rate / accuracy thresholds.",
     controlReasons: ["NS"],
-    crossReferenceTopic: "high-resolution-eo-payloads",
+    crossReferenceTopic: "optical-comm-terminals",
     sourceUrl: SOURCE_URL,
-    asOfDate: ASOF,
+    asOfDate: ASOF_AUDIT,
+    notes:
+      "Base-corpus audit 2026-06-13: corrected from a 'spaceborne telescope assemblies / baffles' mislabel (no such standalone 6A004.d item). 6A004.d = optical control equipment.",
   },
   {
     code: "6A004.e",
     jurisdiction: "EU_ANNEX_I",
-    title: "Asphericity-test interferometers",
+    title: "Aspheric optical elements",
     description:
-      "EU Annex I Cat 6, 6A004.e — interferometers for aspheric optical surface testing above precision threshold. Specialty production-floor instrument.",
+      "EU Annex I Cat 6, 6A004.e — aspheric optical elements with aperture exceeding 400 mm, surface roughness below 1 nm rms, and a very low coefficient of thermal expansion.",
     controlReasons: ["NS"],
     crossReferenceTopic: null,
     sourceUrl: SOURCE_URL,
-    asOfDate: ASOF,
+    asOfDate: ASOF_AUDIT,
+    notes:
+      "Base-corpus audit 2026-06-13: corrected from an 'asphericity-test interferometers' mislabel. 6A004.e is the aspheric element itself; the interferometric test gear is 6A004.f / 6B004.",
   },
   {
     code: "6A004.f",
     jurisdiction: "EU_ANNEX_I",
-    title: "Beam-steering optical equipment",
+    title: "Dynamic wavefront measuring equipment",
     description:
-      "EU Annex I Cat 6, 6A004.f — beam-steering optics above the regulation's slew-rate + accuracy thresholds. Used in laser-comm + lidar payloads for fast pointing.",
+      "EU Annex I Cat 6, 6A004.f — dynamic (real-time) wavefront measuring equipment with a frame rate of 1 kHz or more and wavefront accuracy of λ/20 or better.",
     controlReasons: ["NS"],
-    crossReferenceTopic: "optical-comm-terminals",
+    crossReferenceTopic: null,
     sourceUrl: SOURCE_URL,
-    asOfDate: ASOF,
+    asOfDate: ASOF_AUDIT,
+    notes:
+      "Base-corpus audit 2026-06-13: corrected from a 'beam-steering optical equipment' mislabel. Beam-steering falls under 6A004.a (mirror stages) / 6A004.d (control equipment); 6A004.f = dynamic wavefront metrology.",
   },
 
-  // ─── 6A005 — Lasers (CW, pulsed, ground + space) ──────────────────
+  // ─── 6A005 — Lasers ───────────────────────────────────────────────
+  // KNOWN FINDING (base-corpus audit 2026-06-13, NOT YET MIGRATED):
+  // the .a-.g sub-paragraphs below use the pre-2014 MEDIUM-based scheme
+  // (gas / semiconductor / solid-state / dye / free-electron / chemical /
+  // components). The current EUR-Lex 02021R0821 / Wassenaar 6A005 is
+  // REGIME-based: .a non-tunable CW, .b non-tunable pulsed, .c tunable,
+  // .d other (semiconductor/CO/CO2/excimer/chemical/Nd:glass), .e
+  // components, .f optical equipment, .g laser acoustic detection. Every
+  // laser here stays CONTROLLED under 6A005 either way (right item-family,
+  // right control status) — the inaccuracy is the sub-LETTER only, unlike
+  // the wrong-ITEM fixes applied above. Re-lettering is DEFERRED because
+  // 6A005.b + 6A005.c.2 are predicate-pinned in control-list-cross-walk.ts
+  // (transmitPowerW / fiber-5W) with pinned tests; a partial relabel would
+  // leave an incoherent half-migrated block, and a full migration is a
+  // coordinated cross-walk + test change to be verified against the
+  // golden-set. Tracked as a follow-up.
   {
     code: "6A005",
     jurisdiction: "EU_ANNEX_I",
