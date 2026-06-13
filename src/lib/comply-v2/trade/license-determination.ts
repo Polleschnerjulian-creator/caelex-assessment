@@ -42,6 +42,8 @@ import {
   type CorpusRegime,
 } from "@/data/trade/normalized-corpus";
 import type { ListId } from "./classification/order-of-review";
+import { resolveOriginModule } from "./origin-determination/registry";
+import { foldOriginVerdict } from "./origin-determination/fold-origin-verdict";
 
 // ─── Types ────────────────────────────────────────────────────────────
 
@@ -779,25 +781,72 @@ export function determineLicenseRequirements(
     }
   }
 
-  // ── Gate 4.5: Fail-closed thin-origin-coverage gate (S0 Task 7) ─────
+  // ── Origin-Determination stage (Spec 2026-06-13 §4.3) ──────────────
   //
-  // Purpose: when the exporter's origin regime is supported (known seat)
-  // but has REGIME_MATURITY === 3 (not yet deeply modelled in Passage),
-  // the engine cannot confidently evaluate that regime's own licensing
-  // rules. For control-suspicious items, we MUST flag this for human
-  // review rather than silently clearing.
+  // Runs AFTER the destination hard-prohibition gates (0/1.5/1.6/2) — those
+  // stay vorrangig and are NEVER overridable here. For a supported circle-A
+  // origin whose primary regime has a registered `OriginLicenceModule`, the
+  // module answers the per-country licence question and its verdict is folded
+  // into `requirements`. Origins WITHOUT a module (not-yet-built circle-A, or
+  // non-circle-A) fall through to the Gate 4.5 thin-origin fail-closed REVIEW.
   //
-  // Fires when ALL of:
-  //   1. exporterOrigin is supplied and supported === true
-  //   2. At least one of the primary list legs (dualUsePrimary or
-  //      militaryPrimary) maps to a CorpusRegime with REGIME_MATURITY === 3
-  //   3. The item is "control-suspicious" — same signals as Gate 3.5
-  //      (declared ECCN or USML, or heuristic trigger fired). One thin
-  //      leg suffices for condition 2 (fail-closed).
-  //
-  // Effect: tightening-only — promotes gate to REVIEW_NEEDED (or higher if
-  // already BLOCKED). Never downgrades an existing BLOCKED/DENIED.
-  if (exporterOrigin?.supported === true) {
+  // INVARIANT (§4.5): the hard-prohibition BLOCKED/DENIED/PROHIBITED results
+  // computed earlier are never downgraded — the fold is guarded by
+  // `alreadyBlocked` (mirroring Gate 4.5 / Gate 1.6). A national general
+  // licence can never turn an embargo / RU-BY / Annex-IV / ITAR block into GO.
+  const originModule =
+    exporterOrigin?.supported === true
+      ? resolveOriginModule(exporterOrigin)
+      : null;
+  const originAlreadyBlocked = requirements.some(
+    (r) => r.status === "DENIED" || r.status === "PROHIBITED",
+  );
+
+  if (exporterOrigin?.supported === true && originModule) {
+    // A module exists → it replaces the Gate 4.5 fallback for this origin.
+    // Skip entirely when a hard prohibition already blocks (safety pin): the
+    // module's verdict (even a GENERAL/GO) must not be folded on top.
+    if (!originAlreadyBlocked) {
+      const verdict = originModule({
+        classification: {
+          eccnEU: actualCodes?.eccnEU ?? null,
+          eccnUS: actualCodes?.eccnUS ?? null,
+          usmlCategory: actualCodes?.usmlCategory ?? null,
+        },
+        destinationCountry: (destinationCountry ?? "").trim().toUpperCase(),
+        exporterOrigin,
+        exporterSeat: (destinationCountry ?? "").trim().toUpperCase(), // seat unknown here; modules that need it read exporterOrigin
+        screeningContext,
+        // Hand the module the engine's OWN requirements so a wrap (e.g. US)
+        // can mirror the existing decision without re-deriving it.
+        priorRequirements: requirements,
+      });
+      for (const req of foldOriginVerdict(verdict)) {
+        requirements.push(req);
+      }
+    }
+  } else if (exporterOrigin?.supported === true) {
+    // ── Gate 4.5: Fail-closed thin-origin-coverage gate (S0 Task 7) ─────
+    //
+    // Fallback ONLY for supported origins WITHOUT a registered module.
+    //
+    // Purpose: when the exporter's origin regime is supported (known seat)
+    // but has REGIME_MATURITY === 3 (not yet deeply modelled in Passage),
+    // the engine cannot confidently evaluate that regime's own licensing
+    // rules. For control-suspicious items, we MUST flag this for human
+    // review rather than silently clearing.
+    //
+    // Fires when ALL of:
+    //   1. exporterOrigin is supplied and supported === true
+    //   2. At least one of the primary list legs (dualUsePrimary or
+    //      militaryPrimary) maps to a CorpusRegime with REGIME_MATURITY === 3
+    //   3. The item is "control-suspicious" — same signals as Gate 3.5
+    //      (declared ECCN or USML, or heuristic trigger fired). One thin
+    //      leg suffices for condition 2 (fail-closed).
+    //
+    // Effect: tightening-only — promotes gate to REVIEW_NEEDED (or higher if
+    // already BLOCKED). Never downgrades an existing BLOCKED/DENIED.
+    //
     // Condition 2: check primary lists against item signals — dual-use leg
     // fires for dual-use items; military leg fires for USML/ITAR items.
     // Coupling each leg to its matching item-type avoids false reviews on
