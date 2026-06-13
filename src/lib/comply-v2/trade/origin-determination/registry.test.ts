@@ -5,8 +5,8 @@
  * routing's primary regime (dual-use, else military), or `null` when no
  * module is registered — so the engine falls back to Gate 4.5.
  *
- * The map starts EMPTY in F2; modules register as they are built (US in F4,
- * the M-* origins later). Until a module is registered, even a supported
+ * Phase F registers ONLY the US module (the behaviour-identical wrap, F4); the
+ * M-* origins register later. Until a module is registered, a supported
  * circle-A origin resolves to `null` (Gate 4.5 fallback stays intact).
  */
 
@@ -15,6 +15,12 @@ import { originRegimes } from "../classification/origin-regime-map";
 import { ORIGIN_MODULES, resolveOriginModule } from "./registry";
 
 describe("resolveOriginModule", () => {
+  it("returns the US module for a US-origin routing (registered in F4)", () => {
+    const mod = resolveOriginModule(originRegimes("US"));
+    expect(mod).not.toBeNull();
+    expect(typeof mod).toBe("function");
+  });
+
   it("returns null for an unsupported origin (e.g. BR)", () => {
     const routing = originRegimes("BR");
     expect(routing.supported).toBe(false);
@@ -33,7 +39,7 @@ describe("resolveOriginModule", () => {
     expect(resolveOriginModule(routing)).toBeNull();
   });
 
-  it("the registry starts empty (modules register as built)", () => {
-    expect([...ORIGIN_MODULES.keys()]).toEqual([]);
+  it("the registry holds only US_CCL in Phase F (others register later)", () => {
+    expect([...ORIGIN_MODULES.keys()]).toEqual(["US_CCL"]);
   });
 });

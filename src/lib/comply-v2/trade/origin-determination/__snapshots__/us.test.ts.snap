@@ -1,0 +1,186 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`US-origin determineLicenseRequirements — behaviour snapshot (F4) > snapshot: EAR-controlled dual-use (3A001.a.1) → friendly (JP) 1`] = `
+{
+  "annexIVBlock": false,
+  "embargoBlock": false,
+  "gate": "REVIEW_NEEDED",
+  "itarBlock": false,
+  "mtcrCatIBlock": false,
+  "requirements": [
+    {
+      "authority": "BIS",
+      "jurisdiction": "US (EAR)",
+      "licenseType": null,
+      "status": "UNKNOWN",
+    },
+    {
+      "authority": "BAFA",
+      "jurisdiction": "EU / DE",
+      "licenseType": "BAFA_ANTRAG",
+      "status": "REQUIRED",
+    },
+  ],
+}
+`;
+
+exports[`US-origin determineLicenseRequirements — behaviour snapshot (F4) > snapshot: EAR99 (uncontrolled) → friendly (JP) 1`] = `
+{
+  "annexIVBlock": false,
+  "embargoBlock": false,
+  "gate": "CLEARED",
+  "itarBlock": false,
+  "mtcrCatIBlock": false,
+  "requirements": [],
+}
+`;
+
+exports[`US-origin determineLicenseRequirements — behaviour snapshot (F4) > snapshot: FDPR triggered → friendly (JP) 1`] = `
+{
+  "annexIVBlock": false,
+  "embargoBlock": false,
+  "gate": "REVIEW_NEEDED",
+  "itarBlock": false,
+  "mtcrCatIBlock": false,
+  "requirements": [
+    {
+      "authority": "BIS",
+      "jurisdiction": "US (EAR / FDPR)",
+      "licenseType": "SPECIFIC_LICENSE",
+      "status": "LIKELY_REQUIRED",
+    },
+    {
+      "authority": "BAFA",
+      "jurisdiction": "EU / DE",
+      "licenseType": "BAFA_ANTRAG",
+      "status": "REQUIRED",
+    },
+  ],
+}
+`;
+
+exports[`US-origin determineLicenseRequirements — behaviour snapshot (F4) > snapshot: ITAR-declared (USML XV) → friendly (JP) 1`] = `
+{
+  "annexIVBlock": false,
+  "embargoBlock": false,
+  "gate": "REVIEW_NEEDED",
+  "itarBlock": false,
+  "mtcrCatIBlock": false,
+  "requirements": [
+    {
+      "authority": "DDTC",
+      "jurisdiction": "US (ITAR / USML)",
+      "licenseType": "SPECIFIC_LICENSE",
+      "status": "REQUIRED",
+    },
+  ],
+}
+`;
+
+exports[`US-origin determineLicenseRequirements — behaviour snapshot (F4) > snapshot: RU destination + EAR dual-use item 1`] = `
+{
+  "annexIVBlock": false,
+  "embargoBlock": true,
+  "gate": "BLOCKED",
+  "itarBlock": false,
+  "mtcrCatIBlock": false,
+  "requirements": [
+    {
+      "authority": "EU_COMPETENT_AUTHORITY",
+      "jurisdiction": "EU (Reg. 833/2014 — Russia)",
+      "licenseType": null,
+      "status": "PROHIBITED",
+    },
+    {
+      "authority": "BIS",
+      "jurisdiction": "US (EAR)",
+      "licenseType": null,
+      "status": "UNKNOWN",
+    },
+    {
+      "authority": "BAFA",
+      "jurisdiction": "EU / DE",
+      "licenseType": "BAFA_ANTRAG",
+      "status": "REQUIRED",
+    },
+  ],
+}
+`;
+
+exports[`US-origin determineLicenseRequirements — behaviour snapshot (F4) > snapshot: de-minimis ELIGIBLE (US content 5% < 25%) → friendly (JP) 1`] = `
+{
+  "annexIVBlock": false,
+  "embargoBlock": false,
+  "gate": "REVIEW_NEEDED",
+  "itarBlock": false,
+  "mtcrCatIBlock": false,
+  "requirements": [
+    {
+      "authority": "BIS",
+      "jurisdiction": "US (EAR)",
+      "licenseType": "NLR",
+      "status": "EXCEPTION_MAY_APPLY",
+    },
+    {
+      "authority": "BAFA",
+      "jurisdiction": "EU / DE",
+      "licenseType": "BAFA_ANTRAG",
+      "status": "REQUIRED",
+    },
+  ],
+}
+`;
+
+exports[`US-origin determineLicenseRequirements — behaviour snapshot (F4) > snapshot: de-minimis EXCEEDED (US content 30% > 25%) → CN 1`] = `
+{
+  "annexIVBlock": false,
+  "embargoBlock": false,
+  "gate": "REVIEW_NEEDED",
+  "itarBlock": false,
+  "mtcrCatIBlock": false,
+  "requirements": [
+    {
+      "authority": "BIS",
+      "jurisdiction": "US (EAR)",
+      "licenseType": "SPECIFIC_LICENSE",
+      "status": "REQUIRED",
+    },
+    {
+      "authority": "BAFA",
+      "jurisdiction": "EU / DE",
+      "licenseType": "BAFA_ANTRAG",
+      "status": "REQUIRED",
+    },
+  ],
+}
+`;
+
+exports[`US-origin determineLicenseRequirements — behaviour snapshot (F4) > snapshot: embargo destination (IR) + EAR item 1`] = `
+{
+  "annexIVBlock": false,
+  "embargoBlock": true,
+  "gate": "BLOCKED",
+  "itarBlock": false,
+  "mtcrCatIBlock": false,
+  "requirements": [
+    {
+      "authority": "BIS",
+      "jurisdiction": "Comprehensive embargo (IR)",
+      "licenseType": "SPECIFIC_LICENSE",
+      "status": "DENIED",
+    },
+    {
+      "authority": "BIS",
+      "jurisdiction": "US (EAR)",
+      "licenseType": null,
+      "status": "UNKNOWN",
+    },
+    {
+      "authority": "BAFA",
+      "jurisdiction": "EU / DE",
+      "licenseType": "BAFA_ANTRAG",
+      "status": "REQUIRED",
+    },
+  ],
+}
+`;

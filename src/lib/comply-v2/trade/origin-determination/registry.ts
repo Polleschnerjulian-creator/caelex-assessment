@@ -19,12 +19,18 @@ import type { OriginRegimeRouting } from "../classification/origin-regime-map";
 import { LIST_ID_TO_CORPUS_REGIME } from "../license-determination";
 import type { CorpusRegime } from "@/data/trade/normalized-corpus";
 import type { OriginLicenceModule } from "./types";
+import { usOriginModule } from "./us";
 
 /**
- * Registered per-origin licence modules, keyed by `CorpusRegime`. Empty until
- * modules register themselves. Phase F adds US_CCL (the US wrap, F4).
+ * Registered per-origin licence modules, keyed by `CorpusRegime`. Modules
+ * register as they are built. Phase F holds ONLY US_CCL — the behaviour-
+ * identical US wrap (F4). The M-* phases add EU/UK/CH/NO/CA/AU/JP/KR/IN.
  */
-export const ORIGIN_MODULES = new Map<CorpusRegime, OriginLicenceModule>();
+export const ORIGIN_MODULES = new Map<CorpusRegime, OriginLicenceModule>([
+  // US dual-use primary regime (EAR_CCL → US_CCL). Wraps the engine's existing
+  // EAR/ITAR/de-minimis decision — see `us.ts`.
+  ["US_CCL", usOriginModule],
+]);
 
 /**
  * Resolve the licence module for an exporter's origin routing.

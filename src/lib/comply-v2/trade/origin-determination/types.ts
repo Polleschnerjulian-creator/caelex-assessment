@@ -27,6 +27,7 @@
 
 import type { ItemSignals } from "../property-trigger-engine";
 import type { OriginRegimeRouting } from "../classification/origin-regime-map";
+import type { LicenseRequirement } from "../license-determination";
 
 /**
  * The classified control codes a module evaluates its general-licence
@@ -81,6 +82,15 @@ export interface OriginDeterminationInput {
   /** Exporter-seat ISO-2 (for the EU member-state → NCA resolution). */
   exporterSeat: string;
   screeningContext?: ScreeningContextLike;
+  /**
+   * The engine's OWN requirements computed so far (the hard-prohibition gates
+   * plus, for mature origins, the EAR/ITAR/de-minimis / EU legs). This is the
+   * engine handing the module what it already decided — NOT a duplicated
+   * computation. The US module reads it to wrap the existing EAR/ITAR decision
+   * (and to fold nothing net-new where the gates already covered the US leg).
+   * Optional: modules that derive their own verdict from scratch ignore it.
+   */
+  priorRequirements?: readonly LicenseRequirement[];
 }
 
 export type OriginLicenceModule = (
