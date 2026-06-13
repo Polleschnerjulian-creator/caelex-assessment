@@ -169,6 +169,7 @@ export const INDIA_SCOMET_COVERAGE = {
     "ITC(HS) tariff codes — these are import duty codes, not export-control codes",
     "HONEST EXCLUSIONS: any sub-code or controlling parameter not legible in the recovered Appendix-3 PDF text was left out rather than guessed. Cross-references (euAnnexIRef/earCclRef/wassenaarRef/mtcrRef) are best-effort screening cross-walks, NOT part of the verbatim SCOMET text.",
     "POST-VERIFICATION CORRECTION (2026-06-13, W6 finding S6): 8A604 was corrected from mis-coded detectors to its real OPTICS/mirrors scope and 8A607 from mis-coded SAR to its real GRAVIMETERS scope. No control coverage was dropped — the displaced detector/focal-plane-array content was re-homed to 8A602 (OPTICAL SENSORS) and the displaced SAR/radar content to 8A608 (RADAR), both verified against the PDF text layer.",
+    "SYNTHETIC 5A1/5A2 CROSS-WALK SLOTS (base-corpus audit 2026-06-13): the original 2026-05-22 Category-5 spacecraft/launch entries (5A101–5A105, 5A201–5A205) use synthetic Wassenaar-mirror sub-numbering that does NOT match the official Appendix-3 SCOMET sub-codes — official 5A101 = complete rocket systems and 5A102 = rocket subsystems/components (MTCR Items 1–2), not spacecraft. These entries are retained as screening cross-walk slots (codes/titles unchanged to preserve cross-walk stability) with per-entry OFFICIAL-CODE NOTEs documenting the divergence; the genuine Wassenaar-aligned space controls live in the 2026-06-13 batch codes 8A904 (spacecraft/buses), 8A905–8A910 (propulsion) and 8A701–8A704 (navigation/avionics incl. star-trackers).",
   ],
   asOfDate: INDIA_SCOMET_AS_OF,
   sourceUrl: DGFT_SCOMET_URL,
@@ -287,9 +288,19 @@ export const INDIA_SCOMET_ENTRIES: IndiaScometEntry[] = [
       "Recent 2024 amendment allows General Authorisation for non-MTCR UAV exports to friendly destinations.",
   },
 
-  // 5A100-199 — Spacecraft + components (PRIMARY CATEGORY for ISRO partners)
+  // 5A100-199 — Spacecraft + components (cross-walk slots for ISRO partners)
+  //
+  // PROVENANCE NOTE (base-corpus audit 2026-06-13): these 5A1xx codes are
+  // SYNTHETIC Wassenaar-mirror cross-walk slots, NOT the official Appendix-3
+  // SCOMET sub-codes. In the official list the 5A1 group is the MTCR missile
+  // spine — 5A101 = COMPLETE ROCKET SYSTEMS (ballistic missiles, SLVs, sounding
+  // rockets) + complete UAV systems (Item 1); 5A102 = rocket SUBSYSTEMS &
+  // COMPONENTS (Item 2). The Wassenaar-aligned spacecraft/bus + spacecraft-
+  // component controls live at 8A904 / 8A905-8A910 / 8A701-8A704 (added in the
+  // same batch). Codes/titles are kept stable here for cross-walk continuity;
+  // each entry carries an OFFICIAL-CODE NOTE flagging the divergence.
   {
-    code: "5A101", // Z35-IN-SCOMET — parametric spacecraft
+    code: "5A101", // Z35-IN-SCOMET — parametric spacecraft (synthetic slot)
     category: "5",
     title: "Complete spacecraft and satellite buses",
     description:
@@ -302,7 +313,7 @@ export const INDIA_SCOMET_ENTRIES: IndiaScometEntry[] = [
     asOfDate: INDIA_SCOMET_AS_OF,
     licensingAuthority: "ISRO",
     notes:
-      "ISRO direct-application route under ISP-2023 — Pixxel, Dhruva Space, Digantara, Bellatrix typically file via the Inter-Ministerial Working Group rather than the DGFT online portal.",
+      "OFFICIAL-CODE NOTE (base-corpus audit 2026-06-13): in the official Appendix-3 SCOMET List 2024, code 5A101 actually means COMPLETE ROCKET SYSTEMS (ballistic missiles, space-launch vehicles, sounding rockets) and complete UAV systems — MTCR Item 1, the missile spine — NOT spacecraft. This entry keeps the synthetic Wassenaar-mirror 'spacecraft/bus' framing as a screening cross-walk slot for orbital hardware exported from an Indian seat; the genuine Wassenaar-aligned spacecraft/bus control home is 8A904 (EU 9A004), added in the same batch. ISRO direct-application route under ISP-2023 — Pixxel, Dhruva Space, Digantara, Bellatrix typically file via the Inter-Ministerial Working Group rather than the DGFT online portal.",
   },
   {
     code: "5A102",
@@ -320,7 +331,7 @@ export const INDIA_SCOMET_ENTRIES: IndiaScometEntry[] = [
     asOfDate: INDIA_SCOMET_AS_OF,
     licensingAuthority: "ISRO",
     notes:
-      "Bellatrix Aerospace electric propulsion exports — primary SCOMET 5A102 line item.",
+      "OFFICIAL-CODE NOTE (base-corpus audit 2026-06-13): official SCOMET 5A102 actually means SUBSYSTEMS & COMPONENTS usable in rocket systems — individual rocket stages, solid/liquid rocket engines, motor cases & liners, nozzles, staging mechanisms, propellant control, re-entry vehicles, guidance sets and thrust-vector control (MTCR Item 2) — NOT spacecraft propulsion. This entry retains the synthetic 'spacecraft chemical/electric propulsion' framing as a cross-walk slot; the genuine Wassenaar-aligned homes are 8A905/8A906 (liquid propulsion systems/components) and EU 9A004.f / Wassenaar 9.A.4 for spacecraft electric propulsion. Bellatrix Aerospace electric-propulsion exports screen here.",
   },
   {
     code: "5A103",
@@ -334,6 +345,8 @@ export const INDIA_SCOMET_ENTRIES: IndiaScometEntry[] = [
     sourceUrl: DGFT_SCOMET_URL,
     asOfDate: INDIA_SCOMET_AS_OF,
     licensingAuthority: "ISRO",
+    notes:
+      "OFFICIAL-CODE NOTE (base-corpus audit 2026-06-13): official SCOMET Category-5 sub-numbering does NOT allocate 5A103 to spacecraft power — official 5A1 enumerates only 5A101 (complete rocket systems) and 5A102 (rocket subsystems/components). Synthetic cross-walk slot; the Wassenaar-aligned home for space-qualified solar arrays/power is the spacecraft-bus/structures block 8A904 / 8A910 (Wassenaar 9A001 / 9A515).",
   },
   {
     code: "5A104",
@@ -346,6 +359,8 @@ export const INDIA_SCOMET_ENTRIES: IndiaScometEntry[] = [
     sourceUrl: DGFT_SCOMET_URL,
     asOfDate: INDIA_SCOMET_AS_OF,
     licensingAuthority: "ISRO",
+    notes:
+      "OFFICIAL-CODE NOTE (base-corpus audit 2026-06-13): 5A104 is not an official SCOMET 5A1 sub-code (the official 5A1 group stops at 5A101/5A102, the MTCR missile spine). Synthetic cross-walk slot; spacecraft thermal-control and structural hardware is Wassenaar-aligned at 8A910 (launch-vehicle/spacecraft structures and components, EU 9A010 / Wassenaar 9A515).",
   },
   {
     code: "5A105",
@@ -359,11 +374,21 @@ export const INDIA_SCOMET_ENTRIES: IndiaScometEntry[] = [
     sourceUrl: DGFT_SCOMET_URL,
     asOfDate: INDIA_SCOMET_AS_OF,
     licensingAuthority: "ISRO",
+    notes:
+      "OFFICIAL-CODE NOTE (base-corpus audit 2026-06-13): 5A105 is not an official SCOMET 5A1 sub-code. Synthetic cross-walk slot; the genuine Wassenaar-aligned homes for these attitude-determination items are 8A704 (star trackers, EU/Wassenaar 7A004) and 8A703 (IMU/INS, 7A003) in the 8A7 Navigation & Avionics block added in the same batch.",
   },
 
-  // 5A200-299 — Launch vehicle components
+  // 5A200-299 — Launch vehicle components (synthetic cross-walk slots)
+  //
+  // PROVENANCE NOTE (base-corpus audit 2026-06-13): like the 5A1xx block, these
+  // original 5A201-5A205 codes are SYNTHETIC. In the official Appendix-3 list a
+  // complete SLV is 5A101 and its stages/engines/RVs/guidance/TVC are 5A102
+  // (MTCR Items 1-2); the official 5A2xx codes are PRODUCTION & TEST EQUIPMENT
+  // (see the 2026-06-13 batch 5A206-5A218). Engine/motor hardware is also
+  // Wassenaar-aligned at 8A905-8A910. Kept stable for cross-walk continuity;
+  // each entry carries an OFFICIAL-CODE NOTE.
   {
-    code: "5A201", // Z35-IN-SCOMET — launch vehicle stages
+    code: "5A201", // Z35-IN-SCOMET — launch vehicle stages (synthetic slot)
     category: "5",
     title: "Complete launch vehicles and launch vehicle stages",
     description:
@@ -376,7 +401,7 @@ export const INDIA_SCOMET_ENTRIES: IndiaScometEntry[] = [
     asOfDate: INDIA_SCOMET_AS_OF,
     licensingAuthority: "DRDO",
     notes:
-      "PSLV / GSLV / LVM3 (NSIL commercial launches) and private SLVs (Skyroot Vikram-1, Agnikul Agnibaan) are MTCR Cat I. Joint clearance via DRDO + ISRO + DGFT.",
+      "OFFICIAL-CODE NOTE (base-corpus audit 2026-06-13): in the official Appendix-3 list a complete space-launch vehicle is 5A101 and an individual launch-vehicle stage is a 5A102 subsystem (MTCR Items 1-2) — the synthetic '5A201' code is a cross-walk slot, not an official SCOMET sub-code. PSLV / GSLV / LVM3 (NSIL commercial launches) and private SLVs (Skyroot Vikram-1, Agnikul Agnibaan) are MTCR Cat I. Joint clearance via DRDO + ISRO + DGFT.",
   },
   {
     code: "5A202",
@@ -392,7 +417,7 @@ export const INDIA_SCOMET_ENTRIES: IndiaScometEntry[] = [
     asOfDate: INDIA_SCOMET_AS_OF,
     licensingAuthority: "DRDO",
     notes:
-      "ISRO CE-20 cryogenic engine, Skyroot Raman / Kalam engines, Agnikul Agnilet 3D-printed engine — all SCOMET 5A202.",
+      "OFFICIAL-CODE NOTE (base-corpus audit 2026-06-13): liquid rocket engines are an official 5A102 subsystem (MTCR Item 2) and are Wassenaar-aligned at 8A905/8A906 (liquid propulsion systems/components) — the synthetic '5A202' code is a cross-walk slot, not an official SCOMET sub-code. ISRO CE-20 cryogenic engine, Skyroot Raman / Kalam engines, Agnikul Agnilet 3D-printed engine all screen here (official home 8A906).",
   },
   {
     code: "5A203",
@@ -407,6 +432,8 @@ export const INDIA_SCOMET_ENTRIES: IndiaScometEntry[] = [
     sourceUrl: DGFT_SCOMET_URL,
     asOfDate: INDIA_SCOMET_AS_OF,
     licensingAuthority: "DRDO",
+    notes:
+      "OFFICIAL-CODE NOTE (base-corpus audit 2026-06-13): solid rocket motors are an official 5A102 subsystem (MTCR Item 2) and are Wassenaar-aligned at 8A907/8A908 (solid propulsion systems/components, EU/Wassenaar 9A007/9A008) — the synthetic '5A203' code is a cross-walk slot, not an official SCOMET sub-code.",
   },
   {
     code: "5A204",
@@ -421,6 +448,8 @@ export const INDIA_SCOMET_ENTRIES: IndiaScometEntry[] = [
     sourceUrl: DGFT_SCOMET_URL,
     asOfDate: INDIA_SCOMET_AS_OF,
     licensingAuthority: "DRDO",
+    notes:
+      "OFFICIAL-CODE NOTE (base-corpus audit 2026-06-13): launch-vehicle GNC is an official 5A102 subsystem (guidance sets / TVC, MTCR Item 2) and is itemised in the official 5C avionics block (5C001-5C003 guidance/gyros/accelerometers) and the dual-use 8A7 block (8A701-8A703) — the synthetic '5A204' code is a cross-walk slot, not an official SCOMET sub-code.",
   },
   {
     code: "5A205",
@@ -435,6 +464,8 @@ export const INDIA_SCOMET_ENTRIES: IndiaScometEntry[] = [
     sourceUrl: DGFT_SCOMET_URL,
     asOfDate: INDIA_SCOMET_AS_OF,
     licensingAuthority: "DRDO",
+    notes:
+      "OFFICIAL-CODE NOTE (base-corpus audit 2026-06-13): re-entry vehicles are an official 5A102 subsystem (MTCR Item 2.A.1.c) — the synthetic '5A205' code is a cross-walk slot, not an official SCOMET sub-code. Manned/recovery spacecraft structures are additionally Wassenaar-aligned at 8A904/8A910.",
   },
 
   // ─── Category 6 — Electronics, Sensors ──────────────────────────────
