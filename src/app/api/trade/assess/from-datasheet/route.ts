@@ -189,6 +189,11 @@ export async function POST(req: Request) {
           evidence: (evidence ?? {}) as Prisma.InputJsonValue,
           sourceFilename: sourceFilename ?? null,
           // The operator confirmed it in the wizard — record the sign-off.
+          // DELIBERATE single-actor sign-off: createdById === reviewedById is
+          // intentional here. The /trade/assess wizard is one human confirming
+          // their own classification in one step, so the four-eyes split and
+          // the disclaimerAtReview that recordDecision enforces are by-design
+          // N/A on this path — NOT an oversight.
           decision: "ACCEPTED",
           reviewedById: tradeAuth.userId,
           reviewedAt: new Date(),

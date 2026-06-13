@@ -55,6 +55,14 @@ export function runDestinationLandscape(
   const origin = opts.exporterSeat
     ? originRegimes(opts.exporterSeat)
     : undefined;
+  // Mirror the single-verdict engine for an unresolvable Kreis-A origin: when
+  // the seat is unsupported OR absent (origin not resolved / not supported),
+  // the server pushes an origin-unsupported Pendenz that upgrades a GO to
+  // REVIEW (operation-assistant.server.ts:177-184 + 250-252). We reproduce that
+  // GO→REVIEW upgrade here so the landscape never diverges from the real
+  // verdict (spec §5 "same engine, no divergence"). The supported-seat path is
+  // byte-identical to before.
+  const originUnsupported = !origin?.supported;
   const go: LandscapeCell[] = [];
   const review: LandscapeCell[] = [];
   const blocked: LandscapeCell[] = [];
@@ -74,6 +82,18 @@ export function runDestinationLandscape(
       classification,
     };
     const { verdict } = deriveVerdict([line], CLEAN);
+    // Fail-closed origin upgrade: a GO under an unresolvable origin becomes a
+    // cited REVIEW (never a synthesised BLOCKED — the engine's own BLOCKED/
+    // REVIEW verdicts pass through unchanged).
+    if (verdict === "GO" && originUnsupported) {
+      review.push({
+        country,
+        verdict: "REVIEW",
+        detail:
+          "Exporteur-Sitz nicht als Kreis-A-Ursprung bestimmbar — Einzelfallprüfung.",
+      });
+      continue;
+    }
     const cell: LandscapeCell = {
       country,
       verdict,

@@ -1,6 +1,7 @@
 import { describe, it, expect } from "vitest";
 import { runDestinationLandscape } from "./landscape.server";
 import { LANDSCAPE_DESTINATIONS } from "./landscape";
+import { EU27_MEMBER_STATES } from "@/lib/comply-v2/trade/eu-member-states";
 import type { ClassifiableItem } from "./classification/classify-item";
 
 // A DE-seated exporter (matches the golden harness origin).
@@ -18,8 +19,13 @@ describe("runDestinationLandscape", () => {
     const all = [...r.go, ...r.review, ...r.blocked];
     // Every destination is bucketed exactly once.
     expect(all).toHaveLength(LANDSCAPE_DESTINATIONS.length);
-    // 9A004 is an EU Annex IV member → never a bare GO anywhere (fail-closed).
+    // 9A004 is an EU Annex IV member → never a bare GO to ANY third country
+    // (fail-closed). Only intra-EU-27 destinations may be GO; every third
+    // country (US, GB, JP, IN, CN, …) must be REVIEW or BLOCKED, never GO.
     expect(r.go.find((c) => c.country === "US")).toBeUndefined();
+    for (const cell of r.go) {
+      expect(EU27_MEMBER_STATES.has(cell.country)).toBe(true);
+    }
     // Hard-block destinations are BLOCKED.
     for (const iso of ["RU", "BY", "IR", "KP"]) {
       expect(r.blocked.map((c) => c.country)).toContain(iso);
@@ -62,5 +68,34 @@ describe("runDestinationLandscape", () => {
     expect(r.go.map((c) => c.country)).toEqual(
       expect.arrayContaining(["US", "JP", "DE", "FR", "IN", "CN"]),
     );
+  });
+
+  it("an unsupported exporter seat upgrades every GO to REVIEW (server parity, no divergence)", () => {
+    // The uncontrolled reaction wheel is a clean GO to non-embargoed
+    // destinations under a SUPPORTED (DE) seat — see the test above.
+    const wheel: ClassifiableItem = {
+      name: "Reaction wheel 1 Nms",
+      description: "AOCS wheel",
+    };
+    // "ZZ" is not a Kreis-A origin → originRegimes("ZZ").supported === false.
+    // The single-verdict engine (operation-assistant.server.ts:177-184 + 250-252)
+    // pushes an origin-unsupported Pendenz that upgrades GO→REVIEW. The landscape
+    // runner must mirror this exactly or it diverges from the real verdict.
+    const r = runDestinationLandscape(wheel, { exporterSeat: "ZZ" });
+    const all = [...r.go, ...r.review, ...r.blocked];
+    expect(all).toHaveLength(LANDSCAPE_DESTINATIONS.length);
+    // NO cell is GO — an unresolvable Kreis-A origin is never a clean GO.
+    expect(r.go).toHaveLength(0);
+    // The wheel that was GO under DE is now REVIEW (not BLOCKED) for a
+    // non-embargoed destination, with a cited single-case-review reason.
+    const usCell = r.review.find((c) => c.country === "US");
+    expect(usCell).toBeDefined();
+    expect(usCell?.detail).toContain("Einzelfallprüfung");
+    // Comprehensive-embargo destinations stay BLOCKED (destination-driven).
+    for (const iso of ["IR", "KP", "SY", "CU"]) {
+      expect(r.blocked.map((c) => c.country)).toContain(iso);
+    }
+    // The honesty caption is always present.
+    expect(r.caption).toContain("sauberer Endkunde");
   });
 });
