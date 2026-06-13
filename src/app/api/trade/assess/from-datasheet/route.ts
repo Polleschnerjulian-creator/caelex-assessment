@@ -1,0 +1,221 @@
+/**
+ * Caelex Passage — POST /api/trade/assess/from-datasheet.
+ *
+ * Persistence step of the /trade/assess wizard: the operator has CONFIRMED a
+ * classification (Screen 2), so we commit it as
+ *   - a `TradeItem` (status REQUIRES_REVIEW, the confirmed code on the
+ *     regime-appropriate cell, identity + parametric attributes from the
+ *     extraction), plus
+ *   - a `TradeItemClassificationDraft` (decision ACCEPTED, the confirmed
+ *     snapshot in `acceptedSnapshot`, the extraction `evidence` blob, the
+ *     `sourceFilename`, reviewer stamped) — the audit record of the sign-off.
+ *
+ * Both rows land in one Prisma `$transaction` so a half-persisted state is
+ * impossible. v1 does NOT store the raw PDF to R2 (spec §10): the audit lives
+ * on the draft (sourceFilename + the extraction snapshot), nothing more.
+ *
+ * The route synthesises NOTHING — it persists exactly the code the human
+ * confirmed. Status is REQUIRES_REVIEW (not CLASSIFIED) so a confirmed-but-
+ * advisory classification still surfaces for final operator sign-off.
+ *
+ * SPDX-License-Identifier: LicenseRef-Caelex-Proprietary
+ */
+
+import { NextResponse } from "next/server";
+import { z } from "zod";
+import { Prisma } from "@prisma/client";
+import { prisma } from "@/lib/prisma";
+import { logger } from "@/lib/logger";
+import {
+  checkRateLimit,
+  createRateLimitResponse,
+  getIdentifier,
+} from "@/lib/ratelimit";
+import { getTradeAuth } from "@/lib/trade/trade-auth";
+import { fieldForCanonicalId } from "@/lib/trade/auto-classify-on-create";
+
+export const runtime = "nodejs";
+
+// ─── Validation ────────────────────────────────────────────────────────
+
+/**
+ * The confirmed control code. `canonicalId` is the load-bearing field
+ * (e.g. "ECCN:9A515.a.1"); the explicit regime cells let the wizard pin a
+ * code onto the exact TradeItem column when it already knows the regime.
+ */
+const ConfirmedCodeSchema = z.object({
+  canonicalId: z.string().min(1).max(120),
+  regime: z.string().max(60).optional(),
+  confidence: z.string().max(20).optional(),
+  eccnEU: z.string().max(50).optional(),
+  eccnUS: z.string().max(50).optional(),
+  usmlCategory: z.string().max(100).optional(),
+  mtcrCategory: z.string().max(100).optional(),
+  germanAlEntry: z.string().max(100).optional(),
+});
+
+/**
+ * Identity + parametric attributes carried over from the extraction. All
+ * optional — the trigger engine treats nulls as "not set". `passthrough` is
+ * deliberately NOT used: only known columns are persisted.
+ */
+const ItemSchema = z.object({
+  name: z.string().min(1).max(200),
+  internalSku: z.string().max(100).optional(),
+  manufacturerName: z.string().max(200).optional(),
+  manufacturerPartNo: z.string().max(100).optional(),
+  description: z.string().max(5000).default(""),
+  countryOfOrigin: z.string().length(2).optional(),
+  usContentPercent: z.number().min(0).max(100).optional(),
+  designedWithUSTech: z.boolean().optional(),
+  manufacturedWithUSEquipment: z.boolean().optional(),
+  apertureMeters: z.number().min(0).optional(),
+  rangeKm: z.number().min(0).optional(),
+  payloadKg: z.number().min(0).optional(),
+  isRadHardened: z.boolean().optional(),
+  isMilSpec: z.boolean().optional(),
+  isAntiJam: z.boolean().optional(),
+});
+
+const BodySchema = z.object({
+  item: ItemSchema,
+  confirmedCode: ConfirmedCodeSchema,
+  /** The extraction snapshot (ClassificationDraft blob) — audit only. */
+  evidence: z.record(z.string(), z.unknown()).optional(),
+  /** Original PDF filename when the source was an upload. */
+  sourceFilename: z.string().max(300).optional(),
+});
+
+// ─── Helpers ─────────────────────────────────────────────────────────────
+
+type RegimeCell =
+  | "eccnEU"
+  | "eccnUS"
+  | "usmlCategory"
+  | "mtcrCategory"
+  | "germanAlEntry";
+
+/**
+ * Resolve which TradeItem column the confirmed code lands on. Honour an
+ * explicit regime cell from the wizard first; otherwise derive it from the
+ * canonicalId prefix. Returns null when the regime can't be resolved — the
+ * code is still kept on the draft snapshot, but we never mis-route it onto a
+ * TradeItem cell.
+ */
+function regimeCellPatch(
+  code: z.infer<typeof ConfirmedCodeSchema>,
+): Partial<Record<RegimeCell, string>> {
+  if (code.eccnEU) return { eccnEU: code.eccnEU };
+  if (code.eccnUS) return { eccnUS: code.eccnUS };
+  if (code.usmlCategory) return { usmlCategory: code.usmlCategory };
+  if (code.mtcrCategory) return { mtcrCategory: code.mtcrCategory };
+  if (code.germanAlEntry) return { germanAlEntry: code.germanAlEntry };
+
+  const field = fieldForCanonicalId(code.canonicalId);
+  if (!field) return {};
+  // Strip the "REGIME:" prefix so the cell holds the bare code.
+  const colon = code.canonicalId.indexOf(":");
+  const bare =
+    colon === -1 ? code.canonicalId : code.canonicalId.slice(colon + 1);
+  return { [field]: bare };
+}
+
+// ─── POST ─────────────────────────────────────────────────────────────────
+
+export async function POST(req: Request) {
+  try {
+    const tradeAuth = await getTradeAuth();
+    if (!tradeAuth) {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    }
+
+    const rl = await checkRateLimit(
+      "api",
+      getIdentifier(req, tradeAuth.userId),
+    );
+    if (!rl.success) return createRateLimitResponse(rl);
+
+    const parsed = BodySchema.safeParse(await req.json().catch(() => null));
+    if (!parsed.success) {
+      return NextResponse.json(
+        { error: "Validation failed", issues: parsed.error.issues },
+        { status: 400 },
+      );
+    }
+
+    const { item, confirmedCode, evidence, sourceFilename } = parsed.data;
+    const cellPatch = regimeCellPatch(confirmedCode);
+
+    const itemId = await prisma.$transaction(async (tx) => {
+      const created = await tx.tradeItem.create({
+        data: {
+          organizationId: tradeAuth.organizationId,
+          createdById: tradeAuth.userId,
+          name: item.name,
+          internalSku: item.internalSku,
+          manufacturerName: item.manufacturerName,
+          manufacturerPartNo: item.manufacturerPartNo,
+          description: item.description,
+          countryOfOrigin: item.countryOfOrigin,
+          usContentPercent: item.usContentPercent,
+          designedWithUSTech: item.designedWithUSTech ?? false,
+          manufacturedWithUSEquipment:
+            item.manufacturedWithUSEquipment ?? false,
+          apertureMeters: item.apertureMeters,
+          rangeKm: item.rangeKm,
+          payloadKg: item.payloadKg,
+          isRadHardened: item.isRadHardened ?? false,
+          isMilSpec: item.isMilSpec ?? false,
+          isAntiJam: item.isAntiJam ?? false,
+          // The confirmed code on the regime-appropriate cell.
+          ...cellPatch,
+          classificationSource: "USER_DECLARED",
+          classifiedAt: new Date(),
+          classifiedById: tradeAuth.userId,
+          // Confirmed-but-advisory → still surfaces for final sign-off.
+          status: "REQUIRES_REVIEW",
+        },
+        select: { id: true },
+      });
+
+      await tx.tradeItemClassificationDraft.create({
+        data: {
+          organizationId: tradeAuth.organizationId,
+          tradeItemId: created.id,
+          createdById: tradeAuth.userId,
+          proposedEccn: confirmedCode.canonicalId,
+          proposedRegime: confirmedCode.regime ?? null,
+          confidence: confirmedCode.confidence ?? null,
+          evidence: (evidence ?? {}) as Prisma.InputJsonValue,
+          sourceFilename: sourceFilename ?? null,
+          // The operator confirmed it in the wizard — record the sign-off.
+          decision: "ACCEPTED",
+          reviewedById: tradeAuth.userId,
+          reviewedAt: new Date(),
+          acceptedSnapshot: {
+            canonicalId: confirmedCode.canonicalId,
+            ...(confirmedCode.regime ? { regime: confirmedCode.regime } : {}),
+            ...(confirmedCode.confidence
+              ? { confidence: confirmedCode.confidence }
+              : {}),
+          } as Prisma.InputJsonValue,
+        },
+      });
+
+      return created.id;
+    });
+
+    logger.info("[trade/assess/from-datasheet POST] persisted", {
+      itemId,
+      canonicalId: confirmedCode.canonicalId,
+    });
+
+    return NextResponse.json({ itemId }, { status: 201 });
+  } catch (err) {
+    logger.error("POST /api/trade/assess/from-datasheet failed", err);
+    return NextResponse.json(
+      { error: "Internal server error" },
+      { status: 500 },
+    );
+  }
+}
