@@ -29,8 +29,17 @@ import {
   ClassifyConfirm,
   type ClassifyConfirmSuggestion,
 } from "./ClassifyConfirm";
+import { LandscapeView } from "./LandscapeView";
+import type { LandscapeResult } from "@/lib/trade/landscape";
 
 type Step = "upload" | "classify" | "landscape" | "verdict";
+
+/**
+ * Exporter seat for the landscape engine call. v1 defaults to DE, matching the
+ * operations wizard's `shipFromCountry` default; the engine resolves the origin
+ * regime from it. (Org-derived seat is a fast-follow — spec §10.)
+ */
+const EXPORTER_SEAT = "DE";
 
 /** The classification-relevant item carried forward once confirmed. */
 interface ConfirmedItem {
@@ -79,7 +88,15 @@ export function AssessFlow() {
 
   // Carried into the landscape + verdict screens once persisted.
   const [, setItemId] = useState<string | null>(null);
-  const [, setConfirmedItem] = useState<ConfirmedItem | null>(null);
+  const [confirmedItem, setConfirmedItem] = useState<ConfirmedItem | null>(
+    null,
+  );
+
+  // Screen 3 (landscape) state.
+  const [landscape, setLandscape] = useState<LandscapeResult | null>(null);
+  const [landscapeLoading, setLandscapeLoading] = useState(false);
+  // Screen 4 (verdict) — the destination chosen on the landscape.
+  const [, setDestination] = useState<string | null>(null);
 
   function handleApply(p: DatasheetApplyPayload) {
     setPayload(p);
@@ -122,11 +139,44 @@ export function AssessFlow() {
       setItemId(itemId);
       setConfirmedItem(item);
       setStep("landscape");
+      void loadLandscape(item);
     } catch (e) {
       setError(e instanceof Error ? e.message : "Unerwarteter Fehler");
     } finally {
       setSubmitting(false);
     }
+  }
+
+  /**
+   * Fetch the GO/REVIEW/BLOCKED buckets for the confirmed item. The buckets are
+   * engine-derived server-side (runDestinationLandscape) — nothing GO is
+   * synthesised in the client; we only render what the route returns.
+   */
+  async function loadLandscape(item: ConfirmedItem) {
+    setLandscapeLoading(true);
+    setError(null);
+    try {
+      const res = await fetch("/api/trade/assess/landscape", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ item, exporterSeat: EXPORTER_SEAT }),
+      });
+      if (!res.ok) {
+        throw new Error("Liefer-Landkarte konnte nicht geladen werden.");
+      }
+      setLandscape((await res.json()) as LandscapeResult);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Unerwarteter Fehler");
+    } finally {
+      setLandscapeLoading(false);
+    }
+  }
+
+  function handleChooseDestination(country: string) {
+    // No verdict is computed here — Screen 4 (Task 7) runs the engine against
+    // the real buyer for the chosen destination.
+    setDestination(country);
+    setStep("verdict");
   }
 
   function handleManual() {
@@ -184,15 +234,34 @@ export function AssessFlow() {
         </div>
       )}
 
-      {step === "landscape" && (
-        <section className="space-y-3" data-testid="assess-landscape-step">
-          {/* Placeholder — the Liefer-Landkarte lands in Task 6. */}
-          <h2 className="text-lg text-trade-text-primary">Liefer-Landkarte</h2>
-          <p className="text-sm text-trade-text-muted">
-            Klassifizierung bestätigt. Die Liefer-Landkarte folgt …
-          </p>
-        </section>
-      )}
+      {step === "landscape" &&
+        (landscape ? (
+          <LandscapeView
+            result={landscape}
+            onChoose={handleChooseDestination}
+          />
+        ) : (
+          <section className="space-y-3" data-testid="assess-landscape-step">
+            <h2 className="text-lg text-trade-text-primary">
+              Liefer-Landkarte
+            </h2>
+            <p className="text-sm text-trade-text-muted">
+              {error ??
+                (landscapeLoading
+                  ? "Klassifizierung bestätigt. Wir prüfen, wohin du liefern darfst …"
+                  : "Klassifizierung bestätigt.")}
+            </p>
+            {error && confirmedItem && (
+              <button
+                type="button"
+                onClick={() => loadLandscape(confirmedItem)}
+                className="inline-flex items-center gap-2 rounded-lg border border-trade-border px-5 py-2.5 text-trade-text-primary transition hover:bg-trade-hover"
+              >
+                Erneut versuchen
+              </button>
+            )}
+          </section>
+        ))}
 
       {step === "verdict" && (
         <section data-testid="assess-verdict-step">

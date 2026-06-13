@@ -33,6 +33,8 @@ vi.mock("lucide-react", () => {
     ArrowLeft: icon("ArrowLeft"),
     ArrowRight: icon("ArrowRight"),
     Check: icon("Check"),
+    CheckCircle2: icon("CheckCircle2"),
+    Ban: icon("Ban"),
     Loader2: icon("Loader2"),
     AlertTriangle: icon("AlertTriangle"),
     Sparkles: icon("Sparkles"),
@@ -126,11 +128,19 @@ describe("AssessFlow", () => {
   });
 
   it("Confirm advances to the landscape step (POSTs from-datasheet, then renders the landscape placeholder)", async () => {
-    (fetch as ReturnType<typeof vi.fn>).mockResolvedValue({
-      ok: true,
-      status: 201,
-      json: async () => ({ itemId: "item-new" }),
-    });
+    (fetch as ReturnType<typeof vi.fn>)
+      // 1st POST = from-datasheet persistence.
+      .mockResolvedValueOnce({
+        ok: true,
+        status: 201,
+        json: async () => ({ itemId: "item-new" }),
+      })
+      // 2nd POST = landscape buckets (loaded on entering the step).
+      .mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        json: async () => LANDSCAPE_RESULT,
+      });
     render(<AssessFlow />);
     act(() => capturedOnApply?.(HIGH_PAYLOAD));
     await waitFor(() =>
@@ -154,6 +164,111 @@ describe("AssessFlow", () => {
     // The flow advances to the landscape step.
     await waitFor(() =>
       expect(screen.getByTestId("assess-landscape-step")).toBeTruthy(),
+    );
+  });
+
+  // ── Task 6: Screen 3 — Liefer-Landkarte ────────────────────────────────
+  const LANDSCAPE_RESULT = {
+    go: [
+      {
+        country: "US",
+        verdict: "GO",
+        detail: "Keine Genehmigung erforderlich.",
+      },
+      {
+        country: "JP",
+        verdict: "GO",
+        detail: "Keine Genehmigung erforderlich.",
+      },
+    ],
+    review: [
+      { country: "IN", verdict: "REVIEW", detail: "Einzelfallprüfung nötig." },
+    ],
+    blocked: [
+      {
+        country: "RU",
+        verdict: "BLOCKED",
+        detail: "EU-Embargo (VO 833/2014).",
+      },
+    ],
+    caption:
+      "Annahme: sauberer Endkunde — im nächsten Schritt mit dem echten Käufer verschärft.",
+  };
+
+  /** Drive the wizard from upload → confirm → landscape, with the two POSTs mocked. */
+  async function advanceToLandscape() {
+    const f = fetch as ReturnType<typeof vi.fn>;
+    // 1st POST = from-datasheet persistence; 2nd POST = landscape buckets.
+    f.mockResolvedValueOnce({
+      ok: true,
+      status: 201,
+      json: async () => ({ itemId: "item-new" }),
+    }).mockResolvedValueOnce({
+      ok: true,
+      status: 200,
+      json: async () => LANDSCAPE_RESULT,
+    });
+    render(<AssessFlow />);
+    act(() => capturedOnApply?.(HIGH_PAYLOAD));
+    await waitFor(() =>
+      expect(screen.getByRole("button", { name: /Bestätigen/i })).toBeTruthy(),
+    );
+    fireEvent.click(screen.getByRole("button", { name: /Bestätigen/i }));
+    await waitFor(() =>
+      expect(screen.getByTestId("assess-landscape-step")).toBeTruthy(),
+    );
+  }
+
+  it("Screen 3: POSTs the landscape, renders the three buckets + the mandatory caption", async () => {
+    await advanceToLandscape();
+
+    // The landscape endpoint is called with the confirmed item + a seat.
+    await waitFor(() =>
+      expect(fetch).toHaveBeenCalledWith(
+        "/api/trade/assess/landscape",
+        expect.objectContaining({ method: "POST" }),
+      ),
+    );
+    const landscapeCall = (fetch as ReturnType<typeof vi.fn>).mock.calls.find(
+      (c) => c[0] === "/api/trade/assess/landscape",
+    );
+    expect(landscapeCall).toBeTruthy();
+    const body = JSON.parse((landscapeCall![1] as RequestInit).body as string);
+    expect(body.item.name).toBeTruthy();
+    expect(body.exporterSeat).toBeTruthy();
+
+    // The three buckets render their destinations + cited details.
+    await waitFor(() => expect(screen.getByText("US")).toBeTruthy());
+    expect(screen.getByText("JP")).toBeTruthy();
+    expect(screen.getByText("IN")).toBeTruthy();
+    expect(screen.getByText("RU")).toBeTruthy();
+    expect(screen.getByText(/EU-Embargo/)).toBeTruthy();
+
+    // The mandatory clean-buyer caption is present, verbatim.
+    expect(screen.getByText(/sauberer Endkunde/)).toBeTruthy();
+  });
+
+  it("Screen 3: clicking a destination advances to the verdict step with that country", async () => {
+    await advanceToLandscape();
+    await waitFor(() => expect(screen.getByText("US")).toBeTruthy());
+
+    fireEvent.click(screen.getByRole("button", { name: /US/ }));
+
+    await waitFor(() =>
+      expect(screen.getByTestId("assess-verdict-step")).toBeTruthy(),
+    );
+  });
+
+  it("Screen 3: a free-text 'anderes Ziel' destination also advances to the verdict step", async () => {
+    await advanceToLandscape();
+    await waitFor(() => expect(screen.getByText("US")).toBeTruthy());
+
+    const other = screen.getByPlaceholderText(/anderes Ziel/i);
+    fireEvent.change(other, { target: { value: "br" } });
+    fireEvent.click(screen.getByRole("button", { name: /Prüfen/i }));
+
+    await waitFor(() =>
+      expect(screen.getByTestId("assess-verdict-step")).toBeTruthy(),
     );
   });
 });
