@@ -130,15 +130,19 @@ export const EU_ANNEX_I_CAT1_2_ENTRIES: ClassificationEntry[] = [
     jurisdiction: "EU_ANNEX_I",
     title: "Equipment for production of propellants and constituents",
     description:
-      "Equipment, other than that in 1B116, for the production, handling or " +
-      "acceptance testing of liquid or solid propellants and their " +
-      "constituents (see 1C111) — batch/continuous mixers, fluid energy " +
-      "mills, metal-powder production equipment.",
+      "Equipment, other than that specified in 1B002 or 1B102, for the " +
+      "production of propellant and propellant constituents (see 1C011, " +
+      "1C111): production / handling / acceptance-testing equipment for " +
+      "liquid propellants (1B115.a) and for solid propellants or constituents " +
+      "(1B115.b). NB the Note to 1B115.b EXCLUDES batch mixers, continuous " +
+      "mixers and fluid energy mills — those are 1B117 / 1B118 / 1B119.",
     controlReasons: ["MT"],
     crossReferenceTopic: null,
     sourceUrl: SOURCE_URL,
-    asOfDate: ASOF,
+    asOfDate: "2026-06-13",
     mtcrCategory: "II",
+    notes:
+      "Base-corpus audit 2026-06-13: corrected the carve-out (was 'other than 1B116' → official 'other than 1B002 or 1B102') and removed the batch-mixer / fluid-energy-mill examples that the 1B115.b Note explicitly excludes.",
   },
   {
     code: "1B116",
@@ -251,13 +255,18 @@ export const EU_ANNEX_I_CAT1_2_ENTRIES: ClassificationEntry[] = [
     jurisdiction: "EU_ANNEX_I",
     title: "Metals and compounds (fine zirconium/magnesium/boron powders)",
     description:
-      "Pyrotechnic/energetic-relevant metals per the entry: zirconium and " +
-      "magnesium in particle sizes below the entry's micron limits, boron and " +
-      "boron carbide of stated purity, and metal-oxidant mixtures.",
+      "Metals and compounds per the entry: zirconium and magnesium (and " +
+      "alloys) in particle sizes below the entry's micron limit; boron and " +
+      "boron alloys of ≥ 85% purity and particle size ≤ 60 µm; guanidine " +
+      "nitrate; and nitroguanidine. (Metal powders MIXED with other " +
+      "substances to form a military-purpose mixture are NOT 1C011 — the " +
+      "entry's N.B. routes such mixtures to the Military Goods Controls.)",
     controlReasons: ["NS", "MT"],
     crossReferenceTopic: null,
     sourceUrl: SOURCE_URL,
-    asOfDate: ASOF,
+    asOfDate: "2026-06-13",
+    notes:
+      "Base-corpus audit 2026-06-13: removed a 'metal-oxidant mixtures' over-scope (the 1C011 N.B. routes such mixtures to the Military List) and added the guanidine-nitrate / nitroguanidine members.",
   },
   {
     code: "1C012",
@@ -446,15 +455,18 @@ export const EU_ANNEX_I_CAT1_2_ENTRIES: ClassificationEntry[] = [
     code: "1D002",
     jurisdiction: "EU_ANNEX_I",
     title:
-      "Software for developing organic/metal-matrix laminates or composites",
+      "Software for developing organic, metal or carbon matrix laminates or composites",
     description:
-      "'Software' specially designed for the 'development' of the laminates " +
-      "and composites of 1A002 or 1C010-class structures — ply-design and " +
-      "laminate-engineering tooling above generic CAD.",
+      "'Software' specially designed for the 'development' of organic " +
+      "'matrix', metal 'matrix' or carbon 'matrix' laminates or 'composites' " +
+      "(1A002 / 1C010-class structures) — ply-design and laminate-engineering " +
+      "tooling above generic CAD.",
     controlReasons: ["NS"],
     crossReferenceTopic: null,
     sourceUrl: SOURCE_URL,
-    asOfDate: ASOF,
+    asOfDate: "2026-06-13",
+    notes:
+      "Base-corpus audit 2026-06-13: title/description previously dropped 'carbon matrix' (carbon-carbon composites) — official 1D002 covers organic, metal OR carbon matrix.",
   },
   {
     code: "1E001",
