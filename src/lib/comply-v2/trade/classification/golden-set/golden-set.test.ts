@@ -180,6 +180,68 @@ const EXACT: Record<string, Verdict> = {
   "sat-bus|DE|RU": "BLOCKED", // 9A004 (Anhang I VO 2021/821) → RU: Art. 2 VO (EU) 833/2014
   "apogee-engine|DE|RU": "BLOCKED", // 9A106 (Anhang I VO 2021/821) → RU: Art. 2 VO (EU) 833/2014
   "sat-bus|GB|RU": "BLOCKED", // origin-unabhängig (Gate-1.6-Scope) → RU: Art. 2 VO (EU) 833/2014
+
+  // ── M-EU (Engine-Origin-Determination §4.3): EU-Origin EUGEA-Verdicts ──────
+  //
+  // Für EU-Sitze (DE/FR) bestimmt das EU-Modul (`origin-determination/eu.ts`)
+  // die echte Lizenz-Antwort nach VO (EU) 2021/821 + Annex II EUGEA. Die
+  // generische Gate-3.5-BAFA-REVIEW wird durch das Modul-Verdict ersetzt
+  // (supersede), wo eine Union-Allgemeingenehmigung greift. Quelle je Zelle:
+  //
+  // (a) GO unter EU001 — EU001-fähiges (NICHT auf Annex II Section I gelistetes)
+  //     Dual-Use-Gut an eine EU001-Bestimmung (US/JP unter den Matrix-Zielen;
+  //     EU001-Set = AU/CA/IS/JP/NZ/NO/CH/LI/GB/US). Belegt:
+  //     Reg (EU) 2021/821 Annex II EU001 Part 1 (Items: alle Annex-I-Einträge
+  //     außer Section I) + Part 2 (Destinations). Section-I-Prüfung in eu.ts.
+  //       • 7A004 (star-tracker), 5A002 (ground-tt-c), 9D001 (flight-sw),
+  //         1C010 (prepreg) — keiner auf Section I → EU001 greift.
+  "star-tracker|DE|US": "GO", // 7A004 → US: EU001 (Annex II EU001 Part 1+2)
+  "star-tracker|DE|JP": "GO", // 7A004 → JP: EU001
+  "star-tracker|FR|US": "GO", // 7A004 → US: EU001 (FR-Sitz, NCA SBDU)
+  "star-tracker|FR|JP": "GO", // 7A004 → JP: EU001
+  "ground-tt-c|DE|US": "GO", // 5A002 → US: EU001 (Krypto, nicht Section I)
+  "ground-tt-c|DE|JP": "GO", // 5A002 → JP: EU001
+  "ground-tt-c|FR|US": "GO", // 5A002 → US: EU001
+  "ground-tt-c|FR|JP": "GO", // 5A002 → JP: EU001
+  "flight-sw|DE|US": "GO", // 9D001 → US: EU001 (Entwicklungs-SW, nicht 9D101-104)
+  "flight-sw|DE|JP": "GO", // 9D001 → JP: EU001
+  "flight-sw|FR|US": "GO", // 9D001 → US: EU001
+  "flight-sw|FR|JP": "GO", // 9D001 → JP: EU001
+  "prepreg|DE|US": "GO", // 1C010 → US: EU001 (Faserstoff, nicht 1C001/1C012/1C350+)
+  "prepreg|DE|JP": "GO", // 1C010 → JP: EU001
+  "prepreg|FR|US": "GO", // 1C010 → US: EU001
+  "prepreg|FR|JP": "GO", // 1C010 → JP: EU001
+  //
+  // (b) REVIEW-Einzelantrag bei der NCA — EU001-fähiges Gut an ein NICHT-EU001-
+  //     Ziel (IN ist NICHT EU001) → keine Allgemeingenehmigung greift, also
+  //     Einzelausfuhrgenehmigung. Belegt: EU001 Part 2 (IN nicht gelistet).
+  "star-tracker|DE|IN": "REVIEW", // 7A004 → IN: kein EU001-Ziel → Einzelantrag NCA
+  "ground-tt-c|DE|IN": "REVIEW", // 5A002 → IN: kein EU001-Ziel → Einzelantrag NCA
+  "flight-sw|DE|IN": "REVIEW", // 9D001 → IN: kein EU001-Ziel → Einzelantrag NCA
+  "prepreg|DE|IN": "REVIEW", // 1C010 → IN: kein EU001-Ziel → Einzelantrag NCA
+  //
+  // (c) FAIL-CLOSED (§4.5, kein false-CLEARED): Annex-II-Section-I-Ausschluss
+  //     (MTCR-Trägertechnik) ist von EU001 NICHT gedeckt → REVIEW selbst an ein
+  //     EU001-Ziel. Belegt: Annex II EU001 Part 1 (Section I exclusion list:
+  //     u. a. 9A004-Trägerfamilie, 9A005-9A011, 9A101-9A119, 9A106).
+  "sat-bus|DE|US": "REVIEW", // 9A004 (Section I) → US: KEIN EU001 → Einzelantrag NCA
+  "sat-bus|DE|JP": "REVIEW", // 9A004 (Section I) → JP: KEIN EU001
+  "apogee-engine|DE|US": "REVIEW", // 9A106 (MTCR, Section I) → US: KEIN EU001
+  "apogee-engine|DE|JP": "REVIEW", // 9A106 (MTCR, Section I) → JP: KEIN EU001
+  //
+  // (d) Innergemeinschaftlich bleibt GO — EU-Dual-Use (außer Annex IV) bewegt
+  //     sich frei im Unionszollgebiet; keine Ausfuhrgenehmigung. Belegt:
+  //     Reg (EU) 2021/821 (Ausfuhr = Verbringung AUS dem Zollgebiet).
+  "star-tracker|FR|DE": "GO", // 7A004, FR→DE innergemeinschaftlich → frei
+  "sat-bus|FR|DE": "GO", // 9A004 (nicht Annex IV) FR→DE innergemeinschaftlich → frei
+  //
+  // (e) SAFETY-PIN (§4.3/§4.5): das EU-Modul-GO überstimmt NIE ein vorgelagertes
+  //     Hartverbot. Ein EU001-FÄHIGES Gut (5A002, NICHT Section I) aus DE nach
+  //     RU bleibt BLOCKED — Gate 1.6 (Art. 2/2a VO (EU) 833/2014) feuert VOR dem
+  //     Origin-Modul, das Modul wird übersprungen. Belegt das load-bearing
+  //     Override (kein EU001 nach RU, kein false-CLEARED über ein Embargo).
+  "ground-tt-c|DE|RU": "BLOCKED", // 5A002 (EU001-fähig) → RU: Gate 1.6 schlägt EU001
+  "star-tracker|DE|RU": "BLOCKED", // 7A004 (EU001-fähig) → RU: Gate 1.6 schlägt EU001
   // S3-Gefahren-Pin: GB-Sitz, deklariertes 9A004, intra-EU-Ziel (DE).
   // Dies MUSS REVIEW bleiben. Begründung: ein UK→EU-Dual-Use-Transfer ist
   // post-Brexit lizenzpflichtig (ECJU) — es ist KEIN intra-EU-Freiverkehr
@@ -392,16 +454,22 @@ function measureDistribution(): {
   return { total, ...counts };
 }
 
-describe("GOLDEN SET — Origin-Determination-Foundation (Phase F)", () => {
-  it("Verteilung bleibt auf dem Vor-Feature-Wert: 744 = 74 GO / 396 REVIEW / 274 BLOCKED", () => {
-    // Phase-F-Invariante: KEIN Nicht-US-Modul gebaut, keine REGIME_MATURITY
-    // gehoben, US-Wrap verhaltensidentisch → die Verteilung MUSS exakt
-    // unverändert sein. Ein verfrühter Maturity-Lift oder eine US-Drift würde
-    // hier sofort auffallen.
+describe("GOLDEN SET — Origin-Determination (Phase F + M-EU)", () => {
+  it("Verteilung nach M-EU: 744 = 90 GO / 380 REVIEW / 274 BLOCKED", () => {
+    // Vor M-EU war die Verteilung 74/396/274 (Phase F, nur US-Wrap, no-op).
+    // M-EU (EU-Origin-Modul: EUGEA EU001 + Member→NCA) verschiebt 16 Zellen
+    // bewusst REVIEW→GO: vier EU001-fähige Dual-Use-Items (7A004 star-tracker,
+    // 5A002 ground-tt-c, 9D001 flight-sw, 1C010 prepreg) aus zwei EU-Sitzen
+    // (DE, FR) an die zwei EU001-Ziele der Matrix (US, JP) = 4×2×2 = 16. Jede
+    // dieser Lockerungen ist durch EU001 (Reg (EU) 2021/821 Annex II EU001
+    // Part 1+2) belegt — KEIN false-CLEARED. BLOCKED unverändert (274): kein
+    // Hartverbot (Embargo/RU-BY/Annex-IV/ITAR) wurde berührt. Die Section-I-
+    // Ausschlüsse (9A004 sat-bus, 9A106 apogee-engine) bleiben fail-closed
+    // REVIEW selbst an EU001-Ziele. Belegt + gepinnt in EXACT (a)-(d).
     expect(measureDistribution()).toEqual({
       total: 744,
-      GO: 74,
-      REVIEW: 396,
+      GO: 90,
+      REVIEW: 380,
       BLOCKED: 274,
     });
   });

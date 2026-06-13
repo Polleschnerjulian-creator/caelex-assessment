@@ -1079,7 +1079,14 @@ describe("Gate 4.5 — thin origin-regime coverage (fail-closed)", () => {
     expect(thinReq!.reason).toMatch(/UK.*nicht tief|noch nicht tief/i);
   });
 
-  it("DE origin (EU_ANNEX_I maturity 2) + declared EU ECCN → result deep-equals result WITHOUT exporterOrigin (gate adds nothing)", () => {
+  it("DE origin (M-EU) + declared EU001-eligible ECCN → EU001 GO supersedes the generic Gate-3.5 BAFA REVIEW", () => {
+    // Pre-M-EU this asserted byte-identity (DE adds nothing). M-EU intentionally
+    // REFINES: the EU origin module evaluates EUGEA EU001 — 9A515.a is not on
+    // the Annex II Section I exclusion list and US is an EU001 destination → the
+    // module returns GENERAL/GO under EU001, and the wiring SUPERSEDES the
+    // generic Gate-3.5 BAFA `ACTUAL_CODE_DECLARED` REVIEW with that GO. The
+    // generic individual-licence REVIEW must be GONE; exactly one EU001
+    // general-licence row remains (CLEARED gate).
     const withoutOrigin = determineLicenseRequirements(
       evalWith(),
       null,
@@ -1088,6 +1095,13 @@ describe("Gate 4.5 — thin origin-regime coverage (fail-closed)", () => {
       undefined,
       { eccnEU: "9A515.a", eccnUS: null, usmlCategory: null },
     );
+    // Baseline (no origin): the generic Gate-3.5 BAFA REVIEW fires.
+    expect(
+      withoutOrigin.requirements.some(
+        (r) => r.triggerCode === "ACTUAL_CODE_DECLARED",
+      ),
+    ).toBe(true);
+
     const withDeOrigin = determineLicenseRequirements(
       evalWith(),
       null,
@@ -1096,8 +1110,70 @@ describe("Gate 4.5 — thin origin-regime coverage (fail-closed)", () => {
       undefined,
       { eccnEU: "9A515.a", eccnUS: null, usmlCategory: null },
       DE_ORIGIN,
+      "DE",
     );
-    expect(withDeOrigin).toEqual(withoutOrigin);
+    // The generic REVIEW is superseded — replaced by the EU001 general licence.
+    expect(
+      withDeOrigin.requirements.some(
+        (r) => r.triggerCode === "ACTUAL_CODE_DECLARED",
+      ),
+    ).toBe(false);
+    const eu001 = withDeOrigin.requirements.find(
+      (r) => r.triggerCode === "ORIGIN_GENERAL_LICENCE",
+    );
+    expect(eu001).toBeDefined();
+    expect(eu001!.licenseType).toBe("GENERAL_LICENSE");
+    expect(eu001!.applicableException?.code).toBe("EU001");
+    expect(eu001!.authority).toBe("EU_COMPETENT_AUTHORITY");
+    // The EU general-licence GO leaves the gate CLEARED (no REQUIRED survives).
+    expect(withDeOrigin.gate).toBe("CLEARED");
+  });
+
+  it("DE origin (M-EU) + Section-I-excluded ECCN (9A106) → INDIVIDUAL REVIEW at the NCA, NEVER a guessed GO", () => {
+    // Fail-closed (§4.5): 9A106 is on the Annex II Section I exclusion list
+    // (MTCR rocket subsystem) → EU001 does NOT cover it even to a friendly
+    // destination → the module returns INDIVIDUAL/REVIEW; no EU001 GO row.
+    const det = determineLicenseRequirements(
+      evalWith(),
+      null,
+      "US",
+      undefined,
+      undefined,
+      { eccnEU: "9A106", eccnUS: null, usmlCategory: null },
+      DE_ORIGIN,
+      "DE",
+    );
+    expect(
+      det.requirements.some((r) => r.triggerCode === "ORIGIN_GENERAL_LICENCE"),
+    ).toBe(false);
+    const indiv = det.requirements.find(
+      (r) => r.triggerCode === "ORIGIN_INDIVIDUAL_LICENCE",
+    );
+    expect(indiv).toBeDefined();
+    expect(indiv!.status).toBe("REQUIRED");
+    expect(det.gate).toBe("REVIEW_NEEDED");
+  });
+
+  it("DE origin (M-EU) safety pin: EU001-eligible item to RU stays BLOCKED (Gate 1.6 overrides the module)", () => {
+    // The origin module runs AFTER the hard-prohibition gates and is SKIPPED
+    // when one already blocks. A DE export of an EU-dual-use item (9A515.a) to
+    // RU is prohibited by Gate 1.6 (Art. 2/2a Reg 833/2014) — no EU001 GO row,
+    // verdict stays BLOCKED.
+    const det = determineLicenseRequirements(
+      evalWith(),
+      null,
+      "RU",
+      undefined,
+      undefined,
+      { eccnEU: "9A515.a", eccnUS: null, usmlCategory: null },
+      DE_ORIGIN,
+      "DE",
+    );
+    expect(
+      det.requirements.some((r) => r.triggerCode === "ORIGIN_GENERAL_LICENCE"),
+    ).toBe(false);
+    expect(det.gate).toBe("BLOCKED");
+    expect(det.embargoBlock).toBe(true);
   });
 
   it("no exporterOrigin → byte-identical legacy (deep-equal against result without origin param)", () => {

@@ -203,12 +203,13 @@ describe("assessOperation — Gate 4.5 thin-origin wire-through (S0 Task 7)", ()
     expect(hasUkMention).toBe(true);
   });
 
-  it("DE org + line with declared EU ECCN → verdict unchanged vs DE baseline (Gate 4.5 must NOT fire for mature EU_ANNEX_I regime)", async () => {
-    // DE seat = EU_ANNEX_I (REGIME_MATURITY 2) — Gate 4.5 must NOT fire.
-    // For a dual-use item going to a non-EU non-embargo destination with a
-    // clear screening, a DE exporter should get the same verdict as the
-    // pre-Task-7 baseline (REVIEW_NEEDED due to BAFA requirement from Gate 4,
-    // not any new origin-review requirement from Gate 4.5).
+  it("DE org + declared EU001-eligible ECCN to US → Gate 4.5 stays silent, M-EU EU001 refines to GO", async () => {
+    // DE seat = EU_ANNEX_I (REGIME_MATURITY 2) — Gate 4.5 (thin-origin) must
+    // NOT fire. Instead the M-EU origin module runs: 9A515.a is not on the
+    // Annex II Section I exclusion list and US is an EU001 destination → EU001
+    // GO supersedes the generic Gate-3.5 BAFA REVIEW. So a DE exporter gets a
+    // REFINED verdict (GO under EU001), DIFFERENT from the no-origin baseline
+    // (which keeps the generic REVIEW because no origin module runs).
     findFirst.mockResolvedValue(
       operationRow({
         shipToCountry: "US",
@@ -226,7 +227,7 @@ describe("assessOperation — Gate 4.5 thin-origin wire-through (S0 Task 7)", ()
     });
     const resDE = await assessOperation("op1", { organizationId: "org1" });
 
-    // Re-run with null billingAddress to get the behavior-equal baseline.
+    // Re-run with null billingAddress to get the no-origin baseline.
     orgFindUnique.mockResolvedValue({ billingAddress: null });
     const resBaseline = await assessOperation("op1", {
       organizationId: "org1",
@@ -239,7 +240,16 @@ describe("assessOperation — Gate 4.5 thin-origin wire-through (S0 Task 7)", ()
       ),
     );
     expect(deHasThinReq).toBe(false);
-    // Both verdicts should match (DE's mature regime doesn't change the picture).
-    expect(resDE.verdict).toBe(resBaseline.verdict);
+
+    // The DE line carries the EU001 general-licence GO (supersede in effect).
+    const deHasEu001 = resDE.lines.some((l) =>
+      l.classification?.licenseDetermination.requirements.some(
+        (r) => r.triggerCode === "ORIGIN_GENERAL_LICENCE",
+      ),
+    );
+    expect(deHasEu001).toBe(true);
+    // DE refines to GO; the no-origin baseline keeps the generic REVIEW.
+    expect(resDE.verdict).toBe("GO");
+    expect(resBaseline.verdict).toBe("REVIEW");
   });
 });
