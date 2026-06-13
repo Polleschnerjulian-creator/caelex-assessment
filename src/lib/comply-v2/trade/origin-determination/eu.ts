@@ -283,9 +283,43 @@ function matchesCode(code: string, pattern: string): boolean {
 }
 
 /**
+ * Fail-closed bare-PARENT guard. A declared code that is a strict PARENT of a
+ * more-specific excluded sub-code (bare `9A009` over the excluded `9A009.A`, or
+ * bare `1C450` over `1C450.A.1`/`1C450.A.2`) cannot be cleanly confirmed to be
+ * the NON-excluded sibling — the bare code SPANS both the excluded and the
+ * eligible sub-items, so a GO would be a guess.
+ *
+ * This is load-bearing: the EU Annex I corpus classifies hybrid rocket motors
+ * as the BARE `9A009` entry (`src/data/trade/eu-annex-i.ts`, title "Hybrid
+ * rocket motors", control reason MT/MTCR) — there is no `9A009.a`/`9A009.b`
+ * split on the EU side. Without this guard a 9A009.a-class motor (>1.1 MNs total
+ * impulse — the Section-I-excluded MTCR variant) declared as bare `9A009` would
+ * wrongly clear under EU001: a false-CLEARED on rocket propulsion. So a bare
+ * parent is treated Section-I-excluded (§4.5, over-strict-but-safe). A TRUE
+ * sibling sub-code (`9A009.B`, `1C450.B`) is NOT a parent of any excluded code,
+ * so it is unaffected and stays EU001-eligible — the sub-precision is preserved.
+ *
+ * (Annex IV sub-items already carry explicit bare parents in
+ * `EU001_ANNEX_IV_EXCLUDED_PREFIXES`, e.g. `9A106` beside `9A106.C`; this guard
+ * generalises the SAME fail-closed treatment to the explicit Art. 12(6)(a)
+ * sub-codes `9A009.A` / `1C450.A.1` / `1C450.A.2`, which have no bare parent in
+ * the data.) Expects an already-normalised (`normCode`) input.
+ */
+function isParentOfExcludedSubCode(c: string): boolean {
+  if (!c) return false;
+  const stem = `${c}.`;
+  return (
+    EU001_SECTION_I_EXPLICIT_CODES.some((p) => p.startsWith(stem)) ||
+    EU001_ANNEX_IV_EXCLUDED_PREFIXES.some((p) => p.startsWith(stem))
+  );
+}
+
+/**
  * Is `code` on the EU001 Section I exclusion list?
  *   PART (1) "all items specified in Annex IV"  — `EU001_ANNEX_IV_EXCLUDED_PREFIXES`
  *   PART (2) the explicit Article-12(6)(a) list — `EU001_SECTION_I_EXPLICIT_CODES`
+ * plus the fail-closed bare-PARENT guard (a bare parent of any excluded
+ * sub-code, e.g. the EU corpus's bare `9A009` over `9A009.a`).
  * (Reg (EU) 2021/821 Annex II Section I + Annex IV; OJ L 206, 11.6.2021.)
  */
 function isSectionIExcluded(code: string): boolean {
@@ -293,7 +327,8 @@ function isSectionIExcluded(code: string): boolean {
   if (!c) return false;
   return (
     EU001_SECTION_I_EXPLICIT_CODES.some((p) => matchesCode(c, p)) ||
-    EU001_ANNEX_IV_EXCLUDED_PREFIXES.some((p) => matchesCode(c, p))
+    EU001_ANNEX_IV_EXCLUDED_PREFIXES.some((p) => matchesCode(c, p)) ||
+    isParentOfExcludedSubCode(c)
   );
 }
 

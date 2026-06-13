@@ -242,18 +242,18 @@ describe("euOriginModule — EXACT official Section I (Reg (EU) 2021/821 Annex I
   });
 
   describe("SUB-PRECISION — sub-suffixed exclusions match only their branch", () => {
-    it("9A009.a is excluded (REVIEW) but 9A009.b is NOT on Section I → GO", () => {
+    it("9A009.a is excluded (REVIEW) but the SIBLING 9A009.b is NOT on Section I → GO", () => {
       expect(verdictToUS("9A009.a")).toBe("REVIEW"); // explicit code
-      // 9A009.b (e.g. a different hybrid-propulsion sub-item) is not listed and
-      // not an Annex IV member → EU001-eligible.
+      // 9A009.b (a different hybrid-propulsion sub-item) is not listed and not
+      // an Annex IV member, and it is NOT a parent of 9A009.a → EU001-eligible.
       expect(verdictToUS("9A009.b")).toBe("GO");
     });
 
-    it("1C450.a.1 / 1C450.a.2 excluded; a bare 1C450 (e.g. .b) is NOT on Section I → GO", () => {
+    it("1C450.a.1 / 1C450.a.2 excluded; the SIBLING 1C450.b is NOT on Section I → GO", () => {
       expect(verdictToUS("1C450.a.1")).toBe("REVIEW");
       expect(verdictToUS("1C450.a.2")).toBe("REVIEW");
-      // 1C450.b.* is a different CW-precursor branch, NOT on the explicit list
-      // and NOT in Annex IV → EU001-eligible.
+      // 1C450.b.* is a different CW-precursor branch, NOT on the explicit list,
+      // NOT in Annex IV, and NOT a parent of 1C450.a.* → EU001-eligible.
       expect(verdictToUS("1C450.b")).toBe("GO");
     });
 
@@ -261,6 +261,34 @@ describe("euOriginModule — EXACT official Section I (Reg (EU) 2021/821 Annex I
       // Boundary safety — only exact or dotted-sub matches count. (9A1060 is
       // not a real code; this guards the matcher against raw startsWith.)
       expect(verdictToUS("9A1060")).toBe("GO");
+    });
+  });
+
+  describe("FAIL-CLOSED BARE PARENT — a bare parent of an excluded sub-code stays REVIEW (no false-CLEARED)", () => {
+    it("bare 9A009 (THE EU Annex I corpus form for hybrid rocket motors) → US: REVIEW, NOT GO", () => {
+      // CRITICAL false-CLEARED guard. src/data/trade/eu-annex-i.ts classifies
+      // hybrid rocket motors as the BARE "9A009" (no .a/.b split on the EU side,
+      // control reason MT/MTCR). A bare "9A009" SPANS the Section-I-excluded
+      // 9A009.a (>1.1 MNs total impulse) and the eligible 9A009.b, so it cannot
+      // be cleanly confirmed off Section I → it MUST stay REVIEW. A GO here would
+      // be a false-CLEARED on a rocket motor — exactly what fail-closed forbids.
+      const v = euOriginModule(
+        input({ eccnEU: "9A009", eccnUS: null, usmlCategory: null }, "US"),
+      );
+      expect(v.outcome).toBe("REVIEW");
+      expect(v.licenceType).toBe("INDIVIDUAL");
+      expect(v.generalLicence).toBeUndefined();
+      expect(v.reasons.join(" ")).toContain("Section I");
+    });
+
+    it("bare 1C450 → US: REVIEW (parent of the excluded 1C450.a.1/.a.2 salts, fail-closed)", () => {
+      // Generalises the same rule. (1C450 has no EU corpus `code:` entry today,
+      // so this is defensive — but the guard is uniform across all sub-codes.)
+      expect(verdictToUS("1C450")).toBe("REVIEW");
+    });
+
+    it("intermediate parent 1C450.a → US: REVIEW (parent of 1C450.a.1)", () => {
+      expect(verdictToUS("1C450.a")).toBe("REVIEW");
     });
   });
 });
