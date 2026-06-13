@@ -359,6 +359,87 @@ describe("GOLDEN SET — space items × circle-A origins × destination classes"
   }
 });
 
+// ─── Origin-spezifische Verdicts (Engine-Origin-Determination, Phase F) ──────
+//
+// Der EXACT-Mechanismus oben ist BEREITS origin-spezifisch: ein Eintrag wird
+// mit `item|origin|dest` gekeyt und kann daher für ein einzelnes Origin ein
+// vom generischen Boden ABWEICHENDES Verdict festschreiben (genau das, was die
+// Origin-Determination-Stufe später je Modul produziert — GO-unter-General-
+// Lizenz / Einzelantrag-REVIEW / verboten-BLOCKED). Die folgende Helper-
+// + Pin-Schicht macht diese Origin-Sensitivität explizit testbar, OHNE in
+// Phase F die Verteilung zu verändern: es ist NOCH KEIN Nicht-US-Modul gebaut,
+// der US-Wrap ist verhaltensidentisch (Snapshot), also bleibt die Verteilung
+// exakt auf dem Vor-Feature-Wert.
+
+/** Zählt die volle Origin×Dest-Matrix-Verteilung über das echte Orakel. */
+function measureDistribution(): {
+  total: number;
+  GO: number;
+  REVIEW: number;
+  BLOCKED: number;
+} {
+  const counts = { GO: 0, REVIEW: 0, BLOCKED: 0 };
+  let total = 0;
+  for (const item of GOLDEN_ITEMS) {
+    for (const origin of ORIGINS) {
+      for (const dest of DESTS) {
+        if (origin === dest.iso) continue;
+        counts[runPipeline(item, origin, dest.iso)] += 1;
+        total += 1;
+      }
+    }
+  }
+  return { total, ...counts };
+}
+
+describe("GOLDEN SET — Origin-Determination-Foundation (Phase F)", () => {
+  it("Verteilung bleibt auf dem Vor-Feature-Wert: 744 = 74 GO / 396 REVIEW / 274 BLOCKED", () => {
+    // Phase-F-Invariante: KEIN Nicht-US-Modul gebaut, keine REGIME_MATURITY
+    // gehoben, US-Wrap verhaltensidentisch → die Verteilung MUSS exakt
+    // unverändert sein. Ein verfrühter Maturity-Lift oder eine US-Drift würde
+    // hier sofort auffallen.
+    expect(measureDistribution()).toEqual({
+      total: 744,
+      GO: 74,
+      REVIEW: 396,
+      BLOCKED: 274,
+    });
+  });
+
+  it("US-Origin fließt über das gewrappte Modul (US_CCL registriert), Verdict snapshot-paritätisch", () => {
+    // Der US-Wrap ersetzt den (für US ohnehin no-op) Gate-4.5-Fallback. Die
+    // US-Zellen müssen ihr Vor-Feature-Verdict behalten — hier an konkreten
+    // Zellen gepinnt (Snapshot-Parität, vgl. us.test.ts):
+    //   • sat-bus (9A004) US→JP: dual-use, kontrolliert → REVIEW (EAR-Gate).
+    //   • reaction-wheel US→JP: unkontrolliert → GO.
+    expect(
+      runPipeline(GOLDEN_ITEMS.find((i) => i.id === "sat-bus")!, "US", "JP"),
+    ).toBe("REVIEW");
+    expect(
+      runPipeline(
+        GOLDEN_ITEMS.find((i) => i.id === "reaction-wheel")!,
+        "US",
+        "JP",
+      ),
+    ).toBe("GO");
+  });
+
+  it("EXACT-Mechanismus kann ein origin-spezifisches Verdict ausdrücken (item|origin|dest)", () => {
+    // Beweis, dass die Harness origin-spezifisch keyt: derselbe Item×Dest aus
+    // unterschiedlichen Origins kann unterschiedliche EXACT-Pins tragen. Die
+    // bestehenden Pins zeigen es bereits — sat-bus|DE|RU (BLOCKED) vs.
+    // sat-bus|GB|DE (REVIEW): gleiches Item, origin-abhängiges Verdict.
+    expect(EXACT["sat-bus|DE|RU"]).toBe("BLOCKED");
+    expect(EXACT["sat-bus|GB|DE"]).toBe("REVIEW");
+    expect(
+      runPipeline(GOLDEN_ITEMS.find((i) => i.id === "sat-bus")!, "DE", "RU"),
+    ).toBe("BLOCKED");
+    expect(
+      runPipeline(GOLDEN_ITEMS.find((i) => i.id === "sat-bus")!, "GB", "DE"),
+    ).toBe("REVIEW");
+  });
+});
+
 // ─── Invarianten (aus dem Plan §4.4) ────────────────────────────────────────
 
 describe("GOLDEN SET — Invarianten", () => {
