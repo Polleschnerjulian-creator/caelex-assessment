@@ -2914,24 +2914,26 @@ export const CONTROL_LIST_CROSS_WALK: ControlListEntry[] = [
 
   // Z34-Cat5 — EU Annex I Cat. 5 (Telecom + Information Security)
   //
-  // Parametric capture for the three space-critical sub-entries the
-  // matcher needs to discriminate at run-time:
+  // Parametric capture for the space-relevant sub-entries the matcher
+  // needs to discriminate at run-time. IDs reflect the OFFICIAL EU Annex I
+  // structure (base-corpus audit 2026-06-13, verified vs EUR-Lex
+  // 02021R0821 + Wassenaar):
   //
-  //   - EU:5A001.b — inter-satellite link bandwidth tripwire. Operators
-  //     of LEO/MEO constellation ISL terminals (RF + optical) hit this
-  //     directly. Threshold uses Z25's `crossLinkBandwidthMbps`.
-  //   - EU:5A001.f.1 — spread-spectrum / frequency-hopping anti-jam
-  //     radio. The canonical TT&C anti-jam tripwire — fires on the
-  //     `isAntiJam` Z3a flag.
+  //   - EU:5A001.b — advanced radio / transmission parent. The
+  //     high-throughput inter-satellite-link tripwire is carried here as
+  //     a proxy on `crossLinkBandwidthMbps` (a >1 Gbps cross-link modem
+  //     is advanced radio equipment within the 5A001.b parent). The
+  //     OISL-specific home is EU-autonomous AM-005 (linked via seeAlso).
+  //   - EU:5A001.b.3 — spread-spectrum radio with user-programmable
+  //     spreading codes — the canonical anti-jam technique. Fires on the
+  //     `isAntiJam` Z3a flag. (Re-homed from the mislabelled EU:5A001.f.1;
+  //     official 5A001.f.1 = mobile air-interface voice/data intercept.)
   //   - EU:5A002.a — crypto modules above the symmetric > 56-bit /
   //     asymmetric ≥ 512-bit factorisation strength threshold. Every
-  //     satellite TT&C link encryptor + telemetry crypto unit fires
-  //     here.
-  //
-  // Two more entries (EU:5A002.f for QKD, EU:5D002.c for standalone
-  // crypto software) round out the Cat-5 coverage with parametric +
-  // itemClass-prefix capture so the matcher can rank without falling
-  // back to manual review.
+  //     satellite TT&C link encryptor + telemetry crypto unit fires here.
+  //   - EU:5A002.c — quantum cryptography (QKD). (Re-homed from the
+  //     phantom EU:5A002.f; 5A002 ends at .e — QKD is the official .c.)
+  //   - EU:5D002.c — standalone crypto software.
   // ═══════════════════════════════════════════════════════════════════
   {
     canonicalId: "EU:5A001.b",
@@ -2941,17 +2943,17 @@ export const CONTROL_LIST_CROSS_WALK: ControlListEntry[] = [
     entryNumber: "001",
     subpara: "b",
     title:
-      "Telecom radio/MMIC/phased-array equipment incl. inter-satellite-link transmit/receive (EU Cat 5 Part 1)",
+      "Advanced radio / transmission equipment incl. high-throughput inter-satellite links (EU Cat 5 Part 1 — 5A001.b parent)",
     predicates: [
       {
         attribute: "itemClass",
         op: "prefix",
         value: "spacecraft.communications",
       },
-      // ISL tripwire: crossLinkBandwidthMbps ≥ 1000 (1 Gbps) — the
-      // structural threshold separating the Mynaric / Tesat / CACI
-      // constellation-grade ISL class from the legacy single-satellite
-      // RF telemetry class. Sourced from Z25 attribute vocabulary.
+      // High-throughput-link proxy: crossLinkBandwidthMbps ≥ 1000 (1 Gbps).
+      // A >1 Gbps cross-link modem is advanced radio equipment captured by
+      // the 5A001.b parent; the OISL-specific home is EU-autonomous AM-005
+      // (seeAlso). Sourced from Z25 attribute vocabulary.
       {
         attribute: "crossLinkBandwidthMbps",
         op: "gte",
@@ -2977,63 +2979,60 @@ export const CONTROL_LIST_CROSS_WALK: ControlListEntry[] = [
         id: "AM-005",
         relationship: "superset_of",
         notes:
-          "EU-autonomous AM-005 (Delegated Reg. 2025/2003) sits at a stricter capture envelope for the constellation-class OISL use case.",
+          "EU-autonomous AM-005 (Delegated Reg. 2025/2003) is the stricter, OISL-specific capture for the constellation-class optical-link use case.",
       },
     ],
     citation: "Reg. (EU) 2021/821 Annex I, Cat. 5 Part 1, 5A001.b",
     validFrom: "2021-09-09",
     notes:
-      "Inter-satellite link entry — Mynaric Condor, Tesat SCOT80, CACI photonic terminals as well as RF-ISL constellation modems (Iridium NEXT-class) fire here. Operators of intra-constellation mesh networks above 1 Gbps must walk a Cat-5-Part-1 classification path.",
+      "Advanced-radio parent. RF-ISL constellation modems (Iridium NEXT-class) above 1 Gbps fire on the proxy threshold here; optical inter-satellite-link terminals (Mynaric Condor, Tesat SCOT80, CACI photonics) are the EU-autonomous AM-005 capture. Operators of intra-constellation mesh networks above 1 Gbps must walk a Cat-5-Part-1 classification path.",
   },
   {
-    canonicalId: "EU:5A001.f.1",
+    canonicalId: "EU:5A001.b.3",
     regime: "EU-ANNEX-I",
     category: "5",
     productGroup: "A",
     entryNumber: "001",
-    subpara: "f.1",
+    subpara: "b.3",
     title:
-      "Spread-spectrum / frequency-hopping anti-jam radio (EU Cat 5 Part 1)",
+      "Spread-spectrum radio with user-programmable spreading codes / anti-jam (EU Cat 5 Part 1, 5A001.b.3)",
     predicates: [
       {
         attribute: "itemClass",
         op: "prefix",
         value: "spacecraft.communications",
       },
-      // Spread-spectrum anti-jam: matches when the operator-supplied
-      // isAntiJam boolean is true. Cross-control with MTCR Item 11
-      // (whose anti-jam annexes appear via MT control reason).
+      // Spread-spectrum / frequency-hopping is the canonical anti-jam
+      // technique — matches when the operator-supplied isAntiJam boolean
+      // is true. Official home is 5A001.b.3 (NS / Wassenaar telecom); the
+      // predicate was previously mis-homed on EU:5A001.f.1, whose official
+      // scope is mobile air-interface voice/data interception.
       {
         attribute: "isAntiJam",
         op: "eq",
         value: true,
       },
     ],
-    reasonsForControl: ["NS", "MT"],
+    reasonsForControl: ["NS"],
     licenseExceptions: ["EU001"],
     seeAlso: [
       {
         regime: "EAR-CCL",
-        id: "5A001.f.1",
+        id: "5A001.b.3",
         relationship: "analogous",
       },
       {
         regime: "WASSENAAR",
-        id: "5.A.1.f.1",
+        id: "5.A.1.b.3",
         relationship: "derived_from",
-      },
-      {
-        regime: "MTCR-ANNEX",
-        id: "Item 11",
-        relationship: "analogous",
         notes:
-          "MTCR Item 11 — anti-jam TT&C is captured under the broader sub-system controls.",
+          "Wassenaar Cat. 5 Part 1 — spread-spectrum radio with user-programmable spreading codes.",
       },
     ],
-    citation: "Reg. (EU) 2021/821 Annex I, Cat. 5 Part 1, 5A001.f.1",
+    citation: "Reg. (EU) 2021/821 Annex I, Cat. 5 Part 1, 5A001.b.3",
     validFrom: "2021-09-09",
     notes:
-      "Space-critical: GEO / MEO comm-sats with hardened TT&C uplinks (military and dual-use, e.g. Galileo PRS, EGNOS, Iridium NEXT command) fire here directly. The MT reason-for-control means a strong-presumption-of-denial gate triggers for MTCR-Partnership country exports of the full TT&C subsystem.",
+      "GEO / MEO comm-sats with hardened TT&C uplinks (e.g. Galileo PRS, EGNOS, Iridium NEXT command) employing spread-spectrum / frequency-hopping fire here. NS (Wassenaar telecom) control — not MTCR; the prior MT reason was a base-corpus mislabel tied to the wrong sub-letter.",
   },
   {
     canonicalId: "EU:5A002.a",
@@ -3091,13 +3090,13 @@ export const CONTROL_LIST_CROSS_WALK: ControlListEntry[] = [
       "Satellite-payload crypto modules: every TT&C link encryptor (AES-256 + RSA-2048 typical), telemetry confidentiality unit, and on-board key-management module fires here. Operators must check Note 3 (Cryptography Note) for potential mass-market carve-out — but space-rated, FIPS-140-3-evaluated crypto modules almost never qualify for the mass-market exemption.",
   },
   {
-    canonicalId: "EU:5A002.f",
+    canonicalId: "EU:5A002.c",
     regime: "EU-ANNEX-I",
     category: "5",
     productGroup: "A",
     entryNumber: "002",
-    subpara: "f",
-    title: "Quantum cryptography (QKD) items (EU Cat 5 Part 2)",
+    subpara: "c",
+    title: "Quantum cryptography (QKD) items (EU Cat 5 Part 2, 5A002.c)",
     predicates: [
       {
         attribute: "itemClass",
@@ -3115,19 +3114,19 @@ export const CONTROL_LIST_CROSS_WALK: ControlListEntry[] = [
     seeAlso: [
       {
         regime: "WASSENAAR",
-        id: "5.A.2.f",
+        id: "5.A.2.c",
         relationship: "derived_from",
       },
       {
         regime: "EAR-CCL",
-        id: "5A002.f",
+        id: "5A002.c",
         relationship: "analogous",
       },
     ],
-    citation: "Reg. (EU) 2021/821 Annex I, Cat. 5 Part 2, 5A002.f",
+    citation: "Reg. (EU) 2021/821 Annex I, Cat. 5 Part 2, 5A002.c",
     validFrom: "2021-09-09",
     notes:
-      "Emerging space relevance — Eagle-1 (ESA / SES QKD demonstrator) and follow-on EU IRIS² QKD payload fire here. Quantum-state-prep + entangled-photon-source hardware on the satellite is the primary capture.",
+      "QKD is the official 5A002.c letter (quantum cryptography), not the phantom 5A002.f. Emerging space relevance — Eagle-1 (ESA / SES QKD demonstrator) and follow-on EU IRIS² QKD payload fire here. Quantum-state-prep + entangled-photon-source hardware on the satellite is the primary capture.",
   },
   {
     canonicalId: "EU:5D002.c",
@@ -3155,10 +3154,10 @@ export const CONTROL_LIST_CROSS_WALK: ControlListEntry[] = [
       },
       {
         regime: "EU-ANNEX-I",
-        id: "5D003",
-        relationship: "analogous",
+        id: "5D002",
+        relationship: "subset_of",
         notes:
-          "5D003 is the exemption-by-Note slot for publicly-available crypto software and Cryptography-Note mass-market carve-outs.",
+          "The publicly-available-source and mass-market carve-outs are the Cryptography Note (Note 3) + Note 4 DECONTROL notes under 5D002 — not a separate 5D003 control entry (there is no 5D003 in EU Annex I).",
       },
       {
         regime: "WASSENAAR",
@@ -3183,8 +3182,8 @@ export const CONTROL_LIST_CROSS_WALK: ControlListEntry[] = [
   //
   // Three space-critical entries with typed predicates:
   //   - EU:3A001.a.2 — general rad-hard TID-tolerance gate
-  //   - EU:3A001.a.5 — space-grade rad-hard processor / FPGA
-  //   - EU:3A001.h.1 — atomic-frequency standard (Allan-variance proxy
+  //   - EU:3A001.a.1 — space-grade radiation-hardened ICs (a.5 = ADC/DAC)
+  //   - EU:3A002.g   — atomic-frequency standard (Allan-variance proxy
   //                    via temperatureRangeCelsius + itemClass — Allan
   //                    variance itself is not a typed attribute, but
   //                    the spaceborne-clock itemClass + the operating-
@@ -3222,10 +3221,10 @@ export const CONTROL_LIST_CROSS_WALK: ControlListEntry[] = [
     seeAlso: [
       {
         regime: "EU-ANNEX-I",
-        id: "3A001.a.5",
+        id: "3A001.a.1",
         relationship: "predecessor",
         notes:
-          "3A001.a.2 is the general microprocessor entry; the rad-hard escalation moves the part to 3A001.a.5 when the full TID + SEU criteria are met.",
+          "3A001.a.2 is the general microprocessor entry; the rad-hard escalation moves the part to 3A001.a.1 (the dedicated radiation-hardened sub-paragraph) when the full TID + SEU criteria are met.",
       },
       {
         regime: "EAR-CCL",
@@ -3247,21 +3246,21 @@ export const CONTROL_LIST_CROSS_WALK: ControlListEntry[] = [
       "The TID ≥ 50 krad(Si) predicate is the screening threshold above which the matcher should flag rad-hardness for further review. Operators with rad-tolerant (not rad-hard) parts at TID < 50 krad fall out of capture here and into the broader 3A001 textual entries.",
   },
   {
-    canonicalId: "EU:3A001.a.5",
+    canonicalId: "EU:3A001.a.1",
     regime: "EU-ANNEX-I",
     category: "3",
     productGroup: "A",
     entryNumber: "001",
-    subpara: "a.5",
+    subpara: "a.1",
     title:
-      "Rad-hard microprocessors / FPGAs / memory (TID ≥ 5×10⁴ rad(Si)) (EU Cat 3)",
+      "Radiation-hardened integrated circuits (TID ≥ 5×10⁴ rad(Si)) (EU Cat 3)",
     predicates: [
       {
         attribute: "itemClass",
         op: "prefix",
         value: "ic.radhard",
       },
-      // EU 3A001.a.5: TID ≥ 5×10⁴ rad(Si) = 50 krad. Lower than the
+      // EU 3A001.a.1: TID ≥ 5×10⁴ rad(Si) = 50 krad. Lower than the
       // US 9A515.d full-five-criteria threshold (500 krad), so the
       // EU captures more parts.
       {
@@ -3283,14 +3282,14 @@ export const CONTROL_LIST_CROSS_WALK: ControlListEntry[] = [
         id: "9A515.d",
         relationship: "subset_of",
         notes:
-          "9A515.d covers the strict five-criteria rad-hard subset (TID ≥ 500 krad + four other thresholds). EU 3A001.a.5 captures the broader rad-hardened space-grade IC family at TID ≥ 50 krad.",
+          "9A515.d covers the strict five-criteria rad-hard subset (TID ≥ 500 krad + four other thresholds). EU 3A001.a.1 captures the broader rad-hardened space-grade IC family at TID ≥ 50 krad.",
       },
       {
         regime: "EAR-CCL",
         id: "9A515.e",
         relationship: "analogous",
         notes:
-          "9A515.e (added 23 Oct 2024 IFR) captures TID ≥ 500 krad without the other four criteria — closer to the EU 3A001.a.5 shape but at a higher TID threshold.",
+          "9A515.e (added 23 Oct 2024 IFR) captures TID ≥ 500 krad without the other four criteria — closer to the EU 3A001.a.1 shape but at a higher TID threshold.",
       },
       {
         regime: "ITAR-USML",
@@ -3301,18 +3300,18 @@ export const CONTROL_LIST_CROSS_WALK: ControlListEntry[] = [
       },
     ],
     citation:
-      "Reg. (EU) 2021/821 Annex I, Cat. 3, 3A001.a.5 (consolidated as of 2025/2003)",
+      "Reg. (EU) 2021/821 Annex I, Cat. 3, 3A001.a.1 (consolidated as of 2025/2003)",
     validFrom: "2021-09-09",
     notes:
-      "European space-grade processor / FPGA family — Cobham GR716, NanoXplore NG-LARGE, BAE RAD750-class, Microchip RTG4 — typically land here even before the US 9A515.d five-criteria gate engages. The EU control is broader by design.",
+      "Radiation-hardened ICs are 3A001.a.1 — the dedicated rad-hard sub-paragraph (ADC/DAC is a.5, microprocessors a.2). European space-grade parts — Cobham GR716, NanoXplore NG-LARGE, BAE RAD750-class, Microchip RTG4 — land here even before the US 9A515.d five-criteria gate engages; the EU control is broader by design.",
   },
   {
-    canonicalId: "EU:3A001.h.1",
+    canonicalId: "EU:3A002.g",
     regime: "EU-ANNEX-I",
     category: "3",
     productGroup: "A",
-    entryNumber: "001",
-    subpara: "h.1",
+    entryNumber: "002",
+    subpara: "g",
     title:
       "Atomic-frequency standards (Rb/Cs/H-maser) for spaceborne PNT (EU Cat 3)",
     predicates: [
@@ -3338,7 +3337,7 @@ export const CONTROL_LIST_CROSS_WALK: ControlListEntry[] = [
     seeAlso: [
       {
         regime: "EAR-CCL",
-        id: "3A001.h.1",
+        id: "3A002.g",
         relationship: "analogous",
       },
       {
@@ -3346,10 +3345,10 @@ export const CONTROL_LIST_CROSS_WALK: ControlListEntry[] = [
         id: "XV(e)(15)",
         relationship: "successor",
         notes:
-          "Spaceborne atomic clocks specifically designed for military / GPS-IIIF-class payloads remain USML XV(e)(15). Commercial PNT-payload clocks (Galileo, BeiDou commercial signal) flow to ECCN 3A001.h.1 / 9A515.x.",
+          "Spaceborne atomic clocks specifically designed for military / GPS-IIIF-class payloads remain USML XV(e)(15). Commercial PNT-payload clocks (Galileo, BeiDou commercial signal) flow to ECCN 3A002.g / 9A515.x.",
       },
     ],
-    citation: "Reg. (EU) 2021/821 Annex I, Cat. 3, 3A001.h.1 (consolidated)",
+    citation: "Reg. (EU) 2021/821 Annex I, Cat. 3, 3A002.g (consolidated)",
     validFrom: "2021-09-09",
     notes:
       "The Allan-variance threshold (≤ 1×10⁻¹¹ at 1 s) is the legal definition; the matcher uses spaceborne-itemClass + wide-temperature as the practical screening predicate because Allan-variance is rarely supplied in commercial datasheets as a typed parametric. Spectratime PHM (Galileo IOV/FOC), Frequency Electronics Inc. RAFS (GPS-IIIF), and SAFRAN ASCAR rubidium-vapour lines all fall here.",

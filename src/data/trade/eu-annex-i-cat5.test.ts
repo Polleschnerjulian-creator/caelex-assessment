@@ -28,30 +28,34 @@ import { CONTROL_LIST_CROSS_WALK } from "@/lib/comply-v2/trade/classification/co
 // ─── Z34-Cat5 — required code coverage ───────────────────────────────
 
 const CAT5_PART1_HEADERS = ["5A001", "5B001", "5D001", "5E001"] as const;
+// 5D003 removed: the Cryptography Note is a DECONTROL note under 5D002, not
+// a control entry. 5A002 ends at .e — no .f/.g (base-corpus audit 2026-06-13).
 const CAT5_PART2_HEADERS = [
   "5A002",
   "5A003",
   "5A004",
   "5B002",
   "5D002",
-  "5D003",
   "5E002",
 ] as const;
 
-const CAT5_SPACE_CRITICAL_SUBPARAS = [
-  "5A001.b", // ISL bandwidth
-  "5A001.b.1", // ISL transmit/receive specifically
-  "5A001.f.1", // spread-spectrum anti-jam
-  "5A001.h", // optical free-space (OISL)
-  "5A002.a", // crypto modules > 56-bit symmetric
-  "5A002.f", // QKD
+// Representative sub-entries that MUST be present (official scope per
+// EUR-Lex 02021R0821 / Wassenaar; comments give the real scope, not the
+// pre-audit mislabels).
+const CAT5_REQUIRED_SUBPARAS = [
+  "5A001.b", // advanced radio / transmission parent
+  "5A001.b.1", // underwater untethered comms
+  "5A001.f.1", // mobile air-interface voice/data interception
+  "5A001.h", // counter-IED RF transmitting equipment
+  "5A002.a", // cryptography for data confidentiality > 56-bit symmetric
+  "5A002.c", // quantum cryptography (QKD)
 ] as const;
 
 const CAT5_PARAMETRIC_IDS = [
   "EU:5A001.b",
-  "EU:5A001.f.1",
+  "EU:5A001.b.3", // spread-spectrum / anti-jam radio (re-homed from mislabelled .f.1)
   "EU:5A002.a",
-  "EU:5A002.f",
+  "EU:5A002.c", // QKD (official letter; re-homed from phantom .f)
   "EU:5D002.c",
 ] as const;
 
@@ -66,7 +70,7 @@ describe("Z34-Cat5 — header presence in EU_ANNEX_I_CAT5_ENTRIES", () => {
     }
   });
 
-  it("all Cat-5 Part 2 headers present (5A002/5A003/5A004/5B002/5D002/5D003/5E002)", () => {
+  it("all Cat-5 Part 2 headers present (5A002/5A003/5A004/5B002/5D002/5E002)", () => {
     for (const code of CAT5_PART2_HEADERS) {
       const entry = findEuAnnexICat5Entry(code);
       expect(entry, `missing Cat-5 Part 2 header ${code}`).toBeDefined();
@@ -74,10 +78,10 @@ describe("Z34-Cat5 — header presence in EU_ANNEX_I_CAT5_ENTRIES", () => {
     }
   });
 
-  it("all space-critical sub-entries present", () => {
-    for (const code of CAT5_SPACE_CRITICAL_SUBPARAS) {
+  it("all required sub-entries present", () => {
+    for (const code of CAT5_REQUIRED_SUBPARAS) {
       const entry = findEuAnnexICat5Entry(code);
-      expect(entry, `missing space-critical sub-entry ${code}`).toBeDefined();
+      expect(entry, `missing required sub-entry ${code}`).toBeDefined();
     }
   });
 });
@@ -161,10 +165,11 @@ describe("Z34-Cat5 — reason-for-control semantics", () => {
     );
     expect(cryptoEntries.length).toBeGreaterThan(0);
     for (const entry of cryptoEntries) {
-      // 5A002.d (intrusion-detection cables) and 5A002.e (TEMPEST) are
-      // not cryptographic in nature — they live under 5A002 by EU
-      // numbering but don't carry the EI tag.
-      if (entry.code === "5A002.d" || entry.code === "5A002.e") continue;
+      // Post-audit, ALL 5A002.x sub-entries are cryptographic (a=confidentiality,
+      // b=activation, c=QKD, d=UWB channelising-code crypto, e=spreading-code
+      // crypto), so all carry EI. The old .d/.e exclusion (cable-intrusion /
+      // TEMPEST) is gone — that non-crypto content is now correctly under 5A003
+      // (NS-only, no EI).
       expect(entry.controlReasons, `${entry.code} missing EI reason`).toContain(
         "EI",
       );
@@ -184,12 +189,16 @@ describe("Z34-Cat5 — reason-for-control semantics", () => {
   });
 
   it("interception / surveillance entries carry HR reason (cyber-surveillance)", () => {
+    // Official cyber-surveillance home is 5A001.f (mobile-telecom
+    // interception/jamming) + .f.1/.f.2, NOT 5A001.b.5 (digitally-controlled
+    // receivers) or 5A004.a (cryptanalytic) — corrected in base-corpus audit.
     const hrCandidates = [
-      "5A001.b.5",
+      "5A001.f",
+      "5A001.f.1",
+      "5A001.f.2",
       "5D001.c",
       "5D001.d",
       "5E001.c",
-      "5A004.a",
     ] as const;
     for (const code of hrCandidates) {
       const entry = findEuAnnexICat5Entry(code);
@@ -229,9 +238,14 @@ describe("Z34-Cat5 — parametric cross-walk capture", () => {
     expect(bwPredicate?.value).toBe(1000);
   });
 
-  it("EU:5A001.f.1 spread-spectrum entry has isAntiJam predicate", () => {
+  it("EU:5A001.b.3 spread-spectrum / anti-jam entry has isAntiJam predicate", () => {
+    // Official 5A001.b.3 = spread-spectrum radio with user-programmable
+    // spreading codes (the canonical anti-jam technique). The isAntiJam
+    // predicate was previously mis-homed on EU:5A001.f.1 (official scope:
+    // mobile voice/data interception). Re-homed here in the base-corpus
+    // audit; 5A001.b.3 is an NS (Wassenaar telecom) control, not MTCR.
     const entry = CONTROL_LIST_CROSS_WALK.find(
-      (e) => e.canonicalId === "EU:5A001.f.1",
+      (e) => e.canonicalId === "EU:5A001.b.3",
     );
     expect(entry).toBeDefined();
     const antiJamPredicate = entry?.predicates.find(
@@ -239,13 +253,11 @@ describe("Z34-Cat5 — parametric cross-walk capture", () => {
     );
     expect(
       antiJamPredicate,
-      "EU:5A001.f.1 missing isAntiJam predicate",
+      "EU:5A001.b.3 missing isAntiJam predicate",
     ).toBeDefined();
     expect(antiJamPredicate?.op).toBe("eq");
     expect(antiJamPredicate?.value).toBe(true);
-    // MT reason-for-control: spread-spectrum anti-jam carries MTCR
-    // tripwire when paired with the parent TT&C subsystem.
-    expect(entry?.reasonsForControl).toContain("MT");
+    expect(entry?.reasonsForControl).toContain("NS");
   });
 
   it("EU:5A002.a crypto entry has itemClass + isSpeciallyDesigned predicates", () => {
@@ -271,9 +283,11 @@ describe("Z34-Cat5 — parametric cross-walk capture", () => {
     expect(entry?.reasonsForControl).toContain("EI");
   });
 
-  it("EU:5A002.f QKD entry is space-rated (itemClass = spacecraft.crypto.quantum)", () => {
+  it("EU:5A002.c QKD entry is space-rated (itemClass = spacecraft.crypto.quantum)", () => {
+    // QKD is officially 5A002.c (quantum cryptography), not the phantom
+    // 5A002.f — re-homed in the base-corpus audit.
     const entry = CONTROL_LIST_CROSS_WALK.find(
-      (e) => e.canonicalId === "EU:5A002.f",
+      (e) => e.canonicalId === "EU:5A002.c",
     );
     expect(entry).toBeDefined();
     const itemClassPredicate = entry?.predicates.find(
@@ -307,10 +321,13 @@ describe("Z34-Cat5 — helper functions", () => {
   it("findEuAnnexICat5EntriesByTopic returns the spacecraft-tt-c-and-comms cluster", () => {
     const entries = findEuAnnexICat5EntriesByTopic("spacecraft-tt-c-and-comms");
     expect(entries.length).toBeGreaterThan(0);
-    // 5A001 family is the canonical comms cluster.
+    // After the base-corpus audit the genuine space-comms cluster is the
+    // 5A001 header + the advanced-radio parent (5A001.b) + phased arrays
+    // (5A001.d). 5A001.f.* (mobile interception) is cyber-surveillance,
+    // not space-comms.
     expect(entries.some((e) => e.code === "5A001")).toBe(true);
     expect(entries.some((e) => e.code === "5A001.b")).toBe(true);
-    expect(entries.some((e) => e.code === "5A001.f.1")).toBe(true);
+    expect(entries.some((e) => e.code === "5A001.d")).toBe(true);
   });
 });
 

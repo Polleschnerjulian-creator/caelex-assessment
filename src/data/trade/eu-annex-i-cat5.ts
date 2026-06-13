@@ -18,9 +18,10 @@
  * Space relevance (the reason we enumerate this here, not as a side
  * branch of the main eu-annex-i.ts):
  *
- *   - Every comm-sat, ground station, and inter-satellite-link is
- *     captured by 5A001.b (RF) or 5A001.f.1 (spread-spectrum
- *     anti-jam) or 5A001.h (optical link / OISL).
+ *   - Comm-sat / ground-station radio links are captured by the
+ *     5A001.b advanced-radio parent (incl. spread-spectrum / anti-jam at
+ *     5A001.b.3); optical inter-satellite links are the EU-autonomous
+ *     AM-005 entry in eu-annex-i.ts.
  *   - Every encryption-enabled payload (TT&C link encryption,
  *     telemetry crypto, mission data confidentiality, key-management
  *     systems) falls under 5A002 — and therefore drags a Cat-5-Part-2
@@ -35,10 +36,11 @@
  * + the structural entries operators need to discover during a Cat-5
  * walk). For full lookup, consult EUR-Lex directly.
  *
- * Parametric thresholds for the space-critical sub-entries (5A001.b
- * inter-sat-link bandwidth, 5A001.f.1 spread-spectrum, 5A002.a crypto
- * modules) live in `src/lib/comply-v2/trade/classification/
- * control-list-cross-walk.ts` and carry the `// Z34-Cat5` marker.
+ * Parametric thresholds for the space-relevant sub-entries (5A001.b
+ * high-throughput inter-sat-link bandwidth, 5A001.b.3 spread-spectrum /
+ * anti-jam, 5A002.a crypto modules, 5A002.c QKD) live in
+ * `src/lib/comply-v2/trade/classification/control-list-cross-walk.ts`
+ * and carry the `// Z34-Cat5` marker.
  *
  * SPDX-License-Identifier: LicenseRef-Caelex-Proprietary
  */
@@ -52,7 +54,7 @@ const ASOF = "2026-05-23";
 export const EU_ANNEX_I_CAT5_COVERAGE: ClassificationCoverage = {
   jurisdiction: "EU_ANNEX_I",
   scope:
-    "EU Annex I Cat. 5 Part 1 (Telecommunications: 5A001/5B001/5D001/5E001) + Part 2 (Information Security: 5A002/5A003/5A004/5B002/5D002/5D003/5E002). Aerospace-relevant sub-entries enumerated; structural sub-entries included so the matcher can walk the tree.",
+    "EU Annex I Cat. 5 Part 1 (Telecommunications: 5A001/5B001/5D001/5E001) + Part 2 (Information Security: 5A002/5A003/5A004/5B002/5D002/5E002). Aerospace-relevant sub-entries enumerated; structural sub-entries included so the matcher can walk the tree. (5D003 is NOT a control entry — the Cryptography Note is a decontrol note under 5D002.)",
   excluded: [
     "Sub-entries with no plausible space-systems relevance (consumer cellular handsets, fixed POTS switching gear).",
     "Free-text technical-note carve-outs (Decontrol notes, Cryptography Note) — those are evaluated in license-determination, not in classification.",
@@ -60,7 +62,7 @@ export const EU_ANNEX_I_CAT5_COVERAGE: ClassificationCoverage = {
   ],
   asOfDate: ASOF,
   officialTotalEntriesApprox: 300,
-  caelexCoverageCount: 46,
+  caelexCoverageCount: 43,
 };
 
 export const EU_ANNEX_I_CAT5_ENTRIES: ClassificationEntry[] = [
@@ -83,62 +85,64 @@ export const EU_ANNEX_I_CAT5_ENTRIES: ClassificationEntry[] = [
   {
     code: "5A001.a",
     jurisdiction: "EU_ANNEX_I",
-    title: "Telecom systems with digital techniques above defined data rates",
+    title:
+      "Telecom equipment with nuclear/EMP hardening or extreme-temperature operation",
     description:
-      "Telecommunications equipment using digital techniques operating above defined data-rate thresholds, or with optimisations for resistance to deliberate jamming / interception.",
+      "Any type of telecommunications equipment designed to withstand transitory electronic effects or electromagnetic pulse (EMP) arising from a nuclear explosion, OR designed/rated to operate outside the −45 °C to +85 °C temperature range (radiation-hardened / extreme-temperature).",
     controlReasons: ["NS"],
     crossReferenceTopic: "spacecraft-tt-c-and-comms",
     sourceUrl: SOURCE_URL,
     asOfDate: ASOF,
     notes:
-      "5A001.a covers the broad 'high-throughput digital telecom' tripwire — relevant for ground-station modems, satellite payload modulators.",
+      "5A001.a = nuclear/EMP-hardened or extreme-temperature telecom — relevant for rad-hard satellite payload comms and hardened ground links.",
   },
   {
     code: "5A001.b",
     jurisdiction: "EU_ANNEX_I",
     title:
-      "Radio equipment, MMICs, phased-array antennas above frequency thresholds",
+      "Telecommunication systems/equipment and specially designed components (5A001.b parent)",
     description:
-      "Radio equipment, monolithic microwave integrated circuits (MMICs), phased-array antennas operating above specified frequency / bandwidth thresholds (incl. above 31.8 GHz with electronic beam-steering).",
+      "Parent entry for telecommunication systems, equipment and specially designed components/accessories with advanced functions, controlled via sub-items 5A001.b.1 (underwater untethered comms) through 5A001.b.6 (low-bit-rate voice coding) — incl. spread-spectrum radio (5A001.b.3) and digitally-controlled radio receivers (5A001.b.5).",
     controlReasons: ["NS"],
     crossReferenceTopic: "spacecraft-tt-c-and-comms",
     sourceUrl: SOURCE_URL,
     asOfDate: ASOF,
     notes:
-      "Captures Ka/Q/V-band phased-array antennas and high-throughput MMICs — the structural enabler for HTS comm-sats and ISL terminals.",
+      "Parent — operators classify against the most-specific 5A001.b.N sub-item. Phased-array antennas above 31.8 GHz are 5A001.d, NOT 5A001.b.",
   },
   {
     code: "5A001.b.1",
     jurisdiction: "EU_ANNEX_I",
-    title: "Inter-satellite link transmit/receive equipment",
+    title: "Underwater untethered communications equipment",
     description:
-      "Equipment specially designed for inter-satellite-link transmission/reception above defined data-rate × range thresholds. The structural capture for ISL terminals across LEO/MEO constellations.",
+      "Equipment employing underwater untethered communications using acoustic, electromagnetic (in-water), or optical (laser/LED) carriers, incl. beam-steering above defined thresholds. Predominantly naval — included for Cat-5 structural completeness.",
     controlReasons: ["NS"],
-    crossReferenceTopic: "spacecraft-tt-c-and-comms",
-    sourceUrl: SOURCE_URL,
-    asOfDate: ASOF,
-    notes:
-      "Companion to 5A001.f for RF-based ISLs. Parametric threshold (crossLinkBandwidthMbps) tracked in cross-walk.",
-  },
-  {
-    code: "5A001.b.5",
-    jurisdiction: "EU_ANNEX_I",
-    title: "Equipment for mobile telecommunications interception",
-    description:
-      "Equipment designed for interception of mobile telecom signals (incl. monitoring + analysis). Cross-cuts with Cat. 5 Part 2 cryptanalytic gear.",
-    controlReasons: ["NS", "HR"],
     crossReferenceTopic: null,
     sourceUrl: SOURCE_URL,
     asOfDate: ASOF,
     notes:
-      "HR control reason from EU 2021/821 Art. 5 (cyber-surveillance) — restricts export to jurisdictions where human-rights risk is flagged.",
+      "Official 5A001.b.1 = underwater untethered comms (not inter-satellite link). High-throughput ISL bandwidth capture lives on the 5A001.b parent / EU-autonomous AM-005 in the cross-walk.",
+  },
+  {
+    code: "5A001.b.5",
+    jurisdiction: "EU_ANNEX_I",
+    title:
+      "Digitally controlled radio receivers (>1000 channels, <1 ms switching)",
+    description:
+      "Digitally controlled radio receivers having all of: more than 1,000 channels; frequency-switching time less than 1 ms; automatic searching/scanning of part of the electromagnetic spectrum; and identification of received signals or transmitter type. Does not control civil cellular radio-communications equipment.",
+    controlReasons: ["NS"],
+    crossReferenceTopic: null,
+    sourceUrl: SOURCE_URL,
+    asOfDate: ASOF,
+    notes:
+      "Official 5A001.b.5 = digitally-controlled scanning receivers — NOT mobile-telecom interception (that is 5A001.f). No HR/cyber-surveillance flag.",
   },
   {
     code: "5A001.c",
     jurisdiction: "EU_ANNEX_I",
-    title: "Telecom transmission equipment with optical techniques",
+    title: "Optical fibres designed to withstand high tensile stress",
     description:
-      "Telecom transmission equipment using optical techniques (other than the optical free-space items in 5A001.f / 5A001.h), incl. WDM, fiber-optic transmission, optical amplifiers above gain thresholds.",
+      "Optical fibres more than 500 m in length specified to withstand a proof-test tensile stress of 2×10⁹ N/m² or more.",
     controlReasons: ["NS"],
     crossReferenceTopic: null,
     sourceUrl: SOURCE_URL,
@@ -147,20 +151,20 @@ export const EU_ANNEX_I_CAT5_ENTRIES: ClassificationEntry[] = [
   {
     code: "5A001.d",
     jurisdiction: "EU_ANNEX_I",
-    title: "Underwater telecommunications equipment",
+    title: "Electronically steerable phased-array antennas above 31.8 GHz",
     description:
-      "Underwater communications equipment (acoustic + EM), specially designed cables, repeaters. Mostly naval — included for Cat-5 completeness.",
+      "Electronically steerable phased-array antennae operating above 31.8 GHz (with stated effective-radiated-power thresholds). The structural enabler for Ka/Q/V-band HTS comm-sats and beam-steering ground terminals.",
     controlReasons: ["NS"],
-    crossReferenceTopic: null,
+    crossReferenceTopic: "spacecraft-tt-c-and-comms",
     sourceUrl: SOURCE_URL,
     asOfDate: ASOF,
   },
   {
     code: "5A001.e",
     jurisdiction: "EU_ANNEX_I",
-    title: "Radio equipment for high-mobility operation",
+    title: "Radio direction-finding equipment above 30 MHz",
     description:
-      "Radio equipment specially designed for high-mobility operation (incl. anti-jam features) at frequencies above 4 GHz. Aerospace-relevant for airborne-relay platforms.",
+      "Radio direction-finding equipment operating at frequencies above 30 MHz having all of: instantaneous bandwidth of 10 MHz or more; and capability to find the line of bearing to non-cooperating transmitters with a signal duration of less than 1 ms.",
     controlReasons: ["NS"],
     crossReferenceTopic: null,
     sourceUrl: SOURCE_URL,
@@ -169,44 +173,49 @@ export const EU_ANNEX_I_CAT5_ENTRIES: ClassificationEntry[] = [
   {
     code: "5A001.f",
     jurisdiction: "EU_ANNEX_I",
-    title: "Spread-spectrum / frequency-agile radio equipment",
+    title: "Mobile telecommunications interception / jamming equipment",
     description:
-      "Radio equipment using spread-spectrum techniques (incl. frequency-hopping, direct-sequence) or programmable bandwidth-modulation with anti-jam properties.",
-    controlReasons: ["NS"],
-    crossReferenceTopic: "spacecraft-tt-c-and-comms",
+      "Mobile telecommunications interception or jamming equipment, and monitoring equipment therefor, and specially designed components. Parent of 5A001.f.1 (air-interface voice/data intercept) and 5A001.f.2 (subscriber-identity / signalling intercept).",
+    controlReasons: ["NS", "HR"],
+    crossReferenceTopic: null,
     sourceUrl: SOURCE_URL,
     asOfDate: ASOF,
+    notes:
+      "Cyber-surveillance item under EU 2021/821 Art. 5 — HR-flagged. Spread-spectrum / anti-jam radio is NOT here; it is 5A001.b.3.",
   },
   {
     code: "5A001.f.1",
     jurisdiction: "EU_ANNEX_I",
-    title: "Spread-spectrum anti-jam radio with programmable hop-rate",
+    title: "Interception of air-interface voice or data (mobile telecom)",
     description:
-      "Spread-spectrum radio equipment with user-programmable frequency-hopping rate, channel-spacing, or PN-code patterns. The canonical satellite-TT&C anti-jam tripwire.",
-    controlReasons: ["NS", "MT"],
-    crossReferenceTopic: "spacecraft-tt-c-and-comms",
+      "Interception equipment designed for the extraction of voice or data transmitted over the air interface of mobile telecommunications networks.",
+    controlReasons: ["NS", "HR"],
+    crossReferenceTopic: null,
     sourceUrl: SOURCE_URL,
     asOfDate: ASOF,
     notes:
-      "Space-critical: covers anti-jam TT&C uplinks. Operators of GEO/MEO comms-sats with robust uplink encryption hit this directly. Parametric predicate (isAntiJam) tracked in cross-walk.",
+      "Cyber-surveillance item (EU 2021/821 Art. 5) — HR-flagged. The spread-spectrum / anti-jam predicate (isAntiJam) is tracked on EU:5A001.b.3 in the cross-walk, not here.",
   },
   {
     code: "5A001.f.2",
     jurisdiction: "EU_ANNEX_I",
-    title: "Adaptive null-steering / interference-cancellation receivers",
+    title:
+      "Interception of subscriber identifiers / signalling (mobile telecom)",
     description:
-      "Receiver equipment with adaptive null-steering, smart-beam-forming, or interference-cancellation that adapts in <1 second. Captures GNSS anti-jam + comm-sat protected uplink receivers.",
-    controlReasons: ["NS"],
-    crossReferenceTopic: "spacecraft-tt-c-and-comms",
+      "Interception equipment designed for the extraction of client-device or subscriber identifiers (e.g. IMSI, TIMSI or IMEI), signalling, or other metadata transmitted over the air interface of mobile telecommunications networks.",
+    controlReasons: ["NS", "HR"],
+    crossReferenceTopic: null,
     sourceUrl: SOURCE_URL,
     asOfDate: ASOF,
+    notes:
+      "Cyber-surveillance item (EU 2021/821 Art. 5) — HR-flagged. IMSI-catcher-class equipment.",
   },
   {
     code: "5A001.g",
     jurisdiction: "EU_ANNEX_I",
-    title: "Mobile-comm radio equipment + handsets (defined-use)",
+    title: "Passive Coherent Location (PCL) systems",
     description:
-      "Mobile-comms radio equipment specially designed for military or other restricted-use modes (incl. military waveforms). Distinguished from mass-market consumer mobile handsets.",
+      "Passive Coherent Location (PCL) systems or equipment specially designed for detecting and tracking moving objects by measuring reflections of ambient radio-frequency emissions supplied by non-radar transmitters (e.g. broadcast / mobile-network signals).",
     controlReasons: ["NS"],
     crossReferenceTopic: null,
     sourceUrl: SOURCE_URL,
@@ -215,15 +224,15 @@ export const EU_ANNEX_I_CAT5_ENTRIES: ClassificationEntry[] = [
   {
     code: "5A001.h",
     jurisdiction: "EU_ANNEX_I",
-    title: "Optical free-space communication terminals",
+    title: "Counter-IED radio-frequency transmitting equipment",
     description:
-      "Free-space optical-comm terminals (laser communication) above defined data-rate × range product thresholds; tracking systems; specific wavelength bands. Includes optical inter-satellite links.",
+      "Radio-frequency transmitting equipment designed or modified to prematurely activate or prevent the initiation of improvised explosive devices (IEDs), and related equipment for coordinating co-channel friendly communications.",
     controlReasons: ["NS"],
-    crossReferenceTopic: "optical-comm-terminals",
+    crossReferenceTopic: null,
     sourceUrl: SOURCE_URL,
     asOfDate: ASOF,
     notes:
-      "Mynaric Condor, Tesat SCOT80, CACI photonic terminals fall here. 'ITAR-free' marketing requires verified zero US-DNA — see De-Minimis-Calculator.",
+      "Official 5A001.h = counter-IED RF equipment — NOT optical free-space comms. Optical inter-satellite-link terminals (Mynaric Condor, Tesat SCOT80, CACI) are the EU-autonomous AM-005 entry in eu-annex-i.ts.",
   },
 
   // ═══════════════════════════════════════════════════════════════════
@@ -410,115 +419,103 @@ export const EU_ANNEX_I_CAT5_ENTRIES: ClassificationEntry[] = [
   {
     code: "5A002.b",
     jurisdiction: "EU_ANNEX_I",
-    title: "Items designed/modified for cryptanalytic functions",
+    title: "Cryptographic activation tokens",
     description:
-      "Items specially designed or modified to perform cryptanalytic functions — analysing cryptographic mechanisms to derive confidential variables or sensitive data (incl. recovering keys).",
-    controlReasons: ["NS", "EI"],
-    crossReferenceTopic: null,
-    sourceUrl: SOURCE_URL,
-    asOfDate: ASOF,
-  },
-  {
-    code: "5A002.c",
-    jurisdiction: "EU_ANNEX_I",
-    title:
-      "Items designed for non-cryptographic security functions of IT systems",
-    description:
-      "Items designed/modified to use 'cryptography' to perform non-cryptographic security functions (e.g. authentication, digital signature, integrity), where used to support controlled functions.",
-    controlReasons: ["NS", "EI"],
-    crossReferenceTopic: null,
-    sourceUrl: SOURCE_URL,
-    asOfDate: ASOF,
-  },
-  {
-    code: "5A002.d",
-    jurisdiction: "EU_ANNEX_I",
-    title: "Communication cable systems for intrusion detection",
-    description:
-      "Specially-designed cable systems for detection of clandestine intrusion or other physical tampering. Captures tamper-evident fibre and shielded comm links for high-assurance environments.",
-    controlReasons: ["NS"],
-    crossReferenceTopic: null,
-    sourceUrl: SOURCE_URL,
-    asOfDate: ASOF,
-  },
-  {
-    code: "5A002.e",
-    jurisdiction: "EU_ANNEX_I",
-    title: "Items designed to reduce TEMPEST emanations",
-    description:
-      "Items specially designed/modified to reduce compromising emanations beyond what is needed for health, safety, or electromagnetic-interference standards (TEMPEST — protection against side-channel emissions).",
-    controlReasons: ["NS"],
-    crossReferenceTopic: null,
-    sourceUrl: SOURCE_URL,
-    asOfDate: ASOF,
-  },
-  {
-    code: "5A002.f",
-    jurisdiction: "EU_ANNEX_I",
-    title: "Quantum cryptography items",
-    description:
-      "Items designed/modified for quantum cryptography (QKD) — incl. quantum-state preparation, detection, and key-distribution modules above defined thresholds.",
+      "Items designed or modified to enable, by means of 'cryptographic activation' (e.g. a licence key), an item to achieve or exceed the controlled performance levels for functionality specified by 5A002.a that are not otherwise enabled.",
     controlReasons: ["NS", "EI"],
     crossReferenceTopic: null,
     sourceUrl: SOURCE_URL,
     asOfDate: ASOF,
     notes:
-      "Emerging space relevance — China / EU QKD satellite demonstrators (Micius, Eagle-1) explicitly fall here.",
+      "Official 5A002.b = cryptographic-activation tokens (not cryptanalytic — cryptanalytic functions are 5A004).",
   },
   {
-    code: "5A002.g",
+    code: "5A002.c",
     jurisdiction: "EU_ANNEX_I",
-    title: "Items for cryptographic activation",
+    title: "Quantum cryptography (QKD) items",
     description:
-      "Items employing or performing 'cryptographic activation' — converting an item from a lower-functionality state to a controlled-functionality state via a cryptographic key.",
+      "Non-cryptographic 'information security' systems and equipment designed or modified to use 'quantum cryptography' (also known as quantum key distribution, QKD).",
     controlReasons: ["NS", "EI"],
     crossReferenceTopic: null,
     sourceUrl: SOURCE_URL,
     asOfDate: ASOF,
+    notes:
+      "Official 5A002.c = quantum cryptography (QKD). Eagle-1 (ESA/SES) and follow-on EU IRIS² QKD payloads fall here. Relocated from the phantom 5A002.f.",
+  },
+  {
+    code: "5A002.d",
+    jurisdiction: "EU_ANNEX_I",
+    title: "Cryptography for ultra-wideband channelising / scrambling codes",
+    description:
+      "Items designed or modified to use 'cryptography' to generate the channelising codes, scrambling codes or network identification codes, for systems using ultra-wideband modulation techniques.",
+    controlReasons: ["NS", "EI"],
+    crossReferenceTopic: null,
+    sourceUrl: SOURCE_URL,
+    asOfDate: ASOF,
+    notes:
+      "Official 5A002.d = UWB channelising/scrambling-code cryptography (a cryptographic item → EI). Cable-intrusion detection is NOT here — it is 5A003.a.",
+  },
+  {
+    code: "5A002.e",
+    jurisdiction: "EU_ANNEX_I",
+    title:
+      "Cryptography for spread-spectrum spreading / frequency-hopping codes",
+    description:
+      "Items designed or modified to use 'cryptography' to generate the spreading code for 'spread spectrum' systems, or the hopping code for 'frequency agility' systems.",
+    controlReasons: ["NS", "EI"],
+    crossReferenceTopic: null,
+    sourceUrl: SOURCE_URL,
+    asOfDate: ASOF,
+    notes:
+      "Official 5A002.e = cryptographic generation of spreading/hopping codes (a cryptographic item → EI); 5A002 ends here (no .f/.g). TEMPEST emanation reduction is NOT here — it is 5A003.b.",
   },
 
   // ═══════════════════════════════════════════════════════════════════
-  // 5.A.3 — Cryptanalytic items (separated from 5A002.b for ECCN clarity)
+  // 5.A.3 — Non-cryptographic information security (cable + TEMPEST)
   // ═══════════════════════════════════════════════════════════════════
   {
     code: "5A003",
     jurisdiction: "EU_ANNEX_I",
     title:
-      "Non-cryptographic information-security systems / equipment (data theft prevention)",
+      "Non-cryptographic information security — cable intrusion detection (.a) + TEMPEST (.b)",
     description:
-      "Non-cryptographic info-security items — communications cable systems designed for intrusion detection, devices using 'cryptanalytic functions' designed to defeat security mechanisms. Sister entry to 5A002.b for items where the cryptanalytic function is the primary control driver.",
+      "Non-cryptographic 'information security' systems: (a) communications cable systems designed or modified using mechanical, electrical or electronic means to detect surreptitious intrusion; and (b) equipment specially designed or modified to reduce the compromising emanations of information-bearing signals beyond what is necessary for health, safety or electromagnetic-interference standards (TEMPEST).",
     controlReasons: ["NS"],
     crossReferenceTopic: null,
     sourceUrl: SOURCE_URL,
     asOfDate: ASOF,
+    notes:
+      "Non-cryptographic → no EI reason. The cable-intrusion (.a) and TEMPEST (.b) content was previously mislabelled onto 5A002.d/.e.",
   },
 
   // ═══════════════════════════════════════════════════════════════════
-  // 5.A.4 — Cryptanalytic + key-management items
+  // 5.A.4 — Cryptanalytic items
   // ═══════════════════════════════════════════════════════════════════
   {
     code: "5A004",
     jurisdiction: "EU_ANNEX_I",
-    title: "Items for defeating, weakening, or bypassing info-security",
+    title: "Items designed/modified to perform cryptanalytic functions",
     description:
-      "Items specially designed or modified to perform cryptanalytic functions OR designed/modified for defeating, weakening, or bypassing information security — incl. key-recovery tools, side-channel-attack hardware.",
+      "Items designed or modified to perform 'cryptanalytic functions' — defeating cryptographic mechanisms in order to derive confidential variables or sensitive data, including clear text, passwords or cryptographic keys.",
     controlReasons: ["NS", "EI"],
     crossReferenceTopic: null,
     sourceUrl: SOURCE_URL,
     asOfDate: ASOF,
     notes:
-      "Highly sensitive — strong-presumption-of-denial gate in license-determination for non-EU destinations.",
+      "Official 5A004 = cryptanalytic functions. Highly sensitive — strong-presumption-of-denial gate in license-determination for non-EU destinations.",
   },
   {
     code: "5A004.a",
     jurisdiction: "EU_ANNEX_I",
-    title: "Hardware for IT-system intrusion / IP-network surveillance",
+    title: "Cryptanalytic-function hardware",
     description:
-      "Hardware items specially designed for intrusion into computer systems or IP-network surveillance, incl. equipment for monitoring and exploiting IT-system vulnerabilities.",
-    controlReasons: ["NS", "HR"],
+      "Hardware items designed or modified to perform 'cryptanalytic functions' — e.g. key-recovery engines and side-channel / fault-injection attack rigs targeting cryptographic mechanisms.",
+    controlReasons: ["NS", "EI"],
     crossReferenceTopic: null,
     sourceUrl: SOURCE_URL,
     asOfDate: ASOF,
+    notes:
+      "Official 5A004.a = cryptanalytic-function hardware (Encryption Items → EI), NOT IT-system intrusion / IP-network surveillance hardware.",
   },
 
   // ═══════════════════════════════════════════════════════════════════
@@ -594,24 +591,7 @@ export const EU_ANNEX_I_CAT5_ENTRIES: ClassificationEntry[] = [
     sourceUrl: SOURCE_URL,
     asOfDate: ASOF,
     notes:
-      "Most-controversial sub-entry — open-source crypto can be exempt under 5D003 / Note 4. Operators must walk the Cryptography Note evaluation before claiming exemption.",
-  },
-
-  // ═══════════════════════════════════════════════════════════════════
-  // 5.D.3 — Open-source / mass-market crypto exemption framework
-  // ═══════════════════════════════════════════════════════════════════
-  {
-    code: "5D003",
-    jurisdiction: "EU_ANNEX_I",
-    title: "Open-source / publicly-available crypto software — exemption frame",
-    description:
-      "Framework entry for crypto software that is in the public domain OR exempt under the Cryptography Note (Note 3 to Cat. 5 Part 2). Operators document the exemption claim here; classification of the underlying software remains 5D002.",
-    controlReasons: ["NS", "EI"],
-    crossReferenceTopic: null,
-    sourceUrl: SOURCE_URL,
-    asOfDate: ASOF,
-    notes:
-      "Exemption-by-Note, not a separate ECCN. The control text references Note 3 (Cryptography Note) + Note 4 (publicly-available source). Caelex treats 5D003 as a classification slot for the exemption evidence package.",
+      "Most-controversial sub-entry — open-source crypto can be exempt under the Cryptography Note (Note 3 to Cat. 5 Part 2) / Note 4 (publicly-available source). Operators must walk that Note evaluation before claiming exemption. (There is no separate 5D003 control entry — the exemption lives in the Notes under 5D002.)",
   },
 
   // ═══════════════════════════════════════════════════════════════════

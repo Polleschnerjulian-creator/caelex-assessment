@@ -163,28 +163,30 @@ export const EU_ANNEX_I_ENTRIES: ClassificationEntry[] = [
 
   // ─── Cat. 5 Part 1 — Telecom ───────────────────────────────────────
   {
-    code: "5A001.b",
+    code: "5A001.d",
     jurisdiction: "EU_ANNEX_I",
-    title: "Phased-array antennas operating above 31.8 GHz",
+    title: "Electronically steerable phased-array antennas above 31.8 GHz",
     description:
-      "Phased-array antennas with electronic beam-steering at frequencies above 31.8 GHz, OR with capabilities for adaptive nulling.",
+      "Electronically steerable phased-array antennae operating at frequencies above 31.8 GHz (with stated effective-radiated-power thresholds). The structural enabler for Ka/Q/V-band HTS comm-sats and beam-steering ground terminals.",
     controlReasons: ["NS"],
     crossReferenceTopic: "spacecraft-tt-c-and-comms",
     sourceUrl: SOURCE_BASE,
     asOfDate: ASOF,
+    notes:
+      "Phased-array antennas above 31.8 GHz are officially 5A001.d, not 5A001.b (which is the advanced-radio parent). Base-corpus audit 2026-06-13.",
   },
   {
     code: "5A001.f",
     jurisdiction: "EU_ANNEX_I",
-    title: "Free-space optical communication terminals",
+    title: "Mobile telecommunications interception / jamming equipment",
     description:
-      "Laser communication terminals: data-rate × range product above defined threshold; tracking systems; specific wavelength bands.",
-    controlReasons: ["NS"],
-    crossReferenceTopic: "optical-comm-terminals",
+      "Mobile telecommunications interception or jamming equipment, and monitoring equipment therefor (incl. air-interface voice/data intercept and subscriber-identity / IMSI-IMEI / signalling intercept).",
+    controlReasons: ["NS", "HR"],
+    crossReferenceTopic: null,
     sourceUrl: SOURCE_BASE,
     asOfDate: ASOF,
     notes:
-      "Mynaric Condor Mk3, Tesat SCOT20/SCOT80 fall here. 'ITAR-free' marketing requires verified zero US-DNA — see Caelex De-Minimis-Calculator (Sprint B5).",
+      "Official 5A001.f = mobile-telecom interception/jamming (cyber-surveillance, HR-flagged) — NOT free-space optical comms. Optical inter-satellite-link terminals (Mynaric Condor, Tesat SCOT20/80, CACI) are the EU-autonomous AM-005 entry below. Base-corpus audit 2026-06-13.",
   },
 
   // ─── Cat. 6 — Sensors / Optics / SAR ───────────────────────────────
