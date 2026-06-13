@@ -51,14 +51,23 @@ describe("resolveOriginModule", () => {
     }
   });
 
-  it("returns null for a supported origin with no module yet (CH — M-CH not built)", () => {
+  it("returns the CH module for a supported CH origin (CH, registered in M-CH)", () => {
     const routing = originRegimes("CH");
+    expect(routing.supported).toBe(true);
+    const mod = resolveOriginModule(routing);
+    expect(mod).not.toBeNull();
+    expect(typeof mod).toBe("function");
+  });
+
+  it("returns null for a supported origin with no module yet (NO — M-NO not built)", () => {
+    const routing = originRegimes("NO");
     expect(routing.supported).toBe(true);
     expect(resolveOriginModule(routing)).toBeNull();
   });
 
-  it("the registry holds US_CCL + EU_ANNEX_I + UK_STRATEGIC (US wrap + M-EU + M-UK); other origins register later", () => {
+  it("the registry holds US_CCL + EU_ANNEX_I + UK_STRATEGIC + CH_GKV (US wrap + M-EU + M-UK + M-CH); other origins register later", () => {
     expect([...ORIGIN_MODULES.keys()].sort()).toEqual([
+      "CH_GKV",
       "EU_ANNEX_I",
       "UK_STRATEGIC",
       "US_CCL",

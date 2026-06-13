@@ -136,12 +136,13 @@ describe("F5 — origin stage wiring (mock GO module under UK_STRATEGIC)", () =>
 });
 
 describe("F5 — fallback intact when no module is registered", () => {
-  it("CH + controlled item + NO module → Gate 4.5 thin-origin REVIEW", () => {
-    // CH (CH_GKV maturity 3, NO registered module) still falls back to the
+  it("NO + controlled item + NO module → Gate 4.5 thin-origin REVIEW", () => {
+    // NO (NO_LIST maturity 3, NO registered module) still falls back to the
     // Gate 4.5 fail-closed REVIEW — proving the no-module fallback path is
-    // intact. (GB used to test this, but M-UK registered a real UK module +
-    // lifted UK_STRATEGIC to 2, so GB now flows through the module, not Gate 4.5
-    // — see the M-UK wiring test below.)
+    // intact. (GB used to test this, but M-UK registered a real UK module + lifted
+    // UK_STRATEGIC to 2; CH then took over until M-CH registered a real CH module
+    // + lifted CH_GKV to 2 — so both now flow through their module, not Gate 4.5.
+    // Norway is the next-built circle-A origin still on the thin fallback.)
     const det = determineLicenseRequirements(
       evaluateItemSignals({
         apertureMeters: null,
@@ -157,7 +158,7 @@ describe("F5 — fallback intact when no module is registered", () => {
       undefined,
       undefined,
       { eccnEU: "9A004", eccnUS: null, usmlCategory: null },
-      originRegimes("CH"), // CH_GKV maturity 3, no module → Gate 4.5 fallback
+      originRegimes("NO"), // NO_LIST maturity 3, no module → Gate 4.5 fallback
     );
     expect(det.gate).toBe("REVIEW_NEEDED");
     expect(
@@ -171,6 +172,73 @@ describe("F5 — fallback intact when no module is registered", () => {
     // (a non-OGEL destination) → the UK module's SIEL verdict (INDIVIDUAL),
     // folded as an ORIGIN_INDIVIDUAL_LICENCE row → REVIEW. No THIN_ORIGIN_REGIME.
     const det = gbDualUse("JP");
+    expect(det.gate).toBe("REVIEW_NEEDED");
+    expect(
+      det.requirements.find((r) => r.triggerCode === "THIN_ORIGIN_REGIME"),
+    ).toBeUndefined();
+    expect(
+      det.requirements.find(
+        (r) => r.triggerCode === "ORIGIN_INDIVIDUAL_LICENCE",
+      ),
+    ).toBeDefined();
+  });
+
+  it("M-CH: CH + OGB-eligible item flows through the real CH module → GENERAL/GO supersede", () => {
+    // After M-CH, CH (CH_GKV maturity 2 + registered module) NO LONGER hits
+    // Gate 4.5. A declared 5A002 (NOT sensitive) CH→DE (an Anhang-7 partner
+    // state) → the CH module's OGB GENERAL/GO verdict supersedes the generic EU
+    // dual-use REVIEW (intra-EU dest = Gate 3.5 dual-use leg does not fire) →
+    // CLEARED. The folded ORIGIN_GENERAL_LICENCE row is present; no
+    // THIN_ORIGIN_REGIME.
+    const det = determineLicenseRequirements(
+      evaluateItemSignals({
+        apertureMeters: null,
+        rangeKm: null,
+        payloadKg: null,
+        isRadHardened: null,
+        isMilSpec: null,
+        isAntiJam: null,
+        eccnEU: "5A002",
+      }),
+      null,
+      "DE",
+      undefined,
+      undefined,
+      { eccnEU: "5A002", eccnUS: null, usmlCategory: null },
+      originRegimes("CH"), // CH_GKV maturity 2 + registered module
+      "CH",
+    );
+    expect(det.gate).toBe("CLEARED");
+    expect(
+      det.requirements.find((r) => r.triggerCode === "ORIGIN_GENERAL_LICENCE"),
+    ).toBeDefined();
+    expect(
+      det.requirements.find((r) => r.triggerCode === "THIN_ORIGIN_REGIME"),
+    ).toBeUndefined();
+  });
+
+  it("M-CH: CH + sensitive 9A004 → CH module Einzelbewilligung (INDIVIDUAL), no Gate 4.5", () => {
+    // A declared 9A004 (MTCR/Annex-IV-equivalent, the sensitive fail-close)
+    // CH→DE → the CH module's Einzelbewilligung verdict (INDIVIDUAL), folded as
+    // an ORIGIN_INDIVIDUAL_LICENCE row → REVIEW. No THIN_ORIGIN_REGIME, no GO.
+    const det = determineLicenseRequirements(
+      evaluateItemSignals({
+        apertureMeters: null,
+        rangeKm: null,
+        payloadKg: null,
+        isRadHardened: null,
+        isMilSpec: null,
+        isAntiJam: null,
+        eccnEU: "9A004",
+      }),
+      null,
+      "DE",
+      undefined,
+      undefined,
+      { eccnEU: "9A004", eccnUS: null, usmlCategory: null },
+      originRegimes("CH"),
+      "CH",
+    );
     expect(det.gate).toBe("REVIEW_NEEDED");
     expect(
       det.requirements.find((r) => r.triggerCode === "THIN_ORIGIN_REGIME"),

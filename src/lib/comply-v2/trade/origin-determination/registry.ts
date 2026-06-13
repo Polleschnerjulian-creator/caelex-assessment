@@ -22,6 +22,7 @@ import type { OriginLicenceModule } from "./types";
 import { usOriginModule } from "./us";
 import { euOriginModule } from "./eu";
 import { ukOriginModule } from "./uk";
+import { chOriginModule } from "./ch";
 
 /**
  * Registered per-origin licence modules, keyed by `CorpusRegime`. Modules
@@ -41,6 +42,13 @@ export const ORIGIN_MODULES = new Map<CorpusRegime, OriginLicenceModule>([
   // OGEL GENERAL/GO supersedes the generic Gate-3.5/Gate-4 REVIEW for an
   // OGEL-eligible GB→EU-member dual-use export; see `uk.ts` + the wiring.
   ["UK_STRATEGIC", ukOriginModule],
+  // Switzerland dual-use primary regime (CH_GKV). OGB (ordentliche
+  // Generalausfuhrbewilligung, GKV Art. 12) to the Anhang-7 partner states +
+  // Einzelbewilligung fallback at SECO — the OGB GENERAL/GO supersedes the
+  // generic Gate-3.5/Gate-4 REVIEW for an OGB-eligible CH→partner-state dual-use
+  // export; sensitive MTCR/Annex-IV-equivalent codes (9A004/9A106.c) fail-close
+  // to REVIEW (no false-CLEARED); see `ch.ts` + the wiring.
+  ["CH_GKV", chOriginModule],
 ]);
 
 /**

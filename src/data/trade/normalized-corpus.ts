@@ -234,12 +234,35 @@ export const REGIME_MATURITY: Record<CorpusRegime, 1 | 2 | 3> = {
   // friendly-dest dual-use into GO (the false-CLEARED-class bug from the UK S3 lesson).
   // LIFT-CONDITION: raise to 2 once KR-origin MOTIE licence determination is modelled.
   KR_STRATEGIC: 3,
-  // CH_GKV is dualUsePrimary for CH-origin items; the engine has NO Swiss (SECO)
-  // origin-licence logic yet, so Gate 4.5 (thin-origin REVIEW) is the ONLY guard
-  // for a CH-seat controlled export. Lifting to 2 would silently turn CH→friendly-
-  // dest dual-use into GO — the same false-CLEARED-class bug the UK S3 lesson documents.
-  // LIFT-CONDITION: raise to 2 once CH-origin SECO licence determination is modelled.
-  CH_GKV: 3,
+  // Data-Sprint S5 wired the Switzerland GKV (SR 946.202.1) dual-use space slice
+  // as MIRROR entries. LIFTED 3 → 2 on 2026-06-13 (M-CH, Engine-Origin-
+  // Determination): the CH-origin LICENCE determination is now modelled —
+  // `origin-determination/ch.ts` (OGB "ordentliche Generalausfuhrbewilligung",
+  // GKV Art. 12, to the Anhang-7 partner states + Einzelbewilligung fallback at
+  // SECO). The lift-condition documented previously is satisfied.
+  //
+  // WHY THE LIFT IS NOW SAFE (no false-CLEARED): the original Tier-3 hold existed
+  // because Gate 4.5 (thin-origin REVIEW) was the ONLY guard for a CH-seat
+  // controlled export — lifting then would have silenced Gate 4.5 and let a
+  // CH→partner-state declared-9A004 cell silently become GO. With M-CH that gap
+  // is CLOSED: the CH module REPLACES Gate 4.5 for CH and returns the precise
+  // per-item verdict —
+  //   • OGB-eligible (NOT sensitive) dual-use → an Anhang-7 partner state
+  //     (Argentina/Australia/EU-subset/JP/KR/NO/CA/UK/US — VERBATIM Anhang 7,
+  //     Stand 1. Juni 2024) → GENERAL/GO under the OGB (the deliberate, cited
+  //     REVIEW→GO refinement);
+  //   • a sensitive MTCR/Annex-IV-equivalent item (9A004/9A106.c) → REVIEW even
+  //     to a partner state — the GKV carries NO written exclusion schedule, so a
+  //     GO is NOT confirmable → fail-close (§4.5); `sat-bus|CH|DE` STAYS REVIEW
+  //     (now produced by the CH module's Einzelbewilligung verdict, not Gate 4.5);
+  //   • any item → a non-partner destination (IN/CN — NOT on Anhang 7; the
+  //     11-state expansion adding Iceland + 10 EU members takes effect only
+  //     1 July 2026, NOT modelled) → Einzelbewilligung/REVIEW.
+  // Hard destination prohibitions (Gate 1.6 RU/BY — Switzerland applies the
+  // EU-aligned sanctions) still run UPSTREAM and are never overridable
+  // (`sat-bus|CH|RU` stays BLOCKED). See the golden-set pins + the M-CH comment
+  // block in `golden-set.test.ts`.
+  CH_GKV: 2,
   // Data-Sprint S5 wired the Norway dual-use list — Liste II / Vedlegg II of
   // FOR-2013-06-19-718 (flerbruksvarer), administered by the DEKSA under the MFA —
   // as MIRROR entries. NO_LIST is dualUsePrimary for NO-origin items, but the

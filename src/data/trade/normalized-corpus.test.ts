@@ -151,19 +151,13 @@ describe("S0: regime maturity (fail-closed input)", () => {
     ];
     for (const r of expected) expect([1, 2, 3]).toContain(REGIME_MATURITY[r]);
   });
-  it("thin (tier-3) origin regimes — 5 after M-UK (UK_STRATEGIC left)", () => {
+  it("thin (tier-3) origin regimes — 4 after M-CH (CH_GKV left)", () => {
     // Data-Sprint S4 lifted EU_CML 3 → 2 (set 7 → 6). M-UK (2026-06-13,
-    // Engine-Origin-Determination) lifted UK_STRATEGIC 3 → 2 — the UK-origin
-    // OGEL/SIEL licence determination is now modelled (`origin-determination/
-    // uk.ts`), so GB leaves the thin set (6 → 5). UK_STRATEGIC's lift is
-    // asserted separately below.
-    for (const r of [
-      "CA_ECL",
-      "AU_DSGL",
-      "KR_STRATEGIC",
-      "CH_GKV",
-      "NO_LIST",
-    ] as const) {
+    // Engine-Origin-Determination) lifted UK_STRATEGIC 3 → 2 (6 → 5). M-CH
+    // (2026-06-13) lifted CH_GKV 3 → 2 — the CH-origin OGB/Einzelbewilligung
+    // licence determination is now modelled (`origin-determination/ch.ts`), so
+    // CH leaves the thin set (5 → 4). CH_GKV's lift is asserted separately below.
+    for (const r of ["CA_ECL", "AU_DSGL", "KR_STRATEGIC", "NO_LIST"] as const) {
       expect(REGIME_MATURITY[r]).toBe(3);
     }
   });
@@ -178,6 +172,20 @@ describe("S0: regime maturity (fail-closed input)", () => {
     // the UK module's SIEL verdict (not Gate 4.5). See the REGIME_MATURITY
     // comment block in normalized-corpus.ts.
     expect(REGIME_MATURITY.UK_STRATEGIC).toBe(2);
+  });
+  it("CH_GKV is tier 2 after M-CH (Swiss OGB/SECO origin-licence modelled)", () => {
+    // M-CH (Engine-Origin-Determination, 2026-06-13) modelled the CH-origin
+    // licence determination — `origin-determination/ch.ts`: the OGB (ordentliche
+    // Generalausfuhrbewilligung, GKV Art. 12, to the Anhang-7 partner states)
+    // GENERAL/GO supersede + the Einzelbewilligung fallback at SECO. The lift is
+    // safe (no false-CLEARED): sensitive MTCR/Annex-IV-equivalent items
+    // (9A004/9A106.c) fail-close to REVIEW (the GKV carries no written exclusion
+    // schedule), non-partner destinations (IN/CN — NOT on Anhang 7) stay REVIEW,
+    // and Gate 1.6 (RU/BY, EU-aligned) still BLOCKS upstream. The golden pin
+    // `sat-bus|CH|DE = REVIEW` now comes from the CH module's Einzelbewilligung
+    // verdict (not Gate 4.5). See the REGIME_MATURITY comment block in
+    // normalized-corpus.ts.
+    expect(REGIME_MATURITY.CH_GKV).toBe(2);
   });
   it("USML_XV stays tier 1, EU_ANNEX_I tier 2", () => {
     expect(REGIME_MATURITY.USML_XV).toBe(1);

@@ -297,6 +297,67 @@ const EXACT: Record<string, Verdict> = {
   "sat-bus|GB|DE": "REVIEW", // 9A004 (Annex IV → Annex IIg) GB→DE: UK-Modul → SIEL
   "apogee-engine|GB|DE": "REVIEW", // 9A106 (Annex IV) GB→DE: UK-Modul → SIEL
   "sat-bus|GB|US": "REVIEW", // 9A004 GB→US: Annex IIg UND kein OGEL-Ziel → SIEL
+
+  // ── M-CH (Engine-Origin-Determination §4.3): CH-Origin OGB/Einzelbewilligung ─
+  //
+  // Für einen CH-Sitz bestimmt das CH-Modul (`origin-determination/ch.ts`) die
+  // echte Lizenz-Antwort nach der Güterkontrollverordnung (GKV, SR 946.202.1,
+  // Stand 1. Juni 2024), administriert vom SECO. Switzerland ist NICHT EU/EEA-
+  // Mitglied; ein CH-Dual-Use-Export braucht eine eigene schweizerische
+  // Bewilligung. Die OGB (ordentliche Generalausfuhrbewilligung, Art. 12) deckt
+  // Anhang-2-Teil-2-Dual-Use-Güter nach den Anhang-7-PARTNERSTAATEN; sonst eine
+  // Einzelausfuhrbewilligung (eine AGB nach Art. 13 ist exporteur-spezifisch).
+  // Anhang 7 (verbatim, Stand 2024-06-01) enthält u. a. DE/US/JP/GB/NO/CA/AU/KR
+  // — NICHT IN/CN (und die 11-Staaten-Erweiterung ab 1. Juli 2026 ist NICHT
+  // modelliert, fail-closed auf die in-Kraft-Liste).
+  //
+  // (i) GO unter der OGB — OGB-fähiges (NICHT sensibles) Dual-Use-Gut an einen
+  //     Anhang-7-Partnerstaat. Anders als die EU/UK-OGEL deckt die OGB AUCH die
+  //     nahen Verbündeten US/JP (beide auf Anhang 7) → GO für CH→DE, CH→US,
+  //     CH→JP. Belegt: GKV Art. 12(1) + Anhang 7 (fedlex XML).
+  "star-tracker|CH|DE": "GO", // 7A004 CH→DE: OGB (nicht sensibel, DE auf Anhang 7)
+  "star-tracker|CH|US": "GO", // 7A004 CH→US: OGB (US auf Anhang 7)
+  "star-tracker|CH|JP": "GO", // 7A004 CH→JP: OGB (JP auf Anhang 7)
+  "ground-tt-c|CH|DE": "GO", // 5A002 CH→DE: OGB (Krypto, nicht sensibel)
+  "ground-tt-c|CH|US": "GO", // 5A002 CH→US: OGB
+  "ground-tt-c|CH|JP": "GO", // 5A002 CH→JP: OGB
+  "flight-sw|CH|DE": "GO", // 9D001 CH→DE: OGB (Entwicklungs-SW, nicht 9D101-104)
+  "flight-sw|CH|US": "GO", // 9D001 CH→US: OGB
+  "flight-sw|CH|JP": "GO", // 9D001 CH→JP: OGB
+  "prepreg|CH|DE": "GO", // 1C010 CH→DE: OGB (Faserstoff, nicht sensibel)
+  "prepreg|CH|US": "GO", // 1C010 CH→US: OGB
+  "prepreg|CH|JP": "GO", // 1C010 CH→JP: OGB
+  //
+  // (j) Einzelbewilligung-REVIEW — kein Anhang-7-Partnerstaat (IN/CN sind NICHT
+  //     auf Anhang 7) → die OGB greift nicht; die AGB (Art. 13) ist exporteur-
+  //     spezifisch und hier nicht automatisch erteilbar → Einzelausfuhr-
+  //     bewilligung beim SECO. Belegt: GKV Art. 12 (Anhang 7) + Art. 13.
+  "star-tracker|CH|IN": "REVIEW", // 7A004 CH→IN: kein Anhang-7-Ziel → Einzelbewilligung
+  "ground-tt-c|CH|CN": "REVIEW", // 5A002 CH→CN: kein Anhang-7-Ziel → Einzelbewilligung
+  //
+  // (k) FAIL-CLOSED (§4.5, kein false-CLEARED): besonders sensible MTCR/Anhang-
+  //     IV-äquivalente Güter sind von der OGB NICHT bestätigbar gedeckt → REVIEW
+  //     selbst an einen Partnerstaat. Die GKV führt KEINEN geschriebenen
+  //     Ausschluss-Katalog (anders als EU Section I / UK Annex IIg); die Schweiz
+  //     transponiert dieselben Wassenaar/MTCR/NSG/AG-Listen, daher fail-closed
+  //     auf demselben verifizierten Sensibel-Set (9A004 space launch vehicles,
+  //     9A106.c thrust-vector control). Belegt: GKV Art. 12 + Reg (EU) 2021/821
+  //     Annex IV (das Sicherheits-Floor, ch.ts).
+  "sat-bus|CH|DE": "REVIEW", // 9A004 (MTCR/Anhang-IV-äquiv) CH→DE: CH-Modul → Einzelbewilligung
+  "apogee-engine|CH|DE": "REVIEW", // 9A106 (MTCR) CH→DE: CH-Modul → Einzelbewilligung
+  "sat-bus|CH|US": "REVIEW", // 9A004 CH→US: sensibel UND kein Floor-GO → Einzelbewilligung
+  //
+  // (l) radhard-obc|CH (eccnUS 3A001.a.1): bleibt REVIEW — die OGB deckt zwar das
+  //     CH-Bein (3A001 ist NICHT sensibel), aber 3A001.a.1 ist ein US-ECCN mit
+  //     unabhängigem US/BIS-Bein. Das CH-Modul übersteuert NIE ein US/BIS-Bein.
+  "radhard-obc|CH|DE": "REVIEW", // 3A001.a.1 CH→DE: US/BIS-Bein bleibt → REVIEW
+  //
+  // (m) SAFETY-PIN (§4.3/§4.5): das CH-Modul-GO überstimmt NIE ein vorgelagertes
+  //     Hartverbot. Ein OGB-FÄHIGES Gut (5A002) aus CH nach RU bleibt BLOCKED —
+  //     Gate 1.6 (Art. 2/2a VO (EU) 833/2014, von der Schweiz übernommen) feuert
+  //     VOR dem Origin-Modul, das Modul wird übersprungen.
+  "ground-tt-c|CH|RU": "BLOCKED", // 5A002 (OGB-fähig) → RU: Gate 1.6 schlägt OGB
+  "sat-bus|CH|RU": "BLOCKED", // 9A004 → RU: Gate 1.6 (origin-unabhängig)
 };
 
 // ─── Item-Klassifizierbarkeit (Kontrollverdacht) ──────────────────────────
@@ -495,39 +556,45 @@ function measureDistribution(): {
   return { total, ...counts };
 }
 
-describe("GOLDEN SET — Origin-Determination (Phase F + M-EU + M-UK)", () => {
-  it("Verteilung nach M-UK: 744 = 94 GO / 376 REVIEW / 274 BLOCKED", () => {
+describe("GOLDEN SET — Origin-Determination (Phase F + M-EU + M-UK + M-CH)", () => {
+  it("Verteilung nach M-CH: 744 = 106 GO / 364 REVIEW / 274 BLOCKED", () => {
     // Verlauf: Phase F (nur US-Wrap, no-op) 74/396/274 → M-EU (EUGEA EU001 +
-    // Member→NCA) 90/380/274 → M-UK (UK-Origin-Modul: OGEL „Export of Dual-Use
-    // items to EU Member States" + SIEL-Fallback bei der ECJU) 94/376/274.
+    // Member→NCA) 90/380/274 → M-UK (OGEL EU-Mitgliedstaaten + SIEL bei der ECJU)
+    // 94/376/274 → M-CH (CH-Origin-Modul: OGB „ordentliche Generalausfuhr-
+    // bewilligung" GKV Art. 12 + Einzelbewilligung-Fallback beim SECO) 106/364/274.
     //
-    // M-UK verschiebt GENAU 4 Zellen bewusst REVIEW→GO: vier OGEL-fähige (NICHT
-    // auf Annex IIg gelistete) Dual-Use-Items aus einem GB-Sitz an einen
-    // OGEL-Schedule-2-EU-Mitgliedstaat (DE) der Matrix:
-    //   • star-tracker|GB|DE (7A004), ground-tt-c|GB|DE (5A002),
-    //     flight-sw|GB|DE (9D001), prepreg|GB|DE (1C010) → GO unter der OGEL.
-    // Jede Lockerung ist durch die OGEL (gov.uk OGEL-Text 16 Dez 2025,
-    // Schedule 1 „Annex I außer Annex IIg" + Schedule 2 „EU-Mitgliedstaaten")
-    // belegt — KEIN false-CLEARED. Belegt + gepinnt in EXACT (f).
+    // M-CH verschiebt GENAU 12 Zellen bewusst REVIEW→GO: vier OGB-fähige (NICHT
+    // sensible) Dual-Use-Items aus einem CH-Sitz an die DREI Anhang-7-Partner-
+    // staaten der Matrix (DE/US/JP):
+    //   • star-tracker|CH|{DE,US,JP} (7A004), ground-tt-c|CH|{DE,US,JP} (5A002),
+    //     flight-sw|CH|{DE,US,JP} (9D001), prepreg|CH|{DE,US,JP} (1C010)
+    //     → GO unter der OGB (4 Items × 3 Partnerstaaten = 12 Zellen).
+    // Jede Lockerung ist durch die OGB (GKV Art. 12(1) — Anhang 2 Teil 2 nach
+    // Anhang-7-Partnerstaaten) belegt — KEIN false-CLEARED. Belegt + gepinnt in
+    // EXACT (i)+(j). Anders als die EU/UK-OGEL deckt die OGB AUCH US/JP (beide
+    // auf Anhang 7), daher 3 Partner-Ziele statt nur DE.
     //
     // WAS BEWUSST NICHT auf GO kippt (fail-closed):
-    //   • sat-bus|GB|DE (9A004) + apogee-engine|GB|DE (9A106): in Annex IV →
-    //     Annex-IIg-ausgeschlossen → SIEL/REVIEW selbst an einen EU-Mitgliedstaat
-    //     (das load-bearing Pin, jetzt vom UK-Modul produziert statt Gate 4.5).
-    //   • radhard-obc|GB|DE (eccnUS 3A001.a.1): bleibt REVIEW — die OGEL deckt
-    //     zwar das UK-Bein (3A001 ist NICHT auf Annex IIg), aber 3A001.a.1 ist
-    //     ein US-ECCN, sodass das US-EAR-Bein unabhängig eine
-    //     de-minimis-/EAR-Prüfung verlangt (UNKNOWN/BIS). Das UK-Modul
-    //     übersteuert NIE ein US/BIS-Bein — ehrlicher REVIEW, kein false-CLEARED.
-    //   • GB→US/JP/IN/CN für kontrollierte Items: bleibt REVIEW (SIEL — es gibt
-    //     KEINE UK-OGEL für die nahen Verbündeten; ein UK→US/JP-Dual-Use-Export
-    //     ist post-Brexit weiterhin lizenzpflichtig).
+    //   • sat-bus|CH|* (9A004) + apogee-engine|CH|* (9A106): besonders sensible
+    //     MTCR/Anhang-IV-äquivalente Güter; die GKV führt KEINEN geschriebenen
+    //     Ausschluss-Katalog → eine OGB-Deckung ist nicht bestätigbar →
+    //     fail-closed Einzelbewilligung/REVIEW selbst an einen Partnerstaat (das
+    //     load-bearing Pin, jetzt vom CH-Modul produziert statt Gate 4.5).
+    //   • radhard-obc|CH|* (eccnUS 3A001.a.1): bleibt REVIEW — die OGB deckt zwar
+    //     das CH-Bein (3A001 ist NICHT sensibel), aber 3A001.a.1 ist ein US-ECCN,
+    //     sodass das US-EAR-Bein unabhängig eine de-minimis-/EAR-Prüfung verlangt
+    //     (UNKNOWN/BIS). Das CH-Modul übersteuert NIE ein US/BIS-Bein — ehrlicher
+    //     REVIEW, kein false-CLEARED.
+    //   • CH→IN/CN für kontrollierte Items: bleibt REVIEW (Einzelbewilligung — IN
+    //     und CN sind NICHT auf Anhang 7; die AGB nach Art. 13 ist exporteur-
+    //     spezifisch und hier nicht automatisch erteilbar; die 11-Staaten-
+    //     Erweiterung Anhang 7 ab 1. Juli 2026 ist NICHT modelliert).
     // BLOCKED unverändert (274): kein Hartverbot (Embargo/RU-BY/ITAR) berührt;
-    // sat-bus|GB|RU bleibt BLOCKED (Gate 1.6 vorgelagert).
+    // sat-bus|CH|RU bleibt BLOCKED (Gate 1.6 vorgelagert, EU-aligned).
     expect(measureDistribution()).toEqual({
       total: 744,
-      GO: 94,
-      REVIEW: 376,
+      GO: 106,
+      REVIEW: 364,
       BLOCKED: 274,
     });
   });
@@ -578,17 +645,19 @@ describe("GOLDEN SET — Invarianten", () => {
     }
   });
 
-  it("genau diese 7 thin origins (dualUsePrimary maturity 3): CH,NO,CA,JP,AU,KR,IN", () => {
-    // M-UK (2026-06-13) hob UK_STRATEGIC 3 → 2 (UK-Origin-OGEL/SIEL-Lizenzlogik
-    // modelliert), sodass GB den Thin-Set verlässt (8 → 7).
+  it("genau diese 6 thin origins (dualUsePrimary maturity 3): NO,CA,JP,AU,KR,IN", () => {
+    // M-UK (2026-06-13) hob UK_STRATEGIC 3 → 2 (GB verließ den Thin-Set, 8 → 7).
+    // M-CH (2026-06-13) hob CH_GKV 3 → 2 (CH-Origin-OGB/Einzelbewilligung-Logik
+    // modelliert), sodass CH den Thin-Set verlässt (7 → 6).
     const thin = ORIGINS.filter((o) => isThinOrigin(o)).sort();
-    expect(thin).toEqual(["AU", "CA", "CH", "IN", "JP", "KR", "NO"]);
+    expect(thin).toEqual(["AU", "CA", "IN", "JP", "KR", "NO"]);
     // DE/FR (EU_ANNEX_I maturity 2) + US (US_CCL maturity 2) + GB (UK_STRATEGIC
-    // maturity 2 nach M-UK) sind NICHT dünn.
+    // maturity 2 nach M-UK) + CH (CH_GKV maturity 2 nach M-CH) sind NICHT dünn.
     expect(isThinOrigin("DE")).toBe(false);
     expect(isThinOrigin("FR")).toBe(false);
     expect(isThinOrigin("US")).toBe(false);
     expect(isThinOrigin("GB")).toBe(false);
+    expect(isThinOrigin("CH")).toBe(false);
   });
 
   it("Fail-Closed: thin origin × control-suspicious ist NIE GO (über die ganze Matrix)", () => {
