@@ -190,6 +190,15 @@ describe("S0: regime maturity (fail-closed input)", () => {
     // at item/sub-item level; the maturity map records the upgrade 3 → 1.
     expect(REGIME_MATURITY.MTCR_ANNEX).toBe(1);
   });
+  it("WASSENAAR is tier 1 after S5 (Cat-6/7/9 base coverage deepened)", () => {
+    // Data-Sprint S5 deepened the Wassenaar Cat-6/7/9 base coverage (42 new
+    // entries: 32 new Cat-9 + 7 new Cat-7 + 3 new Cat-6) and lifts WASSENAAR
+    // 2 → 1. The lift has ZERO verdict impact: Wassenaar is MULTILATERAL and is
+    // NEVER any circle-A origin's dualUsePrimary (origins point at their national
+    // transposition), so isThinOrigin (dualUsePrimary-only) cannot flip — the
+    // same null-impact lift as MTCR_ANNEX in S1.
+    expect(REGIME_MATURITY.WASSENAAR).toBe(1);
+  });
 });
 
 describe("S5: mirror architecture invariants", () => {
@@ -219,14 +228,26 @@ describe("S5: mirror architecture invariants", () => {
     }
   });
 
-  it("mirror entries (mirrorDelta set) carry depthTier 2 — and CH_GKV has landed", () => {
+  it("mirror entries (mirrorDelta set) carry depthTier 2 — CH_GKV + the S5 fan-out have landed", () => {
     const mirrors = NORMALIZED_CORPUS_UNION.filter(
       (e) => e.mirrorDelta !== undefined,
     );
-    // The first reference country (Switzerland CH_GKV) is wired, so there MUST
-    // be mirror entries, all code-level (depthTier 2).
+    // The reference country (Switzerland CH_GKV) plus the S5 fan-out (Norway,
+    // Canada, Australia, Korea) are all wired, so there MUST be mirror entries
+    // for each, all code-level (depthTier 2).
     expect(mirrors.length).toBeGreaterThan(0);
-    expect(mirrors.some((e) => e.regime === "CH_GKV")).toBe(true);
+    for (const regime of [
+      "CH_GKV",
+      "NO_LIST",
+      "CA_ECL",
+      "AU_DSGL",
+      "KR_STRATEGIC",
+    ] as const) {
+      expect(
+        mirrors.some((e) => e.regime === regime),
+        `expected mirror entries for ${regime}`,
+      ).toBe(true);
+    }
     for (const e of mirrors) {
       expect(e.depthTier, `${e.canonicalId} mirror depthTier`).toBe(2);
     }

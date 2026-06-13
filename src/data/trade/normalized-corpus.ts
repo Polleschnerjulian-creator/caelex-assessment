@@ -51,6 +51,10 @@ import {
 import { EU_CML_ENTRIES, EU_CML_AS_OF, type EuCmlEntry } from "./eu-cml";
 import type { MirrorEntry } from "./mirror-entry";
 import { CH_GKV_ENTRIES } from "./ch-gkv";
+import { NO_LIST_ENTRIES } from "./no-list";
+import { CA_ECL_ENTRIES } from "./ca-ecl";
+import { AU_DSGL_ENTRIES } from "./au-dsgl";
+import { KR_STRATEGIC_ENTRIES } from "./kr-strategic";
 import { EU_ANNEX_I_ENTRIES } from "./eu-annex-i";
 import { EU_ANNEX_I_CAT1_2_ENTRIES } from "./eu-annex-i-cat1-2";
 import { EU_ANNEX_I_CAT3_ENTRIES } from "./eu-annex-i-cat3";
@@ -120,7 +124,16 @@ export const REGIME_MATURITY: Record<CorpusRegime, 1 | 2 | 3> = {
   EU_ANNEX_I: 2,
   RU_833: 2,
   NSG: 2,
-  WASSENAAR: 2,
+  // Data-Sprint S5 deepened the Wassenaar Cat-6/7/9 base coverage (42 new
+  // entries: 32 new Cat-9 + 7 new Cat-7 + 3 new Cat-6) — the space-relevant
+  // dual-use list is now item-level across the launch+spacecraft+sensors spine,
+  // so WASSENAAR lifts 2 → 1. SAFETY: the lift has ZERO verdict impact because
+  // Wassenaar is MULTILATERAL and is NEVER any circle-A origin's dualUsePrimary
+  // (origins point at their NATIONAL transposition — EU_ANNEX_I, US_CCL, etc.,
+  // never the bare multilateral list). `isThinOrigin` reads dualUsePrimary only,
+  // so no thin-origin cell can flip — the same null-impact lift as MTCR_ANNEX
+  // in S1 (also multilateral, also never origin-primary).
+  WASSENAAR: 1,
   DE_ANLAGE_AL: 3,
   DE_AUSFUHRLISTE: 3,
   JP_METI: 3,
@@ -168,8 +181,31 @@ export const REGIME_MATURITY: Record<CorpusRegime, 1 | 2 | 3> = {
   //     EU_ANNEX_I (Tier 2, unchanged), so the golden thin-set is untouched.
   // The maturity test's "new tier-3" set drops from 7 to 6 (EU_CML leaves it).
   EU_CML: 2,
+  // Data-Sprint S5 wired the Canada Export Control List (SOR/89-202) Group-1
+  // dual-use space slice as MIRROR entries. CA_ECL is dualUsePrimary for CA-
+  // origin items, but the engine has NO Canadian (Global Affairs Canada / EIPA)
+  // origin-licence logic yet, so Gate 4.5 (thin-origin REVIEW) is the ONLY guard
+  // for a CA-seat controlled export. Lifting to 2 would silently turn CA→friendly-
+  // dest dual-use into GO — the same false-CLEARED-class bug the UK S3 lesson
+  // documents. The curated mirrors make CA codes RESOLVABLE (precise chips/ratings)
+  // while verdicts stay fail-closed REVIEW.
+  // LIFT-CONDITION: raise to 2 once CA-origin EIPA licence determination is modelled.
   CA_ECL: 3,
+  // Data-Sprint S5 wired the Australia Defence and Strategic Goods List (DSGL,
+  // F2024L01024) dual-use space slice as MIRROR entries. AU_DSGL is dualUsePrimary
+  // for AU-origin items, but the engine has NO Australian (Defence Export Controls)
+  // origin-licence logic yet, so Gate 4.5 (thin-origin REVIEW) is the ONLY guard
+  // for an AU-seat controlled export. Lifting to 2 would silently turn AU→friendly-
+  // dest dual-use into GO (the false-CLEARED-class bug from the UK S3 lesson).
+  // LIFT-CONDITION: raise to 2 once AU-origin DEC licence determination is modelled.
   AU_DSGL: 3,
+  // Data-Sprint S5 wired the Korea Strategic Items list (MOTIE Public Notice on
+  // Trade of Strategic Items) dual-use space slice as MIRROR entries. KR_STRATEGIC
+  // is dualUsePrimary for KR-origin items, but the engine has NO Korean (MOTIE /
+  // KOSTI) origin-licence logic yet, so Gate 4.5 (thin-origin REVIEW) is the ONLY
+  // guard for a KR-seat controlled export. Lifting to 2 would silently turn KR→
+  // friendly-dest dual-use into GO (the false-CLEARED-class bug from the UK S3 lesson).
+  // LIFT-CONDITION: raise to 2 once KR-origin MOTIE licence determination is modelled.
   KR_STRATEGIC: 3,
   // CH_GKV is dualUsePrimary for CH-origin items; the engine has NO Swiss (SECO)
   // origin-licence logic yet, so Gate 4.5 (thin-origin REVIEW) is the ONLY guard
@@ -177,6 +213,14 @@ export const REGIME_MATURITY: Record<CorpusRegime, 1 | 2 | 3> = {
   // dest dual-use into GO — the same false-CLEARED-class bug the UK S3 lesson documents.
   // LIFT-CONDITION: raise to 2 once CH-origin SECO licence determination is modelled.
   CH_GKV: 3,
+  // Data-Sprint S5 wired the Norway dual-use list — Liste II / Vedlegg II of
+  // FOR-2013-06-19-718 (flerbruksvarer), administered by the DEKSA under the MFA —
+  // as MIRROR entries. NO_LIST is dualUsePrimary for NO-origin items, but the
+  // engine has NO Norwegian (DEKSA) origin-licence logic yet, so Gate 4.5
+  // (thin-origin REVIEW) is the ONLY guard for a NO-seat controlled export.
+  // Lifting to 2 would silently turn NO→friendly-dest dual-use into GO (the
+  // false-CLEARED-class bug from the UK S3 lesson).
+  // LIFT-CONDITION: raise to 2 once NO-origin DEKSA licence determination is modelled.
   NO_LIST: 3,
 };
 
@@ -736,9 +780,47 @@ export const NORMALIZED_CORPUS_UNION: NormalizedCorpusEntry[] = (() => {
       list: "Schweizer Güterkontrollverordnung (SR 946.202.1)",
       depthTier: 2,
     }),
+    // Data-Sprint S5 fan-out — Norway Liste II (Vedlegg II of FOR-2013-06-19-718).
+    // Norway adopts the EU/Wassenaar dual-use list verbatim under a Norwegian
+    // cover, so each NO code MIRRORS its EU_ANNEX_I base. REGIME_MATURITY.NO_LIST
+    // STAYS 3 — see the REGIME_MATURITY comment block (no DEKSA origin-licence
+    // logic; Gate 4.5 thin-coverage REVIEW is the only guard for NO-origin exports).
+    ...adaptMirrorEntries(NO_LIST_ENTRIES, baseByCanonicalId, {
+      regime: "NO_LIST",
+      list: "Norwegen Liste II (Flerbruksvarer)",
+      depthTier: 2,
+    }),
+    // Data-Sprint S5 fan-out — Canada Export Control List (SOR/89-202), Group 1
+    // (the Wassenaar Dual-Use List under a Canadian cover). Each CA item number
+    // MIRRORS its EU_ANNEX_I base (same scope, only the "1-x.A.y." printed number
+    // differs). REGIME_MATURITY.CA_ECL STAYS 3 — no EIPA origin-licence logic yet.
+    ...adaptMirrorEntries(CA_ECL_ENTRIES, baseByCanonicalId, {
+      regime: "CA_ECL",
+      list: "Canada Export Control List (SOR/89-202)",
+      depthTier: 2,
+    }),
+    // Data-Sprint S5 fan-out — Australia Defence and Strategic Goods List (DSGL,
+    // F2024L01024). The DSGL Part 2 dual-use list shares the Wassenaar/EU numbering,
+    // so each AU code MIRRORS its EU_ANNEX_I base. REGIME_MATURITY.AU_DSGL STAYS 3 —
+    // no Defence Export Controls origin-licence logic yet.
+    ...adaptMirrorEntries(AU_DSGL_ENTRIES, baseByCanonicalId, {
+      regime: "AU_DSGL",
+      list: "Australia Defence and Strategic Goods List",
+      depthTier: 2,
+    }),
+    // Data-Sprint S5 fan-out — Korea Strategic Items (MOTIE Public Notice on the
+    // Trade of Strategic Items). Korea's dual-use list adopts the multilateral/EU
+    // numbering, so each KR code MIRRORS its EU_ANNEX_I base. REGIME_MATURITY.
+    // KR_STRATEGIC STAYS 3 — no MOTIE origin-licence logic yet.
+    ...adaptMirrorEntries(KR_STRATEGIC_ENTRIES, baseByCanonicalId, {
+      regime: "KR_STRATEGIC",
+      list: "Korea Strategic Items (MOTIE)",
+      depthTier: 2,
+    }),
   ];
 
   // Concat base + mirrors, then de-dup the whole union (mirror canonicalIds use
-  // the CH_GKV regime prefix, so they never collide with the base).
+  // each country's own regime prefix, so they never collide with the base or
+  // with each other).
   return dedup([...baseDeduped, ...mirrors]);
 })();
