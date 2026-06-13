@@ -65,6 +65,17 @@ const ISP_2023_URL = "https://www.isro.gov.in/Indian_Space_Policy_2023.html";
  * batch was paraphrased. The PDF is image-rendered (JFIF streams) so
  * its text was recovered by decompressing the embedded content
  * streams — the codes/parameters below were read from that text.
+ *
+ * POST-VERIFICATION CORRECTION (2026-06-13, W6 finding S6): the 8A6
+ * Sensors & Lasers entries 8A604 and 8A607 were re-verified against the
+ * PDF text layer and found mislabelled. 8A604 (head "OPTICS") is optical
+ * mirrors/reflectors + optical control equipment — corrected; the
+ * displaced detector/focal-plane-array content was re-homed to its real
+ * code 8A602 ("OPTICAL SENSORS"). 8A607 (head "GRAVIMETERS") is gravity
+ * meters/gradiometers — corrected; the displaced SAR/radar content was
+ * re-homed to its real code 8A608 ("RADAR", whose 8A608.d covers SAR).
+ * Cross-walks (euAnnexIRef/etc.) are best-effort screening mappings, not
+ * part of the verbatim SCOMET text.
  */
 const DGFT_SCOMET_2024_PDF_URL =
   "https://content.dgft.gov.in/Website/UPDATED%20SCOMET%20List%202024%20as%20on%2002.09.2024.pdf";
@@ -74,7 +85,9 @@ export const INDIA_SCOMET_AS_OF = "2026-05-22";
 
 /**
  * Verification date for the 2026-06-13 deepening batch (S6) — entries
- * grounded verbatim in the Appendix-3 SCOMET List 2024 PDF.
+ * grounded verbatim in the Appendix-3 SCOMET List 2024 PDF. The 8A604
+ * (optics/mirrors) and 8A607 (gravimeters) codes were corrected
+ * post-verification on the same date (W6 finding S6) — see file header.
  */
 export const INDIA_SCOMET_DEEPEN_AS_OF = "2026-06-13";
 
@@ -155,6 +168,7 @@ export const INDIA_SCOMET_COVERAGE = {
     "Special Materials & Equipment Programme (SMP) clearances administered separately by DRDO",
     "ITC(HS) tariff codes — these are import duty codes, not export-control codes",
     "HONEST EXCLUSIONS: any sub-code or controlling parameter not legible in the recovered Appendix-3 PDF text was left out rather than guessed. Cross-references (euAnnexIRef/earCclRef/wassenaarRef/mtcrRef) are best-effort screening cross-walks, NOT part of the verbatim SCOMET text.",
+    "POST-VERIFICATION CORRECTION (2026-06-13, W6 finding S6): 8A604 was corrected from mis-coded detectors to its real OPTICS/mirrors scope and 8A607 from mis-coded SAR to its real GRAVIMETERS scope. No control coverage was dropped — the displaced detector/focal-plane-array content was re-homed to 8A602 (OPTICAL SENSORS) and the displaced SAR/radar content to 8A608 (RADAR), both verified against the PDF text layer.",
   ],
   asOfDate: INDIA_SCOMET_AS_OF,
   sourceUrl: DGFT_SCOMET_URL,
@@ -1205,11 +1219,35 @@ export const INDIA_SCOMET_ENTRIES: IndiaScometEntry[] = [
 
   // ─── Category 8A6 — Sensors & Lasers (space-imaging subset) ─────────
   {
+    // CORRECTED 2026-06-13 (W6 finding S6): the prior entry mislabelled
+    // 8A604 as optical sensors/focal-plane arrays. Official 8A604 (head
+    // "OPTICS") is "Optical equipment and components" — optical mirrors
+    // (reflectors), incl. deformable mirrors and lightweight monolithic /
+    // composite / foam mirror structures, plus optical control equipment.
+    // The displaced detector content is re-homed to 8A602 below.
     code: "8A604",
+    category: "8",
+    title: "Optical mirrors, reflectors and optical control equipment",
+    description:
+      "Optical equipment and components in the 8A6 Sensors & Lasers (OPTICS) sub-category: optical mirrors (reflectors) including 'deformable' (adaptive-optic) mirrors, lightweight monolithic mirrors and lightweight composite or foam mirror structures, ZnSe/ZnS optical components, and optical control equipment such as beam-steering mirror stages and resonator-alignment equipment. Controlled on aperture, equivalent density, laser-induced damage threshold and slew/bandwidth/pointing parameters.",
+    euAnnexIRef: "6A004",
+    earCclRef: "6A004",
+    wassenaarRef: "6A004",
+    sourceUrl: DGFT_SCOMET_2024_PDF_URL,
+    asOfDate: INDIA_SCOMET_DEEPEN_AS_OF,
+    licensingAuthority: "ISRO",
+    notes:
+      "SCOMET 8A604 (8A6 Sensors & Lasers — OPTICS). Mirrors/optical control for Indian EO and laser-comms payloads.",
+  },
+  {
+    // RE-HOMED 2026-06-13 (W6 finding S6): the optical-sensor / focal-plane
+    // array / image-intensifier / photodetector content formerly mis-coded
+    // as 8A604 belongs under official 8A602 (head "OPTICAL SENSORS").
+    code: "8A602",
     category: "8",
     title: "Optical sensors, focal-plane arrays and space-grade detectors",
     description:
-      "Optical sensors, focal-plane arrays, image-intensifier and other photodetector hardware controlled in the 8A6 Sensors & Lasers (optics) sub-category — the dual-use spine for space-based electro-optical and infrared imaging detectors. Controlled on spectral band, pixel pitch and noise-equivalent parameters.",
+      "Optical sensors or equipment and components in the 8A6 Sensors & Lasers (OPTICAL SENSORS) sub-category: optical detectors including 'space-qualified' solid-state detectors and focal-plane arrays, image-intensifier tubes, and other photodetector hardware — the dual-use spine for space-based electro-optical and infrared imaging detectors. Controlled on spectral band, response time and noise parameters.",
     euAnnexIRef: "6A002",
     earCclRef: "6A002",
     wassenaarRef: "6A002",
@@ -1217,14 +1255,35 @@ export const INDIA_SCOMET_ENTRIES: IndiaScometEntry[] = [
     asOfDate: INDIA_SCOMET_DEEPEN_AS_OF,
     licensingAuthority: "ISRO",
     notes:
-      "SCOMET 8A604 (8A6 Sensors & Lasers — Optics). Earth-observation focal-plane arrays for Indian EO satellites.",
+      "SCOMET 8A602 (8A6 Sensors & Lasers — OPTICAL SENSORS). Earth-observation focal-plane arrays for Indian EO satellites.",
   },
   {
+    // CORRECTED 2026-06-13 (W6 finding S6): the prior entry mislabelled
+    // 8A607 as SAR/radar. Official 8A607 (head "GRAVIMETERS") is gravity
+    // meters and gravity gradiometers. SAR/radar is official 8A608 below.
     code: "8A607",
     category: "8",
-    title: "Spaceborne synthetic-aperture radar and radar sensors",
+    title: "Gravity meters (gravimeters) and gravity gradiometers",
     description:
-      "Radar systems, equipment and components in the 8A6 Sensors & Lasers (radar) sub-category, including spaceborne synthetic-aperture radar (SAR) above the controlled bandwidth/antenna thresholds. Covers X/C/L-band orbital SAR.",
+      "Gravity meters (gravimeters) and gravity gradiometers in the 8A6 Sensors & Lasers (GRAVIMETERS) sub-category: ground-use gravity meters with static accuracy better than 10 µGal (quartz/Worden-type excluded), gravity meters for mobile platforms above the controlled accuracy/response thresholds, and gravity gradiometers — relevant to space geodesy and gravity-field missions.",
+    euAnnexIRef: "6A007",
+    earCclRef: "6A007",
+    wassenaarRef: "6A007",
+    sourceUrl: DGFT_SCOMET_2024_PDF_URL,
+    asOfDate: INDIA_SCOMET_DEEPEN_AS_OF,
+    licensingAuthority: "ISRO",
+    notes:
+      "SCOMET 8A607 (8A6 Sensors & Lasers — GRAVIMETERS). Gravity-field instrumentation for geodesy missions.",
+  },
+  {
+    // RE-HOMED 2026-06-13 (W6 finding S6): the spaceborne SAR / radar
+    // content formerly mis-coded as 8A607 belongs under official 8A608
+    // (head "RADAR"), whose 8A608.d explicitly covers SAR/ISAR/SLAR modes.
+    code: "8A608",
+    category: "8",
+    title: "Spaceborne synthetic-aperture radar and radar systems",
+    description:
+      "Radar systems, equipment and assemblies and specially designed components in the 8A6 Sensors & Lasers (RADAR) sub-category, including equipment capable of operating in synthetic-aperture (SAR), inverse-synthetic-aperture (ISAR) or side-looking-airborne (SLAR) modes — the control spine for spaceborne X/C/L-band orbital SAR. Controlled on operating frequency, output power, locating accuracy, tunable bandwidth and multi-carrier operation (SSR, civil automotive, ATC displays, weather and ICAO PAR radar excluded).",
     euAnnexIRef: "6A008",
     earCclRef: "6A008",
     wassenaarRef: "6A008",
@@ -1232,7 +1291,7 @@ export const INDIA_SCOMET_ENTRIES: IndiaScometEntry[] = [
     asOfDate: INDIA_SCOMET_DEEPEN_AS_OF,
     licensingAuthority: "ISRO",
     notes:
-      "SCOMET 8A607 (8A6 Sensors & Lasers — Radar). ISRO RISAT heritage and private SAR constellations.",
+      "SCOMET 8A608 (8A6 Sensors & Lasers — RADAR). ISRO RISAT heritage and private SAR constellations.",
   },
 ];
 
