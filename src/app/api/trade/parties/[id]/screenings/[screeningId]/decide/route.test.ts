@@ -91,6 +91,12 @@ const validAuth = {
   role: "MANAGER" as import("@prisma/client").OrganizationRole,
 };
 
+const viewerAuth = {
+  userId: "user-2",
+  organizationId: "org-1",
+  role: "VIEWER" as import("@prisma/client").OrganizationRole,
+};
+
 // ── Tests ─────────────────────────────────────────────────────────────────────
 
 describe("POST /api/trade/parties/[id]/screenings/[screeningId]/decide — auth gate (T-H1)", () => {
@@ -138,6 +144,86 @@ describe("POST /api/trade/parties/[id]/screenings/[screeningId]/decide — auth 
 
     expect(res.status).not.toBe(403);
     expect(res.status).toBe(404);
+  });
+});
+
+describe("POST decide — role gate (B6 RBAC fail-open)", () => {
+  beforeEach(() => {
+    vi.resetModules();
+  });
+
+  it("returns 403 when a VIEWER attempts to dismiss a sanctions hit (FALSE_POSITIVE_DISMISSED)", async () => {
+    const { getTradeAuth } = await import("@/lib/trade/trade-auth");
+    vi.mocked(getTradeAuth).mockResolvedValue(viewerAuth);
+    const { prisma } = await import("@/lib/prisma");
+    // A POTENTIAL_MATCH the viewer would otherwise be able to clear to CLEAR.
+    vi.mocked(prisma.tradeScreeningResult.findFirst).mockResolvedValue({
+      id: "sr-1",
+      decision: "POTENTIAL_MATCH",
+    } as never);
+
+    const { POST } = await import("./route");
+    const res = await POST(
+      makeReq("POST", {
+        decision: "FALSE_POSITIVE_DISMISSED",
+        notes: "Different John Smith.",
+      }),
+      ctx(),
+    );
+
+    expect(res.status).toBe(403);
+    // The verdict-flip must NOT have been written.
+    expect(prisma.tradeScreeningResult.updateMany).not.toHaveBeenCalled();
+    expect(prisma.tradeParty.update).not.toHaveBeenCalled();
+  });
+
+  it("returns 403 when a VIEWER attempts to confirm a sanctions hit (CONFIRMED_HIT)", async () => {
+    const { getTradeAuth } = await import("@/lib/trade/trade-auth");
+    vi.mocked(getTradeAuth).mockResolvedValue(viewerAuth);
+    const { prisma } = await import("@/lib/prisma");
+    vi.mocked(prisma.tradeScreeningResult.findFirst).mockResolvedValue({
+      id: "sr-1",
+      decision: "POTENTIAL_MATCH",
+    } as never);
+
+    const { POST } = await import("./route");
+    const res = await POST(
+      makeReq("POST", { decision: "CONFIRMED_HIT", notes: "Verified hit." }),
+      ctx(),
+    );
+
+    expect(res.status).toBe(403);
+    expect(prisma.tradeParty.update).not.toHaveBeenCalled();
+  });
+
+  it("allows a MANAGER to dismiss a sanctions hit (FALSE_POSITIVE_DISMISSED → 200)", async () => {
+    const { getTradeAuth } = await import("@/lib/trade/trade-auth");
+    vi.mocked(getTradeAuth).mockResolvedValue(validAuth);
+    const { prisma } = await import("@/lib/prisma");
+    vi.mocked(prisma.tradeScreeningResult.findFirst).mockResolvedValue({
+      id: "sr-1",
+      decision: "POTENTIAL_MATCH",
+    } as never);
+    vi.mocked(prisma.tradeScreeningResult.updateMany).mockResolvedValue({
+      count: 1,
+    } as never);
+    vi.mocked(prisma.tradeParty.update).mockResolvedValue({
+      id: "p-1",
+      legalName: "Test Corp",
+      status: "ACTIVE",
+    } as never);
+
+    const { POST } = await import("./route");
+    const res = await POST(
+      makeReq("POST", {
+        decision: "FALSE_POSITIVE_DISMISSED",
+        notes: "Different John Smith.",
+      }),
+      ctx(),
+    );
+
+    expect(res.status).toBe(200);
+    expect(prisma.tradeScreeningResult.updateMany).toHaveBeenCalled();
   });
 });
 

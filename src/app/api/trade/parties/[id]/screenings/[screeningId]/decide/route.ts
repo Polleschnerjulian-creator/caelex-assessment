@@ -40,6 +40,14 @@ const DecideSchema = z.object({
   notes: z.string().min(1).max(2000),
 });
 
+// Deciding a sanctions screening (confirm a hit → BLOCK, or dismiss a hit →
+// CLEAR) is the most consequential verdict-flip in the system. VIEWER is
+// read-only on ALL decide actions; only MANAGER+ may triage. Mirrors the
+// ALLOWED_ROLES gate on the AI-feeder routes (classify/extract-vision,
+// licenses/parse). Closes B6 (RBAC fail-open: a VIEWER could clear a
+// POTENTIAL_MATCH sanctions hit to CLEAR).
+const ALLOWED_ROLES = new Set(["OWNER", "ADMIN", "MANAGER"]);
+
 export async function POST(
   req: Request,
   context: { params: Promise<{ id: string; screeningId: string }> },
@@ -55,6 +63,16 @@ export async function POST(
       getIdentifier(req, tradeAuth.userId),
     );
     if (!rl.success) return createRateLimitResponse(rl);
+
+    if (!ALLOWED_ROLES.has(tradeAuth.role)) {
+      return NextResponse.json(
+        {
+          error:
+            "Insufficient role — only Owner / Admin / Manager can decide a sanctions screening.",
+        },
+        { status: 403 },
+      );
+    }
 
     const { id: partyId, screeningId } = await context.params;
 
