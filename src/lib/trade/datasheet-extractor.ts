@@ -417,11 +417,11 @@ function classifyItemClass(
     },
     {
       regex: /\bstar\s+tracker\b/i,
-      itemClass: "avionics.attitude.star_tracker",
+      itemClass: "spacecraft.adcs.star_tracker",
     },
     {
       regex: /\breaction\s+wheel\b/i,
-      itemClass: "avionics.attitude.reaction_wheel",
+      itemClass: "spacecraft.adcs.reaction_wheel",
     },
   ];
 
