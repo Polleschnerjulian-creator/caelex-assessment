@@ -23,6 +23,8 @@ import {
   createRateLimitResponse,
   getIdentifier,
 } from "@/lib/ratelimit";
+import { logAuditEvent, getRequestContext } from "@/lib/audit";
+import { recomputeOperation } from "@/lib/comply-v2/trade/operations/recompute.server";
 import { z } from "zod";
 import { fromCents } from "@/lib/trade/money";
 
@@ -92,6 +94,38 @@ export async function DELETE(
       itemId: line.itemId,
       userId,
     });
+
+    const reqCtx = getRequestContext(req);
+    await logAuditEvent({
+      userId,
+      organizationId,
+      action: "trade_operation_line_removed",
+      entityType: "trade_operation_line",
+      entityId: lineId,
+      previousValue: {
+        operationId,
+        itemId: line.itemId,
+      },
+      description: `Line removed from operation ${line.operation.reference}`,
+      ipAddress: reqCtx.ipAddress,
+      userAgent: reqCtx.userAgent,
+    });
+
+    // ── Tier 1.1: auto-refresh derived state after a composition change ──
+    // Removing a line changes what the operation IS, so its verdict + risk
+    // are now stale. recomputeOperation is the only writer of
+    // riskScore/catch-all/notificationDuty/para9/auto-status — it MUST run so
+    // the next /assess, the risk panel, and the BAFA-XML export do not carry
+    // flags from the now-removed line. Best-effort: a refresh failure must NOT
+    // fail the delete (the line is already removed + audited above).
+    try {
+      await recomputeOperation(operationId, organizationId);
+    } catch (e) {
+      logger.warn("[lines DELETE] auto-recompute failed — non-fatal", {
+        operationId,
+        err: e instanceof Error ? e.message : String(e),
+      });
+    }
 
     return NextResponse.json({ deleted: true });
   } catch (err) {
@@ -215,6 +249,23 @@ export async function PATCH(
       appliedLicenseId,
       userId,
     });
+
+    // ── Tier 1.1: auto-refresh derived state after a composition change ──
+    // Assigning/unassigning a license changes the verdict basis (an applied
+    // licence is what flips a controlled line from REVIEW to GO), so the
+    // operation's verdict + risk are now stale. recomputeOperation is the only
+    // writer of riskScore/catch-all/notificationDuty/para9/auto-status — it
+    // MUST run so the next /assess, the risk panel, and the BAFA-XML export
+    // are fresh. Best-effort: a refresh failure must NOT fail the update (the
+    // line is already updated above).
+    try {
+      await recomputeOperation(operationId, organizationId);
+    } catch (e) {
+      logger.warn("[lines PATCH] auto-recompute failed — non-fatal", {
+        operationId,
+        err: e instanceof Error ? e.message : String(e),
+      });
+    }
 
     const serializedLine = {
       ...updated,
