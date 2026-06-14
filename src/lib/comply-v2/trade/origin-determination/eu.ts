@@ -333,19 +333,56 @@ function isSectionIExcluded(code: string): boolean {
 }
 
 /**
- * The EU-controlled dual-use code carried by a classification, if any.
- * EU control attaches via a declared `eccnEU` (Annex I) OR a declared
- * non-EAR99 `eccnUS` that is, in this corpus, the US-CCL mirror of an Annex I
- * dual-use item. Returns the operative code (eccnEU preferred), else null.
- * USML/ITAR (`usmlCategory`) is NOT an EU dual-use control — it is handled by
- * the upstream ITAR gate and is never EU001-eligible.
+ * Does this classification carry SOME EU-relevant control trigger?
+ *
+ * Used ONLY to decide "is this item uncontrolled (→ NONE/GO) or does it need an
+ * EU export consideration?". A control trigger attaches via a declared `eccnEU`
+ * (Annex I) OR a declared non-EAR99 `eccnUS` (a US-CCL listing — even one with
+ * no EU Annex I mirror is NOT freely exportable; it must be assessed, never
+ * waved through as uncontrolled). USML/ITAR (`usmlCategory`) is NOT an EU
+ * dual-use control — it is handled by the upstream ITAR gate.
+ *
+ * NOTE (B7 fix): this is DELIBERATELY broader than EU001 eligibility. Being
+ * "controlled" routes the item AWAY from NONE/GO; it does NOT by itself make
+ * the item EU001-eligible. EU001 eligibility is keyed strictly on the EU
+ * Annex-I code (`eu001EligibleCode`) — a non-EAR99 `eccnUS` with no `eccnEU`
+ * mirror is controlled but NOT EU001-eligible, so it fails closed to
+ * INDIVIDUAL/REVIEW rather than getting a faux Annex-I GENERAL/GO.
  */
-function euControlledCode(c: ClassificationLike): string | null {
-  const eu = normCode(c.eccnEU);
-  if (eu) return eu;
+function isEuControlled(c: ClassificationLike): boolean {
+  if (normCode(c.eccnEU)) return true;
   const us = normCode(c.eccnUS);
-  if (us && us !== "EAR99") return us;
-  return null;
+  return Boolean(us && us !== "EAR99");
+}
+
+/**
+ * The operative EU Annex-I code for EU001 eligibility — `eccnEU` ONLY.
+ *
+ * B7 fix: EU001 is a Reg (EU) 2021/821 Annex II authorisation; its eligibility
+ * (and the Section I exclusion test) is keyed on EU / Wassenaar Annex-I
+ * numbering. A declared `eccnUS` is US-CCL numbering — e.g. `9A515.a.1`
+ * (600-series-adjacent) has NO EU Annex I mirror, so it matches nothing on the
+ * EU-keyed Section I list and previously slipped through as "not excluded" →
+ * faux GENERAL/GO. There is no VERIFIED US→EU cross-walk wired here, so we do
+ * NOT treat a US code as an Annex-I code at all: EU001 eligibility derives from
+ * `eccnEU` only. An item with a non-EAR99 `eccnUS` but no `eccnEU` returns null
+ * here → no EUGEA covers it → INDIVIDUAL/REVIEW (fail-closed §4.5).
+ */
+function eu001EligibleCode(c: ClassificationLike): string | null {
+  const eu = normCode(c.eccnEU);
+  return eu || null;
+}
+
+/**
+ * The EU control code to surface in reasons/notes for a controlled item.
+ * Prefers the operative EU Annex-I code (`eccnEU`); for a US-only controlled
+ * item (no `eccnEU`) it falls back to the declared `eccnUS` purely for the
+ * human-readable reason string — it is NEVER fed to the EU001/Section-I logic.
+ */
+function euDisplayCode(c: ClassificationLike): string | null {
+  const eu = eu001EligibleCode(c);
+  if (eu) return eu;
+  return normCode(c.eccnUS) || null;
 }
 
 /**
@@ -361,8 +398,10 @@ export const EU001: GeneralLicence = {
     "EUGEA EU001 — Union General Export Authorisation (friendly destinations)",
   authority: "EU national competent authority",
   eligibleCodes: (c) => {
-    const code = euControlledCode(c);
-    if (!code) return false; // uncontrolled → handled as NONE upstream, not via EU001
+    // B7: key EU001 eligibility on the EU Annex-I code ONLY. A non-EAR99
+    // `eccnUS` with no `eccnEU` mirror is NOT an Annex-I code → no EU001 GO.
+    const code = eu001EligibleCode(c);
+    if (!code) return false; // no EU Annex-I code → never EU001-eligible
     return !isSectionIExcluded(code);
   },
   eligibleDestinations: EU001_DESTINATIONS,
@@ -403,7 +442,12 @@ export const euOriginModule = (
         "Exporteur-Sitz unbekannt — NCA nicht eindeutig bestimmbar; zuständige Behörde des tatsächlichen Sitz-Mitgliedstaats verwenden.",
       ];
 
-  const code = euControlledCode(classification);
+  // B7: "controlled at all?" (gates NONE/GO) is decoupled from the EU Annex-I
+  // code that drives EU001 eligibility. `displayCode` is for the reason text;
+  // `euCode` (eccnEU only) is the ONLY thing fed to the Section-I test.
+  const controlled = isEuControlled(classification);
+  const euCode = eu001EligibleCode(classification);
+  const displayCode = euDisplayCode(classification);
   const dest = (destinationCountry ?? "").trim().toUpperCase();
 
   // 0. Intra-EU transfer (destination is an EU-27 member state) → NONE/GO.
@@ -428,7 +472,7 @@ export const euOriginModule = (
   }
 
   // 1. Uncontrolled under EU dual-use → no EU licence requirement.
-  if (!code) {
+  if (!controlled) {
     return {
       outcome: "GO",
       licenceType: "NONE",
@@ -456,7 +500,7 @@ export const euOriginModule = (
         conditions: covering.conditions,
       },
       reasons: [
-        `EU-kontrolliertes Dual-Use-Gut (${code}) nach ${destinationCountry}: Union-Allgemeingenehmigung ${covering.id} greift — kein Einzelantrag nötig, sofern die Auflagen erfüllt sind.`,
+        `EU-kontrolliertes Dual-Use-Gut (${displayCode}) nach ${destinationCountry}: Union-Allgemeingenehmigung ${covering.id} greift — kein Einzelantrag nötig, sofern die Auflagen erfüllt sind.`,
         ...seatNote,
       ],
       citations: [SRC_REG, covering.citation],
@@ -464,19 +508,27 @@ export const euOriginModule = (
   }
 
   // 3. EU-controlled + no EUGEA covers it → INDIVIDUAL/REVIEW at the NCA.
-  //    Either the destination is outside every EUGEA allow-set, or the code is
-  //    on the EU001 Section I exclusion list (Art. 12(6)(a) list incl. "all
-  //    items specified in Annex IV" — e.g. 9A004/9A106.c MTCR launch tech).
-  const excluded = isSectionIExcluded(code);
+  //    Three reasons it can land here: (a) the destination is outside every
+  //    EUGEA allow-set; (b) the EU Annex-I code is on the EU001 Section I
+  //    exclusion list (Art. 12(6)(a) incl. "all items specified in Annex IV" —
+  //    e.g. 9A004/9A106.c MTCR launch tech); or (c, B7) the item is controlled
+  //    only via a non-EAR99 `eccnUS` with NO `eccnEU` Annex-I mirror — that US
+  //    code is NOT an Annex-I code, EU001 cannot cover it, and it fails closed
+  //    to REVIEW (never a faux Annex-I GENERAL/GO). The Section-I test is keyed
+  //    on the EU Annex-I code ONLY (`euCode`); a US-only item has none, so
+  //    `excluded` is false and the honest "no EUGEA covers" note applies.
+  const excluded = euCode ? isSectionIExcluded(euCode) : false;
   const sectionINote = excluded
-    ? `Code ${code} steht auf der EU001-Ausschlussliste (Annex II Section I, Art. 12(6)(a) — inkl. „alle in Anhang IV genannten Güter") und ist von EU001 nicht gedeckt.`
-    : `Für ${destinationCountry} greift keine Union-Allgemeingenehmigung (EU001 deckt nur AU/CA/IS/JP/NZ/NO/CH/LI/GB/US).`;
+    ? `Code ${euCode} steht auf der EU001-Ausschlussliste (Annex II Section I, Art. 12(6)(a) — inkl. „alle in Anhang IV genannten Güter") und ist von EU001 nicht gedeckt.`
+    : !euCode
+      ? `Kein EU-Annex-I-Code (Anhang I VO 2021/821) deklariert — das US-Listenkennzeichen ${displayCode} ist kein EU-Code und durch keine Union-Allgemeingenehmigung (EU001) gedeckt.`
+      : `Für ${destinationCountry} greift keine Union-Allgemeingenehmigung (EU001 deckt nur AU/CA/IS/JP/NZ/NO/CH/LI/GB/US).`;
   return {
     outcome: "REVIEW",
     licenceType: "INDIVIDUAL",
     authority,
     reasons: [
-      `EU-kontrolliertes Dual-Use-Gut (${code}) nach ${destinationCountry}: ${sectionINote} Einzelausfuhrgenehmigung bei der zuständigen NCA erforderlich.`,
+      `EU-kontrolliertes Dual-Use-Gut (${displayCode}) nach ${destinationCountry}: ${sectionINote} Einzelausfuhrgenehmigung bei der zuständigen NCA erforderlich.`,
       ...seatNote,
     ],
     citations: excluded

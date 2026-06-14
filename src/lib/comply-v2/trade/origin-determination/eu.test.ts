@@ -130,6 +130,75 @@ describe("euOriginModule — fail-closed: Section I exclusions never GO (no fals
   });
 });
 
+describe("euOriginModule — B7 fail-closed: EU001 eligibility from eccnEU ONLY (a non-EAR99 eccnUS is NOT a faux Annex-I code)", () => {
+  // A US-CCL code (e.g. 9A515.a.1, a 600-series-adjacent CCL number) has NO EU
+  // Annex I mirror in `eccnEU`. The Section-I exclusion list is keyed on EU /
+  // Wassenaar numbering, so a US-only code matches nothing on it — which used to
+  // make EU001 over-eligible and emit a cited GENERAL/GO to allies. EU001
+  // eligibility MUST be derived from `eccnEU` only: an unmirrored non-EAR99
+  // `eccnUS` is still controlled (so NOT NONE/GO) but is NEVER EU001-GO — it
+  // FAILS CLOSED to INDIVIDUAL/REVIEW at the NCA (§4.5, no false-CLEARED).
+  it("9A515.a.1 (eccnUS, NO eccnEU mirror) → US: REVIEW, NOT GENERAL/GO", () => {
+    const v = euOriginModule(
+      input({ eccnEU: null, eccnUS: "9A515.a.1", usmlCategory: null }, "US"),
+    );
+    expect(v.outcome).toBe("REVIEW");
+    expect(v.licenceType).toBe("INDIVIDUAL");
+    expect(v.generalLicence).toBeUndefined();
+    expect(v.outcome).not.toBe("GO");
+  });
+
+  it("9A515.a.1 (eccnUS only) → JP: REVIEW, NOT GENERAL/GO (other EU001 ally)", () => {
+    const v = euOriginModule(
+      input({ eccnEU: null, eccnUS: "9A515.a.1", usmlCategory: null }, "JP"),
+    );
+    expect(v.outcome).toBe("REVIEW");
+    expect(v.licenceType).toBe("INDIVIDUAL");
+    expect(v.generalLicence).toBeUndefined();
+  });
+
+  it("600-series eccnUS (9A610.a, no eccnEU) → CA: REVIEW, NOT GENERAL/GO", () => {
+    const v = euOriginModule(
+      input({ eccnEU: null, eccnUS: "9A610.a", usmlCategory: null }, "CA"),
+    );
+    expect(v.outcome).toBe("REVIEW");
+    expect(v.generalLicence).toBeUndefined();
+  });
+
+  it("a US-only controlled item is still NOT treated as uncontrolled (NOT NONE/GO)", () => {
+    // Fail-closed both ways: it must not silently become NONE/GO (that would be
+    // a different fail-open) — it stays a controlled item requiring an
+    // INDIVIDUAL licence at the NCA.
+    const v = euOriginModule(
+      input({ eccnEU: null, eccnUS: "9A515.a.1", usmlCategory: null }, "US"),
+    );
+    expect(v.licenceType).not.toBe("NONE");
+    expect(v.licenceType).toBe("INDIVIDUAL");
+  });
+
+  it("eccnEU present + eccnUS present: the EU Annex-I code still drives EU001 (GO for a non-Section-I eccnEU)", () => {
+    // When a genuine eccnEU mirror exists AND is off Section I, EU001 still
+    // applies — the fix must NOT regress legitimate eccnEU EU001 GOs.
+    const v = euOriginModule(
+      input({ eccnEU: "5A002", eccnUS: "5A002", usmlCategory: null }, "US"),
+    );
+    expect(v.outcome).toBe("GO");
+    expect(v.licenceType).toBe("GENERAL");
+    expect(v.generalLicence?.id).toBe("EU001");
+  });
+
+  it("eccnEU present but on Section I + eccnUS off-list: still REVIEW (eccnUS does not rescue a Section-I eccnEU)", () => {
+    // The eccnEU Section-I exclusion must win; a co-declared eccnUS that happens
+    // to be off the (EU-keyed) Section-I list must NOT flip the verdict to GO.
+    const v = euOriginModule(
+      input({ eccnEU: "9A106", eccnUS: "9A515.a.1", usmlCategory: null }, "US"),
+    );
+    expect(v.outcome).toBe("REVIEW");
+    expect(v.licenceType).toBe("INDIVIDUAL");
+    expect(v.generalLicence).toBeUndefined();
+  });
+});
+
 describe("euOriginModule — EXACT official Section I (Reg (EU) 2021/821 Annex II, Art. 12(6)(a)) (M-EU 2026-06-13)", () => {
   // Helper: assert a code's EU001 verdict to an EU001 destination (US).
   const verdictToUS = (code: string) =>
