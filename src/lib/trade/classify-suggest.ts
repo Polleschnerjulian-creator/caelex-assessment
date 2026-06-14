@@ -53,16 +53,24 @@ const BAG_KEYS = new Set<keyof ItemAttributeBag>([
   "itemClass",
 ]);
 
-/** Fold extracted attributes into the matcher's ItemAttributeBag. */
+/** Fold extracted attributes into the matcher's ItemAttributeBag.
+ *  Typed keys (BAG_KEYS) go to typed fields; every OTHER attribute is routed
+ *  into `parametricAttributes`, which the matcher's readAttribute reads via
+ *  fallthrough — so operator-supplied decisive fields like
+ *  starTrackerAccuracyArcsec actually reach the predicates that gate on them. */
 export function attributesToBag(
   attributes: ReadonlyArray<SuggestInputAttribute>,
 ): ItemAttributeBag {
   const bag: ItemAttributeBag = {};
+  const parametric: Record<string, unknown> = {};
   for (const a of attributes) {
     if (BAG_KEYS.has(a.attribute as keyof ItemAttributeBag)) {
       (bag as Record<string, unknown>)[a.attribute] = a.value;
+    } else {
+      parametric[a.attribute] = a.value;
     }
   }
+  if (Object.keys(parametric).length > 0) bag.parametricAttributes = parametric;
   return bag;
 }
 
