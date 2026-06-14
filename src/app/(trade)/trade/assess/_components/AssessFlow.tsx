@@ -45,6 +45,7 @@ import { PartyPicker } from "../../operations/new/_components/PartyPicker";
 import { VerdictPanel } from "../../operations/new/_components/VerdictPanel";
 import { rankCategories } from "@/lib/trade/intake/detect-category";
 import { suggestionsFromAttributesAndText } from "@/lib/trade/classify-suggest";
+import { classificationInputForCategory } from "@/lib/trade/intake/classification-input";
 import type { LandscapeResult } from "@/lib/trade/landscape";
 
 type Step =
@@ -97,6 +98,9 @@ function itemFromScoped(
   const typed: Record<string, number | boolean> = {};
   const parametric: Record<string, number | boolean | string> = {};
   for (const a of attrs) {
+    // itemClass is injected for CLASSIFICATION via classificationInputForCategory
+    // (the suggestion/preview path), not persisted: it is not a TradeItem typed
+    // column / parametricAttributes entry — the verdict keys off the confirmed code.
     if (a.attribute === "itemClass") continue;
     if (
       NUMERIC_ATTRS.includes(a.attribute as (typeof NUMERIC_ATTRS)[number]) &&
@@ -270,7 +274,11 @@ export function AssessFlow() {
           // live scoped suggestions the preview ranked + the entered attribute
           // bag. Persisted on the draft for re-classification — NOT the verdict.
           evidence: {
-            suggestions: scopedSuggestions(scopedAttributes, rawText),
+            suggestions: scopedSuggestions(
+              categoryId,
+              scopedAttributes,
+              rawText,
+            ),
             scopedAttributes,
           },
         }),
@@ -460,7 +468,11 @@ export function AssessFlow() {
           <ClassifyConfirm
             payload={{
               attributes: [],
-              suggestions: scopedSuggestions(scopedAttributes, rawText),
+              suggestions: scopedSuggestions(
+                categoryId,
+                scopedAttributes,
+                rawText,
+              ),
             }}
             submitting={submitting}
             error={error}
@@ -579,18 +591,22 @@ export function AssessFlow() {
 
 /** Run the live suggestion engine over the confirmed scoped attributes so the
  *  classify step shows the human EXACTLY the candidates the preview ranked — no
- *  synthesis, the suggestions are pure-derived from the corpus. */
+ *  synthesis, the suggestions are pure-derived from the corpus. The chosen
+ *  category's itemClass is injected (classificationInputForCategory) so the
+ *  matcher scopes to the class — same input the live preview ranks. */
 function scopedSuggestions(
+  categoryId: string | null,
   attrs: ScopedFieldValue[],
   text: string,
 ): ClassifyConfirmSuggestion[] {
   // suggestionsFromAttributesAndText is a static top-level import — it is pure +
   // client-safe (see classify-suggest), so no dynamic import is needed here.
-  const input = attrs.map((a) => ({
+  const scoped = attrs.map((a) => ({
     attribute: a.attribute,
     value: a.value,
     confidence: a.confidence,
   }));
+  const input = classificationInputForCategory(categoryId ?? "", scoped);
   return suggestionsFromAttributesAndText(input, text).map((s) => ({
     code: s.code,
     canonicalId: s.canonicalId,

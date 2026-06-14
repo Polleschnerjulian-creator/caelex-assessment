@@ -6,6 +6,7 @@ import {
   suggestionsFromAttributesAndText,
   type SuggestInputAttribute,
 } from "@/lib/trade/classify-suggest";
+import { classificationInputForCategory } from "@/lib/trade/intake/classification-input";
 import type { ScopedFieldValue } from "./ScopedItemForm";
 
 export function ClassificationPreview({
@@ -17,15 +18,17 @@ export function ClassificationPreview({
   attributes: ScopedFieldValue[];
   text: string;
 }) {
-  void categoryId;
   const suggestions = useMemo(() => {
-    const input: SuggestInputAttribute[] = attributes.map((a) => ({
+    // Inject the chosen category's itemClass so the matcher scopes to the
+    // class (else a 10-arcsec star tracker matches a gyro on a numeric overlap).
+    const scoped: SuggestInputAttribute[] = attributes.map((a) => ({
       attribute: a.attribute,
       value: a.value,
       confidence: a.confidence,
     }));
+    const input = classificationInputForCategory(categoryId, scoped);
     return suggestionsFromAttributesAndText(input, text);
-  }, [attributes, text]);
+  }, [categoryId, attributes, text]);
   const top = suggestions[0];
   const determinate =
     top && (top.confidence === "HIGH" || top.confidence === "MEDIUM");
