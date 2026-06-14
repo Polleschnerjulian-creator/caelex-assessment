@@ -32,7 +32,7 @@ import {
   getIdentifier,
 } from "@/lib/ratelimit";
 import { getTradeAuth } from "@/lib/trade/trade-auth";
-import { fieldForCanonicalId } from "@/lib/trade/auto-classify-on-create";
+import { confirmedCodeCell } from "@/lib/trade/intake/confirmed-code-cell";
 
 export const runtime = "nodejs";
 
@@ -93,36 +93,17 @@ const BodySchema = z.object({
 
 // ─── Helpers ─────────────────────────────────────────────────────────────
 
-type RegimeCell =
-  | "eccnEU"
-  | "eccnUS"
-  | "usmlCategory"
-  | "mtcrCategory"
-  | "germanAlEntry";
-
 /**
- * Resolve which TradeItem column the confirmed code lands on. Honour an
- * explicit regime cell from the wizard first; otherwise derive it from the
- * canonicalId prefix. Returns null when the regime can't be resolved — the
- * code is still kept on the draft snapshot, but we never mis-route it onto a
- * TradeItem cell.
+ * Resolve which TradeItem column the confirmed code lands on. Delegates to the
+ * SHARED `confirmedCodeCell` mapper so this route and the /trade/assess client
+ * (AssessFlow.handleConfirm, which threads the same cell onto the in-memory
+ * item it hands to the landscape engine) agree byte-for-byte — ONE source of
+ * truth, no second copy to drift. Honours an explicit regime cell first, then
+ * the regime, then the canonicalId prefix. Returns {} when unresolvable — the
+ * code still lives on the draft snapshot, but we never mis-route it.
  */
-function regimeCellPatch(
-  code: z.infer<typeof ConfirmedCodeSchema>,
-): Partial<Record<RegimeCell, string>> {
-  if (code.eccnEU) return { eccnEU: code.eccnEU };
-  if (code.eccnUS) return { eccnUS: code.eccnUS };
-  if (code.usmlCategory) return { usmlCategory: code.usmlCategory };
-  if (code.mtcrCategory) return { mtcrCategory: code.mtcrCategory };
-  if (code.germanAlEntry) return { germanAlEntry: code.germanAlEntry };
-
-  const field = fieldForCanonicalId(code.canonicalId);
-  if (!field) return {};
-  // Strip the "REGIME:" prefix so the cell holds the bare code.
-  const colon = code.canonicalId.indexOf(":");
-  const bare =
-    colon === -1 ? code.canonicalId : code.canonicalId.slice(colon + 1);
-  return { [field]: bare };
+function regimeCellPatch(code: z.infer<typeof ConfirmedCodeSchema>) {
+  return confirmedCodeCell(code);
 }
 
 // ─── POST ─────────────────────────────────────────────────────────────────

@@ -46,6 +46,7 @@ import { VerdictPanel } from "../../operations/new/_components/VerdictPanel";
 import { rankCategories } from "@/lib/trade/intake/detect-category";
 import { suggestionsFromAttributesAndText } from "@/lib/trade/classify-suggest";
 import { classificationInputForCategory } from "@/lib/trade/intake/classification-input";
+import { confirmedCodeCell } from "@/lib/trade/intake/confirmed-code-cell";
 import type { LandscapeResult } from "@/lib/trade/landscape";
 
 type Step =
@@ -77,6 +78,18 @@ interface ConfirmedItem {
   isRadHardened?: boolean;
   isMilSpec?: boolean;
   isAntiJam?: boolean;
+  /**
+   * The confirmed control code on the regime-appropriate cell — threaded on at
+   * sign-off via `confirmedCodeCell`. LOAD-BEARING: the landscape engine
+   * (classifyItemForOperation) reads these TYPED fields, NOT
+   * parametricAttributes. Without them a confirmed controlled item classifies
+   * as UNCONTROLLED → fail-open GO to embargoed destinations.
+   */
+  eccnEU?: string;
+  eccnUS?: string;
+  usmlCategory?: string;
+  mtcrCategory?: string;
+  germanAlEntry?: string;
   /** Extended decisive attributes (Z3e+) — persisted verbatim by the route. */
   parametricAttributes?: Record<string, number | boolean | string>;
 }
@@ -258,6 +271,21 @@ export function AssessFlow() {
       // keeps the item named — NEVER the matched code's title.
       const resolvedName = name.trim() || "Datenblatt-Artikel";
       const item = itemFromScoped(scopedAttributes, resolvedName);
+      // FAIL-CLOSED: thread the CONFIRMED code onto the in-memory item's
+      // regime-appropriate cell BEFORE handing it to the landscape engine. The
+      // engine (classifyItemForOperation) keys the verdict off these TYPED
+      // fields — without the merge a confirmed controlled item reaches the
+      // landscape code-less → classified UNCONTROLLED → fail-open GO to
+      // embargoed destinations (RU/BY). `confirmedCodeCell` is the SAME mapper
+      // the /from-datasheet route uses to persist, so the cell the client
+      // classifies against == the cell the route persists (one source of truth).
+      const landscapeItem: ConfirmedItem = {
+        ...item,
+        ...confirmedCodeCell({
+          canonicalId: suggestion.canonicalId,
+          regime: suggestion.regime,
+        }),
+      };
       const res = await fetch("/api/trade/assess/from-datasheet", {
         method: "POST",
         headers: { "content-type": "application/json" },
@@ -293,9 +321,12 @@ export function AssessFlow() {
       }
       const { itemId } = (await res.json()) as { itemId: string };
       setItemId(itemId);
-      setConfirmedItem(item);
+      // Carry the CODE-BEARING item forward — both the landscape fetch and any
+      // retry (loadLandscape(confirmedItem)) must classify with the confirmed
+      // code, never the code-less scoped item.
+      setConfirmedItem(landscapeItem);
       setStep("landscape");
-      void loadLandscape(item);
+      void loadLandscape(landscapeItem);
     } catch (e) {
       setError(e instanceof Error ? e.message : "Unerwarteter Fehler");
     } finally {
