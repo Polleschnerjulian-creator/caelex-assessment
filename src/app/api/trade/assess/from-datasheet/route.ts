@@ -75,6 +75,11 @@ const ItemSchema = z.object({
   isRadHardened: z.boolean().optional(),
   isMilSpec: z.boolean().optional(),
   isAntiJam: z.boolean().optional(),
+  /** Extended operator-supplied attributes (Z3e+) — persisted verbatim into the
+   *  TradeItem.parametricAttributes JSON column (no migration; column exists). */
+  parametricAttributes: z
+    .record(z.string(), z.union([z.number(), z.boolean(), z.string()]))
+    .optional(),
 });
 
 const BodySchema = z.object({
@@ -167,6 +172,12 @@ export async function POST(req: Request) {
           isRadHardened: item.isRadHardened ?? false,
           isMilSpec: item.isMilSpec ?? false,
           isAntiJam: item.isAntiJam ?? false,
+          // Extended operator-supplied attributes (Z3e+) ride along verbatim for
+          // audit / re-classification — NOT the verdict (which stays code-driven
+          // off the confirmed cell). Column exists, so no migration.
+          parametricAttributes: (item.parametricAttributes ?? undefined) as
+            | Prisma.InputJsonValue
+            | undefined,
           // The confirmed code on the regime-appropriate cell.
           ...cellPatch,
           classificationSource: "USER_DECLARED",

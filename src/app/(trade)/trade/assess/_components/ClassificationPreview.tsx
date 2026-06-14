@@ -1,7 +1,7 @@
 // ClassificationPreview.tsx
 "use client";
 import { useMemo } from "react";
-import { Sparkles, AlertTriangle, CheckCircle2 } from "lucide-react";
+import { AlertTriangle, CheckCircle2 } from "lucide-react";
 import {
   suggestionsFromAttributesAndText,
   type SuggestInputAttribute,

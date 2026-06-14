@@ -154,4 +154,26 @@ describe("POST /api/trade/assess/from-datasheet", () => {
       summary: "Aperture above threshold",
     });
   });
+
+  it("persists the scoped extended attribute bag into parametricAttributes", async () => {
+    const body = {
+      item: {
+        name: "ST-300",
+        description: "",
+        parametricAttributes: { starTrackerAccuracyArcsec: 10 },
+      },
+      confirmedCode: {
+        canonicalId: "USML:XV(e)(16)",
+        regime: "ITAR-USML",
+      },
+    };
+
+    const res = await POST(makeReq(body));
+    expect(res.status).toBe(201);
+
+    const itemArg = tradeItemCreate.mock.calls.at(-1)?.[0];
+    expect(itemArg?.data.parametricAttributes).toEqual({
+      starTrackerAccuracyArcsec: 10,
+    });
+  });
 });

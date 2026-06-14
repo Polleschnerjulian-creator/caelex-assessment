@@ -266,6 +266,13 @@ export function AssessFlow() {
             regime: suggestion.regime,
             confidence: suggestion.confidence,
           },
+          // Audit-only snapshot of what the operator was shown at sign-off: the
+          // live scoped suggestions the preview ranked + the entered attribute
+          // bag. Persisted on the draft for re-classification — NOT the verdict.
+          evidence: {
+            suggestions: scopedSuggestions(scopedAttributes, rawText),
+            scopedAttributes,
+          },
         }),
       });
       if (!res.ok) {
@@ -577,8 +584,8 @@ function scopedSuggestions(
   attrs: ScopedFieldValue[],
   text: string,
 ): ClassifyConfirmSuggestion[] {
-  // Lazy import avoids pulling the matcher into the entry/category screens.
-  // (suggestionsFromAttributesAndText is pure + client-safe — see classify-suggest.)
+  // suggestionsFromAttributesAndText is a static top-level import — it is pure +
+  // client-safe (see classify-suggest), so no dynamic import is needed here.
   const input = attrs.map((a) => ({
     attribute: a.attribute,
     value: a.value,
