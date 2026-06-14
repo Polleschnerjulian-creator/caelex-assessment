@@ -17,6 +17,7 @@
  * SPDX-License-Identifier: LicenseRef-Caelex-Proprietary
  */
 
+import { useState } from "react";
 import { Check, AlertTriangle, Sparkles, Pencil } from "lucide-react";
 import type { DatasheetApplyPayload } from "../../_components/DatasheetDropzone";
 
@@ -53,6 +54,13 @@ export function ClassifyConfirm({
 }) {
   const suggestions = payload.suggestions as ClassifyConfirmSuggestion[];
   const [top, ...alternatives] = suggestions;
+
+  // B5 — a LOW top suggestion is an itemClass-prefix-only match (no decisive
+  // parametric predicate). It must NOT be one-click confirmable: a careless
+  // confirm here arms the dropped-cell fail-open downstream. The operator must
+  // explicitly affirm they reviewed the code ("fachlich geprüft") before the
+  // Bestätigen button enables. HIGH/MEDIUM stay one-click.
+  const [lowAffirmed, setLowAffirmed] = useState(false);
 
   // §7.4 — no usable proposal at all: never confirm a guessed code.
   if (!top) {
@@ -139,21 +147,37 @@ export function ClassifyConfirm({
         </div>
       )}
 
-      {/* Low-confidence honesty banner — confirm is allowed but flagged. */}
+      {/* B5 — LOW: itemClass-prefix-only. No one-click confirm; the operator
+          must affirm a manual review before the Bestätigen button enables. */}
       {top.confidence === "LOW" && (
-        <div className="flex items-start gap-2 rounded-lg trade-chip-warn px-3 py-2 text-xs">
-          <AlertTriangle className="mt-0.5 h-3.5 w-3.5 shrink-0" />
-          <span>
-            Nur ein schwacher Treffer — bestätige nur, wenn du den Code fachlich
-            geprüft hast. Andernfalls wähle den Code manuell.
-          </span>
+        <div className="flex flex-col gap-2 rounded-lg trade-chip-warn px-3 py-2.5 text-xs">
+          <div className="flex items-start gap-2">
+            <AlertTriangle className="mt-0.5 h-3.5 w-3.5 shrink-0" />
+            <span>
+              Nur ein schwacher Treffer (Treffer allein über die Produktklasse,
+              kein entscheidendes Parameter-Kriterium). Bestätige diesen Code
+              erst, nachdem du ihn fachlich geprüft hast — oder wähle den Code
+              manuell.
+            </span>
+          </div>
+          <label className="flex cursor-pointer items-center gap-2 text-xs font-medium text-trade-text-primary">
+            <input
+              type="checkbox"
+              data-testid="assess-low-affirm"
+              checked={lowAffirmed}
+              onChange={(e) => setLowAffirmed(e.target.checked)}
+              className="h-3.5 w-3.5 accent-trade-accent"
+            />
+            Ich habe {top.code} fachlich geprüft.
+          </label>
         </div>
       )}
 
       <div className="flex flex-wrap gap-3">
         <button
           type="button"
-          disabled={submitting}
+          data-testid="assess-confirm-btn"
+          disabled={submitting || (top.confidence === "LOW" && !lowAffirmed)}
           onClick={() => onConfirm(top)}
           className="inline-flex items-center gap-2 rounded-lg bg-trade-accent px-5 py-2.5 text-white transition hover:bg-trade-accent-strong disabled:opacity-40"
         >

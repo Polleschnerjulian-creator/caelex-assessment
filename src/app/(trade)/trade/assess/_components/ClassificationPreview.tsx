@@ -30,8 +30,23 @@ export function ClassificationPreview({
     return suggestionsFromAttributesAndText(input, text);
   }, [categoryId, attributes, text]);
   const top = suggestions[0];
-  const determinate =
-    top && (top.confidence === "HIGH" || top.confidence === "MEDIUM");
+  // A boundary-MEDIUM matched only because a predicate sat within 1% of the
+  // threshold cutoff — it is NOT a confident determination and must carry a
+  // distinct caveat, never the green success check. The matcher tags this in
+  // its rationale ("at the threshold boundary"); the phrase is propagated
+  // verbatim through the draft builder.
+  const boundary =
+    top?.confidence === "MEDIUM" && /threshold boundary/i.test(top.rationale);
+  // Determinate = a confident parametric agreement (HIGH, or a solid MEDIUM
+  // that did NOT match at the threshold boundary).
+  const determinate = Boolean(
+    top &&
+    (top.confidence === "HIGH" || (top.confidence === "MEDIUM" && !boundary)),
+  );
+  // B18 — a LOW candidate is an itemClass-prefix-only match. ClassifyConfirm
+  // presents it (behind an affirm gate); the preview must agree by surfacing
+  // the code framed as "kann nicht ausgeschlossen werden", never hiding it.
+  const lowCandidate = top?.confidence === "LOW" ? top : undefined;
   return (
     <div
       className="rounded-lg border border-trade-border bg-trade-bg-panel p-4"
@@ -58,6 +73,34 @@ export function ClassificationPreview({
             {top!.rationale}
           </p>
         </>
+      ) : boundary ? (
+        <div data-testid="preview-boundary">
+          <div className="flex items-center gap-2">
+            <AlertTriangle className="h-4 w-4 text-trade-accent-warn" />
+            <span className="text-trade-text-primary">{top!.canonicalId}</span>
+            <span className="text-caption text-trade-accent-warn">
+              Grenzwert-Treffer — vor einer bindenden Einstufung prüfen
+            </span>
+          </div>
+          <p className="mt-1 text-caption text-trade-text-muted">
+            {top!.rationale}
+          </p>
+        </div>
+      ) : lowCandidate ? (
+        <div className="flex items-center gap-2">
+          <AlertTriangle className="h-4 w-4 text-trade-accent-warn" />
+          <span className="text-trade-text-muted">
+            kann nicht ausgeschlossen werden:{" "}
+            <span
+              data-testid="preview-low-code"
+              className="text-trade-text-primary"
+            >
+              {lowCandidate.canonicalId}
+            </span>{" "}
+            — schwacher Treffer, relevante Felder ergänzen. Eine fehlende
+            Einstufung ist keine Freigabe.
+          </span>
+        </div>
       ) : (
         <div className="flex items-center gap-2">
           <AlertTriangle className="h-4 w-4 text-trade-accent-warn" />
