@@ -11,6 +11,10 @@ const GROUPS = [
   "Power",
   "RF",
   "Elektronik",
+  // B11 — the generic "Andere — nicht gelistet" escape hatch lives in its own
+  // group, pinned last so it never crowds the curated classes but is always
+  // reachable for an uncovered controlled good.
+  "Andere",
 ] as const;
 
 export function CategoryPicker({

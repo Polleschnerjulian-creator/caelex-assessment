@@ -40,7 +40,10 @@ export function classificationInputForCategory(
   if (scoped.some((a) => a.attribute === "itemClass")) return scoped;
   const category = getCategory(categoryId);
   // Unknown category → inject nothing (honest; the matcher stays unscoped).
-  if (!category) return scoped;
+  // The generic "Andere" fallback (B11) is a KNOWN category that deliberately
+  // carries no canonicalItemClass — same honest behaviour: inject nothing so
+  // the matcher is never mis-scoped onto a fabricated class.
+  if (!category?.canonicalItemClass) return scoped;
   return [
     {
       attribute: "itemClass",

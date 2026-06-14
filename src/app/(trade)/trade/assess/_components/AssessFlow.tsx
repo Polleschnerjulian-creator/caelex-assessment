@@ -35,6 +35,7 @@ import type { DatasheetApplyPayload } from "../../_components/DatasheetDropzone"
 import {
   ClassifyConfirm,
   type ClassifyConfirmSuggestion,
+  type ManualCodeEntry,
 } from "./ClassifyConfirm";
 import { LandscapeView } from "./LandscapeView";
 import { EntryChoice } from "./EntryChoice";
@@ -468,10 +469,41 @@ export function AssessFlow() {
 
   /** Honest fallback when there is nothing trustworthy to confirm: hand back to
    *  the scoped form so the operator can supply more decisive fields rather than
-   *  confirm a guessed code (spec §7.4). */
+   *  confirm a guessed code (spec §7.4). NOTE: this is reachable only when a
+   *  category WAS chosen (categoryId set) — otherwise the form would be empty.
+   *  The generic "Andere — nicht gelistet" category renders no scoped fields, so
+   *  for an uncovered good the operator uses handleManualCode (the inline
+   *  code-entry surface) instead — the flow never dead-ends (B11). */
   function handleManual() {
     setError(null);
-    setStep("form");
+    if (categoryId) {
+      setStep("form");
+    } else {
+      // No category was ever picked → there is no form to return to. Route the
+      // operator to pick one (the generic "Andere" fallback is always there).
+      setStep("category");
+    }
+  }
+
+  /**
+   * B11 — the operator typed a control code on the inline manual-entry surface
+   * (no usable suggestion, or an override of a weak one). Thread it through the
+   * SAME confirmed-code sign-off as a picked suggestion: handleConfirm runs
+   * `confirmedCodeCell`, which routes a recognised regime/prefix onto the typed
+   * TradeItem cell and ANY other code onto `declaredOtherCode` — so the item is
+   * ALWAYS treated as a controlled good downstream and fails closed (REVIEW, or
+   * BLOCKED to an embargoed destination). NEVER a fabricated GO; the flow never
+   * dead-ends. We synthesise no code — the canonicalId is exactly what was typed.
+   */
+  function handleManualCode(entry: ManualCodeEntry) {
+    void handleConfirm({
+      code: entry.code,
+      canonicalId: entry.code,
+      regime: entry.regime ?? "OTHER",
+      title: "Manuell angegebener Kontrolllisten-Code",
+      confidence: "LOW",
+      rationale: "Vom Bediener manuell angegeben (kein Korpus-Treffer).",
+    });
   }
 
   return (
@@ -551,6 +583,7 @@ export function AssessFlow() {
             error={error}
             onConfirm={handleConfirm}
             onManual={handleManual}
+            onManualCode={handleManualCode}
           />
         </div>
       )}

@@ -18,11 +18,16 @@ export function rankCategories(input: {
   const cls = input.itemClass ?? "";
   const ranked = PRODUCT_CATEGORIES.map((category) => {
     let score = 0;
+    // The generic "Andere" fallback (B11) carries no corpus class and no
+    // synonyms — it is a deliberate operator escape hatch, never an auto-ranked
+    // detection target, so it scores 0 and is filtered out below.
+    const itemClass = category.canonicalItemClass;
     if (
+      itemClass &&
       cls &&
-      (cls === category.canonicalItemClass ||
-        cls.startsWith(category.canonicalItemClass) ||
-        category.canonicalItemClass.startsWith(cls))
+      (cls === itemClass ||
+        cls.startsWith(itemClass) ||
+        itemClass.startsWith(cls))
     ) {
       score += 100;
     }

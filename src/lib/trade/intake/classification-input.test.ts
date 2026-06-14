@@ -30,6 +30,19 @@ describe("classificationInputForCategory — itemClass injection", () => {
     );
   });
 
+  it("B11 — the generic 'Andere' category injects NO itemClass (known category, but no corpus prefix → matcher stays unscoped, never mis-scoped)", () => {
+    const scoped = [
+      {
+        attribute: "isSpeciallyDesigned",
+        value: true,
+        confidence: "high" as const,
+      },
+    ];
+    const out = classificationInputForCategory("generic_other", scoped);
+    expect(out).toEqual(scoped);
+    expect(out.some((a) => a.attribute === "itemClass")).toBe(false);
+  });
+
   it("returns the scoped attrs UNCHANGED for an unknown category (honest, no fabricated itemClass)", () => {
     const scoped = [
       {

@@ -6,10 +6,21 @@ export interface ProductCategory {
   id: string;
   label: string;
   blurb: string;
-  /** Validated at build time against CANONICAL_ITEM_CLASSES (Task 1). */
-  canonicalItemClass: string;
+  /** Validated at build time against CANONICAL_ITEM_CLASSES (Task 1).
+   *  ABSENT on the generic "Andere — nicht gelistet" fallback (B11): that
+   *  category deliberately injects NO itemClass so the matcher is never
+   *  mis-scoped onto a wrong class — the operator is routed to the text /
+   *  declared-code path instead, which fails closed to REVIEW. */
+  canonicalItemClass?: string;
   synonyms: string[];
-  group: "ADCS" | "Antrieb" | "Payload" | "Power" | "RF" | "Elektronik";
+  group:
+    | "ADCS"
+    | "Antrieb"
+    | "Payload"
+    | "RF"
+    | "Power"
+    | "Elektronik"
+    | "Andere";
   /** Thin overlay — MAY ONLY reorder / relabel / append; `hide` is render-only.
    *  `order` pins the class-specific decisive NUMERIC thresholds ahead of the
    *  ubiquitous boolean `isSpeciallyDesigned` (which the global decisivenessRank
@@ -21,6 +32,14 @@ export interface ProductCategory {
     extraOptional?: AttributeName[];
   };
 }
+
+/** The id of the generic "Andere — nicht gelistet" fallback category (B11).
+ *  Only ~12 of ~68 corpus item-classes have a curated category; an uncovered
+ *  controlled good (propulsion.nozzle, reentry_vehicle, crypto,
+ *  graphite_nuclear_grade …) MUST NOT be forced into a wrong class or hit a
+ *  dead end. Picking this category injects no itemClass and routes the operator
+ *  to the honest text / declared-code path → conservative REVIEW. */
+export const GENERIC_CATEGORY_ID = "generic_other";
 
 export const PRODUCT_CATEGORIES: ProductCategory[] = [
   {
@@ -149,6 +168,19 @@ export const PRODUCT_CATEGORIES: ProductCategory[] = [
       order: ["batterySpecificEnergyWhPerKg"],
     },
   },
+  {
+    // B11 — generic fallback. NO canonicalItemClass on purpose: an item with no
+    // curated category (propulsion.nozzle, reentry_vehicle, crypto,
+    // graphite_nuclear_grade …) is NOT mis-scoped onto a wrong class. The
+    // matcher stays unscoped and the operator supplies the control code on the
+    // manual code-entry surface → confirmedCodeCell → declaredOtherCode →
+    // controlled → fail-closed REVIEW (never a fabricated GO).
+    id: GENERIC_CATEGORY_ID,
+    label: "Andere — nicht gelistet",
+    blurb: "Nicht aufgeführt? Code manuell angeben — wir prüfen konservativ.",
+    group: "Andere",
+    synonyms: [],
+  },
 ];
 
 export function getCategory(id: string): ProductCategory | undefined {
@@ -161,6 +193,9 @@ export function getCategory(id: string): ProductCategory | undefined {
 export function renderedFields(categoryId: string): AttributeName[] {
   const c = getCategory(categoryId);
   if (!c) return [];
+  // The generic fallback (B11) carries no corpus class → no derived parametric
+  // fields. The operator is routed to the text / declared-code path instead.
+  if (!c.canonicalItemClass) return [];
   const derived = deriveRelevantAttributes(c.canonicalItemClass);
   const extra = (c.overlay?.extraOptional ?? []).filter(
     (a) => !derived.includes(a),

@@ -138,15 +138,21 @@ const FIXED_CODE: ClassifyConfirmSuggestion = {
 let lastClassifyPayload: {
   suggestions: ClassifyConfirmSuggestion[];
 } | null = null;
+let capturedOnManualCode:
+  | ((entry: { code: string; regime?: string }) => void)
+  | null = null;
 vi.mock("./ClassifyConfirm", () => ({
   ClassifyConfirm: ({
     payload,
     onConfirm,
+    onManualCode,
   }: {
     payload: { suggestions: ClassifyConfirmSuggestion[] };
     onConfirm: (s: ClassifyConfirmSuggestion) => void;
+    onManualCode: (entry: { code: string; regime?: string }) => void;
   }) => {
     lastClassifyPayload = payload;
+    capturedOnManualCode = onManualCode;
     return (
       <button data-testid="m-confirm" onClick={() => onConfirm(FIXED_CODE)} />
     );
@@ -239,6 +245,7 @@ beforeEach(() => {
   lastFormCategoryId = null;
   lastFormPrefill = null;
   lastClassifyPayload = null;
+  capturedOnManualCode = null;
   vi.stubGlobal("fetch", vi.fn());
 });
 afterEach(() => vi.unstubAllGlobals());
@@ -430,6 +437,101 @@ describe("AssessFlow", () => {
     expect(body.confirmedCode.canonicalId).toBe("ECCN:9A515.a.1");
     // The scoped attribute bag rides along into parametricAttributes (Task 15).
     expect(body.item.parametricAttributes.starTrackerAccuracyArcsec).toBe(10);
+  });
+
+  it("B11: a manually-entered control code with no engine cell is threaded as a CONTROLLED good (declaredOtherCode), then advances to landscape — the flow never dead-ends", async () => {
+    const f = fetch as ReturnType<typeof vi.fn>;
+    f.mockResolvedValueOnce({
+      ok: true,
+      status: 201,
+      json: async () => ({ itemId: "item-manual" }),
+    }).mockResolvedValueOnce({
+      ok: true,
+      status: 200,
+      json: async () => LANDSCAPE_RESULT,
+    });
+    render(<AssessFlow />);
+    fireEvent.click(screen.getByTestId("m-manual"));
+    fireEvent.click(screen.getByTestId("m-pick"));
+    fireEvent.click(screen.getByTestId("m-start"));
+    // ClassifyConfirm is mounted; the operator types a code the matcher never
+    // surfaced (e.g. a JP-METI / NSG code with no engine-readable cell).
+    expect(capturedOnManualCode).toBeTruthy();
+    act(() => capturedOnManualCode?.({ code: "NSG:1.A.1", regime: "NSG" }));
+
+    // The from-datasheet persist call carries the EXACT operator-typed code.
+    await waitFor(() =>
+      expect(fetch).toHaveBeenCalledWith(
+        "/api/trade/assess/from-datasheet",
+        expect.objectContaining({ method: "POST" }),
+      ),
+    );
+    const f2 = fetch as ReturnType<typeof vi.fn>;
+    const persistCall = f2.mock.calls.find(
+      (c) => c[0] === "/api/trade/assess/from-datasheet",
+    );
+    const body = JSON.parse((persistCall![1] as RequestInit).body as string);
+    expect(body.confirmedCode.canonicalId).toBe("NSG:1.A.1");
+    expect(body.confirmedCode.regime).toBe("NSG");
+
+    // The landscape POST must classify a CONTROLLED item: a code with no
+    // engine-readable cell is carried as declaredOtherCode (fail-closed B2/B11),
+    // never dropped → never a code-less UNCONTROLLED item.
+    await waitFor(() =>
+      expect(fetch).toHaveBeenCalledWith(
+        "/api/trade/assess/landscape",
+        expect.objectContaining({ method: "POST" }),
+      ),
+    );
+    const landscapeCall = f2.mock.calls.find(
+      (c) => c[0] === "/api/trade/assess/landscape",
+    );
+    const landscapeBody = JSON.parse(
+      (landscapeCall![1] as RequestInit).body as string,
+    );
+    expect(landscapeBody.item.declaredOtherCode).toEqual({
+      regime: "NSG",
+      code: "1.A.1",
+    });
+    // The flow reached the landscape step — no dead-end.
+    await waitFor(() =>
+      expect(screen.getByTestId("landscape-view")).toBeTruthy(),
+    );
+  });
+
+  it("B11: a manually-entered code with a recognised prefix lands on the typed regime cell (eccnEU), not declaredOtherCode", async () => {
+    const f = fetch as ReturnType<typeof vi.fn>;
+    f.mockResolvedValueOnce({
+      ok: true,
+      status: 201,
+      json: async () => ({ itemId: "item-eu" }),
+    }).mockResolvedValueOnce({
+      ok: true,
+      status: 200,
+      json: async () => LANDSCAPE_RESULT,
+    });
+    render(<AssessFlow />);
+    fireEvent.click(screen.getByTestId("m-manual"));
+    fireEvent.click(screen.getByTestId("m-pick"));
+    fireEvent.click(screen.getByTestId("m-start"));
+    act(() =>
+      capturedOnManualCode?.({ code: "EU:9A004", regime: "EU-ANNEX-I" }),
+    );
+    await waitFor(() =>
+      expect(fetch).toHaveBeenCalledWith(
+        "/api/trade/assess/landscape",
+        expect.objectContaining({ method: "POST" }),
+      ),
+    );
+    const f2 = fetch as ReturnType<typeof vi.fn>;
+    const landscapeCall = f2.mock.calls.find(
+      (c) => c[0] === "/api/trade/assess/landscape",
+    );
+    const landscapeBody = JSON.parse(
+      (landscapeCall![1] as RequestInit).body as string,
+    );
+    expect(landscapeBody.item.eccnEU).toBe("9A004");
+    expect(landscapeBody.item.declaredOtherCode).toBeUndefined();
   });
 
   it("Landscape: POSTs the buckets + renders the mandatory clean-buyer caption", async () => {

@@ -20,6 +20,7 @@ vi.mock("lucide-react", () => {
     AlertTriangle: i("AlertTriangle"),
     Sparkles: i("Sparkles"),
     Pencil: i("Pencil"),
+    ArrowRight: i("ArrowRight"),
   };
 });
 
@@ -41,6 +42,90 @@ function payloadWith(
   } as unknown as DatasheetApplyPayload;
 }
 
+function emptyPayload(): DatasheetApplyPayload {
+  return {
+    attributes: [],
+    suggestions: [],
+  } as unknown as DatasheetApplyPayload;
+}
+
+describe("ClassifyConfirm B11 — honest inline manual code-entry (never a dead end)", () => {
+  it("no usable proposal: renders an inline code-entry surface (no dead-end), disabled until a code is typed", () => {
+    const onManualCode = vi.fn();
+    render(
+      <ClassifyConfirm
+        payload={emptyPayload()}
+        submitting={false}
+        error={null}
+        onConfirm={vi.fn()}
+        onManual={vi.fn()}
+        onManualCode={onManualCode}
+      />,
+    );
+    const input = screen.getByTestId(
+      "assess-manual-code-input",
+    ) as HTMLInputElement;
+    expect(input).toBeInTheDocument();
+    const submit = screen.getByTestId(
+      "assess-manual-code-submit",
+    ) as HTMLButtonElement;
+    // Empty → cannot submit a blank "classification".
+    expect(submit.disabled).toBe(true);
+    fireEvent.click(submit);
+    expect(onManualCode).not.toHaveBeenCalled();
+  });
+
+  it("typing a control code + submitting forwards the trimmed code (and optional regime) to onManualCode", () => {
+    const onManualCode = vi.fn();
+    render(
+      <ClassifyConfirm
+        payload={emptyPayload()}
+        submitting={false}
+        error={null}
+        onConfirm={vi.fn()}
+        onManual={vi.fn()}
+        onManualCode={onManualCode}
+      />,
+    );
+    fireEvent.change(screen.getByTestId("assess-manual-code-input"), {
+      target: { value: "  EU:9A004  " },
+    });
+    fireEvent.change(screen.getByTestId("assess-manual-code-regime"), {
+      target: { value: "EU-ANNEX-I" },
+    });
+    const submit = screen.getByTestId(
+      "assess-manual-code-submit",
+    ) as HTMLButtonElement;
+    expect(submit.disabled).toBe(false);
+    fireEvent.click(submit);
+    expect(onManualCode).toHaveBeenCalledTimes(1);
+    expect(onManualCode).toHaveBeenCalledWith({
+      code: "EU:9A004",
+      regime: "EU-ANNEX-I",
+    });
+  });
+
+  it("the inline code-entry surface is ALSO available alongside a (weak) suggestion — the operator can always override", () => {
+    const onManualCode = vi.fn();
+    render(
+      <ClassifyConfirm
+        payload={payloadWith({ confidence: "LOW" })}
+        submitting={false}
+        error={null}
+        onConfirm={vi.fn()}
+        onManual={vi.fn()}
+        onManualCode={onManualCode}
+      />,
+    );
+    fireEvent.change(screen.getByTestId("assess-manual-code-input"), {
+      target: { value: "1.A.1" },
+    });
+    fireEvent.click(screen.getByTestId("assess-manual-code-submit"));
+    // No regime field filled → regime omitted (undefined), code forwarded.
+    expect(onManualCode).toHaveBeenCalledWith({ code: "1.A.1" });
+  });
+});
+
 describe("ClassifyConfirm B5 — no one-click confirm for LOW", () => {
   it("enables Bestätigen immediately for a HIGH top suggestion (no affirm gate)", () => {
     const onConfirm = vi.fn();
@@ -51,6 +136,7 @@ describe("ClassifyConfirm B5 — no one-click confirm for LOW", () => {
         error={null}
         onConfirm={onConfirm}
         onManual={vi.fn()}
+        onManualCode={vi.fn()}
       />,
     );
     const btn = screen.getByTestId("assess-confirm-btn") as HTMLButtonElement;
@@ -68,6 +154,7 @@ describe("ClassifyConfirm B5 — no one-click confirm for LOW", () => {
         error={null}
         onConfirm={onConfirm}
         onManual={vi.fn()}
+        onManualCode={vi.fn()}
       />,
     );
     const btn = screen.getByTestId("assess-confirm-btn") as HTMLButtonElement;
@@ -92,6 +179,7 @@ describe("ClassifyConfirm B5 — no one-click confirm for LOW", () => {
         error={null}
         onConfirm={vi.fn()}
         onManual={vi.fn()}
+        onManualCode={vi.fn()}
       />,
     );
     const btn = screen.getByTestId("assess-confirm-btn") as HTMLButtonElement;
