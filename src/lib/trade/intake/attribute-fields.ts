@@ -95,9 +95,173 @@ export const ATTRIBUTE_FIELDS: Partial<Record<AttributeName, AttributeField>> =
       unit: "m",
       kind: "number",
     },
-    // …implementer adds one entry per attribute returned by deriveRelevantAttributes
-    // for each of the 12 v1 categories (Task 7). The completeness test (Task 7)
-    // fails the build if any rendered attribute lacks an entry here.
+    // ── Fields the corpus makes relevant for the 12 v1 categories (Task 7).
+    // The completeness test fails the build if any rendered attribute lacks an
+    // entry here, which is the mechanism that forces full dictionary coverage.
+    apertureMM: {
+      attribute: "apertureMM",
+      label: "Apertur",
+      unit: "mm",
+      kind: "number",
+      help: "Optik-Apertur; 6A002-Schwelle ≥ 350 mm (Teleskope ≥ 250 mm).",
+    },
+    IspSeconds: {
+      attribute: "IspSeconds",
+      label: "Spezifischer Impuls",
+      unit: "s",
+      kind: "number",
+    },
+    thermalCycleCount: {
+      attribute: "thermalCycleCount",
+      label: "Thermische Lastwechsel",
+      kind: "number",
+    },
+    missionDurationYears: {
+      attribute: "missionDurationYears",
+      label: "Missionsdauer",
+      unit: "Jahre",
+      kind: "number",
+    },
+    inclinationDegrees: {
+      attribute: "inclinationDegrees",
+      label: "Bahnneigung",
+      unit: "°",
+      kind: "number",
+    },
+    apogeeKm: {
+      attribute: "apogeeKm",
+      label: "Apogäum",
+      unit: "km",
+      kind: "number",
+    },
+    perigeeKm: {
+      attribute: "perigeeKm",
+      label: "Perigäum",
+      unit: "km",
+      kind: "number",
+    },
+    peakPowerWatts: {
+      attribute: "peakPowerWatts",
+      label: "Spitzenleistung",
+      unit: "W",
+      kind: "number",
+    },
+    propellantType: {
+      attribute: "propellantType",
+      label: "Treibstofftyp",
+      kind: "enum",
+      enumValues: ["chemical", "electric"],
+    },
+    totalImpulseNs: {
+      attribute: "totalImpulseNs",
+      label: "Gesamtimpuls",
+      unit: "N·s",
+      kind: "number",
+    },
+    radarBandwidthMhz: {
+      attribute: "radarBandwidthMhz",
+      label: "Radar-Bandbreite",
+      unit: "MHz",
+      kind: "number",
+    },
+    radarCenterFreqGhz: {
+      attribute: "radarCenterFreqGhz",
+      label: "Radar-Mittenfrequenz",
+      unit: "GHz",
+      kind: "number",
+    },
+    peakWavelengthNm: {
+      attribute: "peakWavelengthNm",
+      label: "Spitzenwellenlänge",
+      unit: "nm",
+      kind: "number",
+    },
+    radHardenedTID_krad: {
+      attribute: "radHardenedTID_krad",
+      label: "Strahlungshärte (TID)",
+      unit: "krad",
+      kind: "number",
+    },
+    doseRateUpsetRadSiPerS: {
+      attribute: "doseRateUpsetRadSiPerS",
+      label: "Dosisraten-Upset-Schwelle",
+      unit: "rad(Si)/s",
+      kind: "number",
+    },
+    neutronFluenceNPerCm2: {
+      attribute: "neutronFluenceNPerCm2",
+      label: "Neutronenfluenz",
+      unit: "n/cm²",
+      kind: "number",
+    },
+    seuRateErrorsPerBitDay: {
+      attribute: "seuRateErrorsPerBitDay",
+      label: "SEU-Rate",
+      unit: "Fehler/Bit·Tag",
+      kind: "number",
+    },
+    selLetThresholdMevCm2Mg: {
+      attribute: "selLetThresholdMevCm2Mg",
+      label: "SEL-LET-Schwelle",
+      unit: "MeV·cm²/mg",
+      kind: "number",
+    },
+    isAntiJam: {
+      attribute: "isAntiJam",
+      label: "Anti-Jamming",
+      kind: "boolean",
+    },
+    antennaGainDbi: {
+      attribute: "antennaGainDbi",
+      label: "Antennengewinn",
+      unit: "dBi",
+      kind: "number",
+    },
+    frequencyBandsGhz: {
+      attribute: "frequencyBandsGhz",
+      label: "Frequenzbänder",
+      unit: "GHz",
+      kind: "number",
+      help: "Liste der betriebenen Bänder; 28 GHz adressiert 5A001-Schwellen.",
+    },
+    polarisationType: {
+      attribute: "polarisationType",
+      label: "Polarisation",
+      kind: "enum",
+      enumValues: ["RHCP", "LHCP", "dual"],
+    },
+    solarCellEfficiencyPercent: {
+      attribute: "solarCellEfficiencyPercent",
+      label: "Zellwirkungsgrad",
+      unit: "%",
+      kind: "number",
+    },
+    batterySpecificEnergyWhPerKg: {
+      attribute: "batterySpecificEnergyWhPerKg",
+      label: "Spezifische Energie",
+      unit: "Wh/kg",
+      kind: "number",
+    },
+    swirSpectralBands: {
+      attribute: "swirSpectralBands",
+      label: "SWIR-Spektralbänder",
+      kind: "number",
+    },
+    mwirSpectralBands: {
+      attribute: "mwirSpectralBands",
+      label: "MWIR-Spektralbänder",
+      kind: "number",
+    },
+    lwirSpectralBands: {
+      attribute: "lwirSpectralBands",
+      label: "LWIR-Spektralbänder",
+      kind: "number",
+    },
+    hyperspectralBandCount: {
+      attribute: "hyperspectralBandCount",
+      label: "Hyperspektrale Bänder",
+      kind: "number",
+    },
   };
 
 export function getAttributeField(
