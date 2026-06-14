@@ -122,4 +122,65 @@ describe("ScopedItemForm", () => {
     fireEvent.click(screen.getByTestId("start-vorgang"));
     expect(onStart).toHaveBeenCalledOnce();
   });
+  // B17 — field values are seeded ONCE via lazy useState init (the seed reads
+  // props.prefill only on mount). If the SAME mounted instance is handed a new
+  // categoryId + prefill (a context switch) WITHOUT a remount, the lazy seed
+  // never re-runs and the previous category's seeded value bleeds into the new
+  // context — a latent trap. The consumer (AssessFlow) must therefore key the
+  // form on categoryId. Render via a keyed harness that mirrors that consumer
+  // contract; a context switch must produce the NEW prefill, never a stale one.
+  function KeyedHarness(props: {
+    categoryId: string;
+    prefill: Record<
+      string,
+      {
+        value: number | boolean | string;
+        confidence: "high" | "medium" | "low";
+      }
+    >;
+  }) {
+    return (
+      <ScopedItemForm
+        key={props.categoryId}
+        {...baseProps}
+        categoryId={props.categoryId}
+        prefill={props.prefill}
+      />
+    );
+  }
+  it("re-seeds prefill on a context switch when keyed on categoryId (no stale values)", () => {
+    const { rerender } = render(
+      <KeyedHarness
+        categoryId="star_tracker"
+        prefill={{
+          starTrackerAccuracyArcsec: { value: 10, confidence: "high" },
+        }}
+      />,
+    );
+    expect(
+      (
+        screen.getByTestId(
+          "input-starTrackerAccuracyArcsec",
+        ) as HTMLInputElement
+      ).value,
+    ).toBe("10");
+
+    // Switch context to a different category with its own prefill. Because the
+    // element key (categoryId) changes, React unmounts the old instance and
+    // mounts a fresh one whose lazy seed reads the NEW prefill — the gnss field
+    // is seeded, and the old star-tracker field is gone (no stale carry-over).
+    rerender(
+      <KeyedHarness
+        categoryId="gnss_receiver"
+        prefill={{
+          gnssMaxVelocityMPerS: { value: 750, confidence: "high" },
+        }}
+      />,
+    );
+    expect(
+      (screen.getByTestId("input-gnssMaxVelocityMPerS") as HTMLInputElement)
+        .value,
+    ).toBe("750");
+    expect(screen.queryByTestId("input-starTrackerAccuracyArcsec")).toBeNull();
+  });
 });

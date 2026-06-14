@@ -22,20 +22,30 @@ export function rankCategories(input: {
     // synonyms — it is a deliberate operator escape hatch, never an auto-ranked
     // detection target, so it scores 0 and is filtered out below.
     const itemClass = category.canonicalItemClass;
+    // B16 — DOT-BOUNDARY guard, mirroring the sibling
+    // `isCanonicalItemClassPrefix` (canonical-item-classes.ts). A bare
+    // `startsWith` with no segment boundary lets a class that is a non-dot
+    // prefix of another score a false +100 (e.g. "spacecraft.adcs.star"
+    // matching "spacecraft.adcs.star_tracker"). Only an exact class or a true
+    // dot-boundary ancestor/descendant counts.
+    const exact = !!itemClass && !!cls && cls === itemClass;
     if (
       itemClass &&
       cls &&
-      (cls === itemClass ||
-        cls.startsWith(itemClass) ||
-        itemClass.startsWith(cls))
+      (exact ||
+        cls.startsWith(itemClass + ".") ||
+        itemClass.startsWith(cls + "."))
     ) {
       score += 100;
     }
     for (const syn of category.synonyms)
       if (text.includes(syn.toLowerCase())) score += 10;
-    return { id: category.id, category, score };
+    return { id: category.id, category, score, exact };
   })
     .filter((r) => r.score > 0)
-    .sort((a, b) => b.score - a.score);
+    // Descending by score; on a tie, prefer the category whose class EXACTLY
+    // equals the extracted class over a mere dot-boundary ancestor/descendant.
+    .sort((a, b) => b.score - a.score || Number(b.exact) - Number(a.exact))
+    .map(({ id, category, score }) => ({ id, category, score }));
   return ranked;
 }

@@ -546,6 +546,12 @@ export function AssessFlow() {
       {step === "form" && categoryId && (
         <div className="space-y-4" data-testid="assess-form-step">
           <ScopedItemForm
+            // B17 — key on categoryId so a context switch REMOUNTS the form.
+            // ScopedItemForm seeds its field values ONCE via lazy useState init
+            // (it reads props.prefill only on mount); without a remount, a new
+            // category's prefill is ignored and the previous category's seeded
+            // values bleed into the new context. Keying forces a fresh mount.
+            key={categoryId}
             categoryId={categoryId}
             prefill={prefill}
             name={name}
