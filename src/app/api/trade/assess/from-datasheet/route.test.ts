@@ -89,11 +89,38 @@ beforeEach(() => {
   draftCreate.mockResolvedValue({ id: "draft-new" });
 });
 
+const validBody = {
+  item: { name: "Reaction wheel RW-250", description: "AOCS momentum wheel" },
+  confirmedCode: { canonicalId: "ECCN:9A515.a.1", eccnUS: "9A515.a.1" },
+};
+
 describe("POST /api/trade/assess/from-datasheet", () => {
   it("returns 403 when getTradeAuth resolves null", async () => {
     auth.mockResolvedValue(null);
     const res = await POST(makeReq({}));
     expect(res.status).toBe(403);
+  });
+
+  it("returns 403 for a VIEWER and never touches the DB (B9)", async () => {
+    auth.mockResolvedValue({
+      ...validAuth,
+      role: "VIEWER" as import("@prisma/client").OrganizationRole,
+    });
+    const res = await POST(makeReq(validBody));
+    expect(res.status).toBe(403);
+    expect(tradeItemCreate).not.toHaveBeenCalled();
+    expect(draftCreate).not.toHaveBeenCalled();
+  });
+
+  it("allows a MEMBER to persist a confirmed classification (B9)", async () => {
+    auth.mockResolvedValue({
+      ...validAuth,
+      role: "MEMBER" as import("@prisma/client").OrganizationRole,
+    });
+    const res = await POST(makeReq(validBody));
+    expect(res.status).toBe(201);
+    expect(tradeItemCreate).toHaveBeenCalled();
+    expect(draftCreate).toHaveBeenCalled();
   });
 
   it("returns 400 on a malformed body (no item)", async () => {

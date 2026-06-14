@@ -115,6 +115,16 @@ function regimeCellPatch(code: z.infer<typeof ConfirmedCodeSchema>) {
   return cellColumns;
 }
 
+// ─── Authorization ─────────────────────────────────────────────────────────
+
+// This route mints a CONFIRMED classification: a TradeItem plus an ACCEPTED
+// TradeItemClassificationDraft with the operator stamped as reviewer (the
+// audit sign-off record). A VIEWER is read-only and must NOT be able to forge
+// that sign-off. The real `recordDecision` four-eyes path enforces MEMBER+;
+// this wizard shortcut mirrors that floor. MEMBER and above only — VIEWER 403.
+// Closes B9 (RBAC fail-open: a VIEWER could mint a confirmed sign-off).
+const WRITE_ROLES = new Set(["OWNER", "ADMIN", "MANAGER", "MEMBER"]);
+
 // ─── POST ─────────────────────────────────────────────────────────────────
 
 export async function POST(req: Request) {
@@ -122,6 +132,15 @@ export async function POST(req: Request) {
     const tradeAuth = await getTradeAuth();
     if (!tradeAuth) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    }
+    if (!WRITE_ROLES.has(tradeAuth.role)) {
+      return NextResponse.json(
+        {
+          error:
+            "Insufficient role — read-only members cannot confirm a classification sign-off.",
+        },
+        { status: 403 },
+      );
     }
 
     const rl = await checkRateLimit(
