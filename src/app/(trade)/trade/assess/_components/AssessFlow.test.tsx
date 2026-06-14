@@ -8,6 +8,8 @@ import {
   act,
 } from "@testing-library/react";
 import type { DatasheetApplyPayload } from "../../_components/DatasheetDropzone";
+import type { ClassifyConfirmSuggestion } from "./ClassifyConfirm";
+import type { ScopedFieldValue } from "./ScopedItemForm";
 
 // next/link must be stubbed: the real App-Router next/link runs a
 // `useIntersection` prefetch effect that calls `new IntersectionObserver`,
@@ -20,7 +22,7 @@ vi.mock("next/link", () => ({
 // lucide-react stub. An explicit named-exports object (NOT a Proxy): a Proxy's
 // truthy `then` makes the module a thenable the vitest runner awaits forever
 // (hang at COLLECTION), and vitest-4 rejects named imports from a Proxy. Only
-// the icons AssessFlow + ClassifyConfirm import are listed.
+// the icons AssessFlow itself imports are listed (its children are stubbed).
 vi.mock("lucide-react", () => {
   const icon = (name: string) => {
     const I = (p: Record<string, unknown>) => (
@@ -32,20 +34,80 @@ vi.mock("lucide-react", () => {
   return {
     ArrowLeft: icon("ArrowLeft"),
     ArrowRight: icon("ArrowRight"),
-    Check: icon("Check"),
-    CheckCircle2: icon("CheckCircle2"),
-    Ban: icon("Ban"),
     Loader2: icon("Loader2"),
-    AlertTriangle: icon("AlertTriangle"),
-    Sparkles: icon("Sparkles"),
-    Pencil: icon("Pencil"),
-    FileText: icon("FileText"),
   };
 });
 
-// Mock the heavy upload child: DatasheetDropzone does its own fetch/upload
-// work. We expose its `onApply` callback via a button so the test can fire a
-// mocked extraction. (Mirrors the VerdictPanel.test.tsx child-stub pattern.)
+// ── Heavy children stubbed so the test isolates the step machine. ──────────
+
+// EntryChoice — the two-path entry screen (Task 10). The test drives both
+// paths via the rendered buttons below.
+vi.mock("./EntryChoice", () => ({
+  EntryChoice: ({
+    onUpload,
+    onManual,
+  }: {
+    onUpload: () => void;
+    onManual: () => void;
+  }) => (
+    <div data-testid="entry-choice">
+      <button data-testid="m-upload" onClick={onUpload} />
+      <button data-testid="m-manual" onClick={onManual} />
+    </div>
+  ),
+}));
+
+// CategoryPicker — manual category selection (Task 11). Picks star_tracker.
+vi.mock("./CategoryPicker", () => ({
+  CategoryPicker: ({
+    onSelect,
+  }: {
+    onSelect: (categoryId: string) => void;
+  }) => (
+    <button data-testid="m-pick" onClick={() => onSelect("star_tracker")} />
+  ),
+}));
+
+// ScopedItemForm — decisive scoped fields (Task 12). Expose onStart +
+// onAttributesChange + onChangeCategory so the test can drive the form step.
+let capturedOnStart: (() => void) | null = null;
+let capturedOnAttributesChange: ((attrs: ScopedFieldValue[]) => void) | null =
+  null;
+let capturedOnChangeCategory: (() => void) | null = null;
+let lastFormCategoryId: string | null = null;
+vi.mock("./ScopedItemForm", () => ({
+  ScopedItemForm: ({
+    categoryId,
+    onStart,
+    onAttributesChange,
+    onChangeCategory,
+  }: {
+    categoryId: string;
+    onStart: () => void;
+    onAttributesChange: (attrs: ScopedFieldValue[]) => void;
+    onChangeCategory: () => void;
+  }) => {
+    capturedOnStart = onStart;
+    capturedOnAttributesChange = onAttributesChange;
+    capturedOnChangeCategory = onChangeCategory;
+    lastFormCategoryId = categoryId;
+    return (
+      <button data-testid="m-start" onClick={onStart}>
+        {categoryId}
+      </button>
+    );
+  },
+}));
+
+// ClassificationPreview — live preview (Task 13). Marker only.
+vi.mock("./ClassificationPreview", () => ({
+  ClassificationPreview: ({ categoryId }: { categoryId: string }) => (
+    <div data-testid="m-preview" data-category={categoryId} />
+  ),
+}));
+
+// DatasheetDropzone does its own fetch/upload work. Expose `onApply` via a
+// button so the test can fire a mocked extraction (mirrors the prior pattern).
 let capturedOnApply: ((p: DatasheetApplyPayload) => void) | null = null;
 vi.mock("../../_components/DatasheetDropzone", () => ({
   DatasheetDropzone: ({
@@ -58,16 +120,28 @@ vi.mock("../../_components/DatasheetDropzone", () => ({
   },
 }));
 
-// Task 7 — isolate the verdict step from its heavy children:
-//   - PartyPicker does its own async /api/trade/parties search (AsyncSearchPicker
-//     debounce/effect). We stub it to expose `onSelect` so the test can pick a
-//     buyer without exercising that machinery.
-//   - VerdictPanel fetches /[id]/assess on mount (its own effect). We stub it to
-//     a marker that echoes the operationId it was mounted with, so the test can
-//     assert the wizard created the operation and handed VerdictPanel the right
-//     id WITHOUT running VerdictPanel's own fetch (which would otherwise wedge
-//     the runner on an unmocked GET). The real VerdictPanel is pinned by its own
-//     sibling test (VerdictPanel.test.tsx).
+// ClassifyConfirm — the human sign-off (spec §7.4). The test drives the
+// fail-closed confirm → landscape tail via the rendered button with a fixed
+// code (so the persisted confirmedCode is deterministic).
+const FIXED_CODE: ClassifyConfirmSuggestion = {
+  code: "9A515.a.1",
+  canonicalId: "ECCN:9A515.a.1",
+  regime: "EAR-CCL",
+  title: "Spacecraft and related commodities",
+  confidence: "HIGH",
+  rationale: "Optical aperture ≥ 0.50 m.",
+};
+vi.mock("./ClassifyConfirm", () => ({
+  ClassifyConfirm: ({
+    onConfirm,
+  }: {
+    onConfirm: (s: ClassifyConfirmSuggestion) => void;
+  }) => (
+    <button data-testid="m-confirm" onClick={() => onConfirm(FIXED_CODE)} />
+  ),
+}));
+
+// PartyPicker does its own async /api/trade/parties search. Expose onSelect.
 let capturedOnParty: ((p: { id: string }) => void) | null = null;
 vi.mock("../../operations/new/_components/PartyPicker", () => ({
   PartyPicker: ({ onSelect }: { onSelect: (p: { id: string }) => void }) => {
@@ -75,9 +149,32 @@ vi.mock("../../operations/new/_components/PartyPicker", () => ({
     return <div data-testid="party-picker" />;
   },
 }));
+
+// VerdictPanel fetches /[id]/assess on mount. Stub to a marker echoing the id.
 vi.mock("../../operations/new/_components/VerdictPanel", () => ({
   VerdictPanel: ({ operationId }: { operationId: string }) => (
     <div data-testid="verdict-panel" data-operation-id={operationId} />
+  ),
+}));
+
+// LandscapeView — render destinations as choosable buttons so the test can
+// advance to the verdict step (mirrors the real onChoose contract).
+vi.mock("./LandscapeView", () => ({
+  LandscapeView: ({
+    result,
+    onChoose,
+  }: {
+    result: { go: { country: string }[]; caption: string };
+    onChoose: (country: string) => void;
+  }) => (
+    <div data-testid="landscape-view">
+      <span>{result.caption}</span>
+      {result.go.map((g) => (
+        <button key={g.country} onClick={() => onChoose(g.country)}>
+          {g.country}
+        </button>
+      ))}
+    </div>
   ),
 }));
 
@@ -85,6 +182,11 @@ import { AssessFlow } from "./AssessFlow";
 
 const HIGH_PAYLOAD: DatasheetApplyPayload = {
   attributes: [
+    {
+      attribute: "itemClass",
+      value: "spacecraft.adcs.star_tracker",
+      confidence: "high",
+    },
     { attribute: "apertureMeters", value: 0.7, confidence: "high" },
     { attribute: "isRadHardened", value: true, confidence: "high" },
   ],
@@ -97,178 +199,98 @@ const HIGH_PAYLOAD: DatasheetApplyPayload = {
       confidence: "HIGH",
       rationale: "Optical aperture ≥ 0.50 m — meets USML XV threshold.",
     },
-    {
-      code: "9A004",
-      canonicalId: "ECCN:9A004",
-      regime: "MTCR",
-      title: "Space launch vehicles / sat bus",
-      confidence: "MEDIUM",
-      rationale: "Rad-hardened bus components.",
-    },
   ],
   fileName: "Star-Tracker_ST400.pdf",
 };
 
-/** A star-tracker payload whose top suggestion is a MISLEADING code title. */
-const STAR_TRACKER_PAYLOAD: DatasheetApplyPayload = {
-  attributes: [{ attribute: "isRadHardened", value: true, confidence: "low" }],
-  suggestions: [
-    {
-      code: "Item-1.A.1",
-      canonicalId: "MTCR:Item-1.A.1",
-      regime: "MTCR-ANNEX",
-      // The bug: this CODE title used to become the item name.
-      title: "Complete rocket systems (incl. ballistic, SLV, sounding rockets)",
-      confidence: "LOW",
-      rationale: "0 predicate(s) matched but 2 require additional data.",
-    },
+const LANDSCAPE_RESULT = {
+  go: [
+    { country: "US", verdict: "GO", detail: "Keine Genehmigung erforderlich." },
+    { country: "JP", verdict: "GO", detail: "Keine Genehmigung erforderlich." },
   ],
-  fileName: "Sodern-Auriga-StarTracker.pdf",
-};
-
-const EMPTY_PAYLOAD: DatasheetApplyPayload = {
-  attributes: [],
-  suggestions: [],
+  review: [
+    { country: "IN", verdict: "REVIEW", detail: "Einzelfallprüfung nötig." },
+  ],
+  blocked: [
+    { country: "RU", verdict: "BLOCKED", detail: "EU-Embargo (VO 833/2014)." },
+  ],
+  caption:
+    "Annahme: sauberer Endkunde — im nächsten Schritt mit dem echten Käufer verschärft.",
 };
 
 beforeEach(() => {
   capturedOnApply = null;
+  capturedOnStart = null;
+  capturedOnAttributesChange = null;
+  capturedOnChangeCategory = null;
   capturedOnParty = null;
+  lastFormCategoryId = null;
   vi.stubGlobal("fetch", vi.fn());
 });
 afterEach(() => vi.unstubAllGlobals());
 
 describe("AssessFlow", () => {
-  it("Screen 1: renders the datasheet dropzone first", () => {
+  it("Step machine: starts on the two-path entry screen", () => {
     render(<AssessFlow />);
-    expect(screen.getByTestId("datasheet-dropzone")).toBeTruthy();
-    // No verdict, no classification before an extraction arrives.
-    expect(screen.queryByRole("button", { name: /Bestätigen/i })).toBeNull();
+    expect(screen.getByTestId("entry-choice")).toBeInTheDocument();
+    // No dropzone, no classification, no verdict before a path is chosen.
+    expect(screen.queryByTestId("datasheet-dropzone")).not.toBeInTheDocument();
+    expect(screen.queryByTestId("assess-form-step")).not.toBeInTheDocument();
   });
 
-  it("Screen 2: after an extraction shows the top classification + evidence + a Bestätigen button", async () => {
+  it("manual path: entry → category → form (mounts ScopedItemForm + preview)", () => {
     render(<AssessFlow />);
+    fireEvent.click(screen.getByTestId("m-manual"));
+    // Manual path goes to the category picker.
+    expect(screen.getByTestId("m-pick")).toBeInTheDocument();
+    fireEvent.click(screen.getByTestId("m-pick"));
+    // Choosing a category lands on the scoped form step.
+    expect(screen.getByTestId("assess-form-step")).toBeInTheDocument();
+    expect(screen.getByTestId("m-start")).toBeInTheDocument();
+    expect(screen.getByTestId("m-preview")).toBeInTheDocument();
+    // The chosen category flows into both the form and the live preview.
+    expect(lastFormCategoryId).toBe("star_tracker");
+  });
+
+  it("upload path: entry → upload shows the dropzone, then routes the extraction into the form", () => {
+    render(<AssessFlow />);
+    fireEvent.click(screen.getByTestId("m-upload"));
+    // Upload path shows the dropzone first.
+    expect(screen.getByTestId("datasheet-dropzone")).toBeInTheDocument();
     expect(capturedOnApply).toBeTruthy();
+    // The extraction routes into the (pre-filled) form step — NOT straight to
+    // classify.
     act(() => capturedOnApply?.(HIGH_PAYLOAD));
-    // Top proposal, its evidence (rationale), and an alternative are surfaced.
-    await waitFor(() => expect(screen.getByText("9A515.a.1")).toBeTruthy());
-    expect(screen.getByText(/Optical aperture/)).toBeTruthy();
-    expect(screen.getByText("9A004")).toBeTruthy();
-    expect(screen.getByRole("button", { name: /Bestätigen/i })).toBeTruthy();
+    expect(screen.getByTestId("assess-form-step")).toBeInTheDocument();
+    expect(screen.getByTestId("m-start")).toBeInTheDocument();
+    // The detected category (from the itemClass extraction) pre-selects.
+    expect(lastFormCategoryId).toBe("star_tracker");
   });
 
-  it("Screen 2: defaults the Artikelname to the datasheet product (file name), NEVER the matched code title", async () => {
+  it("'Vorgang starten' advances the form to the classify (human sign-off) step", () => {
     render(<AssessFlow />);
-    expect(capturedOnApply).toBeTruthy();
-    act(() => capturedOnApply?.(STAR_TRACKER_PAYLOAD));
-
-    const nameInput = (await screen.findByPlaceholderText(
-      /Reaction Wheel/i,
-    )) as HTMLInputElement;
-    // The name comes from the PRODUCT (file name, sans extension, tidied),
-    // not from the misleading "Complete rocket systems…" code title.
-    expect(nameInput.value).toBe("Sodern Auriga StarTracker");
-    expect(nameInput.value).not.toContain("Complete rocket systems");
-    expect(nameInput.value).not.toContain("Item-1.A.1");
+    fireEvent.click(screen.getByTestId("m-manual"));
+    fireEvent.click(screen.getByTestId("m-pick"));
+    expect(capturedOnStart).toBeTruthy();
+    fireEvent.click(screen.getByTestId("m-start"));
+    // The classify step (ClassifyConfirm) mounts — no verdict synthesised yet.
+    expect(screen.getByTestId("m-confirm")).toBeInTheDocument();
+    expect(screen.queryByTestId("verdict-panel")).not.toBeInTheDocument();
   });
 
-  it("Screen 2: leaves the Artikelname EMPTY (placeholder) when the payload carries no file name", async () => {
+  it("'Falsche Klasse? Ändern' returns the form to the category picker", () => {
     render(<AssessFlow />);
-    // Same misleading suggestion title, but no fileName on the payload.
-    const noFileName: DatasheetApplyPayload = {
-      ...STAR_TRACKER_PAYLOAD,
-      fileName: undefined,
-    };
-    act(() => capturedOnApply?.(noFileName));
-
-    const nameInput = (await screen.findByPlaceholderText(
-      /Reaction Wheel/i,
-    )) as HTMLInputElement;
-    // Empty so the operator types the real name — NEVER the code title.
-    expect(nameInput.value).toBe("");
+    fireEvent.click(screen.getByTestId("m-manual"));
+    fireEvent.click(screen.getByTestId("m-pick"));
+    expect(screen.getByTestId("assess-form-step")).toBeInTheDocument();
+    expect(capturedOnChangeCategory).toBeTruthy();
+    act(() => capturedOnChangeCategory?.());
+    // Back to the category picker, off the form.
+    expect(screen.getByTestId("m-pick")).toBeInTheDocument();
+    expect(screen.queryByTestId("assess-form-step")).not.toBeInTheDocument();
   });
 
-  it("Screen 2 honesty fallback: empty extraction shows a manual-code prompt, no guessed Bestätigen", async () => {
-    render(<AssessFlow />);
-    act(() => capturedOnApply?.(EMPTY_PAYLOAD));
-    // No suggestion → never a one-click confirm of a guessed code.
-    await waitFor(() =>
-      expect(
-        screen.getByRole("button", { name: /Code manuell wählen/i }),
-      ).toBeTruthy(),
-    );
-    expect(screen.queryByRole("button", { name: /Bestätigen/i })).toBeNull();
-  });
-
-  it("Confirm advances to the landscape step (POSTs from-datasheet, then renders the landscape placeholder)", async () => {
-    (fetch as ReturnType<typeof vi.fn>)
-      // 1st POST = from-datasheet persistence.
-      .mockResolvedValueOnce({
-        ok: true,
-        status: 201,
-        json: async () => ({ itemId: "item-new" }),
-      })
-      // 2nd POST = landscape buckets (loaded on entering the step).
-      .mockResolvedValueOnce({
-        ok: true,
-        status: 200,
-        json: async () => LANDSCAPE_RESULT,
-      });
-    render(<AssessFlow />);
-    act(() => capturedOnApply?.(HIGH_PAYLOAD));
-    await waitFor(() =>
-      expect(screen.getByRole("button", { name: /Bestätigen/i })).toBeTruthy(),
-    );
-    fireEvent.click(screen.getByRole("button", { name: /Bestätigen/i }));
-
-    // The confirmed classification is persisted via Task 4's route…
-    await waitFor(() =>
-      expect(fetch).toHaveBeenCalledWith(
-        "/api/trade/assess/from-datasheet",
-        expect.objectContaining({ method: "POST" }),
-      ),
-    );
-    // …and never synthesises a verdict: the confirmed code is exactly what the
-    // human picked (the top suggestion).
-    const [, init] = (fetch as ReturnType<typeof vi.fn>).mock.calls[0];
-    const body = JSON.parse((init as RequestInit).body as string);
-    expect(body.confirmedCode.canonicalId).toBe("ECCN:9A515.a.1");
-
-    // The flow advances to the landscape step.
-    await waitFor(() =>
-      expect(screen.getByTestId("assess-landscape-step")).toBeTruthy(),
-    );
-  });
-
-  // ── Task 6: Screen 3 — Liefer-Landkarte ────────────────────────────────
-  const LANDSCAPE_RESULT = {
-    go: [
-      {
-        country: "US",
-        verdict: "GO",
-        detail: "Keine Genehmigung erforderlich.",
-      },
-      {
-        country: "JP",
-        verdict: "GO",
-        detail: "Keine Genehmigung erforderlich.",
-      },
-    ],
-    review: [
-      { country: "IN", verdict: "REVIEW", detail: "Einzelfallprüfung nötig." },
-    ],
-    blocked: [
-      {
-        country: "RU",
-        verdict: "BLOCKED",
-        detail: "EU-Embargo (VO 833/2014).",
-      },
-    ],
-    caption:
-      "Annahme: sauberer Endkunde — im nächsten Schritt mit dem echten Käufer verschärft.",
-  };
-
-  /** Drive the wizard from upload → confirm → landscape, with the two POSTs mocked. */
+  /** Drive entry → manual → category → form → start → confirm → landscape. */
   async function advanceToLandscape() {
     const f = fetch as ReturnType<typeof vi.fn>;
     // 1st POST = from-datasheet persistence; 2nd POST = landscape buckets.
@@ -282,89 +304,76 @@ describe("AssessFlow", () => {
       json: async () => LANDSCAPE_RESULT,
     });
     render(<AssessFlow />);
-    act(() => capturedOnApply?.(HIGH_PAYLOAD));
-    await waitFor(() =>
-      expect(screen.getByRole("button", { name: /Bestätigen/i })).toBeTruthy(),
+    fireEvent.click(screen.getByTestId("m-manual"));
+    fireEvent.click(screen.getByTestId("m-pick"));
+    // Supply a scoped attribute so the persisted item is non-empty.
+    act(() =>
+      capturedOnAttributesChange?.([
+        {
+          attribute: "starTrackerAccuracyArcsec",
+          value: 10,
+          source: "operator",
+          confidence: "high",
+        },
+      ]),
     );
-    fireEvent.click(screen.getByRole("button", { name: /Bestätigen/i }));
+    fireEvent.click(screen.getByTestId("m-start"));
+    // Human confirms the classification (fail-closed sign-off).
+    fireEvent.click(screen.getByTestId("m-confirm"));
     await waitFor(() =>
-      expect(screen.getByTestId("assess-landscape-step")).toBeTruthy(),
+      expect(screen.getByTestId("landscape-view")).toBeTruthy(),
     );
   }
 
-  it("Screen 3: POSTs the landscape, renders the three buckets + the mandatory caption", async () => {
+  it("Confirm persists EXACTLY the human-picked code, then advances to landscape (no synthesised verdict)", async () => {
     await advanceToLandscape();
 
-    // The landscape endpoint is called with the confirmed item + a seat.
+    // The confirmed classification is persisted via Task 4's route…
+    await waitFor(() =>
+      expect(fetch).toHaveBeenCalledWith(
+        "/api/trade/assess/from-datasheet",
+        expect.objectContaining({ method: "POST" }),
+      ),
+    );
+    const persistCall = (fetch as ReturnType<typeof vi.fn>).mock.calls.find(
+      (c) => c[0] === "/api/trade/assess/from-datasheet",
+    );
+    const body = JSON.parse((persistCall![1] as RequestInit).body as string);
+    // …and never synthesises a verdict: the confirmed code is exactly what the
+    // human picked.
+    expect(body.confirmedCode.canonicalId).toBe("ECCN:9A515.a.1");
+    // The scoped attribute bag rides along into parametricAttributes (Task 15).
+    expect(body.item.parametricAttributes.starTrackerAccuracyArcsec).toBe(10);
+  });
+
+  it("Landscape: POSTs the buckets + renders the mandatory clean-buyer caption", async () => {
+    await advanceToLandscape();
     await waitFor(() =>
       expect(fetch).toHaveBeenCalledWith(
         "/api/trade/assess/landscape",
         expect.objectContaining({ method: "POST" }),
       ),
     );
-    const landscapeCall = (fetch as ReturnType<typeof vi.fn>).mock.calls.find(
-      (c) => c[0] === "/api/trade/assess/landscape",
-    );
-    expect(landscapeCall).toBeTruthy();
-    const body = JSON.parse((landscapeCall![1] as RequestInit).body as string);
-    expect(body.item.name).toBeTruthy();
-    expect(body.exporterSeat).toBeTruthy();
-
-    // The three buckets render their destinations + cited details.
-    await waitFor(() => expect(screen.getByText("US")).toBeTruthy());
-    expect(screen.getByText("JP")).toBeTruthy();
-    expect(screen.getByText("IN")).toBeTruthy();
-    expect(screen.getByText("RU")).toBeTruthy();
-    expect(screen.getByText(/EU-Embargo/)).toBeTruthy();
-
-    // The mandatory clean-buyer caption is present, verbatim.
     expect(screen.getByText(/sauberer Endkunde/)).toBeTruthy();
+    expect(screen.getByText("US")).toBeTruthy();
   });
 
-  it("Screen 3: clicking a destination advances to the verdict step with that country", async () => {
-    await advanceToLandscape();
-    await waitFor(() => expect(screen.getByText("US")).toBeTruthy());
-
-    fireEvent.click(screen.getByRole("button", { name: /US/ }));
-
-    await waitFor(() =>
-      expect(screen.getByTestId("assess-verdict-step")).toBeTruthy(),
-    );
-  });
-
-  it("Screen 3: a free-text 'anderes Ziel' destination also advances to the verdict step", async () => {
-    await advanceToLandscape();
-    await waitFor(() => expect(screen.getByText("US")).toBeTruthy());
-
-    const other = screen.getByPlaceholderText(/anderes Ziel/i);
-    fireEvent.change(other, { target: { value: "br" } });
-    fireEvent.click(screen.getByRole("button", { name: /Prüfen/i }));
-
-    await waitFor(() =>
-      expect(screen.getByTestId("assess-verdict-step")).toBeTruthy(),
-    );
-  });
-
-  // ── Task 7: Screen 4 — single verdict ───────────────────────────────────
-  /** Drive upload → confirm → landscape → choose `country` → verdict step. */
+  /** Drive entry → … → landscape → choose `country` → verdict step. */
   async function advanceToVerdict(country = "US") {
     await advanceToLandscape();
-    await waitFor(() => expect(screen.getByText(country)).toBeTruthy());
     fireEvent.click(screen.getByRole("button", { name: new RegExp(country) }));
     await waitFor(() =>
       expect(screen.getByTestId("assess-verdict-step")).toBeTruthy(),
     );
   }
 
-  it("Screen 4: a buyer + 'Prüfen' creates the operation (ship-to = chosen) + a line, then mounts VerdictPanel", async () => {
+  it("Verdict: a buyer + 'Prüfen' creates the operation + line, then mounts VerdictPanel", async () => {
     await advanceToVerdict("US");
 
-    // Pick the screened buyer via the (stubbed) PartyPicker.
     expect(screen.getByTestId("party-picker")).toBeTruthy();
     expect(capturedOnParty).toBeTruthy();
     act(() => capturedOnParty?.({ id: "party-1" }));
 
-    // The next two POSTs: create-operation → create-line.
     const f = fetch as ReturnType<typeof vi.fn>;
     f.mockResolvedValueOnce({
       ok: true,
@@ -374,7 +383,6 @@ describe("AssessFlow", () => {
 
     fireEvent.click(screen.getByRole("button", { name: /Darf ich liefern/i }));
 
-    // Operation created with the chosen destination as ship-to.
     await waitFor(() =>
       expect(fetch).toHaveBeenCalledWith(
         "/api/trade/operations",
@@ -386,7 +394,6 @@ describe("AssessFlow", () => {
     expect(opBody.shipToCountry).toBe("US");
     expect(opBody.counterpartyId).toBe("party-1");
 
-    // A line is added for the persisted item under the new operation id.
     await waitFor(() =>
       expect(fetch).toHaveBeenCalledWith(
         "/api/trade/operations/op-new/lines",
@@ -399,8 +406,6 @@ describe("AssessFlow", () => {
     const lineBody = JSON.parse((lineCall![1] as RequestInit).body as string);
     expect(lineBody.itemId).toBe("item-new");
 
-    // The existing VerdictPanel is mounted with the new operation id — no
-    // verdict is synthesised here; it fetches /[id]/assess itself.
     await waitFor(() =>
       expect(screen.getByTestId("verdict-panel")).toBeTruthy(),
     );
@@ -409,7 +414,7 @@ describe("AssessFlow", () => {
     ).toBe("op-new");
   });
 
-  it("Screen 4: the assess button is disabled until a buyer is chosen", async () => {
+  it("Verdict: the assess button is disabled until a buyer is chosen", async () => {
     await advanceToVerdict("US");
     const btn = screen.getByRole("button", {
       name: /Darf ich liefern/i,

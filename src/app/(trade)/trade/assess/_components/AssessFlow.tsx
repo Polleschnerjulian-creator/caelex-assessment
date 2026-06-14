@@ -3,19 +3,26 @@
 /**
  * Caelex Passage — /trade/assess wizard orchestrator.
  *
- * A four-screen state machine: `upload → classify → landscape → verdict`.
- * Task 5 ships Screens 1–2 (upload + classify-confirm) and advances into a
- * landscape *placeholder*; Task 6 fills the Liefer-Landkarte and Task 7 the
- * single verdict.
+ * A SCOPED-INTAKE state machine:
+ *   entry → (upload | category) → form → classify → landscape → verdict
  *
- * SAFETY (spec §7):
+ * Two front-half paths converge on the same scoped `form` step:
+ *  - MANUAL:  entry → category (CategoryPicker) → form (empty prefill)
+ *  - UPLOAD:  entry → upload (DatasheetDropzone) → form (extraction pre-fills the
+ *             decisive fields + the detected category is pre-selected)
+ *
+ * The form's "Vorgang starten" hands the live top suggestion to ClassifyConfirm
+ * (the human sign-off), and from there the EXISTING tail runs unchanged:
+ * confirm → POST /from-datasheet → loadLandscape → choose destination → verdict.
+ *
+ * SAFETY (spec §7) — FAIL-CLOSED:
  *  - NO verdict is synthesised here. Nothing downstream runs until the human
- *    confirms the classification on Screen 2.
- *  - On confirm we persist EXACTLY the code the human picked (the top
- *    suggestion) via POST /api/trade/assess/from-datasheet (Task 4) — the
- *    route synthesises nothing either.
- *  - A no-extraction / low-confidence path offers an honest manual fallback
- *    rather than a guessed code (handled in ClassifyConfirm, §7.4).
+ *    confirms the classification on the classify step.
+ *  - The live ClassificationPreview may only UNDER-claim: a blank decisive field
+ *    renders "noch nicht ausschließbar", never a confident state.
+ *  - On confirm we persist EXACTLY the code the human picked — the route
+ *    synthesises nothing either. The scoped attribute bag rides along verbatim
+ *    in `parametricAttributes` (audit / re-classification), not the verdict.
  *
  * SPDX-License-Identifier: LicenseRef-Caelex-Proprietary
  */
@@ -30,11 +37,24 @@ import {
   type ClassifyConfirmSuggestion,
 } from "./ClassifyConfirm";
 import { LandscapeView } from "./LandscapeView";
+import { EntryChoice } from "./EntryChoice";
+import { CategoryPicker } from "./CategoryPicker";
+import { ScopedItemForm, type ScopedFieldValue } from "./ScopedItemForm";
+import { ClassificationPreview } from "./ClassificationPreview";
 import { PartyPicker } from "../../operations/new/_components/PartyPicker";
 import { VerdictPanel } from "../../operations/new/_components/VerdictPanel";
+import { rankCategories } from "@/lib/trade/intake/detect-category";
+import { suggestionsFromAttributesAndText } from "@/lib/trade/classify-suggest";
 import type { LandscapeResult } from "@/lib/trade/landscape";
 
-type Step = "upload" | "classify" | "landscape" | "verdict";
+type Step =
+  | "entry"
+  | "upload"
+  | "category"
+  | "form"
+  | "classify"
+  | "landscape"
+  | "verdict";
 
 /** Declared end-use options, mirroring the operations wizard. */
 type EndUse = "CIVIL" | "DUAL_USE" | "MILITARY" | "WMD_RELATED";
@@ -56,58 +76,112 @@ interface ConfirmedItem {
   isRadHardened?: boolean;
   isMilSpec?: boolean;
   isAntiJam?: boolean;
+  /** Extended decisive attributes (Z3e+) — persisted verbatim by the route. */
+  parametricAttributes?: Record<string, number | boolean | string>;
 }
 
-/** ItemSignals keys we lift verbatim from the extraction into the item. */
+/** Scoped-attribute keys we lift onto the item's TYPED columns. Anything else
+ *  is routed into `parametricAttributes` (the matcher reads it via fallthrough,
+ *  the route persists it verbatim — see Task 15). */
 const NUMERIC_ATTRS = ["apertureMeters", "rangeKm", "payloadKg"] as const;
 const BOOLEAN_ATTRS = ["isRadHardened", "isMilSpec", "isAntiJam"] as const;
 
-/** Fold the extracted attributes into the classifiable-item shape. */
-function itemFromPayload(
-  payload: DatasheetApplyPayload,
+/** Fold the operator-confirmed scoped attributes into the classifiable-item
+ *  shape: typed columns where we have them, everything else into the
+ *  `parametricAttributes` bag (verbatim). `itemClass` is metadata, not a column;
+ *  it is intentionally dropped here (the confirmed code is the determination). */
+function itemFromScoped(
+  attrs: ScopedFieldValue[],
   name: string,
 ): ConfirmedItem {
-  const extra: Record<string, number | boolean> = {};
-  for (const a of payload.attributes) {
+  const typed: Record<string, number | boolean> = {};
+  const parametric: Record<string, number | boolean | string> = {};
+  for (const a of attrs) {
+    if (a.attribute === "itemClass") continue;
     if (
       NUMERIC_ATTRS.includes(a.attribute as (typeof NUMERIC_ATTRS)[number]) &&
       typeof a.value === "number"
     ) {
-      extra[a.attribute] = a.value;
+      typed[a.attribute] = a.value;
     } else if (
       BOOLEAN_ATTRS.includes(a.attribute as (typeof BOOLEAN_ATTRS)[number]) &&
       typeof a.value === "boolean"
     ) {
-      extra[a.attribute] = a.value;
+      typed[a.attribute] = a.value;
+    } else {
+      parametric[a.attribute] = a.value;
     }
   }
-  return { name, description: "", ...extra };
+  const item: ConfirmedItem = { name, description: "", ...typed };
+  if (Object.keys(parametric).length > 0)
+    item.parametricAttributes = parametric;
+  return item;
+}
+
+/** Build the ScopedItemForm `prefill` map from an upload extraction. High- and
+ *  medium-confidence extracted attributes seed the form (the operator can edit);
+ *  `itemClass` is steering metadata for category detection, not a rendered field,
+ *  so it is excluded from the prefill. */
+function prefillFromPayload(
+  payload: DatasheetApplyPayload,
+): Record<
+  string,
+  { value: number | boolean | string; confidence: "high" | "medium" | "low" }
+> {
+  const prefill: Record<
+    string,
+    { value: number | boolean | string; confidence: "high" | "medium" | "low" }
+  > = {};
+  for (const a of payload.attributes) {
+    if (a.attribute === "itemClass") continue;
+    prefill[a.attribute] = { value: a.value, confidence: a.confidence };
+  }
+  return prefill;
 }
 
 /**
  * Derive an editable item-name DEFAULT from the datasheet the operator
- * uploaded — never from a matched control-code title.
- *
- * Source of truth = the uploaded datasheet's file name (the closest thing to
- * a product name we have client-side), with the file extension stripped and
- * the common separators normalised to spaces ("Star-Tracker_ST400.pdf" →
- * "Star Tracker ST400"). When no file name is available (attribute-only /
- * programmatic callers) we return "" so the input keeps its placeholder and
- * the operator types the real name. We deliberately do NOT fall back to
- * `suggestions[0].title`: a code title is a classification, not a name.
+ * uploaded — never from a matched control-code title. Source of truth = the
+ * uploaded datasheet's file name (sans extension, separators tidied). When
+ * absent we return "" so the operator types the real name. We deliberately do
+ * NOT fall back to a code title: a code title is a classification, not a name.
  */
 function productNameFromPayload(p: DatasheetApplyPayload): string {
   const raw = p.fileName?.trim();
   if (!raw) return "";
-  // Strip a trailing extension (".pdf", ".PDF", etc.) then tidy separators.
   const base = raw.replace(/\.[a-z0-9]+$/i, "");
-  const cleaned = base.replace(/[_-]+/g, " ").replace(/\s+/g, " ").trim();
-  return cleaned;
+  return base.replace(/[_-]+/g, " ").replace(/\s+/g, " ").trim();
+}
+
+/** Pull the extracted `itemClass` (if any) so the upload path can pre-select a
+ *  category — `rankCategories` never decides; it only ranks. */
+function detectedCategoryId(payload: DatasheetApplyPayload): string | null {
+  const cls = payload.attributes.find((a) => a.attribute === "itemClass");
+  const itemClass = typeof cls?.value === "string" ? cls.value : null;
+  const ranked = rankCategories({ itemClass, text: "" });
+  return ranked[0]?.id ?? null;
 }
 
 export function AssessFlow() {
-  const [step, setStep] = useState<Step>("upload");
-  const [payload, setPayload] = useState<DatasheetApplyPayload | null>(null);
+  const [step, setStep] = useState<Step>("entry");
+
+  // Scoped-intake state — shared by both front-half paths.
+  const [categoryId, setCategoryId] = useState<string | null>(null);
+  const [scopedAttributes, setScopedAttributes] = useState<ScopedFieldValue[]>(
+    [],
+  );
+  const [rawText] = useState("");
+  const [prefill, setPrefill] = useState<
+    Record<
+      string,
+      {
+        value: number | boolean | string;
+        confidence: "high" | "medium" | "low";
+        quote?: string;
+      }
+    >
+  >({});
+
   const [name, setName] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -118,43 +192,68 @@ export function AssessFlow() {
     null,
   );
 
-  // Screen 3 (landscape) state.
+  // Landscape state.
   const [landscape, setLandscape] = useState<LandscapeResult | null>(null);
   const [landscapeLoading, setLandscapeLoading] = useState(false);
 
-  // Screen 4 (verdict) — chosen destination + the real buyer + end-use.
+  // Verdict step — chosen destination + the real buyer + end-use.
   const [destination, setDestination] = useState<string | null>(null);
   const [counterpartyId, setCounterpartyId] = useState<string | null>(null);
   const [declaredEndUse, setDeclaredEndUse] = useState<EndUse>("CIVIL");
   const [operationId, setOperationId] = useState<string | null>(null);
 
-  function handleApply(p: DatasheetApplyPayload) {
-    setPayload(p);
+  // ── Entry → path selection ─────────────────────────────────────────────
+  function handleChooseUpload() {
     setError(null);
-    // Seed the editable Artikelname from the PRODUCT the operator uploaded —
-    // never from a matched control-code title. A code title like "Complete
-    // rocket systems (MTCR Item-1.A.1)" is a CLASSIFICATION, not the item's
-    // name; defaulting to it mislabels e.g. a star tracker as a rocket.
-    // Best available product-name source = the uploaded datasheet's file name
-    // (sans extension). When absent, leave the field EMPTY so the placeholder
-    // prompts the operator to type the real name.
+    setStep("upload");
+  }
+  function handleChooseManual() {
+    setError(null);
+    setStep("category");
+  }
+
+  // ── Manual: category chosen → empty-prefill form ──────────────────────
+  function handlePickCategory(id: string) {
+    setCategoryId(id);
+    setPrefill({});
+    setScopedAttributes([]);
+    setError(null);
+    setStep("form");
+  }
+
+  // ── Upload: extraction → pre-filled form with detected category ────────
+  function handleApply(p: DatasheetApplyPayload) {
+    setError(null);
     if (!name) setName(productNameFromPayload(p));
+    setPrefill(prefillFromPayload(p));
+    setScopedAttributes([]);
+    const detected = detectedCategoryId(p);
+    if (detected) setCategoryId(detected);
+    // Even when nothing is detected we still land on the form — the operator
+    // picks the class via "Falsche Klasse? Ändern" rather than being dumped
+    // into a guessed classification.
+    setStep(detected ? "form" : "category");
+  }
+
+  // ── Scoped form → human sign-off ──────────────────────────────────────
+  function handleStart() {
+    setError(null);
     setStep("classify");
   }
 
+  function handleChangeCategory() {
+    setError(null);
+    setStep("category");
+  }
+
   async function handleConfirm(suggestion: ClassifyConfirmSuggestion) {
-    if (!payload) return;
     setSubmitting(true);
     setError(null);
     try {
-      // Persist the operator-entered name. When blank, fall back to the
-      // product name derived from the datasheet (file name) — NEVER the
-      // matched code's title, which is a classification, not the item name.
-      // A final neutral placeholder keeps the persisted item named when even
-      // the file name is absent.
-      const resolvedName =
-        name.trim() || productNameFromPayload(payload) || "Datenblatt-Artikel";
-      const item = itemFromPayload(payload, resolvedName);
+      // Persist the operator-entered name. When blank, a neutral placeholder
+      // keeps the item named — NEVER the matched code's title.
+      const resolvedName = name.trim() || "Datenblatt-Artikel";
+      const item = itemFromScoped(scopedAttributes, resolvedName);
       const res = await fetch("/api/trade/assess/from-datasheet", {
         method: "POST",
         headers: { "content-type": "application/json" },
@@ -167,7 +266,6 @@ export function AssessFlow() {
             regime: suggestion.regime,
             confidence: suggestion.confidence,
           },
-          evidence: { suggestions: payload.suggestions },
         }),
       });
       if (!res.ok) {
@@ -216,20 +314,20 @@ export function AssessFlow() {
   }
 
   function handleChooseDestination(country: string) {
-    // No verdict is computed here — Screen 4 runs the engine against the real
-    // buyer for the chosen destination.
+    // No verdict is computed here — the verdict step runs the engine against the
+    // real buyer for the chosen destination.
     setDestination(country);
     setOperationId(null);
     setStep("verdict");
   }
 
   /**
-   * Screen 4 — create a real TradeOperation for {chosen destination + screened
-   * buyer + the persisted item}, then mount the EXISTING VerdictPanel against
-   * it. The verdict is engine-derived (VerdictPanel fetches /[id]/assess) — we
-   * synthesise nothing here; the clean-buyer landscape is now tightened with the
-   * real buyer. Bodies mirror the operations wizard (operations/new/page.tsx)
-   * 1:1 so the two paths produce identical operations.
+   * Verdict step — create a real TradeOperation for {chosen destination +
+   * screened buyer + the persisted item}, then mount the EXISTING VerdictPanel
+   * against it. The verdict is engine-derived (VerdictPanel fetches
+   * /[id]/assess) — we synthesise nothing here. Bodies mirror the operations
+   * wizard (operations/new/page.tsx) 1:1 so the two paths produce identical
+   * operations.
    */
   async function createOperationAndAssess() {
     if (!itemId || !destination || !counterpartyId) return;
@@ -285,10 +383,12 @@ export function AssessFlow() {
     }
   }
 
+  /** Honest fallback when there is nothing trustworthy to confirm: hand back to
+   *  the scoped form so the operator can supply more decisive fields rather than
+   *  confirm a guessed code (spec §7.4). */
   function handleManual() {
-    // Honest fallback: hand off to the manual classification surface rather
-    // than confirm a guessed code (spec §7.4). v1 routes to the item creator.
     setError(null);
+    setStep("form");
   }
 
   return (
@@ -301,9 +401,16 @@ export function AssessFlow() {
           <ArrowLeft className="h-4 w-4" /> Passage
         </Link>
         <h1 className="text-xl font-semibold text-trade-text-primary">
-          Datenblatt prüfen
+          Artikel prüfen
         </h1>
       </div>
+
+      {step === "entry" && (
+        <EntryChoice
+          onUpload={handleChooseUpload}
+          onManual={handleChooseManual}
+        />
+      )}
 
       {step === "upload" && (
         <section className="space-y-4" data-testid="assess-upload-step">
@@ -312,26 +419,42 @@ export function AssessFlow() {
           </h2>
           <p className="text-sm text-trade-text-muted">
             Lade das Produkt-Datenblatt (PDF) hoch. Wir lesen die
-            Spezifikationen und schlagen eine Klassifizierung vor — die du
-            bestätigst, bevor wir prüfen, wohin du liefern darfst.
+            Spezifikationen und füllen die relevanten Felder vor — du bestätigst
+            die Klassifizierung, bevor wir prüfen, wohin du liefern darfst.
           </p>
           <DatasheetDropzone onApply={handleApply} />
         </section>
       )}
 
-      {step === "classify" && payload && (
-        <div className="space-y-4">
-          <label className="block text-sm text-trade-text-muted">
-            Artikelname
-            <input
-              className="mt-1 w-full rounded-lg border border-trade-border bg-trade-bg-panel px-3 py-2 text-trade-text-primary"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              placeholder="z. B. Reaction Wheel RW-250"
-            />
-          </label>
+      {step === "category" && <CategoryPicker onSelect={handlePickCategory} />}
+
+      {step === "form" && categoryId && (
+        <div className="space-y-4" data-testid="assess-form-step">
+          <ScopedItemForm
+            categoryId={categoryId}
+            prefill={prefill}
+            name={name}
+            onNameChange={setName}
+            onChangeCategory={handleChangeCategory}
+            onAttributesChange={setScopedAttributes}
+            onStart={handleStart}
+            submitting={submitting}
+          />
+          <ClassificationPreview
+            categoryId={categoryId}
+            attributes={scopedAttributes}
+            text={rawText}
+          />
+        </div>
+      )}
+
+      {step === "classify" && (
+        <div className="space-y-4" data-testid="assess-classify-wrap">
           <ClassifyConfirm
-            payload={payload}
+            payload={{
+              attributes: [],
+              suggestions: scopedSuggestions(scopedAttributes, rawText),
+            }}
             submitting={submitting}
             error={error}
             onConfirm={handleConfirm}
@@ -445,4 +568,28 @@ export function AssessFlow() {
       )}
     </div>
   );
+}
+
+/** Run the live suggestion engine over the confirmed scoped attributes so the
+ *  classify step shows the human EXACTLY the candidates the preview ranked — no
+ *  synthesis, the suggestions are pure-derived from the corpus. */
+function scopedSuggestions(
+  attrs: ScopedFieldValue[],
+  text: string,
+): ClassifyConfirmSuggestion[] {
+  // Lazy import avoids pulling the matcher into the entry/category screens.
+  // (suggestionsFromAttributesAndText is pure + client-safe — see classify-suggest.)
+  const input = attrs.map((a) => ({
+    attribute: a.attribute,
+    value: a.value,
+    confidence: a.confidence,
+  }));
+  return suggestionsFromAttributesAndText(input, text).map((s) => ({
+    code: s.code,
+    canonicalId: s.canonicalId,
+    regime: s.regime,
+    title: s.title,
+    confidence: s.confidence,
+    rationale: s.rationale,
+  }));
 }
