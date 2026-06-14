@@ -57,13 +57,33 @@ describe("confirmedCodeCell — map a confirmed control code onto the TradeItem 
     });
   });
 
-  it("unknown regime + unknown prefix → {} (never mis-route, never synthesise)", () => {
-    expect(
-      confirmedCodeCell({ canonicalId: "WAFFLE:42", regime: "OTHER" }),
-    ).toEqual({});
+  it("unknown regime + unknown prefix → declaredOtherCode (FAIL-CLOSED, never mis-routes onto a typed cell, never silently drops the code)", () => {
+    const patch = confirmedCodeCell({
+      canonicalId: "WAFFLE:42",
+      regime: "OTHER",
+    });
+    // B2 fail-closed: the confirmed code is CARRIED so the engine treats the
+    // item as controlled — it must NOT be silently dropped to {} (the old
+    // fail-open that let a confirmed JP-METI/NSG/RU-833/Wassenaar item reach
+    // the landscape code-less → GO incl. RU/BY).
+    expect(patch).toEqual({
+      declaredOtherCode: { regime: "OTHER", code: "42" },
+    });
+    // Invariant preserved: no TYPED regime cell is ever guessed.
+    expect(patch.eccnEU).toBeUndefined();
+    expect(patch.eccnUS).toBeUndefined();
+    expect(patch.usmlCategory).toBeUndefined();
+    expect(patch.mtcrCategory).toBeUndefined();
+    expect(patch.germanAlEntry).toBeUndefined();
   });
 
-  it("empty / missing canonicalId → {}", () => {
+  it("unmapped regime, no prefix in canonicalId → declaredOtherCode falls back to the regime name", () => {
+    expect(
+      confirmedCodeCell({ canonicalId: "9A004", regime: "JP-METI" }),
+    ).toEqual({ declaredOtherCode: { regime: "JP-METI", code: "9A004" } });
+  });
+
+  it("empty / missing canonicalId → {} (no code at all — nothing to carry)", () => {
     expect(confirmedCodeCell({ canonicalId: "" })).toEqual({});
   });
 });

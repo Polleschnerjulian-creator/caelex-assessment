@@ -114,6 +114,13 @@ export interface DeclaredCodes {
   usmlCategory?: string | null;
   mtcrCategory?: string | null;
   germanAlEntry?: string | null;
+  /**
+   * A declared control code from a regime with no dedicated TradeItem cell
+   * (JP-METI / NSG / RU-833 / Wassenaar / OTHER) — the bare code only. Matched
+   * against the corpus union the same way the others are (enrichment only; a
+   * non-match never implies "uncontrolled").
+   */
+  eccnOther?: string | null;
 }
 
 /**
@@ -128,6 +135,7 @@ export function matchDeclaredCodes(codes: DeclaredCodes): CorpusCodeMatch[] {
     codes.eccnEU,
     codes.mtcrCategory,
     codes.germanAlEntry,
+    codes.eccnOther,
   ].filter((c): c is string => !!c && c.trim().length > 0);
 
   const out: CorpusCodeMatch[] = [];

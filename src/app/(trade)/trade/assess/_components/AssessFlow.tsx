@@ -90,6 +90,13 @@ interface ConfirmedItem {
   usmlCategory?: string;
   mtcrCategory?: string;
   germanAlEntry?: string;
+  /**
+   * B2 — a confirmed code on a regime with NO engine-readable cell (JP-METI /
+   * NSG / RU-833 / Wassenaar / …), carried by `confirmedCodeCell` so the
+   * landscape engine treats the item as controlled and fails closed. NOT a
+   * persisted column — the engine reads it off the in-memory item only.
+   */
+  declaredOtherCode?: { regime: string; code: string };
   /** Extended decisive attributes (Z3e+) — persisted verbatim by the route. */
   parametricAttributes?: Record<string, number | boolean | string>;
 }

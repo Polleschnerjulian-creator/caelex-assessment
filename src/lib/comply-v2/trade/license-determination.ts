@@ -258,6 +258,19 @@ export function determineLicenseRequirements(
     eccnEU?: string | null;
     eccnUS?: string | null;
     usmlCategory?: string | null;
+    /**
+     * B1 — declared codes on cells the engine cannot precisely evaluate
+     * per-destination (MTCR Annex, German Ausfuhrliste Teil I B, or any other
+     * regime via `declaredOtherCode`). A code on any of these means the item is
+     * a CONTROLLED good: it fires Gate 1.6 (RU/BY) and the fail-closed backstop
+     * below, so the determination can NEVER be CLEARED for it — at minimum
+     * REVIEW everywhere, BLOCKED to embargoed + RU/BY. These are NOT fed to the
+     * de-minimis / EU001 / origin-module paths (those reason over eccnEU/eccnUS/
+     * usmlCategory only) — that keeps existing precise determinations unchanged.
+     */
+    mtcrCategory?: string | null;
+    germanAlEntry?: string | null;
+    declaredOtherCode?: { regime: string; code: string } | null;
   },
   /**
    * S0 Task 7 — Gate 4.5 (fail-closed thin-origin-coverage gate).
@@ -444,15 +457,34 @@ export function determineLicenseRequirements(
     ),
   );
   const ruByHasDualUseSignal = ruByHasDeclaredDualUse || ruByHeuristicDualUse;
+  // B3 — broaden the RU/BY backstop to ANY declared control code on ANY regime
+  // cell, not only the EU-dual-use leg. A confirmed MTCR / German-AL / JP-METI /
+  // NSG / RU-833 / Wassenaar code is a CONTROLLED good; absent this leg it
+  // supplied no signal here and the gate was skipped → RU/BY passed as GO (the
+  // reproduced fail-open). The codes here are NOT EU Annex I, so the reason text
+  // must NOT assert the Annex-I prohibition — it uses a hedged citation (the
+  // same honesty discipline as the `usOnlyTrigger` sub-case below).
+  const ruByOtherCode =
+    actualCodes?.mtcrCategory?.trim() ||
+    actualCodes?.germanAlEntry?.trim() ||
+    actualCodes?.declaredOtherCode?.code?.trim();
+  const ruByHasOtherRegimeCode = !!ruByOtherCode;
+  const ruByHasAnyControlSignal =
+    ruByHasDualUseSignal || ruByHasOtherRegimeCode;
   // Idempotency: do not stack on top of an existing hard prohibition (Gate 0
   // Annex IV PROHIBITED, or Gate 1.5 embargo DENIED). Mirrors Gate 0's pattern.
   const ruByAlreadyProhibited = requirements.some(
     (r) => r.status === "DENIED" || r.status === "PROHIBITED",
   );
   let ruByDestinationBlock = false;
-  if (isRuByDestination && ruByHasDualUseSignal && !ruByAlreadyProhibited) {
+  if (isRuByDestination && ruByHasAnyControlSignal && !ruByAlreadyProhibited) {
     ruByDestinationBlock = true;
     const isBelarus = ruByDest === "BY";
+    // The trigger is ONLY a non-EU-Annex-I regime code (no dual-use leg). We
+    // cannot assert the Anhang-I / Art. 2a prohibition for it — name the
+    // regime/code and hedge the legal basis. Über-Blocken bewusst (fail-closed).
+    const otherRegimeOnlyTrigger =
+      !ruByHasDualUseSignal && ruByHasOtherRegimeCode;
     // Detect the US-ECCN-only sub-case: the trigger is a declared non-EAR99
     // US ECCN with NO EU-Annex-I signal (no eccnEU declared, no heuristic
     // EU_ANNEX_I/US_CCL co-fire). On this path we cannot assert that the item
@@ -474,13 +506,17 @@ export function determineLicenseRequirements(
       authority: "EU_COMPETENT_AUTHORITY",
       status: "PROHIBITED",
       licenseType: null,
-      reason: isBelarus
-        ? usOnlyTrigger
-          ? `US-kontrolliertes Dual-Use-Gut (ECCN ${ruByEccnUS}): Lieferung nach Belarus wird konservativ blockiert — EU-Restriktivmaßnahmen (VO (EG) 765/2006 Art. 1e/1f, soweit das Gut von Anhang I VO 2021/821 erfasst ist) und parallele US-Exportkontrollen gegen Belarus; Rechtsgrundlage je Listung manuell verifizieren.`
-          : "Verbringung von EU-Dual-Use-Gütern (Anhang I VO 2021/821) nach Belarus ist nach Art. 1e/1f VO (EG) 765/2006 verboten — kein Genehmigungsweg. (Die Art-1f-Advanced-Tech-Sperre ist nur insoweit abgedeckt, wie das EU-Dual-Use-Signal greift.)"
-        : usOnlyTrigger
-          ? `US-kontrolliertes Dual-Use-Gut (ECCN ${ruByEccnUS}): Lieferung nach Russland wird konservativ blockiert — EU-Restriktivmaßnahmen (VO (EU) 833/2014 Art. 2/2a, soweit das Gut von Anhang I VO 2021/821 erfasst ist) und parallele US-Exportkontrollen gegen Russland; Rechtsgrundlage je Listung manuell verifizieren.`
-          : "Verbringung von EU-Dual-Use-Gütern (Anhang I VO 2021/821) nach Russland ist nach Art. 2/2a VO (EU) 833/2014 verboten — kein Genehmigungsweg. (Die Art-2a-Advanced-Tech-Sperre ist nur insoweit abgedeckt, wie das EU-Dual-Use-Signal greift.)",
+      reason: otherRegimeOnlyTrigger
+        ? isBelarus
+          ? `Gelistetes kontrolliertes Gut (Code ${ruByOtherCode}): Lieferung nach Belarus wird konservativ blockiert — die EU-Restriktivmaßnahmen gegen Belarus (VO (EG) 765/2006) verbieten die Ausfuhr gelisteter Güter, und Belarus ist als Bestimmungsland gesperrt. Die genaue listenrechtliche Grundlage (EU-Dual-Use, militärisch oder national) ist manuell zu verifizieren.`
+          : `Gelistetes kontrolliertes Gut (Code ${ruByOtherCode}): Lieferung nach Russland wird konservativ blockiert — die EU-Restriktivmaßnahmen gegen Russland (VO (EU) 833/2014) verbieten die Ausfuhr gelisteter Güter, und Russland ist als Bestimmungsland gesperrt. Die genaue listenrechtliche Grundlage (EU-Dual-Use, militärisch oder national) ist manuell zu verifizieren.`
+        : isBelarus
+          ? usOnlyTrigger
+            ? `US-kontrolliertes Dual-Use-Gut (ECCN ${ruByEccnUS}): Lieferung nach Belarus wird konservativ blockiert — EU-Restriktivmaßnahmen (VO (EG) 765/2006 Art. 1e/1f, soweit das Gut von Anhang I VO 2021/821 erfasst ist) und parallele US-Exportkontrollen gegen Belarus; Rechtsgrundlage je Listung manuell verifizieren.`
+            : "Verbringung von EU-Dual-Use-Gütern (Anhang I VO 2021/821) nach Belarus ist nach Art. 1e/1f VO (EG) 765/2006 verboten — kein Genehmigungsweg. (Die Art-1f-Advanced-Tech-Sperre ist nur insoweit abgedeckt, wie das EU-Dual-Use-Signal greift.)"
+          : usOnlyTrigger
+            ? `US-kontrolliertes Dual-Use-Gut (ECCN ${ruByEccnUS}): Lieferung nach Russland wird konservativ blockiert — EU-Restriktivmaßnahmen (VO (EU) 833/2014 Art. 2/2a, soweit das Gut von Anhang I VO 2021/821 erfasst ist) und parallele US-Exportkontrollen gegen Russland; Rechtsgrundlage je Listung manuell verifizieren.`
+            : "Verbringung von EU-Dual-Use-Gütern (Anhang I VO 2021/821) nach Russland ist nach Art. 2/2a VO (EU) 833/2014 verboten — kein Genehmigungsweg. (Die Art-2a-Advanced-Tech-Sperre ist nur insoweit abgedeckt, wie das EU-Dual-Use-Signal greift.)",
       recommendedAction: isBelarus
         ? "NICHT AUSFÜHREN. Operation abbrechen und dokumentieren. Die Ausfuhr gelisteter Dual-Use-Güter nach Belarus ist nach VO (EG) 765/2006 untersagt; es gibt keinen regulären Genehmigungsweg. Etwaige enge Ausnahmen nur mit qualifiziertem Exportkontroll-Rechtsberater prüfen."
         : "NICHT AUSFÜHREN. Operation abbrechen und dokumentieren. Die Ausfuhr gelisteter Dual-Use-Güter nach Russland ist nach VO (EU) 833/2014 untersagt; es gibt keinen regulären Genehmigungsweg. Etwaige enge Ausnahmen nur mit qualifiziertem Exportkontroll-Rechtsberater prüfen.",
@@ -790,6 +826,55 @@ export function determineLicenseRequirements(
         recommendedAction: `Determine the applicable licence (a specific BAFA licence or an EU general/global authorisation) for destination ${destinationCountry} before shipping.`,
         triggerCode: "ACTUAL_CODE_DECLARED",
       });
+    }
+  }
+
+  // ── Gate 3.6: unevaluable-cell control-code fail-closed backstop (B1/B2) ──
+  //
+  // A confirmed control code on a cell the engine CANNOT precisely evaluate
+  // per-destination — MTCR Annex (`mtcrCategory`), German Ausfuhrliste Teil I B
+  // (`germanAlEntry`), or any other regime with no dedicated cell
+  // (`declaredOtherCode`: JP-METI / NSG / RU-833 / Wassenaar / …) — still makes
+  // the item a CONTROLLED good. Before this gate such an item reached the engine
+  // with no eccnEU/eccnUS/usmlCategory and no heuristic trigger → `gate` fell to
+  // CLEARED → fail-open GO incl. RU/BY (reproduced). We do NOT fabricate a
+  // per-destination MTCR / DE-AL licensing answer; we fail CLOSED: at minimum
+  // REVIEW for every destination. The destination hard-blocks (Gate 1.5 embargo,
+  // Gate 1.6 RU/BY) already ran and supersede this REVIEW where they fired.
+  //
+  // Tightening-only: skipped when a hard prohibition already blocks (never
+  // downgrades BLOCKED), and idempotent (one row even with multiple unevaluable
+  // codes). The precise eccnEU/eccnUS/usmlCategory legs are untouched.
+  const unevaluableCode =
+    actualCodes?.mtcrCategory?.trim() ||
+    actualCodes?.germanAlEntry?.trim() ||
+    actualCodes?.declaredOtherCode?.code?.trim();
+  if (unevaluableCode) {
+    const backstopAlreadyBlocked = requirements.some(
+      (r) => r.status === "DENIED" || r.status === "PROHIBITED",
+    );
+    const backstopAlreadyRaised = requirements.some(
+      (r) => r.triggerCode === "UNEVALUABLE_CONTROL_CODE",
+    );
+    if (!backstopAlreadyBlocked && !backstopAlreadyRaised) {
+      const regimeLabel = actualCodes?.mtcrCategory?.trim()
+        ? "MTCR-Annex"
+        : actualCodes?.germanAlEntry?.trim()
+          ? "DE-Ausfuhrliste Teil I B"
+          : (actualCodes?.declaredOtherCode?.regime ??
+            "anderes Kontrollregime");
+      requirements.push({
+        jurisdiction: "Kontrolliertes Gut (regimeübergreifend)",
+        authority: "EU_COMPETENT_AUTHORITY",
+        status: "LIKELY_REQUIRED",
+        licenseType: null,
+        reason: `Das Gut trägt einen bestätigten Kontroll-Code (${regimeLabel}: ${unevaluableCode}), den Passage nicht zielland-genau bewerten kann. Es ist ein kontrolliertes Gut — keine Freigabe ohne Einzelfallprüfung. Genehmigungspflicht und -weg sind manuell mit qualifiziertem Exportkontroll-Rechtsberater zu klären.`,
+        recommendedAction: `Genehmigungspflicht nach dem einschlägigen Regime (${regimeLabel}) für die konkrete Ausfuhr manuell prüfen, bevor die Sendung erfolgt. Eine Freigabe ist ohne diese Prüfung nicht zulässig.`,
+        triggerCode: "UNEVALUABLE_CONTROL_CODE",
+      });
+      nextSteps.push(
+        `REVIEW: Bestätigter Kontroll-Code (${regimeLabel}: ${unevaluableCode}) — in Passage nicht zielland-genau bewertbar. Genehmigungspflicht manuell prüfen; keine automatische Freigabe.`,
+      );
     }
   }
 

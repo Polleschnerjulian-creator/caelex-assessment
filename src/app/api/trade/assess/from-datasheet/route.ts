@@ -99,11 +99,20 @@ const BodySchema = z.object({
  * (AssessFlow.handleConfirm, which threads the same cell onto the in-memory
  * item it hands to the landscape engine) agree byte-for-byte — ONE source of
  * truth, no second copy to drift. Honours an explicit regime cell first, then
- * the regime, then the canonicalId prefix. Returns {} when unresolvable — the
- * code still lives on the draft snapshot, but we never mis-route it.
+ * the regime, then the canonicalId prefix. Returns only TYPED regime columns
+ * (real TradeItem DB columns) so it is safe to spread onto a Prisma `create`.
+ *
+ * `confirmedCodeCell` may instead carry a `declaredOtherCode` (a confirmed code
+ * on a regime with no dedicated cell — B2). That is NOT a TradeItem column, so
+ * we strip it here: the code already lives on the persisted draft snapshot
+ * (`proposedEccn` / `acceptedSnapshot`), and the verdict engine reads it from
+ * the in-memory landscape item, not from a persisted column.
  */
 function regimeCellPatch(code: z.infer<typeof ConfirmedCodeSchema>) {
-  return confirmedCodeCell(code);
+  const { declaredOtherCode: _declaredOtherCode, ...cellColumns } =
+    confirmedCodeCell(code);
+  void _declaredOtherCode;
+  return cellColumns;
 }
 
 // ─── POST ─────────────────────────────────────────────────────────────────

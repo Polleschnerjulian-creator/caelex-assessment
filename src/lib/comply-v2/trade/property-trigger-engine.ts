@@ -58,10 +58,29 @@ export interface ItemSignals {
   // Free-text description (used for low-confidence keyword heuristics)
   description?: string;
 
-  // Existing classifications (trigger engine uses these for consistency checks)
+  // Existing classifications (trigger engine uses these for consistency checks).
+  //
+  // The first three are EVALUABLE cells — a code here keeps its precise,
+  // destination-aware gate (EU Annex I dual-use, US CCL, USML/ITAR).
   eccnEU?: string | null;
   eccnUS?: string | null;
   usmlCategory?: string | null;
+  // The remaining cells are control codes the trigger engine CANNOT precisely
+  // evaluate per-destination, but a declared code on any of them still means
+  // the item is a CONTROLLED good → it must FAIL CLOSED (≥ REVIEW everywhere,
+  // BLOCKED to embargoed + RU/BY). The trigger RULES do not read these; the
+  // license-determination engine consumes them via `actualCodes`.
+  /** MTCR Annex item (e.g. "1.A.1", "Item-3.A.3"). */
+  mtcrCategory?: string | null;
+  /** German Ausfuhrliste Teil I B entry (e.g. "0009", "0010j"). */
+  germanAlEntry?: string | null;
+  /**
+   * A confirmed control code from a regime that maps to NO dedicated engine
+   * cell (JP-METI / NSG / RU-833 / Wassenaar / any other). Carried verbatim
+   * (regime + bareCode) so the engine treats the item as controlled and fails
+   * closed — a confirmed code is NEVER silently dropped to "uncontrolled".
+   */
+  declaredOtherCode?: { regime: string; code: string } | null;
 }
 
 // ─── Output types ─────────────────────────────────────────────────────

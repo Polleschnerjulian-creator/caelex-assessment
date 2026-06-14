@@ -15,9 +15,14 @@
  * classifies against is byte-identical to the cell the route persists.
  *
  * PURE — no I/O, no DB, no `import "server-only"`. Safe to import on the client.
- * The mapper SYNTHESISES NOTHING: an unrecognised regime + unrecognised prefix
- * returns {} (the code still lives on the draft snapshot upstream, but we never
- * mis-route it onto a cell).
+ * The mapper MIS-ROUTES NOTHING onto a typed regime cell: an unrecognised
+ * regime + unrecognised prefix never guesses a column. But a confirmed code is
+ * NEVER silently dropped — when no engine-readable cell resolves, the code is
+ * carried as `declaredOtherCode` (regime + bare code) so the verdict engine
+ * treats the item as a CONTROLLED good and fails closed (B2). Returning {} for
+ * an unmappable confirmed code is the fail-open the engine cluster slipped
+ * through: a controlled JP-METI / NSG / RU-833 / Wassenaar item reached the
+ * landscape code-less → classified UNCONTROLLED → GO incl. to RU/BY.
  *
  * SPDX-License-Identifier: LicenseRef-Caelex-Proprietary
  */
@@ -29,6 +34,18 @@ export type RegimeCell =
   | "usmlCategory"
   | "mtcrCategory"
   | "germanAlEntry";
+
+/**
+ * The patch `confirmedCodeCell` returns. EITHER a typed regime cell (the five
+ * columns above — these map to real TradeItem DB columns and are safe to spread
+ * onto a Prisma `create`), OR `declaredOtherCode` for a confirmed code that maps
+ * to no engine-readable cell. `declaredOtherCode` is NOT a DB column — the
+ * verdict engine reads it (fail-closed), and the persist path drops it (see the
+ * route's `regimeCellPatch`). The two are mutually exclusive by construction.
+ */
+export type ConfirmedCodePatch = Partial<Record<RegimeCell, string>> & {
+  declaredOtherCode?: { regime: string; code: string };
+};
 
 export interface ConfirmedCodeInput {
   /** The load-bearing field, e.g. "EU:9A004" / "ECCN:9A515.a.1" / "USML:XV(e)(16)". */
@@ -105,12 +122,14 @@ function cellForPrefix(canonicalId: string): RegimeCell | null {
  *      always wins — the wizard already pinned the exact column.
  *   2. Else map by `regime` (RegimeName).
  *   3. Else map by the canonicalId PREFIX.
- *
- * Returns {} when nothing resolves — never mis-routes, never synthesises.
+ *   4. Else — a confirmed code on a regime with NO engine-readable cell — carry
+ *      it as `declaredOtherCode` (regime + bare code). FAIL-CLOSED (B2): the
+ *      verdict engine treats it as a controlled good. NEVER returns {} for a
+ *      confirmed code; only a truly empty input (no cell, no canonicalId) is {}.
  */
 export function confirmedCodeCell(
   input: ConfirmedCodeInput,
-): Partial<Record<RegimeCell, string>> {
+): ConfirmedCodePatch {
   // 1. Explicit cells win (first non-empty in a stable order).
   if (input.eccnEU) return { eccnEU: input.eccnEU };
   if (input.eccnUS) return { eccnUS: input.eccnUS };
@@ -123,7 +142,14 @@ export function confirmedCodeCell(
 
   // 2. Map by regime, else 3. by canonicalId prefix.
   const cell = cellForRegime(input.regime) ?? cellForPrefix(canonicalId);
-  if (!cell) return {};
+  if (cell) return { [cell]: bareCode(canonicalId) };
 
-  return { [cell]: bareCode(canonicalId) };
+  // 4. No engine-readable cell — carry the code as declaredOtherCode so the
+  // verdict engine fails closed. A confirmed code is NEVER silently dropped.
+  return {
+    declaredOtherCode: {
+      regime: input.regime ?? canonicalId.split(":")[0] ?? "OTHER",
+      code: bareCode(canonicalId),
+    },
+  };
 }

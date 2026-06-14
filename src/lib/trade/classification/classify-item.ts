@@ -121,6 +121,11 @@ export function classifyItemForOperation(
     eccnEU: item.eccnEU ?? null,
     eccnUS: item.eccnUS ?? null,
     usmlCategory: item.usmlCategory ?? null,
+    // B1 — the unevaluable cells. A declared code here is a controlled good
+    // that the license gate fails closed on (it can never CLEAR for it).
+    mtcrCategory: item.mtcrCategory ?? null,
+    germanAlEntry: item.germanAlEntry ?? null,
+    declaredOtherCode: item.declaredOtherCode ?? null,
   };
 
   const triggerEval = evaluateItemSignals(signals);
@@ -149,6 +154,12 @@ export function classifyItemForOperation(
       eccnEU: item.eccnEU ?? null,
       eccnUS: item.eccnUS ?? null,
       usmlCategory: item.usmlCategory ?? null,
+      // B1 — the unevaluable cells, forwarded so Gate 1.6 + the fail-closed
+      // backstop see them. A declared code here forces ≥ REVIEW (BLOCKED to
+      // embargoed + RU/BY) and can NEVER yield CLEARED.
+      mtcrCategory: item.mtcrCategory ?? null,
+      germanAlEntry: item.germanAlEntry ?? null,
+      declaredOtherCode: item.declaredOtherCode ?? null,
     },
     // S0 Task 7: forward exporter origin to Gate 4.5 when provided.
     opts.exporterOrigin,
@@ -165,6 +176,11 @@ export function classifyItemForOperation(
     eccnEU: item.eccnEU ?? null,
     eccnUS: item.eccnUS ?? null,
     usmlCategory: item.usmlCategory ?? null,
+    mtcrCategory: item.mtcrCategory ?? null,
+    germanAlEntry: item.germanAlEntry ?? null,
+    // A declared other-regime code (JP-METI/NSG/RU-833/Wassenaar/…) is matched
+    // against the corpus too — enrichment only; the gate already failed closed.
+    eccnOther: item.declaredOtherCode?.code ?? null,
   });
 
   return { triggerEval, deMinimis, licenseDetermination, corpusMatches };
