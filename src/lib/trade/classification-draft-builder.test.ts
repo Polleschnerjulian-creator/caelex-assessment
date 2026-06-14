@@ -224,41 +224,48 @@ describe("composeDraft — proposals capped at 3", () => {
 });
 
 describe("composeDraft — real text signal outranks a 0-predicate possible", () => {
-  it("ranks the 7A004 star-tracker corpus-keyword match above the 0-matched MTCR Item-1.A.1 possible (PRIMARY)", () => {
+  it("ranks a genuine star-tracker candidate as PRIMARY, never the MTCR Item-1.A.1 rocket possible", () => {
     // Real-world bug: a STAR TRACKER datasheet produced
     // "Complete rocket systems (MTCR Item-1.A.1)" as the PRIMARY proposal.
-    // Root cause: with no rangeKm/payloadKg the MTCR Item-1.A.1 predicates
-    // are both UNKNOWN, so it surfaces as a possibleMatch with 0 MATCHED
-    // predicates (pure "cannot rule out, needs data" — no positive signal).
-    // The relevant 7A004 only arrives via the corpus-keyword fallback (a
-    // genuine >=2-token text match). A 0-signal possible must NOT outrank a
-    // real text match.
+    // Original root cause: with no rangeKm/payloadKg the MTCR Item-1.A.1
+    // predicates are both UNKNOWN, so it surfaced as a 0-matched possible,
+    // while the relevant star-tracker code only arrived via a weak
+    // corpus-keyword fallback (the extractor's itemClass did not match the
+    // corpus). After the intake taxonomy fix the extractor now emits the
+    // corpus-canonical itemClass `spacecraft.adcs.star_tracker`, so the star
+    // tracker matches as a GENUINE parametric CANDIDATE (the EU 9A004 / 7A004
+    // star-tracker control family) — strictly better than the keyword
+    // fallback — and the MTCR rocket-system match is gone from the proposals
+    // entirely.
     const text =
       "Star Tracker ST-400. Celestial navigation sensor for attitude " +
       "determination. Three-axis attitude reference. Optical star camera.";
     const extraction = extractFromText(text);
 
-    // Sanity-check the fixture drives the buggy matcher state: no clean
-    // candidates, only 0-matched possibles + corpus-keyword hits.
+    // Fixture has no payload/range (payload/range are irrelevant to a star
+    // tracker — the whole point of scoping).
     expect(extraction.attributes.payloadKg).toBeUndefined();
     expect(extraction.attributes.rangeKm).toBeUndefined();
+    // The taxonomy fix: itemClass is now the corpus-canonical star-tracker class.
+    expect(extraction.attributes.itemClass).toBe(
+      "spacecraft.adcs.star_tracker",
+    );
 
     const draft = buildClassificationDraft(extraction);
 
     expect(draft.primary).not.toBeNull();
-    // The PRIMARY must be the genuine text signal (the 7A004 star-tracker
-    // corpus-keyword match), NOT the 0-matched MTCR rocket-system possible.
-    expect(draft.primary?.source).toBe("corpus_keyword");
-    expect(draft.primary?.canonicalId).toContain("7A004");
+    // PRIMARY is now a genuine parametric candidate, not a weak keyword hint.
+    expect(draft.primary?.source).toBe("candidate");
+    // A real star-tracker / spacecraft control code (9A004 or 7A004 family),
+    // NEVER the MTCR rocket-system code.
+    expect(draft.primary?.canonicalId).toMatch(/9A004|7A004/);
     expect(draft.primary?.regime).not.toBe("MTCR-ANNEX");
-    // The MTCR rocket-system possible must NOT be the primary — it can still
-    // appear lower in the list (it is not suppressed), just never first.
     expect(draft.primary?.canonicalId).not.toContain("Item-1.A.1");
-
-    // attributesNeeded is preserved so the "needs payload/range" hint is not
-    // lost even though the 0-matched possible was demoted.
-    expect(draft.attributesNeeded).toContain("payloadKg");
-    expect(draft.attributesNeeded).toContain("rangeKm");
+    // FAIL-CLOSED (stronger than before): the MTCR rocket-system code does not
+    // appear in ANY surfaced proposal for a star tracker.
+    expect(
+      draft.proposals.every((p) => !p.canonicalId.includes("Item-1.A.1")),
+    ).toBe(true);
     // Disclaimer always travels.
     expect(draft.disclaimer).toMatch(/SCREENING-LEVEL GUIDANCE/);
   });
