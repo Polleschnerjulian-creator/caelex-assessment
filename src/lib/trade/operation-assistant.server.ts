@@ -33,18 +33,36 @@ export interface OperationAssessment extends VerdictResult {
   }>;
 }
 
-/** Classified once the item has a status or any control code. */
+/**
+ * Classified once the item has a status or any control code.
+ *
+ * B8 — this MUST consider EVERY regime cell the verdict engine reads. Wave A
+ * taught the engine to read `mtcrCategory` / `germanAlEntry` (and a runtime
+ * `declaredOtherCode` for regimes with no typed cell): a code on any of them is
+ * a CONTROLLED good. If `isClassified` ignored those cells, a from-datasheet
+ * item carrying only an MTCR-Annex / German-Ausfuhrliste / other-regime code
+ * would read "noch nicht klassifiziert" and skip the gate entirely — a
+ * fail-OPEN honesty defect. So the predicate is kept in lock-step with the
+ * engine: any non-empty cell ⇒ classified ⇒ the line is handed to the engine,
+ * which alone owns the (fail-closed) verdict.
+ */
 function isClassified(item: {
   status: string;
   eccnEU: string | null;
   eccnUS: string | null;
   usmlCategory: string | null;
+  mtcrCategory?: string | null;
+  germanAlEntry?: string | null;
+  declaredOtherCode?: { regime: string; code: string } | null;
 }): boolean {
   return (
     item.status === "CLASSIFIED" ||
     Boolean(item.eccnEU) ||
     Boolean(item.eccnUS) ||
-    Boolean(item.usmlCategory)
+    Boolean(item.usmlCategory) ||
+    Boolean(item.mtcrCategory) ||
+    Boolean(item.germanAlEntry) ||
+    Boolean(item.declaredOtherCode?.code)
   );
 }
 

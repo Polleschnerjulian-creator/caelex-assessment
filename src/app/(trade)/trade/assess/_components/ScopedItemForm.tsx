@@ -218,6 +218,20 @@ export function ScopedItemForm(props: ScopedItemFormProps) {
                 {pf.quote}“
               </span>
             )}
+            {/* B12 — a LOW-confidence read is NEVER silently trusted: it is
+                badged so the operator treats it as a low-reliability guess to
+                verify, not a confident extraction. (The upload path already
+                drops LOW reads from the auto-seed; this badge is the honest
+                fallback for any LOW prefill that does reach the form.) */}
+            {pf?.confidence === "low" && (
+              <span
+                data-testid={`low-read-${a}`}
+                className="mt-1 flex items-center gap-1 text-caption text-trade-accent-warning"
+              >
+                <AlertTriangle className="h-3 w-3" /> niedrige Lesesicherheit —
+                bitte prüfen
+              </span>
+            )}
             {!validation.ok && validation.reason && (
               <span className="mt-1 flex items-center gap-1 text-caption text-trade-accent-warning">
                 <AlertTriangle className="h-3 w-3" /> {validation.reason}

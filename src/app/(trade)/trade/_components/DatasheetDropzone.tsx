@@ -30,6 +30,15 @@ export interface DatasheetApplyPayload {
    * omit it (the wizard then leaves the name field empty for the operator).
    */
   fileName?: string;
+  /**
+   * B10 — the datasheet's raw extracted text. The wizard threads this into the
+   * live suggestion engine (`suggestionsFromAttributesAndText`) so the DCW-1
+   * keyword / declared-code corpus fallback can recall codes the parametric
+   * (attribute) matcher structurally can't see. Without it the wizard's
+   * `rawText` was always empty and that recall was dead. Optional so callers
+   * that have no text (attribute-only) can omit it.
+   */
+  rawText?: string;
 }
 
 const CONFIDENCE_CLS: Record<"HIGH" | "MEDIUM" | "LOW", string> = {
@@ -49,6 +58,9 @@ export function DatasheetDropzone({
   const [attributes, setAttributes] = useState<ExtractedAttribute[]>([]);
   const [suggestions, setSuggestions] = useState<Suggestion[]>([]);
   const [fileName, setFileName] = useState<string>("");
+  // B10 — keep the datasheet's raw text so it can ride along in onApply: the
+  // wizard threads it into the live suggestion engine for DCW-1 keyword recall.
+  const [rawText, setRawText] = useState<string>("");
   const [done, setDone] = useState(false);
 
   const handleFile = useCallback(async (file: File) => {
@@ -71,13 +83,18 @@ export function DatasheetDropzone({
       const attrs: ExtractedAttribute[] = exBody.extraction?.attributes ?? [];
       setAttributes(attrs);
 
+      // B10 — retain the raw text so onApply can carry it to the wizard (live
+      // DCW-1 recall over the operator's edited attributes), not just here.
+      const extractedText: string = exBody.rawText ?? "";
+      setRawText(extractedText);
+
       // Forward the datasheet's raw text too: it unlocks the corpus keyword
       // fallback for codes the parametric (attribute) matcher structurally
       // can't see — declared codes + distinctive control-list terms.
       const sgRes = await fetch("/api/trade/classify/suggest-codes", {
         method: "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({ attributes: attrs, text: exBody.rawText ?? "" }),
+        body: JSON.stringify({ attributes: attrs, text: extractedText }),
       });
       const sgBody = await sgRes.json();
       setSuggestions(sgRes.ok ? (sgBody.suggestions ?? []) : []);
@@ -162,7 +179,9 @@ export function DatasheetDropzone({
                 ))}
               </ul>
               <button
-                onClick={() => onApply({ attributes, suggestions, fileName })}
+                onClick={() =>
+                  onApply({ attributes, suggestions, fileName, rawText })
+                }
                 className="mt-3 inline-flex items-center gap-1.5 rounded-lg bg-trade-accent px-4 py-2 text-xs font-semibold text-white transition hover:bg-trade-accent-strong"
               >
                 <Check className="h-3.5 w-3.5" /> Übernehmen
@@ -173,7 +192,9 @@ export function DatasheetDropzone({
           {/* When no suggestions: still show Übernehmen to accept attributes-only */}
           {suggestions.length === 0 && (
             <button
-              onClick={() => onApply({ attributes, suggestions, fileName })}
+              onClick={() =>
+                onApply({ attributes, suggestions, fileName, rawText })
+              }
               className="inline-flex items-center gap-1.5 rounded-lg border border-trade-border bg-trade-bg-panel px-4 py-2 text-xs font-semibold text-trade-text-secondary transition hover:bg-trade-hover"
             >
               <Check className="h-3.5 w-3.5" /> Attribute übernehmen

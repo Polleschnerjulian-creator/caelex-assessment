@@ -74,6 +74,39 @@ describe("ScopedItemForm", () => {
       screen.getByText(/Cross-boresight accuracy 10 arcsec/),
     ).toBeInTheDocument();
   });
+  it("B12: a LOW-confidence prefill value is badged 'niedrige Lesesicherheit' (never silently trusted)", () => {
+    render(
+      <ScopedItemForm
+        {...baseProps}
+        prefill={{
+          starTrackerAccuracyArcsec: {
+            value: 5,
+            confidence: "low",
+            quote: "schwer lesbar",
+          },
+        }}
+      />,
+    );
+    // The value is shown (the operator may keep it), but explicitly flagged as a
+    // low-reliability read so it is never mistaken for a confident extraction.
+    expect(
+      screen.getByTestId("low-read-starTrackerAccuracyArcsec"),
+    ).toBeTruthy();
+    expect(screen.getByText(/niedrige Lesesicherheit/i)).toBeInTheDocument();
+  });
+  it("does NOT badge a high-confidence prefill value", () => {
+    render(
+      <ScopedItemForm
+        {...baseProps}
+        prefill={{
+          starTrackerAccuracyArcsec: { value: 10, confidence: "high" },
+        }}
+      />,
+    );
+    expect(
+      screen.queryByTestId("low-read-starTrackerAccuracyArcsec"),
+    ).toBeNull();
+  });
   it("shows the specially-designed tri-state with an 'unbekannt' default", () => {
     render(<ScopedItemForm {...baseProps} prefill={{}} />);
     expect(screen.getByTestId("sd-tristate")).toBeInTheDocument();

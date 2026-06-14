@@ -145,7 +145,16 @@ function itemFromScoped(
 /** Build the ScopedItemForm `prefill` map from an upload extraction. High- and
  *  medium-confidence extracted attributes seed the form (the operator can edit);
  *  `itemClass` is steering metadata for category detection, not a rendered field,
- *  so it is excluded from the prefill. */
+ *  so it is excluded from the prefill.
+ *
+ *  B12 — FAIL-CLOSED honesty: only HIGH/MEDIUM reads auto-seed the form (and
+ *  thereby the live matcher). A LOW vision read is a low-reliability guess; if it
+ *  silently seeded a decisive field it could flip the suggestion to MEDIUM on a
+ *  reading the operator never saw or affirmed. LOW reads are therefore dropped
+ *  from the auto-seed — the operator types them in deliberately if real, and the
+ *  matcher only ever reasons over attributes the operator can vouch for. (The
+ *  earlier code copied EVERY attribute regardless of confidence, contradicting
+ *  this comment.) */
 function prefillFromPayload(
   payload: DatasheetApplyPayload,
 ): Record<
@@ -158,6 +167,9 @@ function prefillFromPayload(
   > = {};
   for (const a of payload.attributes) {
     if (a.attribute === "itemClass") continue;
+    // Drop LOW-confidence reads: they are surfaced for the operator to enter
+    // manually (un-applied suggestions), never silently fed to the matcher.
+    if (a.confidence === "low") continue;
     prefill[a.attribute] = { value: a.value, confidence: a.confidence };
   }
   return prefill;
@@ -194,7 +206,16 @@ export function AssessFlow() {
   const [scopedAttributes, setScopedAttributes] = useState<ScopedFieldValue[]>(
     [],
   );
-  const [rawText] = useState("");
+  // B10 — the datasheet's raw text. Threaded into the live suggestion engine so
+  // the DCW-1 keyword / declared-code corpus recall actually fires. Previously a
+  // read-only useState that was always "" → that recall was dead on /trade/assess.
+  const [rawText, setRawText] = useState("");
+  // B10 — the upload path's server-computed suggestions (the suggest-codes route
+  // already ran the FULL pipeline incl. rawText + org precedent). Carried forward
+  // so they survive into the classify/confirm step instead of being dropped.
+  const [uploadSuggestions, setUploadSuggestions] = useState<
+    ClassifyConfirmSuggestion[]
+  >([]);
   const [prefill, setPrefill] = useState<
     Record<
       string,
@@ -241,6 +262,10 @@ export function AssessFlow() {
     setCategoryId(id);
     setPrefill({});
     setScopedAttributes([]);
+    // Manual path has no datasheet → clear any prior upload-derived recall so a
+    // stale rawText / server suggestion never leaks into the manual flow.
+    setRawText("");
+    setUploadSuggestions([]);
     setError(null);
     setStep("form");
   }
@@ -251,6 +276,11 @@ export function AssessFlow() {
     if (!name) setName(productNameFromPayload(p));
     setPrefill(prefillFromPayload(p));
     setScopedAttributes([]);
+    // B10 — thread the datasheet text + carry the server suggestions forward so
+    // the DCW-1 keyword/declared-code recall reaches the classify step (both the
+    // live engine via rawText AND the already-computed server suggestions).
+    setRawText(p.rawText ?? "");
+    setUploadSuggestions(uploadSuggestionsFromPayload(p));
     const detected = detectedCategoryId(p);
     if (detected) setCategoryId(detected);
     // Even when nothing is detected we still land on the form — the operator
@@ -306,13 +336,13 @@ export function AssessFlow() {
             confidence: suggestion.confidence,
           },
           // Audit-only snapshot of what the operator was shown at sign-off: the
-          // live scoped suggestions the preview ranked + the entered attribute
-          // bag. Persisted on the draft for re-classification — NOT the verdict.
+          // SAME merged suggestion set the classify step rendered (live scoped +
+          // carried upload recall, B10) + the entered attribute bag. Persisted on
+          // the draft for re-classification — NOT the verdict.
           evidence: {
-            suggestions: scopedSuggestions(
-              categoryId,
-              scopedAttributes,
-              rawText,
+            suggestions: mergeSuggestions(
+              scopedSuggestions(categoryId, scopedAttributes, rawText),
+              uploadSuggestions,
             ),
             scopedAttributes,
           },
@@ -506,10 +536,15 @@ export function AssessFlow() {
           <ClassifyConfirm
             payload={{
               attributes: [],
-              suggestions: scopedSuggestions(
-                categoryId,
-                scopedAttributes,
-                rawText,
+              // B10 — the live scoped suggestions (current attributes + rawText)
+              // MERGED with the upload path's server suggestions (DCW-1 recall),
+              // deduped by canonicalId. Threading rawText reactivates the keyword
+              // fallback; carrying uploadSuggestions keeps the server's wider
+              // recall from being dropped. Fail-closed: more candidates, never
+              // fewer — the human still confirms exactly one.
+              suggestions: mergeSuggestions(
+                scopedSuggestions(categoryId, scopedAttributes, rawText),
+                uploadSuggestions,
               ),
             }}
             submitting={submitting}
@@ -625,6 +660,38 @@ export function AssessFlow() {
       )}
     </div>
   );
+}
+
+/** B10 — map the upload payload's server suggestions onto the classify step's
+ *  suggestion shape. The two shapes are structurally identical (code · canonicalId
+ *  · regime · title · confidence HIGH|MEDIUM|LOW · rationale); this narrows the
+ *  `DatasheetApplyPayload["suggestions"]` element type to `ClassifyConfirmSuggestion`
+ *  explicitly so the merge below is type-clean. */
+function uploadSuggestionsFromPayload(
+  p: DatasheetApplyPayload,
+): ClassifyConfirmSuggestion[] {
+  return p.suggestions.map((s) => ({
+    code: s.code,
+    canonicalId: s.canonicalId,
+    regime: s.regime,
+    title: s.title,
+    confidence: s.confidence,
+    rationale: s.rationale,
+  }));
+}
+
+/** B10 — union the live scoped suggestions with the carried upload suggestions,
+ *  deduped by canonicalId (live wins on a tie — it reflects the operator's current
+ *  edited attributes). FAIL-CLOSED: the result is a SUPERSET, so a server-side
+ *  declared-code / keyword recall hit can never be silently dropped before the
+ *  human sees it. The human still confirms exactly one code downstream. */
+function mergeSuggestions(
+  live: ClassifyConfirmSuggestion[],
+  carried: ClassifyConfirmSuggestion[],
+): ClassifyConfirmSuggestion[] {
+  const seen = new Set(live.map((s) => s.canonicalId));
+  const extra = carried.filter((s) => !seen.has(s.canonicalId));
+  return [...live, ...extra];
 }
 
 /** Run the live suggestion engine over the confirmed scoped attributes so the

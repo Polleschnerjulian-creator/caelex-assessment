@@ -46,6 +46,8 @@ function item(over: Record<string, unknown> = {}) {
     eccnEU: null,
     eccnUS: null,
     usmlCategory: null,
+    mtcrCategory: null,
+    germanAlEntry: null,
     usContentPercent: null,
     designedWithUSTech: false,
     manufacturedWithUSEquipment: false,
@@ -123,6 +125,60 @@ describe("assessOperation", () => {
       (await assessOperation("op1", { organizationId: "org1" })).verdict,
     ).toBe("BLOCKED");
   });
+  it("B8: an item carrying ONLY mtcrCategory is classified (not 'noch nicht klassifiziert')", async () => {
+    // Wave A made the engine read mtcrCategory/germanAlEntry; isClassified must
+    // gate consistently. A from-datasheet item with the code on mtcr alone must
+    // reach classifyItemForOperation — otherwise the verdict reads
+    // "noch nicht klassifiziert" (honesty defect, fail-open to GO).
+    classifyMock.mockClear();
+    findFirst.mockResolvedValue(
+      operationRow({
+        lines: [
+          {
+            id: "l1",
+            itemId: "i1",
+            item: item({ status: "DRAFT", mtcrCategory: "9A101" }),
+          },
+        ],
+      }),
+    );
+    const r = await assessOperation("op1", { organizationId: "org1" });
+    // The classifier ran for the line (the engine, not isClassified, owns the verdict).
+    expect(classifyMock).toHaveBeenCalled();
+    expect(r.lines[0].classification).not.toBeNull();
+  });
+
+  it("B8: an item carrying ONLY germanAlEntry is classified", async () => {
+    classifyMock.mockClear();
+    findFirst.mockResolvedValue(
+      operationRow({
+        lines: [
+          {
+            id: "l1",
+            itemId: "i1",
+            item: item({ status: "DRAFT", germanAlEntry: "0001" }),
+          },
+        ],
+      }),
+    );
+    const r = await assessOperation("op1", { organizationId: "org1" });
+    expect(classifyMock).toHaveBeenCalled();
+    expect(r.lines[0].classification).not.toBeNull();
+  });
+
+  it("B8: an item with NO code on any cell stays unclassified → REVIEW", async () => {
+    classifyMock.mockClear();
+    findFirst.mockResolvedValue(
+      operationRow({
+        lines: [{ id: "l1", itemId: "i1", item: item({ status: "DRAFT" }) }],
+      }),
+    );
+    const r = await assessOperation("op1", { organizationId: "org1" });
+    expect(classifyMock).not.toHaveBeenCalled();
+    expect(r.lines[0].classification).toBeNull();
+    expect(r.verdict).toBe("REVIEW");
+  });
+
   it("degrades a throwing classifier to REVIEW (never a false GO)", async () => {
     classifyMock.mockImplementationOnce(() => {
       throw new Error("engine boom");

@@ -75,14 +75,17 @@ let capturedOnAttributesChange: ((attrs: ScopedFieldValue[]) => void) | null =
   null;
 let capturedOnChangeCategory: (() => void) | null = null;
 let lastFormCategoryId: string | null = null;
+let lastFormPrefill: Record<string, { confidence: string }> | null = null;
 vi.mock("./ScopedItemForm", () => ({
   ScopedItemForm: ({
     categoryId,
+    prefill,
     onStart,
     onAttributesChange,
     onChangeCategory,
   }: {
     categoryId: string;
+    prefill: Record<string, { confidence: string }>;
     onStart: () => void;
     onAttributesChange: (attrs: ScopedFieldValue[]) => void;
     onChangeCategory: () => void;
@@ -91,6 +94,7 @@ vi.mock("./ScopedItemForm", () => ({
     capturedOnAttributesChange = onAttributesChange;
     capturedOnChangeCategory = onChangeCategory;
     lastFormCategoryId = categoryId;
+    lastFormPrefill = prefill;
     return (
       <button data-testid="m-start" onClick={onStart}>
         {categoryId}
@@ -131,14 +135,22 @@ const FIXED_CODE: ClassifyConfirmSuggestion = {
   confidence: "HIGH",
   rationale: "Optical aperture ≥ 0.50 m.",
 };
+let lastClassifyPayload: {
+  suggestions: ClassifyConfirmSuggestion[];
+} | null = null;
 vi.mock("./ClassifyConfirm", () => ({
   ClassifyConfirm: ({
+    payload,
     onConfirm,
   }: {
+    payload: { suggestions: ClassifyConfirmSuggestion[] };
     onConfirm: (s: ClassifyConfirmSuggestion) => void;
-  }) => (
-    <button data-testid="m-confirm" onClick={() => onConfirm(FIXED_CODE)} />
-  ),
+  }) => {
+    lastClassifyPayload = payload;
+    return (
+      <button data-testid="m-confirm" onClick={() => onConfirm(FIXED_CODE)} />
+    );
+  },
 }));
 
 // PartyPicker does its own async /api/trade/parties search. Expose onSelect.
@@ -225,6 +237,8 @@ beforeEach(() => {
   capturedOnChangeCategory = null;
   capturedOnParty = null;
   lastFormCategoryId = null;
+  lastFormPrefill = null;
+  lastClassifyPayload = null;
   vi.stubGlobal("fetch", vi.fn());
 });
 afterEach(() => vi.unstubAllGlobals());
@@ -265,6 +279,78 @@ describe("AssessFlow", () => {
     expect(screen.getByTestId("m-start")).toBeInTheDocument();
     // The detected category (from the itemClass extraction) pre-selects.
     expect(lastFormCategoryId).toBe("star_tracker");
+  });
+
+  it("B12: a LOW-confidence extracted attribute is NOT auto-seeded into the form prefill (matcher stays honest)", () => {
+    render(<AssessFlow />);
+    fireEvent.click(screen.getByTestId("m-upload"));
+    act(() =>
+      capturedOnApply?.({
+        attributes: [
+          {
+            attribute: "itemClass",
+            value: "spacecraft.adcs.star_tracker",
+            confidence: "high",
+          },
+          // HIGH read → seeds.
+          { attribute: "apertureMeters", value: 0.7, confidence: "high" },
+          // MEDIUM read → seeds.
+          { attribute: "rangeKm", value: 320, confidence: "medium" },
+          // LOW read → must NOT seed the matcher (silent auto-seed defect).
+          {
+            attribute: "starTrackerAccuracyArcsec",
+            value: 5,
+            confidence: "low",
+          },
+        ],
+        suggestions: [],
+        fileName: "ST.pdf",
+      }),
+    );
+    expect(screen.getByTestId("assess-form-step")).toBeInTheDocument();
+    expect(lastFormPrefill).toBeTruthy();
+    // HIGH + MEDIUM are seeded; the LOW decisive read is dropped from prefill.
+    expect(lastFormPrefill!.apertureMeters?.confidence).toBe("high");
+    expect(lastFormPrefill!.rangeKm?.confidence).toBe("medium");
+    expect(lastFormPrefill!.starTrackerAccuracyArcsec).toBeUndefined();
+  });
+
+  it("B10: the upload-path server suggestions (DCW-1 recall) are carried into the classify step, not dropped", () => {
+    // The dropzone's server-computed suggestion used rawText + the full corpus
+    // pipeline (declared-code / keyword recall). It must survive into the
+    // confirm step even with no scoped parametric attributes entered.
+    const SERVER_SUGGESTION: ClassifyConfirmSuggestion = {
+      code: "1.A.1",
+      canonicalId: "MTCR:1.A.1",
+      regime: "MTCR",
+      title: "Complete rocket systems",
+      confidence: "LOW",
+      rationale: "Keyword-Treffer im Datenblatt-Text (DCW-1).",
+    };
+    render(<AssessFlow />);
+    fireEvent.click(screen.getByTestId("m-upload"));
+    act(() =>
+      capturedOnApply?.({
+        attributes: [
+          {
+            attribute: "itemClass",
+            value: "spacecraft.adcs.star_tracker",
+            confidence: "high",
+          },
+        ],
+        suggestions: [SERVER_SUGGESTION],
+        rawText: "complete rocket system, 320 km range",
+        fileName: "rocket.pdf",
+      }),
+    );
+    // Advance to classify (form → start).
+    expect(capturedOnStart).toBeTruthy();
+    fireEvent.click(screen.getByTestId("m-start"));
+    expect(lastClassifyPayload).toBeTruthy();
+    const carried = lastClassifyPayload!.suggestions.some(
+      (s) => s.canonicalId === "MTCR:1.A.1",
+    );
+    expect(carried).toBe(true);
   });
 
   it("'Vorgang starten' advances the form to the classify (human sign-off) step", () => {
