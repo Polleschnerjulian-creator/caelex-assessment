@@ -39,6 +39,7 @@ import "server-only";
 import { buildAnthropicClient } from "@/lib/atlas/anthropic-client";
 import { logger } from "@/lib/logger";
 import type { AttributeName } from "@/lib/comply-v2/trade/classification/control-list-cross-walk";
+import { ATTRIBUTE_SANITY_RANGES } from "@/lib/comply-v2/trade/classification/parametric-matcher";
 import {
   visionCacheKey,
   getCachedVision,
@@ -570,22 +571,52 @@ export function guardValue(
       whyRejected: `"${attribute}": nicht-endlicher Wert (${String(value)}) — verworfen.`,
     };
   }
-  const bound = NUMERIC_BOUNDS.get(attribute);
-  if (!bound) {
-    // Fail-closed: a numeric attribute we have no documented bound for is
-    // not trusted to flow into classification unchecked.
-    return {
-      passedSanity: false,
-      whyRejected: `"${attribute}": kein dokumentierter Plausibilitätsbereich hinterlegt — fail-closed verworfen.`,
-    };
+  // Resolve the plausibility bound. The local NUMERIC_BOUNDS map is the
+  // primary source (its bounds are documented + tuned for the vision
+  // vocabulary). When an attribute is ABSENT from it — notably the six
+  // decisive extended attrs added in Task 9 (star-tracker accuracy / slew
+  // rate, GNSS max velocity, total impulse, thrust, vacuum Isp) — fall
+  // back to the matcher's ATTRIBUTE_SANITY_RANGES, the same physical
+  // bounds the corpus parametric matcher already trusts. Without this
+  // fallback a perfectly plausible vision-extracted value for exactly the
+  // deciding field would fail closed and be dropped, defeating the scoped
+  // second vision pass. An attribute absent from BOTH maps still fails
+  // closed (the conservative default).
+  //
+  // NB the two maps differ in lower-bound inclusivity: NUMERIC_BOUNDS' min
+  // is EXCLUSIVE (value must be strictly > min, so a 0 magnitude is
+  // rejected), whereas ATTRIBUTE_SANITY_RANGES' min is INCLUSIVE (the
+  // corpus matcher checks `val < range.min`). The check below honours each
+  // source's own semantics so behaviour stays identical to the map that
+  // owns the bound.
+  const localBound = NUMERIC_BOUNDS.get(attribute);
+  if (localBound) {
+    if (value <= localBound.min || value > localBound.max) {
+      return {
+        passedSanity: false,
+        whyRejected: `"${attribute}": Wert ${value} außerhalb des plausiblen Bereichs (${localBound.note}). Möglicher fehlerhafter/manipulierter Datensatz — verworfen, damit er die Einstufung nicht steuert.`,
+      };
+    }
+    return { passedSanity: true };
   }
-  if (value <= bound.min || value > bound.max) {
-    return {
-      passedSanity: false,
-      whyRejected: `"${attribute}": Wert ${value} außerhalb des plausiblen Bereichs (${bound.note}). Möglicher fehlerhafter/manipulierter Datensatz — verworfen, damit er die Einstufung nicht steuert.`,
-    };
+
+  const fallbackRange = ATTRIBUTE_SANITY_RANGES[attribute];
+  if (fallbackRange) {
+    if (value < fallbackRange.min || value > fallbackRange.max) {
+      return {
+        passedSanity: false,
+        whyRejected: `"${attribute}": Wert ${value} außerhalb des plausiblen Bereichs (${fallbackRange.min}…${fallbackRange.max}). Möglicher fehlerhafter/manipulierter Datensatz — verworfen, damit er die Einstufung nicht steuert.`,
+      };
+    }
+    return { passedSanity: true };
   }
-  return { passedSanity: true };
+
+  // Fail-closed: a numeric attribute we have no documented bound for in
+  // EITHER map is not trusted to flow into classification unchecked.
+  return {
+    passedSanity: false,
+    whyRejected: `"${attribute}": kein dokumentierter Plausibilitätsbereich hinterlegt — fail-closed verworfen.`,
+  };
 }
 
 /**

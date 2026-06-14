@@ -135,11 +135,13 @@ describe("guardValue — numeric bounds", () => {
 
   it("fails closed for a numeric attribute with no documented bound", () => {
     // `IspSeconds` IS bounded; pick an attribute that is numeric in the
-    // matcher vocabulary but not in NUMERIC_BOUNDS to prove the
-    // fail-closed default. `starTrackerAccuracyArcsec` is a valid
-    // AttributeName with no bound entry.
+    // matcher vocabulary but in NEITHER NUMERIC_BOUNDS NOR the
+    // ATTRIBUTE_SANITY_RANGES fallback, to prove the fail-closed default.
+    // `groundResolutionMeters` is a valid AttributeName absent from both
+    // maps (the decisive extended attrs like starTrackerAccuracyArcsec now
+    // resolve via the fallback — see claude-vision-value-guard.bounds.test).
     const r = guardValue(
-      "starTrackerAccuracyArcsec" as Parameters<typeof guardValue>[0],
+      "groundResolutionMeters" as Parameters<typeof guardValue>[0],
       5,
     );
     expect(r.passedSanity).toBe(false);
