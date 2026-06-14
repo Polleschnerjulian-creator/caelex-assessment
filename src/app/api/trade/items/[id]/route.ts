@@ -15,6 +15,7 @@ import {
   getIdentifier,
 } from "@/lib/ratelimit";
 import { getTradeAuth } from "@/lib/trade/trade-auth";
+import { getSafeErrorMessage } from "@/lib/validations";
 import { z } from "zod";
 
 import { evaluateTradeItemSubset } from "@/lib/comply-v2/trade/property-trigger-engine";
@@ -35,7 +36,12 @@ const PatchSchema = z.object({
   usmlCategory: z.string().max(100).optional().nullable(),
   mtcrCategory: z.string().max(100).optional().nullable(),
   germanAlEntry: z.string().max(100).optional().nullable(),
-  countryOfOrigin: z.string().length(2).optional().nullable(),
+  countryOfOrigin: z
+    .string()
+    .length(2)
+    .regex(/^[A-Z]{2}$/, "Must be ISO 3166-1 alpha-2 (uppercase)")
+    .optional()
+    .nullable(),
   usContentPercent: z.number().min(0).max(100).optional().nullable(),
   designedWithUSTech: z.boolean().optional(),
   manufacturedWithUSEquipment: z.boolean().optional(),
@@ -249,8 +255,9 @@ export async function PATCH(
     const body = await req.json();
     const parsed = PatchSchema.safeParse(body);
     if (!parsed.success) {
+      // Generic message — never leak raw Zod issues to the client.
       return NextResponse.json(
-        { error: "Validation failed", issues: parsed.error.issues },
+        { error: getSafeErrorMessage(parsed.error, "Validation failed") },
         { status: 400 },
       );
     }

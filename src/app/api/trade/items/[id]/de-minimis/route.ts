@@ -28,6 +28,7 @@ import {
   getIdentifier,
 } from "@/lib/ratelimit";
 import { getTradeAuth } from "@/lib/trade/trade-auth";
+import { getSafeErrorMessage } from "@/lib/validations";
 
 import {
   calculateBomDeMinimis,
@@ -36,12 +37,20 @@ import {
 
 // ─── Validation ───────────────────────────────────────────────────────
 
+/**
+ * Fair-market-value bound: a single BOM line capped at €1e15 (a sane upper
+ * limit far above any real space-hardware line). `.finite()` rejects NaN and
+ * Infinity (which JSON serialises to `null` and would otherwise sneak in),
+ * `.min(0)` rejects negatives — the de-minimis math is meaningless for either.
+ */
+const FMV_MAX_EUR = 1e15;
+
 const BomLineSchema = z.object({
   nodeId: z.string().min(1).max(100),
   description: z.string().max(500).optional(),
   usOrigin: z.boolean(),
   eccn: z.string().min(1).max(50),
-  fairMarketValueEur: z.number(),
+  fairMarketValueEur: z.number().finite().min(0).max(FMV_MAX_EUR),
 });
 
 const PostBodySchema = z.object({
@@ -185,11 +194,9 @@ export async function POST(
     const body = await req.json().catch(() => null);
     const parsed = PostBodySchema.safeParse(body);
     if (!parsed.success) {
+      // Generic message — never leak raw Zod issues to the client.
       return NextResponse.json(
-        {
-          error: "Validation failed",
-          issues: parsed.error.issues,
-        },
+        { error: getSafeErrorMessage(parsed.error, "Validation failed") },
         { status: 400 },
       );
     }

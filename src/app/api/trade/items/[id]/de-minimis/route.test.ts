@@ -129,3 +129,57 @@ describe("POST /api/trade/items/[id]/de-minimis — auth gate (T-H1)", () => {
     expect(res.status).toBe(404);
   });
 });
+
+describe("POST /api/trade/items/[id]/de-minimis — FMV bounds + no Zod leak", () => {
+  beforeEach(() => {
+    vi.resetModules();
+  });
+
+  async function postWithItem(body: unknown) {
+    const { getTradeAuth } = await import("@/lib/trade/trade-auth");
+    vi.mocked(getTradeAuth).mockResolvedValue(validAuth);
+    const { prisma } = await import("@/lib/prisma");
+    vi.mocked(prisma.tradeItem.findFirst).mockResolvedValue({
+      id: "item-1",
+      name: "Test item",
+    } as never);
+    const { POST } = await import("./route");
+    return POST(makeReq("POST", body), ctx());
+  }
+
+  const line = (fmv: number) => ({
+    nodeId: "L1",
+    usOrigin: true,
+    eccn: "9A515.a",
+    fairMarketValueEur: fmv,
+  });
+
+  it("rejects a negative fairMarketValueEur with 400", async () => {
+    const res = await postWithItem({ bom: [line(-100)] });
+    expect(res.status).toBe(400);
+  });
+
+  it("rejects a non-finite fairMarketValueEur (Infinity serialises to null) with 400", async () => {
+    // JSON.stringify(Infinity) === "null"; the schema must reject a null/NaN FMV.
+    const res = await postWithItem({ bom: [line(Infinity)] });
+    expect(res.status).toBe(400);
+  });
+
+  it("rejects an absurdly large fairMarketValueEur (over the cap) with 400", async () => {
+    const res = await postWithItem({ bom: [line(1e18)] });
+    expect(res.status).toBe(400);
+  });
+
+  it("accepts a valid bounded fairMarketValueEur (200)", async () => {
+    const res = await postWithItem({ bom: [line(100_000)] });
+    expect(res.status).toBe(200);
+  });
+
+  it("the 400 body does not leak raw Zod issues", async () => {
+    const res = await postWithItem({ bom: [line(-1)] });
+    expect(res.status).toBe(400);
+    const json = await res.json();
+    expect(json).not.toHaveProperty("issues");
+    expect(typeof json.error).toBe("string");
+  });
+});

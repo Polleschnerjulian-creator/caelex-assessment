@@ -70,6 +70,49 @@ describe("runDestinationLandscape", () => {
     );
   });
 
+  it("B14: a confirmed code that maps to NO engine-readable signal downgrades every GO to REVIEW (fail-closed)", () => {
+    // An operator confirms a control code the engine cannot read — e.g. a
+    // scoped-matcher candidate that lands in a code field but resolves to no
+    // parametric trigger AND no corpus match. The license gate then has no
+    // signal and could wave the item through as GO. That is the B14 fail-open:
+    // a confirmed-but-unevaluable code must never produce a clean GO. The
+    // landscape must downgrade those GOs to a cited REVIEW.
+    const unevaluableCoded: ClassifiableItem = {
+      name: "Bespoke avionics box",
+      // A declared code string the corpus + trigger engine do not recognise.
+      eccnEU: "ZZ9ZZ9.q.7",
+    };
+    const r = runDestinationLandscape(unevaluableCoded, DE_OPTS);
+    const all = [...r.go, ...r.review, ...r.blocked];
+    expect(all).toHaveLength(LANDSCAPE_DESTINATIONS.length);
+    // No clean GO survives — the confirmed code mapped to nothing the engine
+    // can evaluate, so every would-be GO is a cited single-case REVIEW.
+    expect(r.go).toHaveLength(0);
+    const usCell = r.review.find((c) => c.country === "US");
+    expect(usCell).toBeDefined();
+    expect(usCell?.detail).toContain("Einzelfallprüfung");
+    // Comprehensive-embargo destinations stay BLOCKED (destination-driven).
+    for (const iso of ["IR", "KP", "SY", "CU"]) {
+      expect(r.blocked.map((c) => c.country)).toContain(iso);
+    }
+    expect(r.caption).toContain("sauberer Endkunde");
+  });
+
+  it("B14: an item with NO declared code at all is unaffected (a clean uncontrolled GO still GOes)", () => {
+    // The downgrade is scoped to CONFIRMED CODES that map to no signal. An item
+    // with no declared code is genuinely uncontrolled and must still GO to
+    // non-embargoed destinations (no false REVIEW inflation).
+    const wheel: ClassifiableItem = {
+      name: "Reaction wheel 1 Nms",
+      description: "AOCS wheel",
+    };
+    const r = runDestinationLandscape(wheel, DE_OPTS);
+    expect(r.review).toHaveLength(0);
+    expect(r.go.map((c) => c.country)).toEqual(
+      expect.arrayContaining(["US", "JP", "DE", "FR", "IN", "CN"]),
+    );
+  });
+
   it("an unsupported exporter seat upgrades every GO to REVIEW (server parity, no divergence)", () => {
     // The uncontrolled reaction wheel is a clean GO to non-embargoed
     // destinations under a SUPPORTED (DE) seat — see the test above.

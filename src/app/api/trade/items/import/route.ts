@@ -18,6 +18,7 @@ import {
   getIdentifier,
 } from "@/lib/ratelimit";
 import { getTradeAuth } from "@/lib/trade/trade-auth";
+import { getSafeErrorMessage } from "@/lib/validations";
 import { deriveAutoClassification } from "@/lib/trade/auto-classify-on-create";
 import { CSV_IMPORT_MAX_ROWS } from "@/lib/trade/csv-import";
 
@@ -27,7 +28,14 @@ const ImportRowSchema = z.object({
   internalSku: z.string().max(120).optional(),
   manufacturerName: z.string().max(200).optional(),
   manufacturerPartNo: z.string().max(120).optional(),
-  countryOfOrigin: z.string().max(2).optional(),
+  // ISO 3166-1 alpha-2, uppercase — matches the operations/items routes.
+  // A loose `.max(2)` previously accepted 1-char / lowercase origins that
+  // never round-trip cleanly through the engine's origin tables.
+  countryOfOrigin: z
+    .string()
+    .length(2)
+    .regex(/^[A-Z]{2}$/, "Must be ISO 3166-1 alpha-2 (uppercase)")
+    .optional(),
   eccnEU: z.string().max(20).optional(),
 });
 
@@ -58,8 +66,9 @@ export async function POST(req: Request) {
     const body = await req.json().catch(() => null);
     const parsed = ImportBodySchema.safeParse(body);
     if (!parsed.success) {
+      // Generic message — never leak raw Zod issues to the client.
       return NextResponse.json(
-        { error: "Validation failed", issues: parsed.error.issues },
+        { error: getSafeErrorMessage(parsed.error, "Validation failed") },
         { status: 400 },
       );
     }
@@ -92,10 +101,17 @@ export async function POST(req: Request) {
         created += 1;
         if (auto) autoSuggested += 1;
       } catch (err) {
+        // Log the real cause server-side; return a generic message to the
+        // client (the index + name already locate the offending row).
+        logger.warn("[trade/items/import] row create failed", {
+          index,
+          name: row.name,
+          err: err instanceof Error ? err.message : String(err),
+        });
         failed.push({
           index,
           name: row.name,
-          error: err instanceof Error ? err.message : "Unknown error",
+          error: getSafeErrorMessage(err, "Row import failed"),
         });
       }
     }

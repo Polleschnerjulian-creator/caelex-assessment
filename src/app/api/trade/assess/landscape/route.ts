@@ -20,14 +20,27 @@ import {
   getIdentifier,
 } from "@/lib/ratelimit";
 import { logger } from "@/lib/logger";
-import { runDestinationLandscape } from "@/lib/trade/landscape.server";
-import type { ClassifiableItem } from "@/lib/trade/classification/classify-item";
+import {
+  runDestinationLandscape,
+  confirmedCodeMapsToNoSignal,
+} from "@/lib/trade/landscape.server";
+import {
+  classifyItemForOperation,
+  type ClassifiableItem,
+} from "@/lib/trade/classification/classify-item";
 
 export const runtime = "nodejs";
 
 const BodySchema = z.object({
   item: z.object({ name: z.string().min(1) }).passthrough(),
-  exporterSeat: z.string().optional(),
+  // ISO 3166-1 alpha-2, uppercase — matches the operations route's country
+  // validation. The seat drives the exporter-origin resolution downstream;
+  // a malformed seat must be rejected at the chokepoint, not passed through.
+  exporterSeat: z
+    .string()
+    .length(2)
+    .regex(/^[A-Z]{2}$/, "Must be ISO 3166-1 alpha-2 (uppercase)")
+    .optional(),
 });
 
 export async function POST(req: Request) {
@@ -44,16 +57,37 @@ export async function POST(req: Request) {
 
     const parsed = BodySchema.safeParse(await req.json().catch(() => null));
     if (!parsed.success) {
+      // Generic message — never leak raw Zod issues to the client.
       return NextResponse.json(
-        { error: "Expected { item: { name }, exporterSeat? }" },
+        { error: "Expected { item: { name }, exporterSeat? (ISO-2) }" },
         { status: 400 },
       );
     }
 
-    const result = runDestinationLandscape(
-      parsed.data.item as unknown as ClassifiableItem,
-      { exporterSeat: parsed.data.exporterSeat },
-    );
+    const item = parsed.data.item as unknown as ClassifiableItem;
+
+    // B14: surface the fail-closed downgrade in the audit log. The engine
+    // already downgrades a GO from a confirmed-but-unevaluable code to a cited
+    // REVIEW (landscape.server.ts); we log it here so the chokepoint event is
+    // observable. The classification is destination-agnostic for this check
+    // (the signal-vs-no-signal question does not depend on the destination).
+    const probe = classifyItemForOperation(item, {
+      exporterSeat: parsed.data.exporterSeat,
+    });
+    if (confirmedCodeMapsToNoSignal(item, probe)) {
+      logger.warn(
+        "[trade/assess/landscape] confirmed code maps to no engine-readable signal — landscape downgraded to REVIEW",
+        {
+          userId: tradeAuth.userId,
+          organizationId: tradeAuth.organizationId,
+          itemName: item.name,
+        },
+      );
+    }
+
+    const result = runDestinationLandscape(item, {
+      exporterSeat: parsed.data.exporterSeat,
+    });
     return NextResponse.json(result);
   } catch (err) {
     logger.error("POST /api/trade/assess/landscape failed", err);

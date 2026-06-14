@@ -506,6 +506,44 @@ describe("PATCH /api/trade/items/[id] — T-M18 override-reasoning gate", () => 
     expect(prisma.tradeItemNote.create).not.toHaveBeenCalled();
   });
 
+  it("the 400 validation body does not leak raw Zod issues", async () => {
+    vi.mocked(prisma.tradeItem.findFirst).mockResolvedValue({
+      id: "item-1",
+      organizationId: "org-1",
+      status: "DRAFT",
+      eccnEU: null,
+      eccnUS: null,
+      usmlCategory: null,
+      mtcrCategory: null,
+      germanAlEntry: null,
+    } as never);
+
+    // usContentPercent out of range (>100) → schema validation fails.
+    const res = await PATCH(req({ usContentPercent: 9999 }), ctx());
+    expect(res.status).toBe(400);
+    const body = await res.json();
+    expect(body).not.toHaveProperty("issues");
+    expect(typeof body.error).toBe("string");
+    expect(prisma.tradeItem.update).not.toHaveBeenCalled();
+  });
+
+  it("rejects a non-ISO-2 countryOfOrigin (lowercase) with 400", async () => {
+    vi.mocked(prisma.tradeItem.findFirst).mockResolvedValue({
+      id: "item-1",
+      organizationId: "org-1",
+      status: "DRAFT",
+      eccnEU: null,
+      eccnUS: null,
+      usmlCategory: null,
+      mtcrCategory: null,
+      germanAlEntry: null,
+    } as never);
+
+    const res = await PATCH(req({ countryOfOrigin: "de" }), ctx());
+    expect(res.status).toBe(400);
+    expect(prisma.tradeItem.update).not.toHaveBeenCalled();
+  });
+
   it("does NOT require reasoning for a same-value (no-op) code write", async () => {
     // PATCH sends the SAME eccnEU value that's already on the item.
     vi.mocked(prisma.tradeItem.findFirst).mockResolvedValue({
