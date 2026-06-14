@@ -51,7 +51,14 @@ const CONJUNCTION_PAIR: ReadonlySet<AttributeName> = new Set<AttributeName>([
 
 export function ScopedItemForm(props: ScopedItemFormProps) {
   const category = getCategory(props.categoryId);
-  const fields = renderedFields(props.categoryId);
+  // `isSpeciallyDesigned` is owned exclusively by the dedicated sd-tristate
+  // widget below — rendering it again in the generic field loop would give the
+  // operator a parallel boolean Ja/Nein path to confidently assert a negative
+  // (defeating the "unbekannt"-default tri-state) and emit two conflicting
+  // isSpeciallyDesigned entries. Exclude it from the generic render + state.
+  const fields = renderedFields(props.categoryId).filter(
+    (a) => a !== "isSpeciallyDesigned",
+  );
   const showConjunction =
     fields.filter((a) => CONJUNCTION_PAIR.has(a)).length >= 2;
 

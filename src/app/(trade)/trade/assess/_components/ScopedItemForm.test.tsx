@@ -36,9 +36,19 @@ describe("ScopedItemForm", () => {
       .getAllByTestId(/^field-/)
       .map((n) => n.getAttribute("data-testid"));
     expect(labels).toContain("field-starTrackerAccuracyArcsec");
+    expect(labels).toContain("field-thermalCycleCount");
+    // decisive accuracy threshold must rank ahead of the non-decisive thermal field
     expect(labels.indexOf("field-starTrackerAccuracyArcsec")).toBeLessThan(
-      labels.length,
-    ); // present + ranked
+      labels.indexOf("field-thermalCycleCount"),
+    );
+  });
+  it("does NOT render isSpeciallyDesigned as a generic field — the sd-tristate owns it (fail-closed)", () => {
+    render(<ScopedItemForm {...baseProps} prefill={{}} />);
+    // a duplicate generic boolean select would give a parallel assert-a-negative
+    // path and emit conflicting isSpeciallyDesigned entries — must not exist.
+    expect(screen.queryByTestId("field-isSpeciallyDesigned")).toBeNull();
+    expect(screen.queryByTestId("input-isSpeciallyDesigned")).toBeNull();
+    expect(screen.getByTestId("sd-tristate")).toBeInTheDocument();
   });
   it("prefills a high-confidence value with an evidence quote badge", () => {
     render(
