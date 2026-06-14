@@ -32,6 +32,7 @@ import {
   ATTRIBUTE_SANITY_RANGES,
   type ItemAttributeBag,
 } from "./parametric-matcher";
+import type { ControlListEntry } from "./control-list-cross-walk";
 
 describe("Aperture 0.50 m boundary (USML XV(a)(7)(i) vs CCL 9A515.a.1)", () => {
   it("0.49 m + EO remote-sensing class → matches BOTH USML and CCL (overlap by regulatory design)", () => {
@@ -1631,3 +1632,132 @@ describe("T-M19 — Sanity-range guard for mis-normalised attributes", () => {
     expect(result.sanityWarnings).toHaveLength(0);
   });
 });
+
+// ═══════════════════════════════════════════════════════════════════
+// Specificity tie-break — prefer the MORE SPECIFIC (deeper itemClass
+// prefix) candidate over the generic one when confidence AND matched-
+// predicate count are otherwise tied.
+//
+// This is a GENERAL ranking principle, not a per-product hack: a star
+// tracker (itemClass spacecraft.adcs.star_tracker) should rank a
+// specific star-tracker control above the generic `spacecraft` 9A004
+// when both would otherwise tie. The deeper the matched itemClass
+// prefix, the more on-target the entry.
+// ═══════════════════════════════════════════════════════════════════
+describe("Specificity tie-break (specific itemClass prefix > generic)", () => {
+  // Two entries that BOTH match an itemClass-only LOW candidate with the
+  // SAME matched-predicate count (1). Without the tie-break the order is
+  // undefined (stable insertion order); with it, the deeper prefix wins.
+  const SPECIFIC: ControlListEntry = {
+    canonicalId: "TEST:SPECIFIC",
+    regime: "EAR-CCL",
+    category: "9",
+    productGroup: "A",
+    entryNumber: "999",
+    title: "Specific star-tracker control (deep itemClass prefix)",
+    predicates: [
+      {
+        attribute: "itemClass",
+        op: "prefix",
+        value: "spacecraft.adcs.star_tracker",
+      },
+    ],
+    reasonsForControl: ["NS"],
+    seeAlso: [],
+    citation: "TEST",
+    validFrom: "2020-01-01",
+  };
+  const GENERIC: ControlListEntry = {
+    canonicalId: "TEST:GENERIC",
+    regime: "EU-ANNEX-I",
+    category: "9",
+    productGroup: "A",
+    entryNumber: "004",
+    title: "Generic spacecraft control (shallow itemClass prefix)",
+    predicates: [{ attribute: "itemClass", op: "prefix", value: "spacecraft" }],
+    reasonsForControl: ["NS"],
+    seeAlso: [],
+    citation: "TEST",
+    validFrom: "2020-01-01",
+  };
+
+  it("ranks the deeper itemClass-prefix entry ahead of the generic one (specific listed first)", () => {
+    // Insertion order is GENERIC then SPECIFIC — proving the tie-break
+    // reorders rather than relying on input order.
+    const result = matchAgainstCrossWalk(
+      { itemClass: "spacecraft.adcs.star_tracker" },
+      [GENERIC, SPECIFIC],
+    );
+    const ids = result.candidates.map((c) => c.entry.canonicalId);
+    expect(ids).toContain("TEST:SPECIFIC");
+    expect(ids).toContain("TEST:GENERIC");
+    // Both are LOW (itemClass-only) with 1 matched predicate → tie.
+    // The deeper prefix must rank first.
+    expect(ids.indexOf("TEST:SPECIFIC")).toBeLessThan(
+      ids.indexOf("TEST:GENERIC"),
+    );
+  });
+
+  it("does NOT reorder when matched-predicate counts differ (count still dominates specificity)", () => {
+    // A two-predicate generic match must still beat a one-predicate
+    // specific match — specificity is a TIE-break only, subordinate to
+    // confidence and matched-count.
+    const TWO_PRED_GENERIC: ControlListEntry = {
+      ...GENERIC,
+      canonicalId: "TEST:GENERIC2",
+      predicates: [
+        { attribute: "itemClass", op: "prefix", value: "spacecraft" },
+        { attribute: "apertureMeters", op: "gte", value: 0.1 },
+      ],
+    };
+    const result = matchAgainstCrossWalk(
+      { itemClass: "spacecraft.adcs.star_tracker", apertureMeters: 0.5 },
+      [SPECIFIC, TWO_PRED_GENERIC],
+    );
+    const ids = result.candidates.map((c) => c.entry.canonicalId);
+    // TWO_PRED_GENERIC is HIGH (2 parametric+itemClass predicates) →
+    // must rank ahead of the LOW single-predicate SPECIFIC entry.
+    expect(ids.indexOf("TEST:GENERIC2")).toBeLessThan(
+      ids.indexOf("TEST:SPECIFIC"),
+    );
+  });
+
+  it("real corpus: a star tracker that fails the USML thresholds ranks the deeper-prefix candidate ahead of generic EU:9A004", () => {
+    // A star tracker that does NOT meet the USML XV(e)(16) conjunctive
+    // thresholds (accuracy/slew) falls to itemClass-only LOW candidates.
+    // Both ECCN:9A515.x-family star-tracker entries (deep prefix) and the
+    // generic EU:9A004 (`spacecraft` prefix) can surface as LOW. When they
+    // tie on confidence+count, the deeper-prefix entry must rank ahead of
+    // EU:9A004.
+    const result = matchAgainstCrossWalk({
+      itemClass: "spacecraft.adcs.star_tracker",
+    });
+    const ids = result.candidates.map((c) => c.entry.canonicalId);
+    const euIdx = ids.indexOf("EU:9A004");
+    if (euIdx === -1) return; // EU:9A004 not surfaced → nothing to assert
+    // Any LOW candidate with a strictly deeper matched itemClass prefix
+    // than `spacecraft` must precede EU:9A004.
+    const euEntry = result.candidates[euIdx];
+    const euPrefixLen = matchedPrefixDepth(euEntry);
+    for (let i = euIdx + 1; i < result.candidates.length; i++) {
+      const later = result.candidates[i];
+      if (later.confidence !== euEntry.confidence) continue;
+      if (later.matchedPredicates.length !== euEntry.matchedPredicates.length)
+        continue;
+      // A later same-rank candidate must NOT be strictly more specific.
+      expect(matchedPrefixDepth(later)).toBeLessThanOrEqual(euPrefixLen);
+    }
+  });
+});
+
+function matchedPrefixDepth(c: {
+  matchedPredicates: Array<{ attribute: string; expectedValue: unknown }>;
+}): number {
+  let depth = 0;
+  for (const p of c.matchedPredicates) {
+    if (p.attribute === "itemClass" && typeof p.expectedValue === "string") {
+      depth = Math.max(depth, p.expectedValue.length);
+    }
+  }
+  return depth;
+}

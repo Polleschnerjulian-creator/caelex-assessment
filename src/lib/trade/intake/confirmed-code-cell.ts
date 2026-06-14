@@ -91,10 +91,15 @@ function cellForRegime(regime: string | undefined): RegimeCell | null {
 
 /**
  * Map the canonicalId regime PREFIX → the TradeItem cell. The prefix (e.g. "EU"
- * in "EU:9A004") is the stable corpus key. Mirrors `fieldForCanonicalId` in
- * auto-classify-on-create.ts, extended with the DE-AL prefix. Unknown → null.
+ * in "EU:9A004") is the stable corpus key. THE single prefix→cell mapper —
+ * `auto-classify-on-create.fieldForCanonicalId` delegates here so the two paths
+ * can never drift (the bug the dedupe closes: the auto-classify copy lacked the
+ * DE-AL prefix, silently dropping a German-Ausfuhrliste suggestion). Unknown →
+ * null (never mis-route a code onto the wrong column).
  */
-function cellForPrefix(canonicalId: string): RegimeCell | null {
+export function cellForCanonicalIdPrefix(
+  canonicalId: string,
+): RegimeCell | null {
   const colon = canonicalId.indexOf(":");
   if (colon === -1) return null;
   switch (canonicalId.slice(0, colon)) {
@@ -141,7 +146,8 @@ export function confirmedCodeCell(
   if (!canonicalId) return {};
 
   // 2. Map by regime, else 3. by canonicalId prefix.
-  const cell = cellForRegime(input.regime) ?? cellForPrefix(canonicalId);
+  const cell =
+    cellForRegime(input.regime) ?? cellForCanonicalIdPrefix(canonicalId);
   if (cell) return { [cell]: bareCode(canonicalId) };
 
   // 4. No engine-readable cell — carry the code as declaredOtherCode so the

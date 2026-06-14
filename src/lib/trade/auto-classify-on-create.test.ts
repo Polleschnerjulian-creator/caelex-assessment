@@ -35,6 +35,13 @@ describe("fieldForCanonicalId — regime prefix → TradeItem field", () => {
     expect(fieldForCanonicalId("ECCN:9A515.a.1")).toBe("eccnUS");
     expect(fieldForCanonicalId("EU:9A515.a")).toBe("eccnEU");
   });
+  it("maps the German Ausfuhrliste (DE-AL) prefix to germanAlEntry (shared mapper, no drift)", () => {
+    // The two prefix mappers (auto-classify + confirmed-code-cell) now share
+    // ONE source of truth. confirmedCodeCell already recognised DE-AL; the
+    // auto-classify mapper previously dropped it (returned null) — the drift
+    // this dedupe closes.
+    expect(fieldForCanonicalId("DE-AL:0009")).toBe("germanAlEntry");
+  });
   it("returns null for an unknown prefix (never mis-route a code)", () => {
     expect(fieldForCanonicalId("WASSENAAR:x")).toBeNull();
     expect(fieldForCanonicalId("no-colon")).toBeNull();

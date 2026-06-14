@@ -83,7 +83,9 @@ export type DbChannel =
   | "trade.party.blocked"
   | "trade.screening.decided"
   | "trade.screening.batch"
-  | "trade.sanctions.synced";
+  | "trade.sanctions.synced"
+  // Comply Trade v2 — Classification sign-off (Passage /trade/assess)
+  | "trade.classification.confirmed";
 
 const VALID_CHANNELS: ReadonlySet<DbChannel> = new Set<DbChannel>([
   "comply.proposal.created",
@@ -103,6 +105,7 @@ const VALID_CHANNELS: ReadonlySet<DbChannel> = new Set<DbChannel>([
   "trade.screening.decided",
   "trade.screening.batch",
   "trade.sanctions.synced",
+  "trade.classification.confirmed",
 ]);
 
 const PAYLOAD_BYTE_LIMIT = 7900;

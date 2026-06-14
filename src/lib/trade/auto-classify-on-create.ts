@@ -21,6 +21,7 @@ import {
   attributesToCandidateCodes,
   type SuggestInputAttribute,
 } from "@/lib/trade/classify-suggest";
+import { cellForCanonicalIdPrefix } from "@/lib/trade/intake/confirmed-code-cell";
 
 export interface AutoClassifyInput {
   // Human-declared codes — presence of ANY means "do not auto-suggest".
@@ -41,7 +42,8 @@ type ClassificationField =
   | "eccnEU"
   | "eccnUS"
   | "usmlCategory"
-  | "mtcrCategory";
+  | "mtcrCategory"
+  | "germanAlEntry";
 
 export interface AutoClassificationSuggestion {
   code: string;
@@ -74,24 +76,18 @@ export interface AutoClassification {
  * Map a canonicalId regime prefix to the TradeItem classification field.
  * The prefix (e.g. "ECCN" in "ECCN:9A515.a.1") is the stable corpus key —
  * NOT the freeform `regime` prose. Unknown prefix → null (never mis-route).
+ *
+ * Delegates to the SHARED `cellForCanonicalIdPrefix` in confirmed-code-cell.ts
+ * so this path and the confirmed-code-cell persist path can never drift. The
+ * shared mapper additionally recognises the DE-AL (German Ausfuhrliste) prefix —
+ * the auto-classify copy used to lack it and silently dropped a German-AL
+ * suggestion. `germanAlEntry` is a real TradeItem column, so it is a valid
+ * `ClassificationField`.
  */
 export function fieldForCanonicalId(
   canonicalId: string,
 ): ClassificationField | null {
-  const colon = canonicalId.indexOf(":");
-  if (colon === -1) return null;
-  switch (canonicalId.slice(0, colon)) {
-    case "USML":
-      return "usmlCategory";
-    case "MTCR":
-      return "mtcrCategory";
-    case "ECCN":
-      return "eccnUS"; // US Commerce Control List (EAR)
-    case "EU":
-      return "eccnEU"; // EU dual-use Annex I
-    default:
-      return null;
-  }
+  return cellForCanonicalIdPrefix(canonicalId);
 }
 
 const PARAMETRIC_FIELDS: ReadonlyArray<

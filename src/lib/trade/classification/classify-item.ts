@@ -172,6 +172,16 @@ export function classifyItemForOperation(
   // normalized corpus. The parametric engine above only matches predicates,
   // so a declared USML XV(e) paragraph / Wassenaar / etc. code would
   // otherwise resolve to nothing in the classification layer.
+  //
+  // mtcr/germanAl are fed in alongside the EU/US/USML cells: a controlled
+  // corpusMatch on those cells CORROBORATES the gate-tightening Wave A already
+  // performs. The license gate consumes mtcr/germanAl/declaredOtherCode via
+  // `actualCodes` above and fails closed on them (≥ REVIEW everywhere, BLOCKED
+  // to embargoed + RU/BY, never CLEARED). The corpus hit here is the audit-
+  // visible proof that the declared code resolves to a real controlled-list
+  // entry — it confirms the fail-closed treatment is warranted, it never relaxes
+  // it. A non-match is NEVER read as "uncontrolled" (the union is broad, not
+  // exhaustive; the gate already failed closed off the declared cell).
   const corpusMatches = matchDeclaredCodes({
     eccnEU: item.eccnEU ?? null,
     eccnUS: item.eccnUS ?? null,

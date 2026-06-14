@@ -33,6 +33,10 @@ import {
 } from "@/lib/ratelimit";
 import { getTradeAuth } from "@/lib/trade/trade-auth";
 import { confirmedCodeCell } from "@/lib/trade/intake/confirmed-code-cell";
+import { resolveApprovalContext } from "@/lib/trade/classification-approval-context.server";
+import { evaluateApprovalEligibility } from "@/lib/trade/classification-approval-policy";
+import { logAuditEvent, getRequestContext } from "@/lib/audit";
+import { emitTradeEvent } from "@/lib/comply-v2/trade/ops-events.server";
 
 export const runtime = "nodejs";
 
@@ -115,6 +119,20 @@ function regimeCellPatch(code: z.infer<typeof ConfirmedCodeSchema>) {
   return cellColumns;
 }
 
+/**
+ * Pull the screening-level disclaimer the operator saw at sign-off out of the
+ * evidence blob, so it is preserved verbatim on the ACCEPTED draft (the
+ * disclaimer wording may change later — the record must reflect what was shown).
+ * Defensive: the evidence shape is application-owned, so we probe a single
+ * known field and never throw.
+ */
+function disclaimerFromEvidence(
+  evidence: Record<string, unknown> | undefined,
+): string | null {
+  const d = evidence?.disclaimer;
+  return typeof d === "string" && d.trim().length > 0 ? d : null;
+}
+
 // ─── Authorization ─────────────────────────────────────────────────────────
 
 // This route mints a CONFIRMED classification: a TradeItem plus an ACCEPTED
@@ -160,6 +178,37 @@ export async function POST(req: Request) {
     const { item, confirmedCode, evidence, sourceFilename } = parsed.data;
     const cellPatch = regimeCellPatch(confirmedCode);
 
+    // (c) CONSULT the org four-eyes policy before stamping a sign-off. The
+    // /trade/assess wizard is one human confirming a classification in one
+    // step → author === acting user. Under four-eyes (author ≠ approver) that
+    // self-sign is NOT a valid ACCEPTED record. We do NOT forge it: instead the
+    // draft persists PENDING (awaiting a second reviewer) and carries no
+    // reviewer stamp. Fail-CLOSED is preserved either way — the TradeItem still
+    // gets the confirmed code on its regime cell + status REQUIRES_REVIEW, so
+    // the verdict engine still treats the item as controlled. Only the sign-off
+    // is deferred. When four-eyes is OFF the org has opted out of the second-
+    // set-of-eyes control, so the single-actor ACCEPTED self-sign stands.
+    const approvalCtx = await resolveApprovalContext(
+      tradeAuth.organizationId,
+      tradeAuth.userId,
+    );
+    const eligibility = evaluateApprovalEligibility({
+      decision: "ACCEPTED",
+      fourEyesEnabled: approvalCtx.fourEyesEnabled,
+      // The wizard user authors AND would approve in one step — same identity.
+      authorUserId: tradeAuth.userId,
+      actingUserId: tradeAuth.userId,
+      soleEligibleApprover: approvalCtx.soleEligibleApprover,
+    });
+    const signOff = eligibility.allowed;
+    const draftDecision = signOff ? "ACCEPTED" : "PENDING";
+    // (c) Preserve the screening-level disclaimer the operator saw — only
+    // meaningful on a recorded (ACCEPTED) decision; a PENDING draft is reviewed
+    // later and `recordDecision` will stamp the disclaimer then.
+    const disclaimerAtReview = signOff
+      ? disclaimerFromEvidence(evidence)
+      : null;
+
     const itemId = await prisma.$transaction(async (tx) => {
       const created = await tx.tradeItem.create({
         data: {
@@ -181,9 +230,14 @@ export async function POST(req: Request) {
           isRadHardened: item.isRadHardened ?? false,
           isMilSpec: item.isMilSpec ?? false,
           isAntiJam: item.isAntiJam ?? false,
-          // Extended operator-supplied attributes (Z3e+) ride along verbatim for
-          // audit / re-classification — NOT the verdict (which stays code-driven
-          // off the confirmed cell). Column exists, so no migration.
+          // (b) AUDIT-ONLY by design. The extended operator-supplied scoped
+          // attributes (Z3e+) ride along verbatim for audit + later re-
+          // classification. They are deliberately NOT fed to the operation
+          // classifier: `classifyItemForOperation` reads `ItemSignals`, whose
+          // fields are the typed columns + declared regime codes — it has NO
+          // `parametricAttributes` field, so these never move the verdict (which
+          // stays code-driven off the confirmed regime cell). Column exists, so
+          // no migration.
           parametricAttributes: (item.parametricAttributes ?? undefined) as
             | Prisma.InputJsonValue
             | undefined,
@@ -208,15 +262,16 @@ export async function POST(req: Request) {
           confidence: confirmedCode.confidence ?? null,
           evidence: (evidence ?? {}) as Prisma.InputJsonValue,
           sourceFilename: sourceFilename ?? null,
-          // The operator confirmed it in the wizard — record the sign-off.
-          // DELIBERATE single-actor sign-off: createdById === reviewedById is
-          // intentional here. The /trade/assess wizard is one human confirming
-          // their own classification in one step, so the four-eyes split and
-          // the disclaimerAtReview that recordDecision enforces are by-design
-          // N/A on this path — NOT an oversight.
-          decision: "ACCEPTED",
-          reviewedById: tradeAuth.userId,
-          reviewedAt: new Date(),
+          // (c) The decision honours the CONSULTED org four-eyes policy:
+          //   - four-eyes OFF → ACCEPTED, single-actor sign-off (org opted out
+          //     of author ≠ approver), reviewer stamped + disclaimer preserved.
+          //   - four-eyes ON  → PENDING, NO reviewer stamp. A second eligible
+          //     person signs it off later via `recordDecision` (which enforces
+          //     the same gate). We never forge an author-self-approval.
+          decision: draftDecision,
+          reviewedById: signOff ? tradeAuth.userId : null,
+          reviewedAt: signOff ? new Date() : null,
+          disclaimerAtReview,
           acceptedSnapshot: {
             canonicalId: confirmedCode.canonicalId,
             ...(confirmedCode.regime ? { regime: confirmedCode.regime } : {}),
@@ -233,9 +288,51 @@ export async function POST(req: Request) {
     logger.info("[trade/assess/from-datasheet POST] persisted", {
       itemId,
       canonicalId: confirmedCode.canonicalId,
+      decision: draftDecision,
     });
 
-    return NextResponse.json({ itemId }, { status: 201 });
+    // (d) Hash-chained AuditLog trail (5+yr retention, §22 AWV / 15 CFR 762)
+    // for the confirmed-classification mint — the same evidentiary spine the
+    // operations routes already write. Runs after the DB write succeeds.
+    const reqCtx = getRequestContext(req);
+    await logAuditEvent({
+      userId: tradeAuth.userId,
+      organizationId: tradeAuth.organizationId,
+      action: "trade_classification_confirmed",
+      entityType: "trade_item",
+      entityId: itemId,
+      newValue: {
+        canonicalId: confirmedCode.canonicalId,
+        regime: confirmedCode.regime ?? null,
+        confidence: confirmedCode.confidence ?? null,
+        draftDecision,
+        signOff,
+        sourceFilename: sourceFilename ?? null,
+      },
+      description: `Datasheet classification confirmed for "${item.name}" as ${confirmedCode.canonicalId} (draft ${draftDecision})`,
+      ipAddress: reqCtx.ipAddress,
+      userAgent: reqCtx.userAgent,
+    });
+
+    // (d) Live Ops Console feed (non-fatal — audit-log is canonical).
+    await emitTradeEvent("trade.classification.confirmed", {
+      organizationId: tradeAuth.organizationId,
+      summary: `${item.name} · ${confirmedCode.canonicalId} · ${
+        signOff ? "freigegeben" : "Zweitprüfung ausstehend"
+      }`,
+      data: {
+        itemId,
+        canonicalId: confirmedCode.canonicalId,
+        regime: confirmedCode.regime ?? null,
+        draftDecision,
+        userId: tradeAuth.userId,
+      },
+    });
+
+    return NextResponse.json(
+      { itemId, decision: draftDecision },
+      { status: 201 },
+    );
   } catch (err) {
     logger.error("POST /api/trade/assess/from-datasheet failed", err);
     return NextResponse.json(

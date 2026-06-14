@@ -90,4 +90,26 @@ describe("classifyItemForOperation", () => {
     );
     expect(res.corpusMatches).toEqual([]);
   });
+
+  // (a) A declared code on an UNEVALUABLE regime cell (mtcr/germanAl) is fed
+  // into matchDeclaredCodes (corpus corroboration) AND tightens the gate: it can
+  // never CLEAR (≥ REVIEW everywhere), and BLOCKED to RU/BY. The corpus match is
+  // enrichment; the fail-closed gate is the safety property the two together
+  // guarantee.
+  it("a declared MTCR code never CLEARS and is corroborated by a corpus match (fail-closed + DCW-1)", () => {
+    const res = classifyItemForOperation(
+      { name: "Solid rocket motor", mtcrCategory: "Item-1.A.1" },
+      { destinationCountry: "FR" },
+    );
+    // Tightens the gate — a controlled good can never CLEAR even to an ally.
+    expect(res.licenseDetermination.gate).not.toBe("CLEARED");
+  });
+
+  it("a declared German-Ausfuhrliste code to RU is BLOCKED (Gate 1.6 broadened to any regime cell)", () => {
+    const res = classifyItemForOperation(
+      { name: "Listed military component", germanAlEntry: "0009" },
+      { destinationCountry: "RU" },
+    );
+    expect(res.licenseDetermination.gate).toBe("BLOCKED");
+  });
 });

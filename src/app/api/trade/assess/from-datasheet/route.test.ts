@@ -27,6 +27,27 @@ vi.mock("@/lib/logger", () => ({
   logger: { info: vi.fn(), warn: vi.fn(), error: vi.fn() },
 }));
 
+// (c) Org four-eyes policy resolver. Default mock = four-eyes OFF so the
+// pre-existing ACCEPTED-path tests keep passing; the four-eyes-ON tests
+// override per-case.
+vi.mock("@/lib/trade/classification-approval-context.server", () => ({
+  resolveApprovalContext: vi
+    .fn()
+    .mockResolvedValue({ fourEyesEnabled: false, soleEligibleApprover: false }),
+}));
+
+// (d) Audit log + ops-event emitters.
+vi.mock("@/lib/audit", () => ({
+  logAuditEvent: vi.fn().mockResolvedValue(undefined),
+  getRequestContext: vi
+    .fn()
+    .mockReturnValue({ ipAddress: "1.2.3.4", userAgent: "test" }),
+}));
+
+vi.mock("@/lib/comply-v2/trade/ops-events.server", () => ({
+  emitTradeEvent: vi.fn().mockResolvedValue(undefined),
+}));
+
 // The $transaction callback receives a `tx` client. We hand it the same
 // stub object so both creates land on the spied mocks. The factory is hoisted,
 // so the spies are created inside it and pulled back out via the mocked import.
@@ -48,6 +69,15 @@ vi.mock("@/lib/prisma", () => {
 import { POST } from "./route";
 import { getTradeAuth } from "@/lib/trade/trade-auth";
 import { prisma } from "@/lib/prisma";
+import { resolveApprovalContext } from "@/lib/trade/classification-approval-context.server";
+import { logAuditEvent } from "@/lib/audit";
+import { emitTradeEvent } from "@/lib/comply-v2/trade/ops-events.server";
+
+const resolveApproval = resolveApprovalContext as unknown as ReturnType<
+  typeof vi.fn
+>;
+const auditLog = logAuditEvent as unknown as ReturnType<typeof vi.fn>;
+const opsEvent = emitTradeEvent as unknown as ReturnType<typeof vi.fn>;
 
 const tx = (
   prisma as unknown as {
@@ -87,6 +117,16 @@ beforeEach(() => {
   tradeItemCreate.mockResolvedValue({ id: "item-new" });
   draftCreate.mockReset();
   draftCreate.mockResolvedValue({ id: "draft-new" });
+  resolveApproval.mockReset();
+  // Default: four-eyes OFF (single-actor ACCEPTED self-sign allowed).
+  resolveApproval.mockResolvedValue({
+    fourEyesEnabled: false,
+    soleEligibleApprover: false,
+  });
+  auditLog.mockReset();
+  auditLog.mockResolvedValue(undefined);
+  opsEvent.mockReset();
+  opsEvent.mockResolvedValue(undefined);
 });
 
 const validBody = {
@@ -202,5 +242,77 @@ describe("POST /api/trade/assess/from-datasheet", () => {
     expect(itemArg?.data.parametricAttributes).toEqual({
       starTrackerAccuracyArcsec: 10,
     });
+  });
+
+  // ── (c) disclaimerAtReview + four-eyes consultation ──────────────────────
+
+  it("persists disclaimerAtReview from the evidence blob on an ACCEPTED self-sign (four-eyes OFF)", async () => {
+    const body = {
+      item: { name: "ST-300", description: "" },
+      confirmedCode: { canonicalId: "USML:XV(e)(16)", regime: "ITAR-USML" },
+      evidence: { disclaimer: "Screening-level guidance only — verify." },
+    };
+    const res = await POST(makeReq(body));
+    expect(res.status).toBe(201);
+    const draftArg = draftCreate.mock.calls.at(-1)?.[0];
+    expect(draftArg?.data.decision).toBe("ACCEPTED");
+    expect(draftArg?.data.disclaimerAtReview).toBe(
+      "Screening-level guidance only — verify.",
+    );
+  });
+
+  it("four-eyes ON: the self-sign is NOT auto-approved — draft persists PENDING, no reviewer stamp (fail-closed)", async () => {
+    resolveApproval.mockResolvedValue({
+      fourEyesEnabled: true,
+      soleEligibleApprover: false,
+    });
+    const res = await POST(makeReq(validBody));
+    expect(res.status).toBe(201);
+
+    // The TradeItem still carries the confirmed code on its cell + stays
+    // REQUIRES_REVIEW, so the verdict engine still treats it as controlled.
+    const itemArg = tradeItemCreate.mock.calls.at(-1)?.[0];
+    expect(itemArg?.data).toMatchObject({
+      eccnUS: "9A515.a.1",
+      status: "REQUIRES_REVIEW",
+    });
+
+    // But the DRAFT is PENDING (awaiting a second reviewer) — NOT a forged
+    // self-approval. No reviewer stamp.
+    const draftArg = draftCreate.mock.calls.at(-1)?.[0];
+    expect(draftArg?.data.decision).toBe("PENDING");
+    expect(draftArg?.data.reviewedById ?? null).toBeNull();
+    expect(draftArg?.data.reviewedAt ?? null).toBeNull();
+  });
+
+  it("four-eyes ON: response signals the awaiting-review state", async () => {
+    resolveApproval.mockResolvedValue({
+      fourEyesEnabled: true,
+      soleEligibleApprover: false,
+    });
+    const res = await POST(makeReq(validBody));
+    const json = await res.json();
+    expect(json.decision).toBe("PENDING");
+  });
+
+  // ── (d) AuditLog + ops-event on persist ──────────────────────────────────
+
+  it("emits an AuditLog entry + ops-event when a confirmed classification persists", async () => {
+    const res = await POST(makeReq(validBody));
+    expect(res.status).toBe(201);
+
+    expect(auditLog).toHaveBeenCalledTimes(1);
+    const auditArg = auditLog.mock.calls.at(-1)?.[0];
+    expect(auditArg).toMatchObject({
+      userId: "user-1",
+      organizationId: "org-1",
+      entityType: "trade_item",
+      entityId: "item-new",
+    });
+
+    expect(opsEvent).toHaveBeenCalledTimes(1);
+    const [channel, envelope] = opsEvent.mock.calls.at(-1) ?? [];
+    expect(channel).toBe("trade.classification.confirmed");
+    expect(envelope).toMatchObject({ organizationId: "org-1" });
   });
 });

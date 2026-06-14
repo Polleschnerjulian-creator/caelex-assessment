@@ -344,7 +344,18 @@ export function matchAgainstCrossWalk(
     // result.kind === "refute" → entry dropped, no side effect.
   }
 
-  // Rank: HIGH > MEDIUM > LOW, then by predicate-match count desc.
+  // Rank: HIGH > MEDIUM > LOW, then by predicate-match count desc, then
+  // by SPECIFICITY (deeper/longer matched itemClass prefix wins).
+  //
+  // Specificity tie-break (general principle, not a per-product hack):
+  // when two candidates tie on both confidence AND matched-predicate
+  // count, the one whose matched itemClass-prefix predicate is MORE
+  // SPECIFIC (a deeper class path, e.g. `spacecraft.adcs.star_tracker`
+  // over the generic `spacecraft`) is the more on-target classification
+  // and ranks first. A star tracker should surface its specific
+  // star-tracker control above the generic spacecraft 9A004 entry.
+  // Subordinate to confidence + matched-count: a higher-confidence or
+  // more-corroborated candidate always wins regardless of prefix depth.
   const order: Record<MatchConfidence, number> = {
     HIGH: 3,
     MEDIUM: 2,
@@ -354,7 +365,10 @@ export function matchAgainstCrossWalk(
     if (order[a.confidence] !== order[b.confidence]) {
       return order[b.confidence] - order[a.confidence];
     }
-    return b.matchedPredicates.length - a.matchedPredicates.length;
+    if (a.matchedPredicates.length !== b.matchedPredicates.length) {
+      return b.matchedPredicates.length - a.matchedPredicates.length;
+    }
+    return matchedItemClassPrefixDepth(b) - matchedItemClassPrefixDepth(a);
   });
 
   // Rank possibles by matched-count desc (most-corroborated first).
@@ -846,6 +860,34 @@ function isBagEmpty(item: ItemAttributeBag): boolean {
     return false;
   }
   return true;
+}
+
+// ─── Specificity helper ─────────────────────────────────────────────
+
+/**
+ * Specificity score for the specific-vs-generic tie-break: the length
+ * of the LONGEST matched `itemClass`-prefix predicate value.
+ *
+ * A deeper class path is a longer string (`spacecraft.adcs.star_tracker`
+ * = 28 chars vs `spacecraft` = 10), so string length is a faithful proxy
+ * for "how specific is the matched class". Non-itemClass predicates and
+ * candidates with no matched itemClass prefix score 0 — they do not
+ * participate in the tie-break (they tie at 0, preserving the prior
+ * stable order). This is a tie-break ONLY; it never overrides confidence
+ * or matched-predicate count.
+ */
+function matchedItemClassPrefixDepth(candidate: CandidateMatch): number {
+  let depth = 0;
+  for (const p of candidate.matchedPredicates) {
+    if (
+      p.attribute === "itemClass" &&
+      p.op === "prefix" &&
+      typeof p.expectedValue === "string"
+    ) {
+      depth = Math.max(depth, p.expectedValue.length);
+    }
+  }
+  return depth;
 }
 
 // ─── Format helpers ─────────────────────────────────────────────────
