@@ -246,6 +246,49 @@ const PROMPT_VOCABULARY: ReadonlyArray<{
     description: "adaptive / digital beam-forming",
     type: "boolean",
   },
+  // ─── Decisive extended attrs (scoped second vision pass) ────────────
+  // These gate high-signal corpus thresholds (USML XV(e)(16) star-tracker,
+  // ECCN 7A005 GNSS, propulsion totalImpulse/thrust/Isp). They were
+  // previously omitted to keep token usage low; the scoped second pass
+  // (`vocabularySubset`) now requests only the ones a chosen item class
+  // actually needs. `isSpeciallyDesigned` is already in the vocabulary
+  // above, so it is NOT re-added here.
+  {
+    name: "starTrackerAccuracyArcsec",
+    description: "star-tracker pointing accuracy (1σ)",
+    type: "number",
+    unitHint: "arcseconds",
+  },
+  {
+    name: "starTrackerSlewRateDegPerS",
+    description: "star-tracker max tracking/slew rate",
+    type: "number",
+    unitHint: "degrees per second",
+  },
+  {
+    name: "gnssMaxVelocityMPerS",
+    description: "GNSS receiver max operating velocity",
+    type: "number",
+    unitHint: "metres per second",
+  },
+  {
+    name: "totalImpulseNs",
+    description: "total impulse",
+    type: "number",
+    unitHint: "newton-seconds",
+  },
+  {
+    name: "thrustNewtons",
+    description: "thrust",
+    type: "number",
+    unitHint: "newtons",
+  },
+  {
+    name: "specificImpulseSecondsVacuum",
+    description: "vacuum specific impulse (Isp)",
+    type: "number",
+    unitHint: "seconds",
+  },
 ];
 
 // The extraction JSON is a bounded object: ~22 known attributes each a short
@@ -256,11 +299,22 @@ const MAX_OUTPUT_TOKENS = 1024;
 
 const SYSTEM_PROMPT = buildSystemPrompt();
 
-function buildSystemPrompt(): string {
-  const attributeLines = PROMPT_VOCABULARY.map(
-    (a) =>
-      `  "${a.name}": ${a.description}${a.unitHint ? ` — return as ${a.unitHint}` : ""} → ${a.type === "boolean" ? "true|false|null" : a.type === "number" ? "number|null" : "string|null"}`,
-  ).join("\n");
+function buildSystemPrompt(subset?: ReadonlyArray<AttributeName>): string {
+  // When a `subset` is supplied (scoped second vision pass), the prompt
+  // asks Claude for ONLY those attributes — the chosen item class's
+  // decisive fields — so the model isn't distracted by the full ~28-attr
+  // vocabulary. An empty/undefined subset falls back to the full
+  // vocabulary (the default production extraction).
+  const vocab =
+    subset && subset.length > 0
+      ? PROMPT_VOCABULARY.filter((a) => subset.includes(a.name))
+      : PROMPT_VOCABULARY;
+  const attributeLines = vocab
+    .map(
+      (a) =>
+        `  "${a.name}": ${a.description}${a.unitHint ? ` — return as ${a.unitHint}` : ""} → ${a.type === "boolean" ? "true|false|null" : a.type === "number" ? "number|null" : "string|null"}`,
+    )
+    .join("\n");
 
   return `You extract structured technical attributes from satellite / space-hardware datasheet PDFs.
 
@@ -292,6 +346,18 @@ Rules:
   - DO NOT include attributes you couldn't find. Empty arrays are fine.
   - DO NOT invent attribute names. Only the ones in the vocabulary above.
   - Return ONLY valid JSON. No prose before or after. No markdown fence.`;
+}
+
+/** Test seam — the ordered list of attribute names in PROMPT_VOCABULARY, so
+ *  tests can assert the decisive extended attrs are present without
+ *  reaching into the private vocabulary array. */
+export const PROMPT_VOCABULARY_NAMES: ReadonlyArray<AttributeName> =
+  PROMPT_VOCABULARY.map((a) => a.name);
+
+/** Test seam — exposes the (otherwise private) prompt builder so tests can
+ *  verify the scoped `vocabularySubset` path narrows the prompt. */
+export function __buildSystemPromptForTest(subset?: AttributeName[]): string {
+  return buildSystemPrompt(subset);
 }
 
 const VALID_ATTR_NAMES: ReadonlySet<string> = new Set(
@@ -534,6 +600,10 @@ export async function extractDatasheetViaVision(
     /** G4 eval harness only — overrides the configured model for A/B
      *  accuracy runs. Production callers never pass this. */
     modelOverride?: string;
+    /** Scoped second vision pass: restrict the extraction to ONLY these
+     *  attributes (the chosen item class's decisive fields). When omitted
+     *  the full PROMPT_VOCABULARY is used (the default first pass). */
+    vocabularySubset?: AttributeName[];
   } = {},
 ): Promise<VisionExtractionResult> {
   const startMs = Date.now();
@@ -561,6 +631,14 @@ export async function extractDatasheetViaVision(
 
   const pdfBase64 = Buffer.from(pdfBytes).toString("base64");
 
+  // Default first pass reuses the precomputed full-vocabulary prompt; a
+  // scoped second pass builds a narrowed prompt asking for ONLY the chosen
+  // item class's decisive attributes.
+  const systemPrompt =
+    options.vocabularySubset && options.vocabularySubset.length > 0
+      ? buildSystemPrompt(options.vocabularySubset)
+      : SYSTEM_PROMPT;
+
   try {
     const response = await setup.client.messages.create({
       model,
@@ -568,7 +646,7 @@ export async function extractDatasheetViaVision(
       system: [
         {
           type: "text" as const,
-          text: SYSTEM_PROMPT,
+          text: systemPrompt,
           cache_control: { type: "ephemeral" as const },
         },
       ],
